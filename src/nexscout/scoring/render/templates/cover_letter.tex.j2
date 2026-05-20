@@ -1,0 +1,21 @@
+\documentclass[11pt,a4paper]{letter}
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[hidelinks]{hyperref}
+
+\signature{<< me.pref | tex >>}
+\address{<< me.legal | tex >> \\ << me.email | tex >> \\ << me.phone | tex >>}
+
+\begin{document}
+\begin{letter}{<% if job.site %><< job.site | tex >>\\<% endif %>Hiring Team}
+
+\opening{}
+
+<< letter | tex >>
+
+\closing{}
+
+\end{letter}
+\end{document}

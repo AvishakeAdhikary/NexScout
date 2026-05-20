@@ -1,0 +1,71 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{paracol}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tgheros}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+
+\setlength{\parindent}{0pt}
+\setlength{\columnsep}{1.4em}
+\pagestyle{empty}
+\setlist[itemize]{leftmargin=1.2em,topsep=2pt,itemsep=1pt,parsep=0pt}
+
+\titleformat{\section}{\normalsize\bfseries\uppercase\color{black!75}}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{2pt}
+
+\begin{document}
+\columnratio{0.32}
+\begin{paracol}{2}
+
+\section*{Contact}
+\textbf{<< me.legal | tex >>}\\[2pt]
+<< title | tex >>\\[6pt]
+<% if me.email %><< me.email | tex >>\\<% endif %>
+<% if me.phone %><< me.phone | tex >>\\<% endif %>
+<% if me.links.li %>\href{https://<< me.links.li | tex >>}{<< me.links.li | tex >>}\\<% endif %>
+<% if me.links.gh %>\href{https://<< me.links.gh | tex >>}{<< me.links.gh | tex >>}\\<% endif %>
+
+\section*{Skills}
+\begin{itemize}
+<% for category, value in skills.items() %>
+  \item \textbf{<< category | tex >>}: << value | tex >>
+<% endfor %>
+\end{itemize}
+
+\switchcolumn
+
+\section*{Summary}
+<< summary | tex >>
+
+\section*{Experience}
+<% for item in experience %>
+\textbf{<< item.header | tex >>}\\
+\textit{<< item.subtitle | tex >>}
+\begin{itemize}
+<% for b in item.bullets %>
+  \item << b | tex >>
+<% endfor %>
+\end{itemize}
+<% endfor %>
+
+\section*{Projects}
+<% for item in projects %>
+\textbf{<< item.header | tex >>}\\
+\textit{<< item.subtitle | tex >>}
+\begin{itemize}
+<% for b in item.bullets %>
+  \item << b | tex >>
+<% endfor %>
+\end{itemize}
+<% endfor %>
+
+\section*{Education}
+<< education | tex >>
+
+\end{paracol}
+\end{document}

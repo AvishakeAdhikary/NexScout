@@ -1,0 +1,64 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.6in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+\setlist[itemize]{leftmargin=1.2em,topsep=2pt,itemsep=1pt,parsep=0pt}
+
+\titleformat{\section}{\large\bfseries\uppercase}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{4pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE \textbf{<< me.legal | tex >>}}\\[2pt]
+{\large << title | tex >>}\\[4pt]
+<% if me.email %><< me.email | tex >><% endif %>
+<% if me.phone %> \textbar{} << me.phone | tex >><% endif %>
+<% if me.links.li %> \textbar{} \href{https://<< me.links.li | tex >>}{<< me.links.li | tex >>}<% endif %>
+<% if me.links.gh %> \textbar{} \href{https://<< me.links.gh | tex >>}{<< me.links.gh | tex >>}<% endif %>
+\end{center}
+
+\section*{Summary}
+<< summary | tex >>
+
+\section*{Technical Skills}
+\begin{itemize}
+<% for category, value in skills.items() %>
+  \item \textbf{<< category | tex >>:} << value | tex >>
+<% endfor %>
+\end{itemize}
+
+\section*{Experience}
+<% for item in experience %>
+\textbf{<< item.header | tex >>}\\
+\textit{<< item.subtitle | tex >>}
+\begin{itemize}
+<% for b in item.bullets %>
+  \item << b | tex >>
+<% endfor %>
+\end{itemize}
+<% endfor %>
+
+\section*{Projects}
+<% for item in projects %>
+\textbf{<< item.header | tex >>}\\
+\textit{<< item.subtitle | tex >>}
+\begin{itemize}
+<% for b in item.bullets %>
+  \item << b | tex >>
+<% endfor %>
+\end{itemize}
+<% endfor %>
+
+\section*{Education}
+<< education | tex >>
+
+\end{document}
