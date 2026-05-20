@@ -203,14 +203,221 @@ def run(
     # (streaming). For M6 we only enforce the gate and exit cleanly.
 
 
-@app.command()
-def apply() -> None:
+@app.command(context_settings={"allow_extra_args": False})
+def apply(
+    workers: Annotated[int, typer.Option("--workers", help="Worker count.")] = 1,
+    headless: Annotated[bool, typer.Option("--headless/--headed", help="Run Chrome headless.")] = True,
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Don't actually click Submit.")] = False,
+    continuous: Annotated[bool, typer.Option("--continuous", help="Poll for new jobs forever.")] = False,
+    url: Annotated[str | None, typer.Option("--url", help="One-shot apply to this URL.")] = None,
+    backend: Annotated[str, typer.Option("--backend", help="native | claude_code | openai_assistant")] = "native",
+    limit: Annotated[int, typer.Option("--limit", help="Stop after N jobs (0 = unlimited).")] = 0,
+) -> None:
     """Submit applications. Refuses to start without a CAPTCHA api_key."""
+    from .agent_backends import get_backend
+    from .apply.dashboard import LiveDashboard
+    from .apply.orchestrator import worker_loop
+    from .browser.pool import BrowserPool
+    from .captcha.capsolver import CapSolverSolver
+    from .core.database import init_db
+    from .llm.budget import BudgetLedger
+    from .llm.router import LLMRouter
+
     c = console()
     try:
         profile = _ensure_captcha_configured("apply")
     except ConfigError as e:
         c.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1) from None
-    c.print(f"[green]NexScout apply ready[/green] (profile={profile.me.legal!r})")
-    # The full apply orchestrator lands in M7.
+
+    if backend not in {"native", "claude_code", "openai_assistant"}:
+        c.print(f"[red]unknown backend: {backend}[/red]")
+        raise typer.Exit(code=1)
+
+    runner = get_backend(backend)
+    solver = CapSolverSolver(api_key=profile.captcha.api_key) if profile.captcha.api_key else None
+    budget = BudgetLedger(
+        monthly_usd=profile.llm.budgets.monthly_usd,
+        daily_calls=profile.llm.budgets.daily_calls,
+    )
+    router = LLMRouter(profile, budget=budget)
+    conn = init_db()
+
+    if url:
+        # Tag a single job for this URL so the acquire query picks it up.
+        conn.execute(
+            "UPDATE jobs SET apply_status=NULL, apply_attempts=0 WHERE url=?",
+            (url,),
+        )
+
+    pool = BrowserPool(workers=workers, headless=headless)
+    c.print(f"[green]NexScout apply starting[/green] backend={backend} workers={workers}")
+
+    try:
+        with LiveDashboard(workers=workers, console=c) as dashboard:
+            total = 0
+            for w in range(workers):
+                total += worker_loop(
+                    w,
+                    profile,
+                    conn,
+                    solver,
+                    router,
+                    pool=pool,
+                    runner=runner,
+                    dashboard=dashboard,
+                    limit=limit,
+                    dry_run=dry_run,
+                    backend=backend,
+                    continuous=continuous,
+                )
+            c.print(f"[green]Done.[/green] Processed {total} jobs.")
+    finally:
+        pool.close_all()
+
+
+# ---------------------------------------------------------------------------
+# tick / question / status / web — M8/M9 wiring
+# ---------------------------------------------------------------------------
+
+
+@app.command()
+def tick(
+    wall_clock_s: Annotated[float, typer.Option("--wall-clock", help="Soft time cap (s).")] = 300.0,
+) -> None:
+    """Run a single OpenClaw heartbeat tick (bounded unit of work)."""
+    from .openclaw.tick import run as tick_run
+
+    profile_p = profile_path()
+    if not profile_p.exists():
+        console().print(f"[red]profile not found at {profile_p}[/red]")
+        raise typer.Exit(code=1)
+    profile = Profile.from_path(profile_p)
+    summary = tick_run(profile=profile, wall_clock_s=wall_clock_s)
+    typer.echo(f"summary: {summary}")
+
+
+question_app = typer.Typer(help="Manage pending clarifying questions.")
+app.add_typer(question_app, name="question")
+
+
+@question_app.command("list")
+def question_list(
+    fmt: Annotated[str, typer.Option("--format", help="text|json|openclaw")] = "text",
+) -> None:
+    """List outstanding clarifying questions."""
+    import json as json_mod
+
+    from .core.database import init_db
+
+    conn = init_db()
+    rows = conn.execute(
+        "SELECT id, job_url, question, asked_at FROM pending_questions "
+        "WHERE answered_at IS NULL ORDER BY id"
+    ).fetchall()
+    items = [dict(r) for r in rows]
+    if fmt == "json":
+        typer.echo(json_mod.dumps(items, indent=2))
+    elif fmt == "openclaw":
+        if not items:
+            typer.echo("nexscout: no pending questions")
+        else:
+            for r in items:
+                typer.echo(f"nexscout: Q{r['id']}: {r['question']}")
+    elif not items:
+        console().print("[dim]no pending questions[/dim]")
+    else:
+        for r in items:
+            console().print(f"[yellow]Q{r['id']}[/yellow] {r['question']}")
+
+
+@question_app.command("answer")
+def question_answer(
+    question: Annotated[str, typer.Option("--question", "-q", help="Verbatim question text.")],
+    reply: Annotated[str, typer.Option("--reply", "-a", help="Answer text.")],
+) -> None:
+    """Answer a pending question (also persisted to OpenClaw memory)."""
+    from .openclaw.skill import handle_answer
+
+    out = handle_answer(question, reply)
+    typer.echo(out.get("text") or "ok")
+
+
+@app.command()
+def status(
+    fmt: Annotated[str, typer.Option("--format", help="text|json|openclaw")] = "text",
+) -> None:
+    """Show pipeline stats."""
+    import json as json_mod
+
+    from .core.database import get_stats, init_db
+
+    stats = get_stats(init_db())
+    if fmt == "json":
+        typer.echo(json_mod.dumps(stats, indent=2))
+        return
+    if fmt == "openclaw":
+        line = (
+            f"nexscout: total={stats['total']} scored={stats['scored']} "
+            f"applied={stats['applied']} ready={stats['ready_to_apply']} "
+            f"errors={stats['apply_errors']}"
+        )
+        typer.echo(line)
+        return
+    c = console()
+    for k, v in stats.items():
+        c.print(f"{k}: {v}")
+
+
+@app.command()
+def web(
+    host: Annotated[str, typer.Option("--host")] = "127.0.0.1",
+    port: Annotated[int, typer.Option("--port")] = 8765,
+    init_pw: Annotated[bool, typer.Option("--init-pw", help="Set the web password.")] = False,
+) -> None:
+    """Run the FastAPI web UI."""
+    from .web.app import create_app
+    from .web.auth import set_password
+
+    if init_pw:
+        import getpass
+
+        pw = getpass.getpass("Web password: ")
+        if not pw:
+            raise typer.Exit(code=1)
+        set_password(pw)
+        typer.echo("Password set.")
+        return
+
+    try:
+        import uvicorn
+    except ImportError as e:
+        raise ConfigError("uvicorn is not installed") from e
+    uvicorn.run(create_app, host=host, port=port, factory=True)
+
+
+controls_app = typer.Typer(help="Pause / resume / tick controls.")
+app.add_typer(controls_app, name="controls")
+
+
+@controls_app.command("pause")
+def controls_pause() -> None:
+    """Write the ~/.nexscout/paused.flag marker."""
+    from datetime import UTC, datetime
+
+    from .core.config import nexscout_dir
+
+    flag = nexscout_dir() / "paused.flag"
+    flag.write_text(datetime.now(UTC).isoformat(), encoding="utf-8")
+    typer.echo("paused")
+
+
+@controls_app.command("resume")
+def controls_resume() -> None:
+    """Remove the pause marker."""
+    from .core.config import nexscout_dir
+
+    flag = nexscout_dir() / "paused.flag"
+    if flag.exists():
+        flag.unlink()
+    typer.echo("resumed")

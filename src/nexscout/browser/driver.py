@@ -1,15 +1,21 @@
-"""Minimal undetected_chromedriver factory used by enrichment.
+"""Undetected_chromedriver factory + worker wrapper.
 
-The full per-worker pool with profile cloning lands in M7. This module only
-provides the cross-platform Chrome detection plus a single-driver builder.
-``undetected_chromedriver`` is imported lazily so the rest of the codebase
-can be loaded (and tested) without it installed.
+This module exposes:
+
+* :class:`BrowserFactory` — Protocol used by enrichment/apply tests to inject
+  a mock browser without launching real Chrome.
+* :class:`UndetectedFactory` — default factory backed by
+  ``undetected_chromedriver``.
+* :class:`WorkerBrowser` — wrapper returned by the pool to workers. It exposes
+  ``driver``, ``cdp_port``, ``worker_id`` plus helpers for ``execute_cdp`` and
+  page utilities.
 """
 
 from __future__ import annotations
 
 import logging
 from contextlib import suppress
+from dataclasses import dataclass
 from typing import Any, Protocol
 
 from ..core.config import get_chrome_path
@@ -57,3 +63,81 @@ class UndetectedFactory:
             driver.set_page_load_timeout(self.page_load_timeout)
         apply_stealth(driver)
         return driver
+
+
+# ---------------------------------------------------------------------------
+# WorkerBrowser — richer wrapper used by the apply pool
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class WorkerBrowser:
+    """Wrapper around a Selenium-like driver returned to apply workers.
+
+    The pool sets ``driver``, ``cdp_port`` and ``worker_id``; everything else
+    is helper methods routed through the underlying driver.
+    """
+
+    worker_id: int
+    cdp_port: int
+    driver: Any
+    profile_dir: str | None = None
+
+    # ------------------------------------------------------------------
+    # Page tools
+    # ------------------------------------------------------------------
+
+    def navigate(self, url: str) -> None:
+        self.driver.get(url)
+
+    def screenshot(self, path: str) -> bool:
+        try:
+            return bool(self.driver.save_screenshot(path))
+        except Exception as e:
+            log.debug("screenshot failed: %s", e)
+            return False
+
+    @property
+    def page_source(self) -> str:
+        try:
+            return str(self.driver.page_source or "")
+        except Exception:
+            return ""
+
+    @property
+    def current_url(self) -> str:
+        return str(getattr(self.driver, "current_url", "") or "")
+
+    @property
+    def title(self) -> str:
+        return str(getattr(self.driver, "title", "") or "")
+
+    # ------------------------------------------------------------------
+    # CDP / JS
+    # ------------------------------------------------------------------
+
+    def execute_script(self, script: str, *args: Any) -> Any:
+        return self.driver.execute_script(script, *args)
+
+    def execute_cdp(self, cmd: str, params: dict[str, Any] | None = None) -> Any:
+        """Run a CDP command (e.g. ``Page.addScriptToEvaluateOnNewDocument``)."""
+        params = params or {}
+        try:
+            return self.driver.execute_cdp_cmd(cmd, params)
+        except AttributeError as e:
+            raise ConfigError("driver does not expose execute_cdp_cmd") from e
+
+    # ------------------------------------------------------------------
+    # Shutdown
+    # ------------------------------------------------------------------
+
+    def quit(self) -> None:
+        with suppress(Exception):
+            self.driver.quit()
+
+
+__all__ = [
+    "BrowserFactory",
+    "UndetectedFactory",
+    "WorkerBrowser",
+]
