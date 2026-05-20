@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+{% block body %}
+<h2>Jobs ({{ total }})</h2>
+
+<form id="jobs-filter" hx-get="/jobs" hx-target="#jobs-table" hx-swap="outerHTML" hx-trigger="change, submit">
+  <label>Min score <input name="min_score" type="number" value="{{ filters.min_score or '' }}"></label>
+  <label>Site <input name="site" value="{{ filters.site or '' }}"></label>
+  <label>Status
+    <select name="status">
+      <option value="">any</option>
+      <option value="applied" {% if filters.status == "applied" %}selected{% endif %}>applied</option>
+      <option value="failed" {% if filters.status == "failed" %}selected{% endif %}>failed</option>
+      <option value="pending" {% if filters.status == "pending" %}selected{% endif %}>pending</option>
+      <option value="paused" {% if filters.status == "paused" %}selected{% endif %}>paused</option>
+    </select>
+  </label>
+  <label>Sort
+    <select name="sort">
+      <option value="score" {% if filters.sort == "score" %}selected{% endif %}>score</option>
+      <option value="discovered_at" {% if filters.sort == "discovered_at" %}selected{% endif %}>discovered</option>
+    </select>
+  </label>
+</form>
+
+<table id="jobs-table" class="rows">
+  <thead><tr><th>Score</th><th>Title</th><th>Company</th><th>Status</th><th>Discovered</th></tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td>{{ row.fit_score or '—' }}</td>
+      <td><a href="/jobs/{{ row.id }}">{{ row.title or row.url }}</a></td>
+      <td>{{ row.site or '' }}</td>
+      <td>{{ row.apply_status or 'pending' }}</td>
+      <td>{{ row.discovered_at or '' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">no jobs match</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

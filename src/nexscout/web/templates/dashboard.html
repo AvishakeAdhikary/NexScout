@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block body %}
+<h2>Dashboard</h2>
+<section class="stats">
+  <div class="card"><h3>Total</h3><p>{{ stats.total }}</p></div>
+  <div class="card"><h3>Scored</h3><p>{{ stats.scored }}</p></div>
+  <div class="card"><h3>Applied</h3><p>{{ stats.applied }}</p></div>
+  <div class="card"><h3>Ready to apply</h3><p>{{ stats.ready_to_apply }}</p></div>
+  <div class="card"><h3>Apply errors</h3><p>{{ stats.apply_errors }}</p></div>
+</section>
+
+<h3>Score distribution</h3>
+<table class="dist">
+  {% for score, count in stats.score_distribution.items() %}
+  <tr><td>{{ score }}</td><td><div class="bar" style="width: {{ count * 10 }}px"></div> {{ count }}</td></tr>
+  {% endfor %}
+</table>
+
+<h3>OpenClaw</h3>
+<p>Last tick: {{ openclaw.last_tick or "never" }} · Channel: {{ openclaw.channel or "—" }}</p>
+
+<h3>Recent events</h3>
+<ul class="events">
+  {% for e in events %}
+  <li>[{{ e.ts }}] <strong>{{ e.kind }}</strong> {{ e.payload_json }}</li>
+  {% else %}
+  <li>(no events yet)</li>
+  {% endfor %}
+</ul>
+
+<p class="muted">As of {{ now }}.</p>
+{% endblock %}

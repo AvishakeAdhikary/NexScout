@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NexScout — {% block title %}Dashboard{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/htmx.min.js" defer></script>
+  <script src="/static/alpine.min.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <h1>NexScout</h1>
+    <nav>
+      <a href="/">Dashboard</a>
+      <a href="/jobs">Jobs</a>
+      <a href="/applications">Applications</a>
+      <a href="/questions">Questions</a>
+      <a href="/profile">Profile</a>
+    </nav>
+  </aside>
+  <main class="content">
+    {% block body %}{% endblock %}
+  </main>
+</body>
+</html>

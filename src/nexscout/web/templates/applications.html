@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Applications{% endblock %}
+{% block body %}
+<h2>Applications ({{ rows|length }})</h2>
+<p><a class="button" href="/applications/download.zip">Download all bundles (ZIP)</a></p>
+<table class="rows">
+  <thead><tr><th>Applied</th><th>Title</th><th>Company</th><th>Score</th><th>Cost</th></tr></thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td>{{ r.applied_at or '' }}</td>
+      <td><a href="/jobs/{{ r.id }}">{{ r.title }}</a></td>
+      <td>{{ r.site or '' }}</td>
+      <td>{{ r.fit_score or '' }}</td>
+      <td>${{ '%.3f'|format(r.cost_usd or 0) }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">no applications yet</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

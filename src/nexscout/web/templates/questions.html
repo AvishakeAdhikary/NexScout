@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Questions{% endblock %}
+{% block body %}
+<h2>Pending questions</h2>
+<table class="rows">
+  <thead><tr><th>Asked</th><th>Question</th><th>Job</th><th>Answer</th></tr></thead>
+  <tbody>
+    {% for r in rows %}
+    <tr>
+      <td>{{ r.asked_at }}</td>
+      <td>{{ r.question }}</td>
+      <td>{{ r.job_url or '—' }}</td>
+      <td>
+        {% if r.answered_at %}
+          <em>{{ r.answer }}</em>
+        {% else %}
+        <form method="post" action="/api/answer">
+          <input type="hidden" name="question_id" value="{{ r.id }}">
+          <input type="text" name="reply" required>
+          <button>Answer</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">no pending questions</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
