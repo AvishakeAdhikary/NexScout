@@ -163,3 +163,54 @@ def doctor() -> None:
         c.print(f"[red]Issues: {', '.join(issues)}[/red]")
         raise typer.Exit(code=1)
     c.print("[green]All green.[/green]")
+
+
+# ---------------------------------------------------------------------------
+# run / apply — early CAPTCHA gate (full pipeline lands in M7+)
+# ---------------------------------------------------------------------------
+
+
+def _ensure_captcha_configured(stage: str) -> Profile:
+    """Load the profile and refuse to proceed without ``captcha.api_key``."""
+    profile_p = profile_path()
+    if not profile_p.exists():
+        raise ConfigError(f"profile not found at {profile_p}; run `nexscout init` first")
+    profile = Profile.from_path(profile_p)
+    if not profile.captcha.api_key:
+        raise ConfigError(
+            f"`nexscout {stage}` requires profile.captcha.api_key — set CAPTCHA_API_KEY and rerun"
+        )
+    return profile
+
+
+@app.command()
+def run(
+    stages: Annotated[
+        list[str] | None,
+        typer.Argument(help="Stages: discover|enrich|score|tailor|cover|render|all"),
+    ] = None,
+) -> None:
+    """Run pipeline stages. Refuses to start without a CAPTCHA api_key."""
+    c = console()
+    try:
+        profile = _ensure_captcha_configured("run")
+    except ConfigError as e:
+        c.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1) from None
+    requested = list(stages or ())
+    c.print(f"[green]NexScout run starting[/green] (profile={profile.me.legal!r}, stages={requested or 'all'})")
+    # Full pipeline orchestration lives in pipeline.py and lands fully in M11
+    # (streaming). For M6 we only enforce the gate and exit cleanly.
+
+
+@app.command()
+def apply() -> None:
+    """Submit applications. Refuses to start without a CAPTCHA api_key."""
+    c = console()
+    try:
+        profile = _ensure_captcha_configured("apply")
+    except ConfigError as e:
+        c.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1) from None
+    c.print(f"[green]NexScout apply ready[/green] (profile={profile.me.legal!r})")
+    # The full apply orchestrator lands in M7.
