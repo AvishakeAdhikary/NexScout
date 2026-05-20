@@ -1,0 +1,44 @@
+[skill]
+name = "nexscout"
+version = "0.1.0"
+description = "Always-on autonomous job-application agent."
+homepage = "https://github.com/<owner>/NexScout"
+
+[heartbeat]
+command = "nexscout tick"
+interval_minutes = 30
+working_dir = "{{HOME}}/.nexscout"
+
+[memory]
+namespace = "nexscout"
+files = ["learned-answers.md", "learned-employers.md", "do-not-ask-again.md", "feedback.md"]
+
+[[commands]]
+name = "status"
+description = "Pipeline stats and last 5 events."
+run = "nexscout status --format=openclaw"
+
+[[commands]]
+name = "apply"
+description = "One-shot apply to a job URL."
+args = ["url"]
+run = "nexscout apply --url {{url}} --workers 1"
+
+[[commands]]
+name = "pause"
+run = "nexscout controls pause"
+
+[[commands]]
+name = "resume"
+run = "nexscout controls resume"
+
+[[commands]]
+name = "question"
+description = "List pending clarifying questions."
+run = "nexscout question list --format=openclaw"
+
+[[commands]]
+name = "answer"
+description = "Answer a pending question."
+args = ["question", "reply"]
+run = "nexscout question answer --question \"{{question}}\" --reply \"{{reply}}\""

@@ -108,3 +108,11 @@ apply:
 captcha:
   provider: capsolver
   api_key: "${env:CAPTCHA_API_KEY}"
+
+openclaw:
+  tick_budget:
+    discover_per_engine: 10
+    enrich: 20
+    score: 50
+    tailor: 5
+    apply: 3
