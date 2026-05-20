@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 
 from ..core.profile import Profile
 from ..discovery.smartextract import extract_json
+from ..llm.providers.base import Message
 from .validator import (
     BANNED_WORDS,
     FABRICATION_WATCHLIST,
@@ -257,9 +258,9 @@ def tailor_resume(
                 + "\n\n## AVOID THESE ISSUES (from previous attempt):\n- "
                 + "\n- ".join(avoid_notes)
             )
-        messages = [
-            {"role": "system", "content": sys_prompt},
-            {"role": "user", "content": user_payload},
+        messages: list[Message] = [
+            Message(role="system", content=sys_prompt),
+            Message(role="user", content=user_payload),
         ]
         try:
             raw = router.ask("tailor", messages, temperature=0.3, max_tokens=4096)

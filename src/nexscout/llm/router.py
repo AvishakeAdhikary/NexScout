@@ -102,7 +102,9 @@ def _retry_after_seconds(headers: dict[str, str]) -> float | None:
 
 
 def _backoff(attempt: int) -> float:
-    return min(BACKOFF_CAP, BACKOFF_BASE * (2 ** (attempt - 1))) + random.uniform(0, 1.0)
+    jitter = float(random.uniform(0, 1.0))
+    base: float = min(BACKOFF_CAP, BACKOFF_BASE * (2 ** (attempt - 1)))
+    return base + jitter
 
 
 class LLMRouter:

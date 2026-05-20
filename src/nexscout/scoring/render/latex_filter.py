@@ -40,7 +40,7 @@ def latex_escape(value: object) -> str:
 def currency_fmt(amount: object, currency: str = "USD") -> str:
     """Render a number as ``${amount:,}`` with the currency prefix."""
     try:
-        n = int(amount)  # type: ignore[arg-type]
+        n = int(amount)  # type: ignore[call-overload]
     except (TypeError, ValueError):
         try:
             n = int(float(amount))  # type: ignore[arg-type]

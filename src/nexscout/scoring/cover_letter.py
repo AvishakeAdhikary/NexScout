@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from ..core.profile import Profile
+from ..llm.providers.base import Message
 from .validator import (
     BANNED_WORDS,
     LLM_LEAK_PHRASES,
@@ -146,9 +147,9 @@ def write_cover_letter(
                 + "\n\n## AVOID THESE ISSUES (from previous attempt):\n- "
                 + "\n- ".join(avoid_notes)
             )
-        messages = [
-            {"role": "system", "content": sys_prompt},
-            {"role": "user", "content": user_payload},
+        messages: list[Message] = [
+            Message(role="system", content=sys_prompt),
+            Message(role="user", content=user_payload),
         ]
         try:
             raw = router.ask("cover", messages, temperature=0.4, max_tokens=1024)

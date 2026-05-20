@@ -128,7 +128,8 @@ def get_conn(path: Path | None = None) -> sqlite3.Connection:
             cached.close()
     _local.conn = _connect(p)
     _local.path = str(p)
-    return _local.conn
+    new_conn: sqlite3.Connection = _local.conn
+    return new_conn
 
 
 @contextmanager
@@ -346,7 +347,9 @@ def acquire_job(
     )
 
     with transaction(c):
-        row = c.execute(select_sql, (max_attempts, min_score, *site_params, *url_params)).fetchone()
+        row: sqlite3.Row | None = c.execute(
+            select_sql, (max_attempts, min_score, *site_params, *url_params)
+        ).fetchone()
         if row is None:
             return None
         c.execute(

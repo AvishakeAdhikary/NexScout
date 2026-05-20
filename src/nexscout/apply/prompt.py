@@ -27,8 +27,8 @@ Company: {site}
 Fit Score: {fit_score}/10
 
 == FILES ==
-Resume PDF (upload this): {resume_pdf}
-Cover Letter PDF (upload if asked): {cover_pdf}
+Resume PDF (upload this): {bundle_dir}/resume.pdf
+Cover Letter PDF (upload if asked): {bundle_dir}/cover_letter.pdf or N/A
 
 == RESUME TEXT (use when filling text fields) ==
 {tailored_resume_text}
@@ -259,14 +259,8 @@ def _display_name(profile: Profile) -> str:
     return profile.me.pref or profile.me.legal
 
 
-def _bundle_resume_pdf(bundle_dir: str | None) -> str:
-    return f"{bundle_dir}/resume.pdf" if bundle_dir else "resume.pdf"
-
-
-def _bundle_cover_pdf(bundle_dir: str | None, cover_letter_text: str | None) -> str:
-    if not cover_letter_text:
-        return "N/A"
-    return f"{bundle_dir}/cover_letter.pdf" if bundle_dir else "cover_letter.pdf"
+def _resolved_bundle_dir(bundle_dir: str | None) -> str:
+    return bundle_dir or "."
 
 
 def build_prompt(
@@ -304,7 +298,6 @@ def build_prompt(
     """
     job_url = str(job.get("application_url") or job.get("url") or "")
     cover_text = (cover_letter or "").strip() or COVER_LETTER_PLACEHOLDER.format(city=profile.me.city)
-    cover_for_files = cover_letter or None
 
     me = profile.me
     pay = profile.pay
@@ -329,8 +322,7 @@ def build_prompt(
         title=str(job.get("title") or ""),
         site=str(job.get("site") or ""),
         fit_score=int(job.get("fit_score") or 0),
-        resume_pdf=_bundle_resume_pdf(bundle_dir),
-        cover_pdf=_bundle_cover_pdf(bundle_dir, cover_for_files),
+        bundle_dir=_resolved_bundle_dir(bundle_dir),
         tailored_resume_text=(tailored_resume or "").strip(),
         cover_letter_text=cover_text,
         legal_name=me.legal,

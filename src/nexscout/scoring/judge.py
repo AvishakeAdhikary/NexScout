@@ -11,6 +11,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 from ..core.profile import Profile
+from ..llm.providers.base import Message
 
 if TYPE_CHECKING:
     from ..llm.router import LLMRouter
@@ -62,7 +63,7 @@ _VERDICT_RE = re.compile(r"VERDICT:\s*(PASS|FAIL)", re.IGNORECASE)
 _ISSUES_RE = re.compile(r"ISSUES:\s*(.+?)\Z", re.IGNORECASE | re.DOTALL)
 
 
-def build_judge_messages(profile: Profile, job: dict[str, Any], tailored_text: str) -> list[dict[str, str]]:
+def build_judge_messages(profile: Profile, job: dict[str, Any], tailored_text: str) -> list[Message]:
     """Build the system + user messages for the judge call."""
     allowed = ", ".join(profile.skills.all_skills())
     metrics = ", ".join(profile.facts.metrics)
@@ -76,8 +77,8 @@ def build_judge_messages(profile: Profile, job: dict[str, Any], tailored_text: s
         "Judge this tailored resume:"
     )
     return [
-        {"role": "system", "content": system},
-        {"role": "user", "content": user_payload},
+        Message(role="system", content=system),
+        Message(role="user", content=user_payload),
     ]
 
 

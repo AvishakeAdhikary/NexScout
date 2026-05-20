@@ -67,16 +67,17 @@ class JsonFormatter(logging.Formatter):
 def setup_logging(level: str = "INFO", json_mode: bool = False) -> None:
     """Configure root logger. Either rich console or JSON to stdout."""
     root = logging.getLogger()
-    for h in list(root.handlers):
-        root.removeHandler(h)
+    for existing in list(root.handlers):
+        root.removeHandler(existing)
 
+    handler: logging.Handler
     if json_mode:
-        h: logging.Handler = logging.StreamHandler(stream=sys.stdout)
-        h.setFormatter(JsonFormatter())
+        handler = logging.StreamHandler(stream=sys.stdout)
+        handler.setFormatter(JsonFormatter())
     else:
-        h = RichHandler(console=console(), rich_tracebacks=True, show_path=False)
+        handler = RichHandler(console=console(), rich_tracebacks=True, show_path=False)
 
-    root.addHandler(h)
+    root.addHandler(handler)
     root.setLevel(level.upper())
 
 

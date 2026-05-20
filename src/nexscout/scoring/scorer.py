@@ -14,6 +14,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from ..core.profile import Profile
+from ..llm.providers.base import Message
 from ..llm.router import LLMRouter
 
 log = logging.getLogger(__name__)
@@ -78,9 +79,9 @@ def score_job(
 
     ``reasoning`` is ``"<keywords>\\n<reasoning>"`` as specified in §5.
     """
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": _build_user_payload(profile, job)},
+    messages: list[Message] = [
+        Message(role="system", content=SYSTEM_PROMPT),
+        Message(role="user", content=_build_user_payload(profile, job)),
     ]
     try:
         text = router.ask("score", messages, temperature=temperature, max_tokens=max_tokens)

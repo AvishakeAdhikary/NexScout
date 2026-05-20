@@ -29,6 +29,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..discovery.smartextract import extract_json
+from ..llm.providers.base import Message
 from .prompt import build_prompt
 from .result_codes import (
     FAIL_NO_RESULT_LINE,
@@ -151,9 +152,9 @@ def run_agent(
 
     tool_specs = get_tool_specs()
     user_kickoff = _kickoff_message(job)
-    messages: list[dict[str, str]] = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_kickoff},
+    messages: list[Message] = [
+        Message(role="system", content=system_prompt),
+        Message(role="user", content=user_kickoff),
     ]
 
     captcha_solved = False
@@ -171,7 +172,7 @@ def run_agent(
             break
 
         append_transcript(bundle_dir, {"step": step, "kind": "llm", "reply": reply})
-        messages.append({"role": "assistant", "content": reply})
+        messages.append(Message(role="assistant", content=reply))
 
         tool_call, result_line = parse_llm_reply(reply)
 
@@ -183,14 +184,14 @@ def run_agent(
 
         if tool_call is None:
             messages.append(
-                {
-                    "role": "user",
-                    "content": (
+                Message(
+                    role="user",
+                    content=(
                         "Reply could not be parsed. Emit either a JSON object "
                         '{"tool":"…","args":{…}} or a RESULT:<CODE>[:reason] '
                         f"line. Tools available: {', '.join(spec['name'] for spec in tool_specs)}."
                     ),
-                }
+                )
             )
             continue
 
@@ -224,13 +225,13 @@ def run_agent(
 
         # Feed the tool output back to the LLM.
         messages.append(
-            {
-                "role": "user",
-                "content": json.dumps(
+            Message(
+                role="user",
+                content=json.dumps(
                     {"tool": name, "ok": outcome.ok, "data": outcome.to_jsonable().get("data"), "error": outcome.error},
                     default=str,
                 ),
-            }
+            )
         )
 
     else:  # for/else — exhausted iterations without break

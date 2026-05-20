@@ -69,8 +69,7 @@ def test_build_prompt_is_byte_equal_to_template_for_fixed_input() -> None:
         title="Staff Engineer",
         site="ExampleCo",
         fit_score=9,
-        resume_pdf="/var/data/applications/000123/resume.pdf",
-        cover_pdf="/var/data/applications/000123/cover_letter.pdf",
+        bundle_dir="/var/data/applications/000123",
         tailored_resume_text="JANE Q. PUBLIC\nStaff Engineer\njane@example.com",
         cover_letter_text="Dear Hiring Manager,\nI built things.\nJane",
         legal_name="Jane Q. Public",
@@ -126,7 +125,8 @@ def test_build_prompt_substitutes_profile_fields() -> None:
     assert "Email: jane@example.com" in out
     assert "Sponsorship Needed: No" in out
     assert "$165000 USD is the FLOOR" in out
-    assert "Cover Letter PDF (upload if asked): N/A" in out
+    # Verbatim §13.4 path + the literal " or N/A" hint from the template.
+    assert "cover_letter.pdf or N/A" in out
 
 
 def test_auth_rule_with_sponsor() -> None:
