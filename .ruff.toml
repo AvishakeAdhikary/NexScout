@@ -1,0 +1,13 @@
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RET", "PL", "RUF"]
+ignore = [
+  "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004",
+  "RUF001", "RUF002", "RUF003",
+  "PLC0415", "PLW0603",
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]

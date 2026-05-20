@@ -1,0 +1,88 @@
+[project]
+name = "nexscout"
+version = "0.1.0"
+description = "Always-on, autonomous job-application agent."
+readme = "README.md"
+license = "AGPL-3.0-only"
+requires-python = ">=3.11"
+authors = [{name = "NexScout Authors"}]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+  "typer>=0.9",
+  "rich>=13",
+  "pydantic>=2.5",
+  "pydantic-settings>=2.0",
+  "pyyaml>=6.0",
+  "httpx>=0.27",
+  "beautifulsoup4>=4.12",
+  "lxml>=5.0",
+  "undetected-chromedriver>=3.5",
+  "selenium>=4.21",
+  "jinja2>=3.1",
+  "fastapi>=0.110",
+  "uvicorn>=0.27",
+  "python-multipart>=0.0.9",
+  "passlib[bcrypt]>=1.7",
+  "itsdangerous>=2.2",
+  "anthropic>=0.34",
+  "openai>=1.30",
+  "google-generativeai>=0.7",
+  "ollama>=0.3",
+  "pandas>=2.0",
+  "playwright>=1.40",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "pytest-cov>=4", "ruff>=0.5", "mypy>=1.10", "pre-commit>=3", "types-PyYAML"]
+web = []
+openclaw = []
+
+[project.scripts]
+nexscout = "nexscout.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nexscout"]
+
+[tool.hatch.build]
+artifacts = [
+  "src/nexscout/scoring/render/templates/*.j2",
+  "src/nexscout/openclaw/manifest.toml",
+  "src/nexscout/discovery/employers.yaml",
+  "src/nexscout/discovery/sites.yaml",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E","F","W","I","UP","B","SIM","RET","PL","RUF"]
+ignore = [
+  # Stylistic Pylint refactor rules that fight legitimate domain code.
+  "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004",
+  # Ambiguous unicode in domain text (Unicode chars are deliberate in prompts/validator).
+  "RUF001", "RUF002", "RUF003",
+  # Module-level lazy imports keep CLI fast; module-level globals are intentional for caches.
+  "PLC0415", "PLW0603",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
