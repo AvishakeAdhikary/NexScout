@@ -1,0 +1,72 @@
+# Skip these ATS hosts during apply — unsolvable CAPTCHAs.
+manual_ats:
+  - "ibegin.tcsapps.com"
+
+blocked:
+  sites: [glassdoor, google, accenture, AccentureCareers, Workopolis]
+  url_patterns:
+    - "%glassdoor%"
+    - "%google.com/about/careers%"
+    - "%google.jobs%"
+    - "%accenture%"
+    - "%workopolis.com/out%"
+
+blocked_sso:
+  - accounts.google.com
+  - login.microsoftonline.com
+  - okta.com
+  - auth0.com
+  - sso.cisco.com
+
+# Used by enrichment to resolve relative URLs.
+base_urls:
+  "Job Bank Canada":   "https://www.jobbank.gc.ca"
+  "CareerJet Canada":  "https://www.careerjet.ca"
+  "BuiltIn Remote":    "https://builtin.com"
+  "Hacker News Jobs":  "https://news.ycombinator.com/"
+  "Workopolis":        "https://www.workopolis.com"
+  "WeWorkRemotely":    "https://weworkremotely.com"
+  "Startup.jobs":      "https://startup.jobs"
+  "Nodesk":            "https://nodesk.co"
+  "Talent.com":        "https://www.talent.com"
+  "JustRemote":        "https://justremote.co"
+  "Arc.dev":           "https://arc.dev"
+  "Himalayas":         "https://himalayas.app"
+  "Techstars Jobs":    "https://www.techstars.com"
+  "Randstad Canada":   "https://www.randstad.ca/jobs/search/"
+
+# Scrape targets. {query_encoded} / {location_encoded} are URL-encoded.
+sites:
+  # Searchable
+  - {name: "Eluta",              type: search, url: "https://www.eluta.ca/search?q={query_encoded}&l={location_encoded}"}
+  - {name: "Talent.com",         type: search, url: "https://www.talent.com/jobs?k={query_encoded}&l={location_encoded}"}
+  - {name: "Randstad Canada",    type: search, url: "https://www.randstad.ca/jobs/?keywords={query_encoded}&location={location_encoded}"}
+  - {name: "CareerJet Canada",   type: search, url: "https://www.careerjet.ca/search/jobs?s={query_encoded}&l={location_encoded}"}
+  - {name: "Job Bank Canada",    type: search, url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring={query_encoded}&locationstring={location_encoded}&fage=2&sort=D"}
+  - {name: "Dice",               type: search, url: "https://www.dice.com/jobs?q={query_encoded}&location=Remote&pageSize=100"}
+  - {name: "SimplyHired",        type: search, url: "https://www.simplyhired.com/search?q={query_encoded}&l={location_encoded}"}
+  - {name: "PowerToFly",         type: search, url: "https://powertofly.com/jobs/?keywords={query_encoded}&remote=true"}
+  - {name: "Techstars Jobs",     type: search, url: "https://jobs.techstars.com/jobs?keywords={query_encoded}"}
+  - {name: "Startup.jobs",       type: search, url: "https://startup.jobs/?q={query_encoded}&remote=true"}
+  - {name: "WelcomeToTheJungle", type: search, url: "https://www.welcometothejungle.com/en/jobs?query={query_encoded}&refinementList%5Bremote%5D%5B%5D=fulltime"}
+  - {name: "Otta",               type: search, url: "https://otta.com/jobs/all?title=software+engineer&remote=true"}
+
+  # Static
+  - {name: "RemoteOK",       type: static, url: "https://remoteok.com/remote-dev-jobs"}
+  - {name: "WeWorkRemotely", type: static, url: "https://weworkremotely.com/categories/remote-programming-jobs"}
+  - {name: "Remotive",       type: static, url: "https://remotive.com/remote-jobs/software-dev"}
+  - {name: "JustRemote",     type: static, url: "https://justremote.co/remote-developer-jobs"}
+  - {name: "Himalayas",      type: static, url: "https://himalayas.app/jobs/developer"}
+  - {name: "Working Nomads", type: static, url: "https://www.workingnomads.com/jobs?category=development"}
+  - {name: "Remote.co",      type: static, url: "https://remote.co/remote-jobs/developer/"}
+  - {name: "Nodesk",         type: static, url: "https://nodesk.co/remote-jobs/"}
+  - {name: "DynamiteJobs",   type: static, url: "https://dynamitejobs.com/category/remote-development-jobs"}
+  - {name: "4DayWeek",       type: static, url: "https://4dayweek.io/remote-jobs/software-engineer"}
+  - {name: "Hacker News Jobs", type: static, url: "https://news.ycombinator.com/jobs"}
+  - {name: "BuiltIn Remote",   type: static, url: "https://builtin.com/jobs/remote/dev-engineering"}
+  - {name: "Wellfound",        type: static, url: "https://wellfound.com/role/l/software-engineer/canada"}
+  - {name: "Arc.dev",          type: static, url: "https://arc.dev/remote-jobs/developer"}
+  - {name: "Jobgether",        type: static, url: "https://jobgether.com/remote-jobs/software-engineer"}
+  - {name: "TopStartups",      type: static, url: "https://topstartups.io/jobs/?job_location=Remote"}
+  - {name: "Jobspresso",       type: static, url: "https://jobspresso.co/remote-work/remote-software-development/"}
+  - {name: "FlexJobs",         type: static, url: "https://www.flexjobs.com/remote-jobs/computer-it"}
