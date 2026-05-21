@@ -177,16 +177,28 @@ def run(
 
 def _stage_discover(profile: Profile, conn: sqlite3.Connection, per_engine_limit: int) -> int:
     """Pull at most ``per_engine_limit`` jobs per discovery engine."""
-    # Discovery requires network + 3rd-party SDKs; in a tick we no-op when the
-    # imports/credentials aren't present. This keeps the heartbeat safe on a
-    # fresh box.
-    _ = profile, conn, per_engine_limit
+    from ..llm.budget import BudgetLedger
+    from ..llm.router import LLMRouter
+    from ..pipeline import run_discover_stage
+
+    router: LLMRouter | None
     try:
-        from ..discovery import jobspy as _jobspy_mod
-    except ImportError:
-        return 0
-    _ = _jobspy_mod
-    return 0
+        router = LLMRouter(
+            profile,
+            budget=BudgetLedger(
+                monthly_usd=profile.llm.budgets.monthly_usd,
+                daily_calls=profile.llm.budgets.daily_calls,
+            ),
+        )
+    except Exception as e:
+        log.warning("tick: cannot build router for discover (%s); running without smartextract", e)
+        router = None
+    return run_discover_stage(
+        conn=conn,
+        profile=profile,
+        router=router,
+        limit_per_engine=per_engine_limit,
+    )
 
 
 def _stage_enrich(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
@@ -194,16 +206,37 @@ def _stage_enrich(profile: Profile, conn: sqlite3.Connection, limit: int) -> int
 
     Returns the number of jobs that got a ``full_description`` written.
     """
-    _ = profile
-    pending = conn.execute(
-        "SELECT COUNT(*) AS n FROM jobs WHERE detail_scraped_at IS NULL "
-        "AND site NOT IN ('glassdoor','google','Workopolis')"
-    ).fetchone()
-    if not pending or int(pending["n"]) == 0:
+    from ..llm.budget import BudgetLedger
+    from ..llm.router import LLMRouter
+    from ..pipeline import run_enrich_stage
+
+    try:
+        from ..browser.driver import UndetectedFactory
+
+        factory = UndetectedFactory()
+    except Exception as e:
+        log.info("tick: no browser available for enrich (%s); skipping", e)
         return 0
-    # Without a real browser we can't enrich here. The pipeline does this from
-    # ``nexscout run``; the tick just reports how many would be eligible.
-    return min(int(pending["n"]), limit)
+
+    try:
+        router: LLMRouter | None = LLMRouter(
+            profile,
+            budget=BudgetLedger(
+                monthly_usd=profile.llm.budgets.monthly_usd,
+                daily_calls=profile.llm.budgets.daily_calls,
+            ),
+        )
+    except Exception as e:
+        log.warning("tick: cannot build router for enrich (%s)", e)
+        router = None
+
+    return run_enrich_stage(
+        conn=conn,
+        profile=profile,
+        router=router,
+        browser_factory=factory,
+        limit=limit,
+    )
 
 
 def _stage_score(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
@@ -244,20 +277,70 @@ def _stage_render(profile: Profile, conn: sqlite3.Connection) -> int:
 
 
 def _stage_apply(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
-    """Stub apply stage that just counts how many are eligible.
+    """Apply to at most ``limit`` eligible jobs using a single-worker browser pool.
 
-    The real apply path requires a browser pool + CAPTCHA solver and is
-    triggered by ``nexscout apply`` directly. Inside a tick we surface the
-    count so OpenClaw can notify the user; running a browser pool here would
-    risk blowing past the 5-minute soft cap.
+    The whole stack (browser pool, CAPTCHA solver, LLM router) is imported
+    lazily so a tick on a host without these dependencies just logs and
+    returns 0 rather than crashing.
     """
-    _ = profile
     eligible = conn.execute(
         "SELECT COUNT(*) AS n FROM jobs WHERE tailored_resume_path IS NOT NULL "
         "AND (apply_status IS NULL OR apply_status='failed') "
         "AND (apply_attempts IS NULL OR apply_attempts < 99)"
     ).fetchone()
-    return min(int(eligible["n"]) if eligible else 0, limit)
+    if not eligible or int(eligible["n"]) == 0:
+        return 0
+
+    try:
+        from ..apply.orchestrator import worker_loop
+        from ..browser.pool import BrowserPool
+        from ..captcha.capsolver import CapSolverSolver
+        from ..llm.budget import BudgetLedger
+        from ..llm.router import LLMRouter
+    except ImportError as e:
+        log.info("tick: apply backend unavailable (%s); skipping", e)
+        return 0
+
+    solver = CapSolverSolver(api_key=profile.captcha.api_key) if profile.captcha.api_key else None
+
+    try:
+        router = LLMRouter(
+            profile,
+            budget=BudgetLedger(
+                monthly_usd=profile.llm.budgets.monthly_usd,
+                daily_calls=profile.llm.budgets.daily_calls,
+            ),
+        )
+    except Exception as e:
+        log.warning("tick: cannot build router for apply (%s)", e)
+        return 0
+
+    try:
+        pool = BrowserPool(workers=1, headless=True)
+    except Exception as e:
+        log.info("tick: no browser pool available for apply (%s); skipping", e)
+        return 0
+
+    try:
+        return worker_loop(
+            0,
+            profile,
+            conn,
+            solver,
+            router,
+            pool=pool,
+            limit=limit,
+            dry_run=profile.apply.dry_run,
+            continuous=False,
+        )
+    except Exception as e:
+        log.warning("tick: apply worker_loop crashed (%s)", e)
+        return 0
+    finally:
+        from contextlib import suppress
+
+        with suppress(Exception):
+            pool.close_all()
 
 
 def _stage_surface_questions(profile: Profile, conn: sqlite3.Connection) -> int:
