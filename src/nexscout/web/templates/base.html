@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NexScout — {% block title %}Dashboard{% endblock %}</title>
   <link rel="stylesheet" href="/static/app.css">
-  <script src="/static/htmx.min.js" defer></script>
-  <script src="/static/alpine.min.js" defer></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"
+          integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
+          crossorigin="anonymous"></script>
+  <script defer
+          src="https://unpkg.com/alpinejs@3.13.7/dist/cdn.min.js"
+          integrity="sha384-/MWB2BkpguN3yV2pNuRIRyf21yYsr/v9oC1HQCwy7Imd4VRGEbDvFTQQDvR2RbVL"
+          crossorigin="anonymous"></script>
 </head>
 <body>
   <aside class="sidebar">
