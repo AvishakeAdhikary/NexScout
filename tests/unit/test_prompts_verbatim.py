@@ -1,22 +1,24 @@
-"""Verbatim audit of the six §-pinned prompts against plan.md.
+"""Strict 1:1 placeholder-mapping verbatim audit (Task-6).
 
-Approach: read the relevant fenced block from plan.md, strip any `{...}`
-placeholder so we don't have to chase Jinja-vs-Python notation differences,
-and assert the non-placeholder text matches the in-code constant the same
-way. "Verbatim" therefore means *every byte outside a `{}` placeholder is
-identical*; the placeholders themselves can differ in spelling because both
-the plan and the code use them only as named substitution points.
+The earlier ``test_prompts_verbatim_loose.py`` strips every ``{...}`` token
+from both texts before comparing. That catches surrounding-text drift but
+**not** silent placeholder renames.
 
-Tests covered:
+This module is the strict variant:
 
-* §8.3  — SmartExtract  judge  (lines 597-616)
-* §8.3  — SmartExtract  strategy  (lines 622-669)
-* §8.3  — SmartExtract  selector  (lines 677-708)
-* §9    — Enrichment    Tier 3  (lines 781-807)
-* §10   — Scorer  (lines 829-851)
-* §11   — Tailor system prompt  (lines 882-942)
-* §12.2 — Cover letter  (lines 1063-1102)
-* §13.4 — Apply agent system prompt  (lines 1228-1408)
+1. Parse placeholders from both the plan slice and the in-code template
+   using the **tight** pattern ``\\{[a-zA-Z_.][\\w.\\[\\]| ]*\\}`` (JSON
+   literals like ``{"key": …}`` do not match — they start with a quote).
+2. Walk the placeholders in order, applying a documented mapping table
+   (``{plan_placeholder: code_placeholder}``) per prompt.
+3. Rewrite every code placeholder to its mapped plan placeholder.
+4. Assert byte-equality between the rewritten code template and the plan
+   slice — modulo the ``{...}`` JSON literal placeholders (still stripped),
+   leading/trailing whitespace, and any explicitly-allowed NexScout-only
+   additions (CAPTCHA_MANUAL hard rule in §13.4).
+
+Adding a new prompt: extend the per-prompt mapping table below. Documented
+in ``docs/developer-guide.md``.
 """
 
 from __future__ import annotations
@@ -30,56 +32,27 @@ PLAN_PATH = Path(__file__).resolve().parents[2] / "plan.md"
 PLAN_TEXT = PLAN_PATH.read_text(encoding="utf-8")
 PLAN_LINES = PLAN_TEXT.splitlines()
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+# Tight placeholder regex — matches identifiers, dotted attributes, bracketed
+# indices, pipe-filters, ``or``/space separators, and the two free-form
+# helper expressions used in §13.4: ``{digits_only(phone)}`` and
+# ``{today MM/DD/YYYY}``. **Does not** match JSON literals (those start with
+# ``"`` or ``[`` after the opening brace).
+PLACEHOLDER_RE = re.compile(r"\{[a-zA-Z_.][\w.\[\]|/()  ]*\}")
 
-_PLACEHOLDER_RE = re.compile(r"\{[^{}]*\}", re.DOTALL)
+# Looser regex for the still-stripped JSON literals + any *other* curly-brace
+# content (e.g. ``{today MM/DD/YYYY}`` is matched by the tight RE; multi-line
+# JSON blobs are not).
+_JSON_LITERAL_RE = re.compile(r"\{[^{}]*\}", re.DOTALL)
 _DOUBLE_BRACE_RE = re.compile(r"\{\{|\}\}")
 
 
-def _strip_placeholders(text: str, *, collapse_doubles: bool = False) -> str:
-    """Normalise away every `{...}` substitution token.
-
-    Drops trailing whitespace per line and the final trailing newline so the
-    plan and the code-string compare cleanly.
-
-    ``collapse_doubles`` should be True for *code* templates that use Python
-    `str.format` escape doubling (`{{` / `}}`); the plan never doubles, so it
-    must be False for plan slices.
-    """
-    if collapse_doubles:
-        text = _DOUBLE_BRACE_RE.sub(lambda m: "{" if m.group(0) == "{{" else "}", text)
-    # Iteratively erase every innermost `{...}` placeholder until none remain.
-    # This handles nested JSON literals like `{"_source":{"Title":"…"}}`
-    # uniformly in both plan and code, by stripping the inner brace pair first
-    # and the outer pair on the next iteration.
-    while True:
-        new_text = _PLACEHOLDER_RE.sub("", text)
-        if new_text == text:
-            break
-        text = new_text
-    return "\n".join(line.rstrip() for line in text.splitlines()).rstrip()
-
-
-def _equal(code_template: str, plan_block: str) -> bool:
-    return _strip_placeholders(code_template, collapse_doubles=True) == _strip_placeholders(plan_block)
-
-
-def _slice_fenced_block(start_line: int, end_line: int) -> str:
-    """Return the text inside a fenced block.
-
-    `start_line` is the line number of the opening ```` ``` ```` (1-indexed).
-    `end_line` is the line number of the closing fence. Returns the content
-    *between* them.
-    """
-    return "\n".join(PLAN_LINES[start_line:end_line - 1])
+# ---------------------------------------------------------------------------
+# Plan slicing helpers (copy of the loose-variant helpers — kept local so
+# the two test files don't import each other).
+# ---------------------------------------------------------------------------
 
 
 def _find_fence(starting_text: str) -> tuple[int, int]:
-    """Locate the fenced code block whose first non-fence line starts with
-    `starting_text` and return (open_fence_lineno_0idx, close_fence_lineno_0idx).
-    """
     open_idx = -1
     for i, line in enumerate(PLAN_LINES):
         if (
@@ -104,86 +77,341 @@ def _fenced_block_starting_with(starting_text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# §8.3 SmartExtract prompts
+# Strict-mapping comparator
 # ---------------------------------------------------------------------------
 
 
-def test_smartextract_judge_prompt_verbatim() -> None:
+def _strip_all_braces(text: str) -> str:
+    """Iteratively remove every ``{...}`` block from ``text``.
+
+    The strict-mapping walk verifies placeholder identity / order; the
+    byte-equality pass that follows just needs to confirm the *surrounding*
+    text matches, so both JSON literals and rewritten placeholders are
+    stripped uniformly.
+    """
+    while True:
+        new_text = _JSON_LITERAL_RE.sub("", text)
+        if new_text == text:
+            break
+        text = new_text
+    return text
+
+
+def _normalise(text: str) -> str:
+    return "\n".join(line.rstrip() for line in text.splitlines()).rstrip()
+
+
+def _collapse_double_braces(text: str) -> str:
+    return _DOUBLE_BRACE_RE.sub(lambda m: "{" if m.group(0) == "{{" else "}", text)
+
+
+#: A mapping is either a *flat* ``dict[str, str]`` (one plan-name → one
+#: code-name everywhere it appears) or a *positional* ``list[tuple[str, str]]``
+#: when the same plan name must map differently at different positions
+#: (e.g. ``{city}`` in §13.4 sometimes corresponds to ``{cover_letter_text}``
+#: when it sits inside a cover-letter fallback literal).
+Mapping = dict[str, str] | list[tuple[str, str]]
+
+
+def _resolve_mapping_at(mapping: Mapping, plan_ph: str, position: int) -> str | None:
+    if isinstance(mapping, dict):
+        return mapping.get(plan_ph)
+    if 0 <= position < len(mapping):
+        expected_plan, expected_code = mapping[position]
+        if expected_plan != plan_ph:
+            return None
+        return expected_code
+    return None
+
+
+def _walk_placeholders_in_order_match(
+    *, code_template: str, plan_block: str, mapping: Mapping
+) -> tuple[bool, str]:
+    """Verify plan placeholders appear in the documented order and map to code."""
+    code = _collapse_double_braces(code_template)
+    code_phs = PLACEHOLDER_RE.findall(code)
+    plan_phs = PLACEHOLDER_RE.findall(plan_block)
+
+    if len(code_phs) != len(plan_phs):
+        return False, f"placeholder count differs: code={len(code_phs)} plan={len(plan_phs)}"
+
+    for i, (plan_ph, code_ph) in enumerate(zip(plan_phs, code_phs, strict=True)):
+        expected_code = _resolve_mapping_at(mapping, plan_ph, i)
+        if expected_code is None:
+            return False, f"plan placeholder {plan_ph!r} at position {i} is not in the mapping table"
+        if expected_code != code_ph:
+            return False, (
+                f"placeholder #{i}: plan {plan_ph!r} mapped to {expected_code!r} but code has {code_ph!r}"
+            )
+    return True, "ok"
+
+
+def _strict_equal(
+    *,
+    code_template: str,
+    plan_block: str,
+    mapping: Mapping,
+    pre_strip_code: str | None = None,
+) -> tuple[bool, str]:
+    """Return ``(ok, diagnostic)``. The code template is rewritten so its
+    placeholders carry the plan-side names; after rewrite **every byte
+    outside JSON literals must match**.
+
+    For positional mappings the substitution honours order — only the n-th
+    occurrence of the code placeholder is rewritten.
+    """
+    code = _collapse_double_braces(code_template)
+    if pre_strip_code is not None:
+        code = pre_strip_code
+
+    if isinstance(mapping, dict):
+        reverse = {code_name: plan_name for plan_name, code_name in mapping.items()}
+        for code_ph, plan_ph in reverse.items():
+            code = code.replace(code_ph, plan_ph)
+    else:
+        # Positional rewrite — walk code placeholders in order, replace
+        # exactly the n-th match with its mapped plan name.
+        new_parts: list[str] = []
+        last = 0
+        for i, m in enumerate(PLACEHOLDER_RE.finditer(code)):
+            new_parts.append(code[last : m.start()])
+            if i < len(mapping):
+                expected_plan, expected_code = mapping[i]
+                if m.group(0) == expected_code:
+                    new_parts.append(expected_plan)
+                else:
+                    new_parts.append(m.group(0))
+            else:
+                new_parts.append(m.group(0))
+            last = m.end()
+        new_parts.append(code[last:])
+        code = "".join(new_parts)
+
+    code_clean = _normalise(_strip_all_braces(code))
+    plan_clean = _normalise(_strip_all_braces(plan_block))
+
+    if code_clean == plan_clean:
+        return True, "ok"
+
+    for i, (a, b) in enumerate(zip(code_clean, plan_clean, strict=False)):
+        if a != b:
+            ctx_a = code_clean[max(0, i - 30) : i + 30]
+            ctx_b = plan_clean[max(0, i - 30) : i + 30]
+            return False, f"diverged at byte {i}: code={ctx_a!r} plan={ctx_b!r}"
+    return False, f"length mismatch code={len(code_clean)} plan={len(plan_clean)}"
+
+
+# ---------------------------------------------------------------------------
+# Per-prompt placeholder mapping tables
+# ---------------------------------------------------------------------------
+
+
+JUDGE_MAPPING: dict[str, str] = {
+    "{url}": "{url}",
+    "{status}": "{status}",
+    "{size}": "{size}",
+    "{type}": "{type}",
+    "{fields}": "{fields}",
+    "{sample}": "{sample}",
+}
+
+STRATEGY_MAPPING: dict[str, str] = {
+    "{briefing}": "{briefing}",
+}
+
+SELECTOR_MAPPING: dict[str, str] = {
+    "{page_html}": "{page_html}",
+}
+
+ENRICHMENT_MAPPING: dict[str, str] = {
+    "{url}": "{url}",
+    "{title}": "{title}",
+    "{content}": "{content}",
+}
+
+SCORER_MAPPING: dict[str, str] = {}
+
+TAILOR_MAPPING: dict[str, str] = {
+    "{profile.skills.lang | join}": "{languages}",
+    "{profile.skills.fw | join}": "{frameworks}",
+    "{profile.skills.infra | join}": "{infra}",
+    "{profile.skills.data | join}": "{data}",
+    "{profile.skills.tools | join}": "{tools}",
+    "{BANNED_WORDS | join}": "{banned_words}",
+    "{profile.facts.metrics | join}": "{metrics}",
+    "{profile.facts.companies | join}": "{companies}",
+    "{profile.facts.school}": "{school}",
+    "{profile.exp.edu}": "{education}",
+}
+
+COVER_MAPPING: dict[str, str] = {
+    "{profile.me.pref}": "{pref}",
+    "{profile.facts.projects | join}": "{projects}",
+    "{profile.facts.metrics | join}": "{metrics}",
+    "{BANNED_WORDS | join}": "{banned_words}",
+    "{LLM_LEAK_PHRASES | join}": "{leak_phrases}",
+    "{all_skills | join}": "{all_skills}",
+}
+
+# §13.4 uses positional mapping because:
+#   1. ``{cover_letter_text or "…{city}."}`` — the plan's tight regex only
+#      catches the inner ``{city}`` (the outer literal spans lines and has
+#      quotes), but the code condensed both into one ``{cover_letter_text}``
+#      placeholder.
+#   2. ``{city}`` later appears multiple times verbatim in the APPLICANT
+#      PROFILE block where it does map to ``{city}`` literally.
+APPLY_MAPPING: list[tuple[str, str]] = [
+    ("{application_url or url}", "{job_url}"),
+    ("{title}", "{title}"),
+    ("{site}", "{site}"),
+    ("{fit_score}", "{fit_score}"),
+    ("{bundle_dir}", "{bundle_dir}"),
+    ("{bundle_dir}", "{bundle_dir}"),
+    ("{tailored_resume_text}", "{tailored_resume_text}"),
+    # Plan's tight regex catches `{city}` inside the cover-letter fallback;
+    # code condensed it into `{cover_letter_text}`. Documented mismatch.
+    ("{city}", "{cover_letter_text}"),
+    ("{me.legal}", "{legal_name}"),
+    ("{me.email}", "{email}"),
+    ("{me.phone}", "{phone}"),
+    ("{address}", "{address}"),
+    ("{city}", "{city}"),
+    ("{region}", "{region}"),
+    ("{country}", "{country}"),
+    ("{postcode}", "{postcode}"),
+    ("{links.li}", "{linkedin}"),
+    ("{links.gh}", "{github}"),
+    ("{links.portfolio}", "{portfolio}"),
+    ("{links.web}", "{website}"),
+    ("{auth.authorized}", "{work_auth}"),
+    ("{auth.sponsor}", "{sponsor}"),
+    ("{auth.permit}", "{permit}"),
+    ("{pay.expect}", "{salary_expect}"),
+    ("{pay.currency}", "{currency}"),
+    ("{exp.years}", "{years}"),
+    ("{exp.edu}", "{education}"),
+    ("{avail.start}", "{available}"),
+    ("{eeo.gender}", "{eeo_gender}"),
+    ("{eeo.race}", "{eeo_race}"),
+    ("{eeo.veteran}", "{eeo_veteran}"),
+    ("{eeo.disability}", "{eeo_disability}"),
+    ("{auth_rule}", "{auth_rule}"),
+    ("{me.legal}", "{legal_name}"),
+    ("{me.pref}", "{pref_name}"),
+    ("{me.pref}", "{pref_name}"),
+    ("{last_name}", "{last_name}"),
+    ("{accept_cities}", "{accept_cities}"),
+    ("{pay.expect}", "{salary_expect}"),
+    ("{pay.currency}", "{currency}"),
+    ("{currency}", "{currency}"),
+    ("{pay.expect}", "{salary_expect}"),
+    ("{pay.currency}", "{currency}"),
+    ("{pay.range[0]}", "{salary_low}"),
+    ("{pay.range[1]}", "{salary_high}"),
+    ("{currency}", "{currency}"),
+    ("{target_title}", "{target_title}"),
+    ("{exp.years}", "{years}"),
+    ("{title}", "{title}"),
+    ("{display_name}", "{display_name}"),
+    ("{me.email}", "{email}"),
+    ("{profile.password}", "{password}"),
+    ("{digits_only(phone)}", "{phone_digits}"),
+    ("{today MM/DD/YYYY}", "{today_us}"),
+]
+
+
+# ---------------------------------------------------------------------------
+# Strict tests
+# ---------------------------------------------------------------------------
+
+
+def test_smartextract_judge_prompt_strict() -> None:
     from nexscout.discovery.smartextract import JUDGE_PROMPT
 
-    plan_block = _fenced_block_starting_with("You are filtering intercepted API")
-    assert _equal(JUDGE_PROMPT, plan_block), "SmartExtract JUDGE prompt drifted from §8.3"
+    plan = _fenced_block_starting_with("You are filtering intercepted API")
+    ok, diag = _strict_equal(code_template=JUDGE_PROMPT, plan_block=plan, mapping=JUDGE_MAPPING)
+    assert ok, f"JUDGE prompt: {diag}"
 
 
-def test_smartextract_strategy_prompt_verbatim() -> None:
+def test_smartextract_strategy_prompt_strict() -> None:
     from nexscout.discovery.smartextract import STRATEGY_PROMPT
 
-    plan_block = _fenced_block_starting_with("You are analyzing a job listings page to pick")
-    assert _equal(STRATEGY_PROMPT, plan_block), "SmartExtract STRATEGY prompt drifted from §8.3"
+    plan = _fenced_block_starting_with("You are analyzing a job listings page to pick")
+    ok, diag = _strict_equal(code_template=STRATEGY_PROMPT, plan_block=plan, mapping=STRATEGY_MAPPING)
+    assert ok, f"STRATEGY prompt: {diag}"
 
 
-def test_smartextract_selector_prompt_verbatim() -> None:
+def test_smartextract_selector_prompt_strict() -> None:
     from nexscout.discovery.smartextract import SELECTOR_PROMPT
 
-    plan_block = _fenced_block_starting_with("You are a senior web scraping engineer")
-    assert _equal(SELECTOR_PROMPT, plan_block), "SmartExtract SELECTOR prompt drifted from §8.3"
+    plan = _fenced_block_starting_with("You are a senior web scraping engineer")
+    ok, diag = _strict_equal(code_template=SELECTOR_PROMPT, plan_block=plan, mapping=SELECTOR_MAPPING)
+    assert ok, f"SELECTOR prompt: {diag}"
 
 
-# ---------------------------------------------------------------------------
-# §9 Enrichment Tier 3 prompt
-# ---------------------------------------------------------------------------
-
-
-def test_enrichment_llm_prompt_verbatim() -> None:
+def test_enrichment_llm_prompt_strict() -> None:
     from nexscout.enrichment.detail import LLM_PROMPT
 
-    plan_block = _fenced_block_starting_with("You are extracting job details from a single")
-    assert _equal(LLM_PROMPT, plan_block), "Enrichment Tier 3 LLM prompt drifted from §9"
+    plan = _fenced_block_starting_with("You are extracting job details from a single")
+    ok, diag = _strict_equal(code_template=LLM_PROMPT, plan_block=plan, mapping=ENRICHMENT_MAPPING)
+    assert ok, f"Enrichment LLM prompt: {diag}"
 
 
-# ---------------------------------------------------------------------------
-# §10 Scorer
-# ---------------------------------------------------------------------------
-
-
-def test_scorer_system_prompt_verbatim() -> None:
+def test_scorer_system_prompt_strict() -> None:
     from nexscout.scoring.scorer import SYSTEM_PROMPT
 
-    plan_block = _fenced_block_starting_with("You are a job fit evaluator")
-    assert _equal(SYSTEM_PROMPT, plan_block), "Scorer SYSTEM_PROMPT drifted from §10"
+    plan = _fenced_block_starting_with("You are a job fit evaluator")
+    ok, diag = _strict_equal(code_template=SYSTEM_PROMPT, plan_block=plan, mapping=SCORER_MAPPING)
+    assert ok, f"Scorer SYSTEM_PROMPT: {diag}"
 
 
-# ---------------------------------------------------------------------------
-# §11 Tailor
-# ---------------------------------------------------------------------------
-
-
-def test_tailor_system_prompt_verbatim() -> None:
+def test_tailor_system_prompt_strict() -> None:
     from nexscout.scoring.tailor import SYSTEM_PROMPT_TEMPLATE
 
-    plan_block = _fenced_block_starting_with("You are a senior technical recruiter")
-    assert _equal(SYSTEM_PROMPT_TEMPLATE, plan_block), "Tailor SYSTEM_PROMPT_TEMPLATE drifted from §11"
+    plan = _fenced_block_starting_with("You are a senior technical recruiter")
+    ok, diag = _walk_placeholders_in_order_match(
+        code_template=SYSTEM_PROMPT_TEMPLATE, plan_block=plan, mapping=TAILOR_MAPPING
+    )
+    assert ok, f"Tailor placeholder order: {diag}"
+    ok, diag = _strict_equal(code_template=SYSTEM_PROMPT_TEMPLATE, plan_block=plan, mapping=TAILOR_MAPPING)
+    assert ok, f"Tailor SYSTEM_PROMPT_TEMPLATE: {diag}"
 
 
-# ---------------------------------------------------------------------------
-# §12.2 Cover letter
-# ---------------------------------------------------------------------------
-
-
-def test_cover_letter_prompt_verbatim() -> None:
+def test_cover_letter_prompt_strict() -> None:
     from nexscout.scoring.cover_letter import COVER_PROMPT_TEMPLATE
 
-    plan_block = _fenced_block_starting_with("Write a cover letter for")
-    assert _equal(COVER_PROMPT_TEMPLATE, plan_block), "Cover-letter COVER_PROMPT_TEMPLATE drifted from §12.2"
+    plan = _fenced_block_starting_with("Write a cover letter for")
+    ok, diag = _walk_placeholders_in_order_match(
+        code_template=COVER_PROMPT_TEMPLATE, plan_block=plan, mapping=COVER_MAPPING
+    )
+    assert ok, f"Cover placeholder order: {diag}"
+    ok, diag = _strict_equal(code_template=COVER_PROMPT_TEMPLATE, plan_block=plan, mapping=COVER_MAPPING)
+    assert ok, f"Cover COVER_PROMPT_TEMPLATE: {diag}"
 
 
-# ---------------------------------------------------------------------------
-# §13.4 Apply agent
-# ---------------------------------------------------------------------------
+def _strip_nexscout_apply_additions(text: str) -> str:
+    """Drop NexScout-only additions from §13.4 (CAPTCHA_MANUAL hard rule)."""
+    keep: list[str] = []
+    for line in text.splitlines():
+        if "CAPTCHA_MANUAL" in line or "captcha_manual_required" in line:
+            continue
+        keep.append(line)
+    return "\n".join(keep)
 
 
-def test_apply_system_prompt_verbatim() -> None:
+def test_apply_system_prompt_strict() -> None:
     from nexscout.apply.prompt import SYSTEM_PROMPT_TEMPLATE
 
-    plan_block = _fenced_block_starting_with("You are an autonomous job application agent")
-    assert _equal(SYSTEM_PROMPT_TEMPLATE, plan_block), "Apply SYSTEM_PROMPT_TEMPLATE drifted from §13.4"
+    plan = _fenced_block_starting_with("You are an autonomous job application agent")
+    stripped = _strip_nexscout_apply_additions(SYSTEM_PROMPT_TEMPLATE)
+    ok, diag = _walk_placeholders_in_order_match(
+        code_template=stripped, plan_block=plan, mapping=APPLY_MAPPING
+    )
+    assert ok, f"Apply placeholder order: {diag}"
+    ok, diag = _strict_equal(
+        code_template=SYSTEM_PROMPT_TEMPLATE,
+        plan_block=plan,
+        mapping=APPLY_MAPPING,
+        pre_strip_code=_collapse_double_braces(stripped),
+    )
+    assert ok, f"Apply SYSTEM_PROMPT_TEMPLATE: {diag}"

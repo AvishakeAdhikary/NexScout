@@ -142,6 +142,64 @@ the constants in the source. If you edit a prompt, the plan and the code
 must move together — the test will scream otherwise. **Verbatim means
 verbatim.**
 
+### Adding a new prompt to the verbatim audit
+
+Two test files cover the audit:
+
+* `tests/unit/test_prompts_verbatim.py` — **strict** 1:1 placeholder mapping.
+  It walks the plan placeholders and the code placeholders in order, mapping
+  each plan name to its documented code name via a per-prompt mapping table,
+  then asserts the surrounding text is byte-identical.
+* `tests/unit/test_prompts_verbatim_loose.py` — kept for diagnostic use. It
+  strips every `{...}` block before comparing; useful when the strict
+  version trips on a positional asymmetry and you want to confirm only the
+  surrounding text drifted.
+
+To add a new prompt:
+
+1. Add a section in `plan.md` containing a fenced block with the verbatim
+   prompt text. The block must use the standard `{placeholder_name}` syntax
+   for any substitution points.
+2. Define the constant in the source module (e.g. `MY_PROMPT_TEMPLATE`),
+   using Python `{code_placeholder_name}` placeholders. If the placeholder
+   has the same name as in the plan, no mapping entry is needed; just
+   include it in the mapping table as identity.
+3. In the strict test file, add a mapping table for the new prompt:
+
+   ```python
+   MY_PROMPT_MAPPING: dict[str, str] = {
+       "{plan_placeholder_name}": "{code_placeholder_name}",
+       # …
+   }
+   ```
+
+   Use a `list[tuple[str, str]]` *positional* mapping when the same plan
+   placeholder must map differently at different positions (rare — §13.4's
+   `{city}` is the only current example, because it appears once nested in
+   a cover-letter fallback literal and once verbatim in the profile block).
+4. Add a `test_my_prompt_strict` function that calls
+   `_walk_placeholders_in_order_match(...)` then `_strict_equal(...)`.
+5. Mirror a loose test in `test_prompts_verbatim_loose.py` for diagnostic
+   parity.
+
+#### Documented per-prompt mappings (current as of v0.1.0)
+
+| Prompt          | Notable plan → code rewrites |
+|-----------------|------------------------------|
+| §8.3 judge      | identity (`{url}`, `{status}`, …) |
+| §8.3 strategy   | identity (`{briefing}`) |
+| §8.3 selector   | identity (`{page_html}`) |
+| §9 enrichment   | identity (`{url}`, `{title}`, `{content}`) |
+| §10 scorer      | no placeholders |
+| §11 tailor      | `{profile.skills.lang \| join}` → `{languages}`; same for fw/infra/data/tools; `{BANNED_WORDS \| join}` → `{banned_words}`; `{profile.facts.metrics \| join}` → `{metrics}`; `{profile.facts.companies \| join}` → `{companies}`; `{profile.facts.school}` → `{school}`; `{profile.exp.edu}` → `{education}`. |
+| §12.2 cover     | `{profile.me.pref}` → `{pref}`; `{profile.facts.projects \| join}` → `{projects}`; `{profile.facts.metrics \| join}` → `{metrics}`; `{BANNED_WORDS \| join}` → `{banned_words}`; `{LLM_LEAK_PHRASES \| join}` → `{leak_phrases}`; `{all_skills \| join}` → `{all_skills}`. |
+| §13.4 apply     | positional. `{application_url or url}` → `{job_url}`; `{me.legal}` → `{legal_name}`; `{me.email}` → `{email}`; `{me.phone}` → `{phone}`; `{links.li}` → `{linkedin}`; `{links.gh}` → `{github}`; `{links.portfolio}` → `{portfolio}`; `{links.web}` → `{website}`; `{auth.authorized}` → `{work_auth}`; `{auth.sponsor}` → `{sponsor}`; `{auth.permit}` → `{permit}`; `{pay.expect}` → `{salary_expect}`; `{pay.currency}` → `{currency}`; `{exp.years}` → `{years}`; `{exp.edu}` → `{education}`; `{avail.start}` → `{available}`; `{eeo.gender}` → `{eeo_gender}`; same for race/veteran/disability; `{me.pref}` → `{pref_name}`; `{pay.range[0]}` → `{salary_low}`; `{pay.range[1]}` → `{salary_high}`; `{profile.password}` → `{password}`; `{digits_only(phone)}` → `{phone_digits}`; `{today MM/DD/YYYY}` → `{today_us}`. The lone positional override: `{city}` at position 7 maps to `{cover_letter_text}` (it sits inside the cover-letter fallback literal whose outer brace spans lines and is dropped by the tight regex). |
+
+§13.4 also gains a NexScout-only hard rule (the CAPTCHA_MANUAL branch); the
+strict test strips lines containing `CAPTCHA_MANUAL` from the code template
+before the byte-equality pass, but never strips anything from the plan slice
+— additions are allowed, deletions are not.
+
 ## Pre-commit
 
 ```bash
