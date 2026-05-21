@@ -26,7 +26,13 @@ from ..core.bundle import bundle_dir_for
 from ..core.database import is_permanent_failure, transaction
 from ..core.profile import Profile
 from .policy import ApplyPolicy, load_policy
-from .result_codes import RESULT_APPLIED, RESULT_CAPTCHA, RESULT_EXPIRED, RESULT_LOGIN_ISSUE
+from .result_codes import (
+    RESULT_APPLIED,
+    RESULT_CAPTCHA,
+    RESULT_CAPTCHA_MANUAL,
+    RESULT_EXPIRED,
+    RESULT_LOGIN_ISSUE,
+)
 
 if TYPE_CHECKING:
     from ..captcha.base import CaptchaSolver
@@ -126,11 +132,16 @@ def mark_result(
     captcha_solved: bool | None = None,
     bundle_dir: str | None = None,
 ) -> None:
-    """Persist the agent's terminal status and bump ``apply_attempts``."""
+    """Persist the agent's terminal status and bump ``apply_attempts``.
+
+    CAPTCHA_MANUAL writes a row to ``pending_questions`` so the user (via the
+    web UI ``/questions`` page or an OpenClaw channel) can finish the
+    application by hand.
+    """
     code = (result_code or "").upper()
     status = _status_for_code(code)
     permanent = code.startswith("FAILED") and is_permanent_failure(reason)
-    if code in {RESULT_CAPTCHA, RESULT_EXPIRED, RESULT_LOGIN_ISSUE}:
+    if code in {RESULT_CAPTCHA, RESULT_CAPTCHA_MANUAL, RESULT_EXPIRED, RESULT_LOGIN_ISSUE}:
         permanent = True
 
     attempts_bump = 99 if permanent else 1
@@ -160,6 +171,19 @@ def mark_result(
     params.append(job_url)
     conn.execute(f"UPDATE jobs SET {', '.join(sets)} WHERE url=?", params)
 
+    if code == RESULT_CAPTCHA_MANUAL:
+        question = f"Job requires manual CAPTCHA solving: {job_url}"
+        existing = conn.execute(
+            "SELECT id FROM pending_questions WHERE job_url=? AND question=? AND answered_at IS NULL",
+            (job_url, question),
+        ).fetchone()
+        if existing is None:
+            conn.execute(
+                "INSERT INTO pending_questions (job_url, question, asked_at, channel) "
+                "VALUES (?, ?, ?, 'cli')",
+                (job_url, question, now),
+            )
+
 
 def _status_for_code(code: str) -> str:
     if code == RESULT_APPLIED:
@@ -168,6 +192,8 @@ def _status_for_code(code: str) -> str:
         return "expired"
     if code == RESULT_CAPTCHA:
         return "captcha"
+    if code == RESULT_CAPTCHA_MANUAL:
+        return "captcha_manual"
     if code == RESULT_LOGIN_ISSUE:
         return "login_issue"
     return "failed"

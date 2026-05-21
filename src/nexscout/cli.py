@@ -77,20 +77,38 @@ def _has_latex_engine() -> str | None:
 
 
 def _detect_tier(profile: Profile | None, chrome: str | None, latex: str | None) -> str:
+    """Compute the NexScout readiness tier.
+
+    * **T0** — Chrome missing.
+    * **T1** — Chrome only, no LLM.
+    * **T2** — LLM provider configured (discovery + scoring + tailor work).
+    * **T3** — T2 + a LaTeX engine on PATH (apply ready). CAPTCHA is **not**
+      required for T3: sites with CAPTCHAs are parked for manual review when
+      no provider is configured (Task-4 spec).
+    """
     if not chrome:
         return "T0"
     has_llm = bool(profile and (profile.llm.primary or profile.llm.fallback))
     if not has_llm:
         return "T1"
-    has_captcha = bool(profile and profile.captcha.api_key)
-    if latex and has_captcha:
+    if latex:
         return "T3"
     return "T2"
 
 
 @app.command()
-def doctor() -> None:
-    """Diagnostic check. Non-zero exit on missing prereqs."""
+def doctor(
+    quiet: Annotated[
+        bool,
+        typer.Option("--quiet", help="Suppress table output; exit 0 only when T2+ is ready."),
+    ] = False,
+) -> None:
+    """Diagnostic check.
+
+    Without ``--quiet``: prints a table and exits non-zero on any hard failure.
+    With ``--quiet``: prints nothing and exits 0 only when the prereqs are
+    healthy enough to declare T2 (used by Docker healthcheck).
+    """
     c = console()
     table = Table(title="NexScout doctor", show_lines=False)
     table.add_column("Check")
@@ -144,8 +162,12 @@ def doctor() -> None:
             f"primary={profile.llm.primary}, fallback={profile.llm.fallback}",
         )
         if not profile.captcha.api_key:
-            table.add_row("CAPTCHA api_key", "MISSING", "set CAPTCHA_API_KEY")
-            issues.append("captcha_missing")
+            table.add_row(
+                "CAPTCHA api_key",
+                "WARN",
+                "no CAPTCHA provider configured; sites requiring CAPTCHA solving "
+                "will be parked for manual user review.",
+            )
         else:
             table.add_row("CAPTCHA api_key", "OK", profile.captcha.provider)
 
@@ -157,6 +179,11 @@ def doctor() -> None:
         "T3": "apply ready",
     }
     table.add_row("Tier", tier, tier_blurbs[tier])
+
+    if quiet:
+        # Healthcheck mode — succeed only when prereqs reach T2.
+        healthy = not issues and tier in {"T2", "T3"}
+        raise typer.Exit(code=0 if healthy else 1)
 
     c.print(table)
     if issues:
@@ -170,15 +197,22 @@ def doctor() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _ensure_captcha_configured(stage: str) -> Profile:
-    """Load the profile and refuse to proceed without ``captcha.api_key``."""
+def _load_profile_with_captcha_warning(stage: str) -> Profile:
+    """Load the profile and warn (do not refuse) when ``captcha.api_key`` is unset.
+
+    CAPTCHA is now OPTIONAL (Task-4 spec). Sites requiring CAPTCHA solving when
+    no provider is configured are marked for manual review via the
+    ``RESULT:CAPTCHA_MANUAL`` result code; a pending_question row is created so
+    the web UI / OpenClaw channel surfaces it to the user.
+    """
     profile_p = profile_path()
     if not profile_p.exists():
         raise ConfigError(f"profile not found at {profile_p}; run `nexscout init` first")
     profile = Profile.from_path(profile_p)
     if not profile.captcha.api_key:
-        raise ConfigError(
-            f"`nexscout {stage}` requires profile.captcha.api_key — set CAPTCHA_API_KEY and rerun"
+        console().print(
+            f"[yellow]warning:[/yellow] no CAPTCHA provider configured for `nexscout {stage}` — "
+            "sites with CAPTCHAs will be marked for manual review."
         )
     return profile
 
@@ -193,7 +227,7 @@ def run(
     """Run pipeline stages. Refuses to start without a CAPTCHA api_key."""
     c = console()
     try:
-        profile = _ensure_captcha_configured("run")
+        profile = _load_profile_with_captcha_warning("run")
     except ConfigError as e:
         c.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1) from None
@@ -225,7 +259,7 @@ def apply(
 
     c = console()
     try:
-        profile = _ensure_captcha_configured("apply")
+        profile = _load_profile_with_captcha_warning("apply")
     except ConfigError as e:
         c.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1) from None

@@ -19,6 +19,10 @@ from __future__ import annotations
 RESULT_APPLIED = "APPLIED"
 RESULT_EXPIRED = "EXPIRED"
 RESULT_CAPTCHA = "CAPTCHA"
+#: Job needs manual CAPTCHA solving — no provider configured. The orchestrator
+#: parks the row with ``apply_status='captcha_manual'`` and writes a
+#: pending_questions entry so the user (via OpenClaw / web UI) can finish it.
+RESULT_CAPTCHA_MANUAL = "CAPTCHA_MANUAL"
 RESULT_LOGIN_ISSUE = "LOGIN_ISSUE"
 
 #: All terminal statuses (sans the ``FAILED:<reason>`` family).
@@ -27,6 +31,7 @@ TERMINAL_CODES: frozenset[str] = frozenset(
         RESULT_APPLIED,
         RESULT_EXPIRED,
         RESULT_CAPTCHA,
+        RESULT_CAPTCHA_MANUAL,
         RESULT_LOGIN_ISSUE,
     }
 )
@@ -58,6 +63,7 @@ PERMANENT_FAILURE_REASONS: frozenset[str] = frozenset(
     {
         "expired",
         "captcha",
+        "captcha_manual",
         "login_issue",
         FAIL_NOT_ELIGIBLE_LOCATION,
         FAIL_NOT_ELIGIBLE_SALARY,
@@ -130,6 +136,7 @@ __all__ = [
     "PERMANENT_PREFIXES",
     "RESULT_APPLIED",
     "RESULT_CAPTCHA",
+    "RESULT_CAPTCHA_MANUAL",
     "RESULT_EXPIRED",
     "RESULT_LOGIN_ISSUE",
     "TERMINAL_CODES",

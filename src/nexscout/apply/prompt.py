@@ -77,6 +77,8 @@ application. Do whatever it takes to reach that goal.
 2. Work auth: {auth_rule}.
 3. Name: Legal name = {legal_name}. Preferred = {pref_name}. Use "{pref_name} {last_name}"
    unless a field specifically says "legal name".
+4. If solve_captcha returns error="captcha_manual_required",
+   done(RESULT:CAPTCHA_MANUAL, reason="...") so the user can finish it.
 
 == NEVER DO THESE (immediate RESULT:FAILED) ==
 - NEVER grant camera/mic/screen/location permissions →
