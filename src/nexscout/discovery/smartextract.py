@@ -1,6 +1,7 @@
 """SmartExtract engine — AI-driven scraping (§8.3 of plan.md).
 
-This module implements the prompt-side and pure-Python helpers:
+This module implements the prompt-side and pure-Python helpers plus the
+CDP-driven Phase-1 intelligence collector:
 
 * :func:`extract_json` — robust LLM-JSON extraction.
 * Verbatim **judge**, **strategy**, **selector** prompts (constants).
@@ -8,10 +9,11 @@ This module implements the prompt-side and pure-Python helpers:
   router with the verbatim prompts above.
 * :func:`execute_json_ld`, :func:`execute_api_response`,
   :func:`execute_css_selectors` — phase-3 executors.
-
-The browser-side intelligence collector (Phase 1) requires Selenium and is
-stubbed via :class:`PageBriefing`; the real CDP-driven implementation lands
-alongside the apply/browser pool in M7.
+* :func:`collect_briefing` — Phase-1 CDP intelligence collector. Enables
+  ``Network.enable`` via Selenium 4 ``execute_cdp_cmd`` and harvests JSON-LD
+  blocks, ``__NEXT_DATA__``, ``data-testid`` samples, DOM stats, repeating
+  card candidates and intercepted JSON-bodied API responses (URLs containing
+  ``/api/`` / ``algolia`` / ``graphql`` or ``content-type: application/json``).
 """
 
 from __future__ import annotations
@@ -19,12 +21,22 @@ from __future__ import annotations
 import json
 import logging
 import re
+import sqlite3
+import time
+from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass, field
-from typing import Any
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any, Protocol
 
 from bs4 import BeautifulSoup
 
+from ..core.database import insert_jobs
+from ..core.profile import Profile
 from ..llm.router import LLMRouter
+
+if TYPE_CHECKING:
+    from ..browser.driver import BrowserFactory
 
 log = logging.getLogger(__name__)
 
@@ -462,6 +474,308 @@ def clean_page_html(html: str) -> str:
     return str(soup)
 
 
+# ---------------------------------------------------------------------------
+# Phase 1 — CDP intelligence collector
+# ---------------------------------------------------------------------------
+
+
+class _DriverLike(Protocol):
+    """Minimal Selenium-like surface used by the collector (for typing/tests)."""
+
+    page_source: str
+    current_url: str
+
+    def get(self, url: str) -> None: ...
+    def execute_script(self, script: str) -> Any: ...
+    def execute_cdp_cmd(self, cmd: str, params: dict[str, Any]) -> Any: ...
+
+
+_API_URL_HINTS: tuple[str, ...] = ("/api/", "algolia", "graphql")
+_NETWORK_EVENT_TYPES: frozenset[str] = frozenset(
+    {"XHR", "Fetch", "Document", "Script", "Other"}
+)
+
+
+def _looks_like_api(url: str, content_type: str) -> bool:
+    ct = (content_type or "").lower()
+    if "application/json" in ct or "application/ld+json" in ct:
+        return True
+    u = (url or "").lower()
+    return any(hint in u for hint in _API_URL_HINTS)
+
+
+def _summarise_fields(body: Any) -> list[str]:
+    if isinstance(body, dict):
+        return sorted(str(k) for k in list(body.keys())[:20])
+    if isinstance(body, list) and body:
+        head = body[0]
+        if isinstance(head, dict):
+            return sorted(str(k) for k in list(head.keys())[:20])
+    return []
+
+
+def _sample_body(body: Any, *, max_chars: int = 600) -> str:
+    try:
+        s = json.dumps(body, ensure_ascii=False)
+    except (TypeError, ValueError):
+        s = str(body)
+    return s[:max_chars]
+
+
+def _safe_json_parse(text: str) -> Any:
+    try:
+        return json.loads(text)
+    except (TypeError, ValueError):
+        return None
+
+
+def _collect_json_ld(driver: _DriverLike) -> list[dict[str, Any]]:
+    try:
+        html = driver.page_source or ""
+    except Exception:
+        return []
+    soup = BeautifulSoup(html, "html.parser")
+    out: list[dict[str, Any]] = []
+    for tag in soup.find_all("script", attrs={"type": "application/ld+json"}):
+        raw = (tag.string or tag.get_text() or "").strip()
+        if not raw:
+            continue
+        data = _safe_json_parse(raw) or extract_json(raw)
+        if isinstance(data, dict):
+            out.append(data)
+        elif isinstance(data, list):
+            out.extend(d for d in data if isinstance(d, dict))
+    return out
+
+
+def _collect_next_data(driver: _DriverLike) -> dict[str, Any] | None:
+    try:
+        html = driver.page_source or ""
+    except Exception:
+        return None
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("script", attrs={"id": "__NEXT_DATA__"})
+    if tag is None:
+        return None
+    raw = (tag.string or tag.get_text() or "").strip()
+    data = _safe_json_parse(raw) or extract_json(raw)
+    return data if isinstance(data, dict) else None
+
+
+def _collect_data_testids(driver: _DriverLike, limit: int = 50) -> list[dict[str, str]]:
+    try:
+        html = driver.page_source or ""
+    except Exception:
+        return []
+    soup = BeautifulSoup(html, "html.parser")
+    out: list[dict[str, str]] = []
+    for el in soup.select("[data-testid]"):
+        text = el.get_text(" ", strip=True)
+        out.append(
+            {
+                "tag": el.name or "",
+                "testid": str(el.get("data-testid") or ""),
+                "text": text[:80],
+            }
+        )
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _collect_dom_stats(driver: _DriverLike) -> dict[str, int]:
+    try:
+        html = driver.page_source or ""
+    except Exception:
+        return {}
+    soup = BeautifulSoup(html, "html.parser")
+    return {
+        "elements": len(soup.find_all(True)),
+        "links": len(soup.find_all("a")),
+        "headings": len(soup.find_all(re.compile(r"^h[1-6]$"))),
+        "lists": len(soup.find_all(["ul", "ol"])),
+        "tables": len(soup.find_all("table")),
+        "articles": len(soup.find_all("article")),
+        "data_ids": len(soup.select("[data-id]")),
+    }
+
+
+def _collect_card_candidates(driver: _DriverLike, top: int = 3) -> list[dict[str, Any]]:
+    try:
+        html = driver.page_source or ""
+    except Exception:
+        return []
+    soup = BeautifulSoup(html, "html.parser")
+    candidates: list[tuple[int, dict[str, Any]]] = []
+    for parent in soup.find_all(True):
+        children = list(parent.find_all(True, recursive=False))
+        if len(children) < 3:
+            continue
+        same_tag = [c for c in children if c.name == children[0].name]
+        if len(same_tag) < 3:
+            continue
+        with_links = sum(1 for c in same_tag if c.find("a"))
+        with_text = sum(1 for c in same_tag if c.get_text(strip=True))
+        score = with_links * 2 + with_text
+        if score < 3:
+            continue
+        parent_sel = parent.name or "div"
+        child_sel = same_tag[0].name or "div"
+        examples = [str(c)[:5000] for c in same_tag[:3]]
+        candidates.append(
+            (
+                score,
+                {
+                    "parent_selector": parent_sel,
+                    "child_selector": child_sel,
+                    "count": len(same_tag),
+                    "examples": examples,
+                },
+            )
+        )
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    return [c for _score, c in candidates[:top]]
+
+
+@dataclass
+class _NetworkResponse:
+    """An in-flight CDP response we may want to capture."""
+
+    request_id: str
+    url: str
+    status: int = 0
+    content_type: str = ""
+
+
+def _install_network_listener(driver: _DriverLike, sink: list[dict[str, Any]]) -> Callable[[], None]:
+    """Wire up CDP Network.enable + a listener that pushes JSON responses into ``sink``.
+
+    Returns a teardown callable. If the driver doesn't expose the right CDP
+    surface (e.g. a mock or non-Selenium-4 driver), the listener silently
+    no-ops — the briefing still has JSON-LD / DOM stats from the page source.
+    """
+    try:
+        driver.execute_cdp_cmd("Network.enable", {})
+    except Exception as e:
+        log.debug("CDP Network.enable unavailable: %s", e)
+        return lambda: None
+
+    in_flight: dict[str, _NetworkResponse] = {}
+
+    # Selenium 4 lets us register event listeners via add_cdp_listener; some
+    # mocks don't, so we tolerate AttributeError and just rely on
+    # ``responses`` being filled by an external caller (test).
+    add_listener = getattr(driver, "add_cdp_listener", None)
+    if not callable(add_listener):
+        log.debug("driver lacks add_cdp_listener; CDP capture limited")
+        return lambda: None
+
+    def on_response_received(event: dict[str, Any]) -> None:
+        resp = event.get("response") or {}
+        url = str(resp.get("url") or "")
+        if not url or url.startswith("data:"):
+            return
+        headers = resp.get("headers") or {}
+        content_type = str(headers.get("content-type") or headers.get("Content-Type") or "")
+        if not _looks_like_api(url, content_type):
+            return
+        in_flight[str(event.get("requestId"))] = _NetworkResponse(
+            request_id=str(event.get("requestId")),
+            url=url,
+            status=int(resp.get("status") or 0),
+            content_type=content_type,
+        )
+
+    def on_loading_finished(event: dict[str, Any]) -> None:
+        req_id = str(event.get("requestId"))
+        info = in_flight.pop(req_id, None)
+        if info is None:
+            return
+        try:
+            body_resp = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": req_id})
+        except Exception as e:
+            log.debug("Network.getResponseBody failed for %s: %s", info.url, e)
+            return
+        raw = str(body_resp.get("body") or "")
+        if body_resp.get("base64Encoded"):
+            try:
+                import base64
+
+                raw = base64.b64decode(raw).decode("utf-8", errors="replace")
+            except Exception:
+                return
+        body = _safe_json_parse(raw) or extract_json(raw)
+        if body is None:
+            return
+        sink.append(
+            {
+                "url": info.url,
+                "status": info.status,
+                "size": len(raw),
+                "type": info.content_type,
+                "fields": _summarise_fields(body),
+                "sample": _sample_body(body),
+                "body": body,
+            }
+        )
+
+    add_listener("Network.responseReceived", on_response_received)
+    add_listener("Network.loadingFinished", on_loading_finished)
+
+    def teardown() -> None:
+        with suppress(Exception):
+            driver.execute_cdp_cmd("Network.disable", {})
+
+    return teardown
+
+
+def collect_briefing(
+    *,
+    factory: BrowserFactory,
+    url: str,
+    headless: bool = True,
+    settle_seconds: float = 2.0,
+) -> tuple[PageBriefing, str, list[dict[str, Any]]]:
+    """Run the §8.3 Phase-1 intelligence collector against ``url``.
+
+    Returns ``(briefing, full_html, intercepted_apis)``. The full HTML is
+    handed to Phase 2 css-selector generation when the strategy LLM picks
+    that branch.
+    """
+    driver = factory.make(headless=headless)
+    intercepted: list[dict[str, Any]] = []
+
+    def _noop_teardown() -> None:
+        return None
+
+    teardown: Callable[[], None] = _noop_teardown
+    try:
+        teardown = _install_network_listener(driver, intercepted)
+        driver.get(url)
+        # Let JS-driven sites issue their initial XHRs.
+        time.sleep(max(0.0, settle_seconds))
+        full_html = ""
+        try:
+            full_html = str(getattr(driver, "page_source", "") or "")
+        except Exception:
+            full_html = ""
+        briefing = PageBriefing(
+            url=str(getattr(driver, "current_url", url) or url),
+            json_ld=_collect_json_ld(driver),
+            next_data=_collect_next_data(driver),
+            intercepted_apis=intercepted,
+            data_testids=_collect_data_testids(driver),
+            dom_stats=_collect_dom_stats(driver),
+            card_candidates=_collect_card_candidates(driver),
+        )
+        return briefing, full_html, intercepted
+    finally:
+        with suppress(Exception):
+            teardown()
+        with suppress(Exception):
+            driver.quit()
+
+
 def execute_css_selectors(html: str, selectors: dict[str, Any], base_url: str = "") -> list[dict[str, Any]]:
     """Apply LLM-generated CSS selectors to a page snapshot."""
     if "error" in selectors:
@@ -503,3 +817,113 @@ def execute_css_selectors(html: str, selectors: dict[str, Any], base_url: str = 
             }
         )
     return out
+
+
+# ---------------------------------------------------------------------------
+# Engine entry — orchestrates Phase 1 → 1.5 → 2 → 3 for a list of URLs.
+# ---------------------------------------------------------------------------
+
+
+def _load_smartextract_targets() -> list[str]:
+    """Read the seed URL list from ``discovery/sites.yaml``.
+
+    Each entry under ``sites:`` that is ``type: static`` becomes a target.
+    ``type: search`` entries need ``{query_encoded}`` / ``{location_encoded}``
+    expansion which is handled by the websearch engine; SmartExtract picks up
+    the wholesale crawl targets only.
+    """
+    try:
+        import yaml as _yaml
+    except ImportError:
+        return []
+    from pathlib import Path as _Path
+
+    candidates = [
+        _Path(__file__).resolve().parent / "sites.yaml",
+    ]
+    for path in candidates:
+        if not path.exists():
+            continue
+        try:
+            data = _yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except Exception:
+            continue
+        out: list[str] = []
+        for entry in data.get("sites", []) or []:
+            if not isinstance(entry, dict):
+                continue
+            if entry.get("type") == "static" and entry.get("url"):
+                out.append(str(entry["url"]))
+        return out
+    return []
+
+
+def run_smartextract(
+    profile: Profile,
+    *,
+    conn: sqlite3.Connection,
+    router: LLMRouter,
+    factory: BrowserFactory | None = None,
+    max_targets: int = 0,
+) -> tuple[int, int]:
+    """Run the SmartExtract engine over the packaged static-site registry.
+
+    Returns ``(new_count, duplicate_count)``. Tolerates missing browser stacks
+    by returning ``(0, 0)`` after logging.
+    """
+    _ = profile
+    if factory is None:
+        try:
+            from ..browser.driver import UndetectedFactory
+
+            factory = UndetectedFactory()
+        except Exception as e:
+            log.info("smartextract: no browser available (%s); skipping", e)
+            return 0, 0
+
+    urls = _load_smartextract_targets()
+    if max_targets > 0:
+        urls = urls[:max_targets]
+    if not urls:
+        return 0, 0
+
+    rows: list[dict[str, Any]] = []
+    now = datetime.now(UTC).isoformat()
+    for url in urls:
+        try:
+            briefing, full_html, _apis = collect_briefing(factory=factory, url=url)
+        except Exception as e:
+            log.warning("smartextract collect failed for %s: %s", url, e)
+            continue
+        strategy = run_strategy(router, briefing)
+        if not strategy:
+            continue
+        kind = str(strategy.get("strategy") or "")
+        extraction = strategy.get("extraction") or {}
+        items: list[dict[str, Any]] = []
+        if kind == "json_ld":
+            items = execute_json_ld(briefing.json_ld, extraction)
+        elif kind == "api_response":
+            items = execute_api_response(briefing.intercepted_apis, extraction)
+        elif kind == "css_selectors":
+            selectors = run_selectors(router, page_html=full_html) or {}
+            items = execute_css_selectors(full_html, selectors, base_url=url)
+        for item in items:
+            item_url = item.get("url")
+            if not item_url:
+                continue
+            rows.append(
+                {
+                    "url": str(item_url),
+                    "title": item.get("title") or "",
+                    "salary": item.get("salary"),
+                    "description": item.get("description"),
+                    "location": item.get("location") or "",
+                    "site": "smartextract",
+                    "strategy": kind or "smartextract",
+                    "discovered_at": now,
+                }
+            )
+    if not rows:
+        return 0, 0
+    return insert_jobs(rows, conn=conn)
