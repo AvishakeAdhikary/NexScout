@@ -106,8 +106,25 @@ apply:
   permitted_atss: [greenhouse, lever, ashby, workday, taleo, icims, smartrecruiters]
 
 captcha:
+  # CAPTCHA is OPTIONAL. If api_key is unset the project still runs;
+  # jobs requiring a CAPTCHA solve are parked with apply_status='captcha_manual'
+  # and surfaced as a pending question for the user to handle manually.
   provider: capsolver
   api_key: "${env:CAPTCHA_API_KEY}"
+
+# Email transport for the ``send_email`` tool (email-only postings).
+# If ``host`` is set we use smtplib directly. If ``host`` is empty AND
+# ``me.email`` is a @gmail.com address AND ``gmail_password`` (or
+# ``smtp.password``) is set, the agent drives a browser-driven Gmail
+# compose+login flow instead.
+# smtp:
+#   host: smtp.gmail.com
+#   port: 465
+#   user: "${env:GMAIL_USER}"
+#   password: "${env:GMAIL_APP_PASSWORD}"
+#   use_ssl: true
+#   use_tls: false
+# gmail_password: "${env:GMAIL_APP_PASSWORD}"
 
 openclaw:
   tick_budget:

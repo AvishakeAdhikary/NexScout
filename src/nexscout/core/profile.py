@@ -190,6 +190,23 @@ class CaptchaConfig(BaseModel):
     manual_ats_domains: list[str] = Field(default_factory=lambda: ["ibegin.tcsapps.com"])
 
 
+class SmtpConfig(BaseModel):
+    """Optional SMTP settings for ``send_email`` (§13.2).
+
+    All fields are optional. When ``host`` is set the apply agent uses
+    ``smtplib`` directly. When ``host`` is *not* set but the user's email is a
+    ``@gmail.com`` address and ``password`` is provided, the agent falls back
+    to a browser-driven Gmail login flow (see :mod:`apply.email_browser`).
+    """
+
+    host: str = ""
+    port: int = 465
+    user: str = ""
+    password: str = ""
+    use_ssl: bool = True
+    use_tls: bool = False
+
+
 class OpenClawTickBudget(BaseModel):
     discover_per_engine: int = 10
     enrich: int = 20
@@ -226,8 +243,14 @@ class Profile(BaseModel):
     apply: ApplyConfig = Field(default_factory=ApplyConfig)
     captcha: CaptchaConfig = Field(default_factory=CaptchaConfig)
     openclaw: OpenClawConfig = Field(default_factory=OpenClawConfig)
+    smtp: SmtpConfig = Field(default_factory=SmtpConfig)
     proxy: str | None = None
     password: str | None = None
+    #: Gmail-specific app-password fallback (env-resolved). When the user's
+    #: ``me.email`` is a ``@gmail.com`` address and no SMTP host is set, the
+    #: agent will drive the browser to mail.google.com using this credential
+    #: (or ``smtp.password`` as a fallback).
+    gmail_password: str | None = None
 
     @field_validator("meta", mode="before")
     @classmethod

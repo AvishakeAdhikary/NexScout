@@ -208,6 +208,7 @@ def run_agent(
             driver=driver,
             bundle_dir=bundle_dir,
             solver=solver,
+            profile=profile,
             screenshot_idx=screenshot_idx,
         )
         append_transcript(

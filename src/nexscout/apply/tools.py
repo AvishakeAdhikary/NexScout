@@ -260,13 +260,28 @@ def solve_captcha(
     *,
     solver: CaptchaSolver | None = None,
 ) -> ToolResult:
-    """``solve_captcha()`` — DETECT → solve → inject. Mandatory (§15)."""
+    """``solve_captcha()`` — DETECT → solve → inject.
+
+    CAPTCHA solving is **optional** (Task-4 spec). When ``solver is None``:
+
+    * If detection finds a CAPTCHA → return ``ok=False`` with
+      ``error="captcha_manual_required"`` so the agent emits
+      ``RESULT:CAPTCHA_MANUAL``.
+    * If detection finds nothing → return ``ok=True`` (no-op).
+    """
     _ = bundle_dir
     _ = args
-    if solver is None:
-        return ToolResult(ok=False, error="no captcha solver wired")
 
     detection = detect_in_driver(driver)
+    if solver is None:
+        if detection and detection.get("type"):
+            return ToolResult(
+                ok=False,
+                error="captcha_manual_required",
+                data={"detected": detection, "manual": True},
+            )
+        return ToolResult(ok=True, data={"detected": None})
+
     if not detection or not detection.get("type"):
         return ToolResult(ok=True, data={"detected": None})
 
@@ -291,9 +306,64 @@ def solve_captcha(
     return ToolResult(ok=True, data={"detected": detection, "injected": True})
 
 
-def send_email(driver: Any, args: dict[str, Any], bundle_dir: Path, *, smtp_factory: Any = None) -> ToolResult:
-    """``send_email(to, subject, body, attachments)`` — fall-back for email-only postings."""
-    _ = driver
+def _build_email_message(*, to: str, subject: str, body: str, attachments: list[str]) -> EmailMessage:
+    msg = EmailMessage()
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.set_content(body or "(empty body)")
+    for path in attachments:
+        with open(path, "rb") as f:
+            data = f.read()
+        msg.add_attachment(data, maintype="application", subtype="octet-stream", filename=Path(path).name)
+    return msg
+
+
+def _smtp_factory_from_profile(profile: Any) -> Any | None:
+    """Return a zero-arg factory that builds an SMTP client from profile.smtp."""
+    smtp_cfg = getattr(profile, "smtp", None)
+    if smtp_cfg is None or not getattr(smtp_cfg, "host", ""):
+        return None
+
+    host = smtp_cfg.host
+    port = int(smtp_cfg.port or (465 if smtp_cfg.use_ssl else 25))
+    use_ssl = bool(smtp_cfg.use_ssl)
+    use_tls = bool(smtp_cfg.use_tls)
+    user = smtp_cfg.user or getattr(profile.me, "email", "")
+    password = smtp_cfg.password or ""
+
+    def factory() -> smtplib.SMTP:
+        client: smtplib.SMTP
+        if use_ssl:
+            client = smtplib.SMTP_SSL(host, port, timeout=30)
+        else:
+            client = smtplib.SMTP(host, port, timeout=30)
+            if use_tls:
+                client.starttls()
+        if user and password:
+            client.login(user, password)
+        return client
+
+    return factory
+
+
+def send_email(
+    driver: Any,
+    args: dict[str, Any],
+    bundle_dir: Path,
+    *,
+    smtp_factory: Any = None,
+    profile: Any = None,
+) -> ToolResult:
+    """``send_email(to, subject, body, attachments)`` — email-only posting fall-back.
+
+    Three paths (resolved in this order):
+
+    1. Explicit ``smtp_factory`` argument (used by tests / advanced wiring).
+    2. ``profile.smtp.host`` configured → build an ``smtplib`` client from
+       the profile credentials.
+    3. ``profile.me.email`` ends in ``@gmail.com`` and a Gmail password is
+       provided → drive the browser through the Gmail compose UI.
+    """
     _ = bundle_dir
     to = str(args.get("to", "")).strip()
     subject = str(args.get("subject", "")).strip()
@@ -302,35 +372,61 @@ def send_email(driver: Any, args: dict[str, Any], bundle_dir: Path, *, smtp_fact
     if not to or not subject:
         return ToolResult(ok=False, error="missing to/subject")
 
-    if smtp_factory is None:
-        return ToolResult(
-            ok=False,
-            error="SMTP not configured; agent should fall back to copy/paste flow",
-            data={"to": to, "subject": subject, "attachments": attachments},
-        )
-
-    msg = EmailMessage()
-    msg["To"] = to
-    msg["Subject"] = subject
-    msg.set_content(body or "(empty body)")
+    # Validate attachment files up front — fail fast.
     for path in attachments:
+        if not path or not Path(path).exists():
+            return ToolResult(ok=False, error=f"attachment missing: {path}")
+
+    # ---- Path 1 + 2: SMTP -------------------------------------------------
+    factory = smtp_factory or _smtp_factory_from_profile(profile)
+    if factory is not None:
         try:
-            with open(path, "rb") as f:
-                data = f.read()
-            msg.add_attachment(data, maintype="application", subtype="octet-stream", filename=Path(path).name)
+            msg = _build_email_message(to=to, subject=subject, body=body, attachments=attachments)
         except OSError as e:
             return ToolResult(ok=False, error=f"attachment failed: {e}")
-
-    try:
-        smtp = smtp_factory()
         try:
-            smtp.send_message(msg)
-        finally:
-            with _suppress():
-                smtp.quit()
-    except smtplib.SMTPException as e:
-        return ToolResult(ok=False, error=f"smtp error: {e}")
-    return ToolResult(ok=True, data={"to": to, "subject": subject})
+            client = factory()
+            try:
+                client.send_message(msg)
+            finally:
+                with _suppress():
+                    client.quit()
+        except smtplib.SMTPException as e:
+            return ToolResult(ok=False, error=f"smtp error: {e}")
+        return ToolResult(ok=True, data={"to": to, "subject": subject, "via": "smtp"})
+
+    # ---- Path 3: Gmail browser fallback -----------------------------------
+    user_email = ""
+    if profile is not None and getattr(profile, "me", None) is not None:
+        user_email = str(getattr(profile.me, "email", "") or "")
+    gmail_pw = ""
+    if profile is not None:
+        gmail_pw = (
+            getattr(profile, "gmail_password", None)
+            or (getattr(profile, "smtp", None) and getattr(profile.smtp, "password", ""))
+            or ""
+        )
+    if user_email.lower().endswith("@gmail.com") and gmail_pw and driver is not None:
+        from .email_browser import send_via_gmail_browser
+
+        ok, err = send_via_gmail_browser(
+            driver=driver,
+            to=to,
+            subject=subject,
+            body=body,
+            attachments=attachments,
+            user_email=user_email,
+            password=gmail_pw,
+        )
+        if ok:
+            return ToolResult(ok=True, data={"to": to, "subject": subject, "via": "gmail_browser"})
+        return ToolResult(ok=False, error=err or "gmail browser send failed")
+
+    return ToolResult(
+        ok=False,
+        error="no email transport configured (set profile.smtp or use a @gmail.com account)",
+        data={"to": to, "subject": subject, "attachments": attachments},
+    )
 
 
 def wait(driver: Any, args: dict[str, Any], bundle_dir: Path) -> ToolResult:
@@ -484,6 +580,7 @@ def dispatch_tool(
     bundle_dir: Path,
     solver: CaptchaSolver | None = None,
     smtp_factory: Any = None,
+    profile: Any = None,
     screenshot_idx: int = 0,
 ) -> ToolResult:
     """Invoke a tool by name. Always returns a :class:`ToolResult`."""
@@ -507,7 +604,7 @@ def dispatch_tool(
     if name == "solve_captcha":
         return solve_captcha(driver, args, bundle_dir, solver=solver)
     if name == "send_email":
-        return send_email(driver, args, bundle_dir, smtp_factory=smtp_factory)
+        return send_email(driver, args, bundle_dir, smtp_factory=smtp_factory, profile=profile)
     if name == "wait":
         return wait(driver, args, bundle_dir)
     if name == "done":
