@@ -1,28 +1,61 @@
 services:
   nexscout:
+    container_name: nexscout
     build: .
+    restart: unless-stopped
     volumes:
       - "${HOME}/.nexscout:/sandbox/nexscout"
     environment:
+      - NEXSCOUT_DIR=/sandbox/nexscout
+      # CAPTCHA is OPTIONAL — when unset, jobs requiring a CAPTCHA solve are
+      # parked with apply_status='captcha_manual' and surfaced as a pending
+      # question for manual review.
       - CAPTCHA_API_KEY
       - GEMINI_API_KEY
       - OPENAI_API_KEY
       - ANTHROPIC_API_KEY
       - TAVILY_API_KEY
-    depends_on: [ollama]
+      - BRAVE_API_KEY
+      - GOOGLE_CSE_KEY
+      - GOOGLE_CSE_CX
+    depends_on:
+      ollama:
+        condition: service_started
+        required: false
+    healthcheck:
+      test: ["CMD", "nexscout", "doctor", "--quiet"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
     command: ["run"]
 
   ollama:
-    image: ollama/ollama
+    container_name: nexscout-ollama
+    image: ollama/ollama:latest
+    restart: unless-stopped
     volumes: [ollama:/root/.ollama]
+    ports: ["11434:11434"]
     profiles: ["local-llm"]
 
   openclaw:
+    container_name: nexscout-openclaw
     image: openclaw/openclaw:latest
+    restart: unless-stopped
     volumes:
       - "${HOME}/.openclaw:/root/.openclaw"
       - "${HOME}/.nexscout:/sandbox/nexscout"
+    environment:
+      - OPENCLAW_MEMORY_DIR=/root/.openclaw/memory
+      - OPENCLAW_SKILLS_DIR=/sandbox/nexscout/skills
+      - OPENCLAW_HEARTBEAT_INTERVAL_MINUTES=30
+      - OPENCLAW_DEFAULT_CHANNEL=${OPENCLAW_DEFAULT_CHANNEL:-webchat}
+      - OPENCLAW_LOG_LEVEL=${OPENCLAW_LOG_LEVEL:-info}
+    depends_on:
+      nexscout:
+        condition: service_healthy
     profiles: ["openclaw"]
 
 volumes:
   ollama:
+    name: nexscout-ollama-data

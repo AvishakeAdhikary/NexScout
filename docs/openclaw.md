@@ -44,8 +44,24 @@ The `docker-compose.yml` `openclaw` profile sets this up automatically. The
 profile, database, and bundles as the host.
 
 ```bash
-docker compose --profile openclaw up
+docker compose --profile openclaw up -d
 ```
+
+The compose file ships three named containers:
+
+| Service    | Container name        | Purpose                                  |
+|------------|-----------------------|------------------------------------------|
+| `nexscout` | `nexscout`            | the agent itself (runs `nexscout run`)   |
+| `ollama`   | `nexscout-ollama`     | local LLM endpoint (opt-in)              |
+| `openclaw` | `nexscout-openclaw`   | heartbeat daemon (opt-in via profile)    |
+
+The `nexscout` service has a `healthcheck` that runs
+`nexscout doctor --quiet` every 60 seconds. The OpenClaw container `depends_on`
+`nexscout` reaching `service_healthy`, so a fresh `docker compose up` waits
+for NexScout's prereqs to come online before starting the heartbeat. Both
+volumes (`~/.nexscout` and `~/.openclaw`) are mounted into the OpenClaw
+container so it can read/write memory and surface questions back to the
+user.
 
 ## Skill manifest
 
