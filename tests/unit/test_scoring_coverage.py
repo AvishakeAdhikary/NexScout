@@ -88,7 +88,10 @@ class TestJudge:
     def test_judge_resume_returns_parsed(self) -> None:
         router = _FakeRouter(["VERDICT: PASS\nISSUES: none"])
         verdict, issues = judge_mod.judge_resume(
-            router=router, profile=_profile(), job={"title": "X"}, tailored_text="x"  # type: ignore[arg-type]
+            router=router,
+            profile=_profile(),
+            job={"title": "X"},
+            tailored_text="x",  # type: ignore[arg-type]
         )
         assert verdict == "PASS"
         assert issues == "none"
@@ -99,7 +102,10 @@ class TestJudge:
                 raise ConnectionError("offline")
 
         verdict, issues = judge_mod.judge_resume(
-            router=_BadRouter(), profile=_profile(), job={}, tailored_text=""  # type: ignore[arg-type]
+            router=_BadRouter(),
+            profile=_profile(),
+            job={},
+            tailored_text="",  # type: ignore[arg-type]
         )
         assert verdict == "FAIL"
         assert "offline" in issues
@@ -128,13 +134,15 @@ class TestCoverLetter:
         assert "Jane" in sys_prompt
 
     def test_write_cover_letter_approves_clean_letter(self) -> None:
-        router = _FakeRouter([
-            "Dear Hiring Manager,\n\nI built distributed search systems handling 50M docs daily, "
-            "scaling Postgres clusters and reducing p99 latency by 38 percent.\n\n"
-            "At Acme, I shipped a Search Indexer that served 10M MAU; "
-            "I rebuilt the auth layer cutting reset cycles in half.\n\n"
-            "Your platform's scale is exactly the systems work I do.\n\nJane"
-        ])
+        router = _FakeRouter(
+            [
+                "Dear Hiring Manager,\n\nI built distributed search systems handling 50M docs daily, "
+                "scaling Postgres clusters and reducing p99 latency by 38 percent.\n\n"
+                "At Acme, I shipped a Search Indexer that served 10M MAU; "
+                "I rebuilt the auth layer cutting reset cycles in half.\n\n"
+                "Your platform's scale is exactly the systems work I do.\n\nJane"
+            ]
+        )
         result = cl.write_cover_letter(
             router=router,  # type: ignore[arg-type]
             profile=_profile(),
@@ -260,9 +268,7 @@ class TestRenderEngine:
         assert detect_engine() == "tectonic"
 
     def test_detect_engine_picks_latexmk_when_no_tectonic(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            render_engine.shutil, "which", lambda name: "/fake/latexmk" if name == "latexmk" else None
-        )
+        monkeypatch.setattr(render_engine.shutil, "which", lambda name: "/fake/latexmk" if name == "latexmk" else None)
         assert detect_engine() == "latexmk"
 
     def test_make_jinja_env_uses_custom_delimiters(self, tmp_path: Path) -> None:
@@ -273,9 +279,7 @@ class TestRenderEngine:
         out = env.get_template("demo.tex.j2").render(name="Jane & Co")
         assert "Hello Jane \\& Co!" in out
 
-    def test_render_resume_pdf_raises_when_no_engine(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_render_resume_pdf_raises_when_no_engine(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(render_engine.shutil, "which", lambda _: None)
         with pytest.raises(LatexEngineError):
             render_engine.render_resume_pdf(
@@ -291,9 +295,7 @@ class TestRenderEngine:
                 },
             )
 
-    def test_render_resume_pdf_calls_tectonic(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_render_resume_pdf_calls_tectonic(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         """When tectonic is on PATH, _compile invokes it (we mock the subprocess)."""
 
         def fake_which(name: str) -> str | None:

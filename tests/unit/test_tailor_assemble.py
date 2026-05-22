@@ -7,28 +7,30 @@ from nexscout.scoring.tailor import assemble_resume_text, build_system_prompt, b
 
 
 def _profile() -> Profile:
-    return Profile.model_validate({
-        "me": {
-            "legal": "Jane Q. Public",
-            "pref": "Jane",
-            "email": "jane@example.com",
-            "phone": "+1-415-555-0100",
-            "links": {"li": "linkedin.com/in/jane", "gh": "github.com/jane"},
-        },
-        "facts": {
-            "companies": ["Acme Corp", "Globex"],
-            "school": "State University",
-            "metrics": ["10M MAU"],
-        },
-        "skills": {
-            "lang": ["Python", "Go"],
-            "fw": ["FastAPI"],
-            "infra": ["Docker"],
-            "data": ["Postgres"],
-            "tools": ["Git"],
-        },
-        "exp": {"edu": "BSc Computer Science"},
-    })
+    return Profile.model_validate(
+        {
+            "me": {
+                "legal": "Jane Q. Public",
+                "pref": "Jane",
+                "email": "jane@example.com",
+                "phone": "+1-415-555-0100",
+                "links": {"li": "linkedin.com/in/jane", "gh": "github.com/jane"},
+            },
+            "facts": {
+                "companies": ["Acme Corp", "Globex"],
+                "school": "State University",
+                "metrics": ["10M MAU"],
+            },
+            "skills": {
+                "lang": ["Python", "Go"],
+                "fw": ["FastAPI"],
+                "infra": ["Docker"],
+                "data": ["Postgres"],
+                "tools": ["Git"],
+            },
+            "exp": {"edu": "BSc Computer Science"},
+        }
+    )
 
 
 _TAILOR_JSON = {

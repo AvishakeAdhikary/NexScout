@@ -152,9 +152,7 @@ def test_prep_messages_passthrough_for_non_qwen(example_profile: Profile) -> Non
     assert prepped is not msgs
 
 
-def test_router_falls_back_after_failures(
-    example_profile: Profile, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_router_falls_back_after_failures(example_profile: Profile, monkeypatch: pytest.MonkeyPatch) -> None:
     """When the primary keeps failing, attempt 2 swaps to fallback."""
     fallback = _RecordingProvider()
 
@@ -179,9 +177,7 @@ def test_router_falls_back_after_failures(
     assert len(fallback.calls) >= 1
 
 
-def test_router_budget_blocks_pushes_to_fallback(
-    example_profile: Profile, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_router_budget_blocks_pushes_to_fallback(example_profile: Profile, monkeypatch: pytest.MonkeyPatch) -> None:
     fallback = _RecordingProvider()
 
     class _NoBudget:

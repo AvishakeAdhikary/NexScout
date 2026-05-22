@@ -347,9 +347,7 @@ def acquire_job(
     )
 
     with transaction(c):
-        row: sqlite3.Row | None = c.execute(
-            select_sql, (max_attempts, min_score, *site_params, *url_params)
-        ).fetchone()
+        row: sqlite3.Row | None = c.execute(select_sql, (max_attempts, min_score, *site_params, *url_params)).fetchone()
         if row is None:
             return None
         c.execute(

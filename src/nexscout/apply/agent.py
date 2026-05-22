@@ -250,7 +250,7 @@ def _kickoff_message(job: dict[str, Any]) -> str:
         f"Begin the application for: {title}\n"
         f"URL: {url}\n\n"
         "Follow the STEP-BY-STEP plan above. Emit ONE JSON tool_call per turn "
-        "of the form {\"tool\":\"navigate\",\"args\":{\"url\":\"…\"}}. When the "
+        'of the form {"tool":"navigate","args":{"url":"…"}}. When the '
         "application is submitted (or terminally failed), emit a "
         "RESULT:<CODE>[:reason] line."
     )

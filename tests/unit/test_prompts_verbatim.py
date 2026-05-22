@@ -55,11 +55,7 @@ _DOUBLE_BRACE_RE = re.compile(r"\{\{|\}\}")
 def _find_fence(starting_text: str) -> tuple[int, int]:
     open_idx = -1
     for i, line in enumerate(PLAN_LINES):
-        if (
-            line.strip() == "```"
-            and i + 1 < len(PLAN_LINES)
-            and PLAN_LINES[i + 1].lstrip().startswith(starting_text)
-        ):
+        if line.strip() == "```" and i + 1 < len(PLAN_LINES) and PLAN_LINES[i + 1].lstrip().startswith(starting_text):
             open_idx = i
             break
     if open_idx < 0:
@@ -124,9 +120,7 @@ def _resolve_mapping_at(mapping: Mapping, plan_ph: str, position: int) -> str | 
     return None
 
 
-def _walk_placeholders_in_order_match(
-    *, code_template: str, plan_block: str, mapping: Mapping
-) -> tuple[bool, str]:
+def _walk_placeholders_in_order_match(*, code_template: str, plan_block: str, mapping: Mapping) -> tuple[bool, str]:
     """Verify plan placeholders appear in the documented order and map to code."""
     code = _collapse_double_braces(code_template)
     code_phs = PLACEHOLDER_RE.findall(code)
@@ -140,9 +134,7 @@ def _walk_placeholders_in_order_match(
         if expected_code is None:
             return False, f"plan placeholder {plan_ph!r} at position {i} is not in the mapping table"
         if expected_code != code_ph:
-            return False, (
-                f"placeholder #{i}: plan {plan_ph!r} mapped to {expected_code!r} but code has {code_ph!r}"
-            )
+            return False, (f"placeholder #{i}: plan {plan_ph!r} mapped to {expected_code!r} but code has {code_ph!r}")
     return True, "ok"
 
 
@@ -404,9 +396,7 @@ def test_apply_system_prompt_strict() -> None:
 
     plan = _fenced_block_starting_with("You are an autonomous job application agent")
     stripped = _strip_nexscout_apply_additions(SYSTEM_PROMPT_TEMPLATE)
-    ok, diag = _walk_placeholders_in_order_match(
-        code_template=stripped, plan_block=plan, mapping=APPLY_MAPPING
-    )
+    ok, diag = _walk_placeholders_in_order_match(code_template=stripped, plan_block=plan, mapping=APPLY_MAPPING)
     assert ok, f"Apply placeholder order: {diag}"
     ok, diag = _strict_equal(
         code_template=SYSTEM_PROMPT_TEMPLATE,

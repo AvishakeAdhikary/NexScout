@@ -225,11 +225,18 @@ def run_tailor_stage(
                     "resume.json",
                     json.dumps(result.data, indent=2, ensure_ascii=False),
                 )
-            write_bundle_file(int(job["id"]), "_REPORT.json", json.dumps({
-                "attempts": result.attempts,
-                "judge_verdict": result.judge_verdict,
-                "judge_issues": result.judge_issues,
-            }, indent=2))
+            write_bundle_file(
+                int(job["id"]),
+                "_REPORT.json",
+                json.dumps(
+                    {
+                        "attempts": result.attempts,
+                        "judge_verdict": result.judge_verdict,
+                        "judge_issues": result.judge_issues,
+                    },
+                    indent=2,
+                ),
+            )
             conn.execute(
                 "UPDATE jobs SET tailored_resume_path=?, tailored_at=?, "
                 "tailor_attempts=COALESCE(tailor_attempts,0)+? WHERE url=?",
@@ -735,9 +742,7 @@ def run(
 
     counts: dict[str, int] = {}
     if "discover" in requested:
-        counts["discover"] = run_discover_stage(
-            conn=conn, profile=profile, router=router, limit_per_engine=limit
-        )
+        counts["discover"] = run_discover_stage(conn=conn, profile=profile, router=router, limit_per_engine=limit)
     if "enrich" in requested:
         counts["enrich"] = run_enrich_stage(
             conn=conn, profile=profile, router=router, browser_factory=browser_factory, limit=limit

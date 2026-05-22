@@ -72,7 +72,7 @@ def test_answer_persists_to_memory_and_clears_pause(conn: sqlite3.Connection, tm
         ("https://x.com/1", "Sponsor?", "2026-05-20T00:00:00Z"),
     )
     conn.execute("INSERT INTO jobs (url, apply_status) VALUES ('https://x.com/1', 'paused_for_question')")
-    out = skill.dispatch("answer", ['Sponsor?', 'No'])
+    out = skill.dispatch("answer", ["Sponsor?", "No"])
     assert "answered" in out["text"]
     row = conn.execute("SELECT answer, answered_at FROM pending_questions").fetchone()
     assert row["answer"] == "No"
@@ -85,7 +85,7 @@ def test_answer_persists_to_memory_and_clears_pause(conn: sqlite3.Connection, tm
 
 def test_answer_with_no_matching_question_still_records(conn: sqlite3.Connection, tmp_path: Path) -> None:
     _ = conn
-    out = skill.dispatch("answer", ['Unknown question?', 'sure'])
+    out = skill.dispatch("answer", ["Unknown question?", "sure"])
     assert "no matching" in out["text"]
     learned = tmp_path / "memroot" / "learned-answers.md"
     assert "Unknown question?" in learned.read_text(encoding="utf-8")
@@ -93,5 +93,5 @@ def test_answer_with_no_matching_question_still_records(conn: sqlite3.Connection
 
 def test_dispatch_splits_string_args(conn: sqlite3.Connection) -> None:
     _ = conn
-    out = skill.dispatch("apply", 'https://example.com/x')
+    out = skill.dispatch("apply", "https://example.com/x")
     assert "https://example.com/x" in out["command"]

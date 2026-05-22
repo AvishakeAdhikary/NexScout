@@ -23,10 +23,7 @@ def handle_status(*, profile: Profile | None = None) -> dict[str, Any]:
     conn = init_db()
     stats = get_stats(conn)
     events = [
-        dict(r)
-        for r in conn.execute(
-            "SELECT ts, kind, payload_json FROM events ORDER BY id DESC LIMIT 5"
-        ).fetchall()
+        dict(r) for r in conn.execute("SELECT ts, kind, payload_json FROM events ORDER BY id DESC LIMIT 5").fetchall()
     ]
     line = (
         f"total={stats['total']} scored={stats['scored']} "
@@ -60,8 +57,7 @@ def handle_question(*, profile: Profile | None = None) -> dict[str, Any]:
     _ = profile
     conn = init_db()
     rows = conn.execute(
-        "SELECT id, question, asked_at FROM pending_questions WHERE answered_at IS NULL "
-        "ORDER BY id"
+        "SELECT id, question, asked_at FROM pending_questions WHERE answered_at IS NULL ORDER BY id"
     ).fetchall()
     items = [dict(r) for r in rows]
     if not items:

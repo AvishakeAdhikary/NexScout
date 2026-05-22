@@ -90,17 +90,7 @@ def test_parse_resume_txt_roundtrip() -> None:
 
 
 def test_parse_resume_txt_multiple_experience_items() -> None:
-    text = (
-        "Name\n"
-        "Title\n"
-        "EXPERIENCE\n"
-        "Acme\n"
-        "Engineer\n"
-        "- A\n"
-        "Globex\n"
-        "Engineer\n"
-        "- B\n"
-    )
+    text = "Name\nTitle\nEXPERIENCE\nAcme\nEngineer\n- A\nGlobex\nEngineer\n- B\n"
     data = pipeline.parse_resume_txt(text)
     assert len(data["experience"]) == 2
 
@@ -110,9 +100,7 @@ def test_parse_resume_txt_multiple_experience_items() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_run_discover_stage_no_engines_available(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_discover_stage_no_engines_available(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """When every discovery sub-module raises, run_discover_stage returns 0."""
     from nexscout.discovery import jobspy as js_mod
     from nexscout.discovery import websearch as ws_mod
@@ -128,9 +116,7 @@ def test_run_discover_stage_no_engines_available(
     assert out == 0
 
 
-def test_run_discover_stage_aggregates_counts(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_discover_stage_aggregates_counts(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     from nexscout.discovery import jobspy as js_mod
     from nexscout.discovery import smartextract as se_mod
     from nexscout.discovery import websearch as ws_mod
@@ -253,8 +239,7 @@ class _Router:
 
 def test_run_score_stage(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     db.execute(
-        "INSERT INTO jobs (url, title, site, full_description) "
-        "VALUES (?, ?, ?, ?)",
+        "INSERT INTO jobs (url, title, site, full_description) VALUES (?, ?, ?, ?)",
         ("https://a.com/1", "Engineer", "greenhouse", "We need a backend engineer."),
     )
 
@@ -270,8 +255,7 @@ def test_run_score_stage(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
 
 def test_run_tailor_stage_approved(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     db.execute(
-        "INSERT INTO jobs (url, title, site, full_description, fit_score) "
-        "VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO jobs (url, title, site, full_description, fit_score) VALUES (?, ?, ?, ?, ?)",
         ("https://a.com/1", "Engineer", "greenhouse", "Backend role.", 9),
     )
 
@@ -299,12 +283,9 @@ def test_run_tailor_stage_approved(db: sqlite3.Connection, monkeypatch: pytest.M
     assert row["tailor_attempts"] == 1
 
 
-def test_run_tailor_stage_failed_bumps_attempts(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_tailor_stage_failed_bumps_attempts(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     db.execute(
-        "INSERT INTO jobs (url, title, site, full_description, fit_score) "
-        "VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO jobs (url, title, site, full_description, fit_score) VALUES (?, ?, ?, ?, ?)",
         ("https://a.com/1", "Engineer", "greenhouse", "Backend role.", 9),
     )
 
@@ -345,9 +326,7 @@ def test_run_cover_stage_approved(db: sqlite3.Connection, monkeypatch: pytest.Mo
     assert row["cover_letter_path"]
 
 
-def test_run_cover_stage_failed_bumps_attempts(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_cover_stage_failed_bumps_attempts(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     db.execute(
         "INSERT INTO jobs (url, title, site, full_description, tailored_resume_path, cover_required) "
         "VALUES (?, ?, ?, ?, ?, ?)",
@@ -419,9 +398,7 @@ def test_run_render_stage_falls_back_to_txt(
     assert captured[0]["data"]["title"] == "Staff Engineer"
 
 
-def test_load_resume_data_corrupt_json_falls_back(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_load_resume_data_corrupt_json_falls_back(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     (tmp_path / "resume.json").write_text("not json {")
     txt = tmp_path / "resume.txt"
     txt.write_text("Name\nTitle\n")
@@ -447,6 +424,7 @@ def test_run_dispatches_stages(db: sqlite3.Connection, monkeypatch: pytest.Monke
         def _fn(**_kw: Any) -> int:
             calls.append(name)
             return 1
+
         return _fn
 
     monkeypatch.setattr(pipeline, "run_discover_stage", _record("discover"))
@@ -464,11 +442,14 @@ def test_run_dispatches_stages(db: sqlite3.Connection, monkeypatch: pytest.Monke
 def test_run_empty_stages_runs_all(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
     for name in pipeline.STAGE_NAMES:
+
         def _fn(name: str = name) -> Any:
             def inner(**_kw: Any) -> int:
                 calls.append(name)
                 return 0
+
             return inner
+
         monkeypatch.setattr(pipeline, f"run_{name}_stage", _fn())
 
     pipeline.run([], profile=_profile(), conn=db, router=object())  # type: ignore[arg-type]
@@ -478,11 +459,14 @@ def test_run_empty_stages_runs_all(db: sqlite3.Connection, monkeypatch: pytest.M
 def test_run_subset(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
     for name in pipeline.STAGE_NAMES:
+
         def _fn(name: str = name) -> Any:
             def inner(**_kw: Any) -> int:
                 calls.append(name)
                 return 0
+
             return inner
+
         monkeypatch.setattr(pipeline, f"run_{name}_stage", _fn())
 
     pipeline.run(["score", "tailor"], profile=_profile(), conn=db, router=object())  # type: ignore[arg-type]
@@ -500,6 +484,7 @@ def test_run_streaming_completes(db: sqlite3.Connection, monkeypatch: pytest.Mon
     def _quick(name: str) -> Any:
         def _fn(**_kw: Any) -> int:
             return 0
+
         return _fn
 
     for name in pipeline.STAGE_NAMES:
@@ -518,10 +503,7 @@ def test_run_streaming_completes(db: sqlite3.Connection, monkeypatch: pytest.Mon
 
 def test_streaming_stage_loop_drains_pending(db: sqlite3.Connection) -> None:
     """Direct unit test on the generic streaming worker."""
-    db.execute(
-        "INSERT INTO jobs (url, title, site, full_description) VALUES "
-        "('https://a.com/1', 'x', 'gh', 'desc')"
-    )
+    db.execute("INSERT INTO jobs (url, title, site, full_description) VALUES ('https://a.com/1', 'x', 'gh', 'desc')")
     counts: dict[str, int] = {}
     upstream = threading.Event()
     upstream.set()
@@ -534,9 +516,7 @@ def test_streaming_stage_loop_drains_pending(db: sqlite3.Connection) -> None:
         work_calls[0] += 1
         # First call drains everything.
         if work_calls[0] == 1:
-            db.execute(
-                "UPDATE jobs SET fit_score=8 WHERE url='https://a.com/1'"
-            )
+            db.execute("UPDATE jobs SET fit_score=8 WHERE url='https://a.com/1'")
             return 1
         return 0
 

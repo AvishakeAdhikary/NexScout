@@ -34,10 +34,10 @@ def test_each_snippet_uses_the_token_placeholder() -> None:
 
 
 def test_each_snippet_targets_expected_dom_field() -> None:
-    assert 'g-recaptcha-response' in RECAPTCHA_INJECT_JS
-    assert 'h-captcha-response' in HCAPTCHA_INJECT_JS
-    assert 'cf-turnstile-response' in TURNSTILE_INJECT_JS
-    assert 'FunCaptcha-Token' in FUNCAPTCHA_INJECT_JS
+    assert "g-recaptcha-response" in RECAPTCHA_INJECT_JS
+    assert "h-captcha-response" in HCAPTCHA_INJECT_JS
+    assert "cf-turnstile-response" in TURNSTILE_INJECT_JS
+    assert "FunCaptcha-Token" in FUNCAPTCHA_INJECT_JS
 
 
 def test_recaptcha_snippet_walks_grecaptcha_clients() -> None:

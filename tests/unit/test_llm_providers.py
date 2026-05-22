@@ -96,9 +96,7 @@ class TestGemini:
             "post",
             _fake_post_factory(200, {"choices": [{"message": {"content": "compat-out"}}]}),
         )
-        out = GeminiProvider("gemini-2.0-flash", api_key="k").chat(
-            [Message(role="user", content="hi")]
-        )
+        out = GeminiProvider("gemini-2.0-flash", api_key="k").chat([Message(role="user", content="hi")])
         assert out == "compat-out"
 
     def test_chat_native_fallback_on_403(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -173,16 +171,12 @@ class TestAnthropic:
     def test_chat_http_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(httpx, "post", _fake_post_factory(500, None, text="server fail"))
         with pytest.raises(ProviderError, match="500"):
-            AnthropicProvider("claude-haiku-4-5", api_key="k").chat(
-                [Message(role="user", content="hi")]
-            )
+            AnthropicProvider("claude-haiku-4-5", api_key="k").chat([Message(role="user", content="hi")])
 
     def test_chat_malformed(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(httpx, "post", _fake_post_factory(200, {"oops": True}))
         with pytest.raises(ProviderError, match="malformed"):
-            AnthropicProvider("claude-haiku-4-5", api_key="k").chat(
-                [Message(role="user", content="hi")]
-            )
+            AnthropicProvider("claude-haiku-4-5", api_key="k").chat([Message(role="user", content="hi")])
 
 
 # ---------------------------------------------------------------------------
@@ -192,13 +186,8 @@ class TestAnthropic:
 
 class TestOllama:
     def test_chat_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            httpx, "post", _fake_post_factory(200, {"message": {"content": "ollama-out"}})
-        )
-        assert (
-            OllamaProvider("llama3.1:70b").chat([Message(role="user", content="hi")])
-            == "ollama-out"
-        )
+        monkeypatch.setattr(httpx, "post", _fake_post_factory(200, {"message": {"content": "ollama-out"}}))
+        assert OllamaProvider("llama3.1:70b").chat([Message(role="user", content="hi")]) == "ollama-out"
 
     def test_chat_transport_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         def boom(*a: Any, **k: Any) -> Any:
@@ -226,29 +215,18 @@ class TestOllama:
 
 class TestOpenAICompat:
     def test_lmstudio_chat(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            httpx, "post", _fake_post_factory(200, {"choices": [{"message": {"content": "lm"}}]})
-        )
+        monkeypatch.setattr(httpx, "post", _fake_post_factory(200, {"choices": [{"message": {"content": "lm"}}]}))
         assert LMStudioProvider("local-model").chat([Message(role="user", content="hi")]) == "lm"
 
     def test_vllm_chat(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            httpx, "post", _fake_post_factory(200, {"choices": [{"message": {"content": "v"}}]})
-        )
+        monkeypatch.setattr(httpx, "post", _fake_post_factory(200, {"choices": [{"message": {"content": "v"}}]}))
         assert (
-            VLLMProvider("local-model", base_url="http://example/v1").chat(
-                [Message(role="user", content="hi")]
-            )
-            == "v"
+            VLLMProvider("local-model", base_url="http://example/v1").chat([Message(role="user", content="hi")]) == "v"
         )
 
     def test_llamacpp_chat(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(
-            httpx, "post", _fake_post_factory(200, {"choices": [{"message": {"content": "lc"}}]})
-        )
+        monkeypatch.setattr(httpx, "post", _fake_post_factory(200, {"choices": [{"message": {"content": "lc"}}]}))
         assert (
-            LlamaCppProvider("local-model", base_url="http://example/v1").chat(
-                [Message(role="user", content="hi")]
-            )
+            LlamaCppProvider("local-model", base_url="http://example/v1").chat([Message(role="user", content="hi")])
             == "lc"
         )

@@ -214,7 +214,7 @@ def test_execute_css_selectors_no_card_sel() -> None:
 def test_collect_json_ld_recovers_objects() -> None:
     drv = SimpleNamespace(
         page_source=(
-            '<html><head>'
+            "<html><head>"
             '<script type="application/ld+json">{"@type":"JobPosting","title":"x"}</script>'
             '<script type="application/ld+json">[{"@type":"JobPosting","title":"y"}]</script>'
             "</head></html>"
@@ -226,9 +226,7 @@ def test_collect_json_ld_recovers_objects() -> None:
 
 
 def test_collect_next_data() -> None:
-    drv = SimpleNamespace(
-        page_source='<html><head><script id="__NEXT_DATA__">{"props":{"x":1}}</script></head></html>'
-    )
+    drv = SimpleNamespace(page_source='<html><head><script id="__NEXT_DATA__">{"props":{"x":1}}</script></head></html>')
     out = _collect_next_data(drv)
     assert out and out["props"]["x"] == 1
 
@@ -239,9 +237,7 @@ def test_collect_next_data_missing() -> None:
 
 
 def test_collect_data_testids() -> None:
-    drv = SimpleNamespace(
-        page_source='<html><div data-testid="card">Hello there</div></html>'
-    )
+    drv = SimpleNamespace(page_source='<html><div data-testid="card">Hello there</div></html>')
     out = _collect_data_testids(drv)
     assert out and out[0]["testid"] == "card"
 
@@ -561,7 +557,8 @@ def test_run_smartextract_picks_json_ld_strategy(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(se, "collect_briefing", _collect)
     monkeypatch.setattr(se, "_load_smartextract_targets", lambda: ["https://x.com/jobs"])
     monkeypatch.setattr(
-        se, "run_strategy",
+        se,
+        "run_strategy",
         lambda router, briefing, **kw: {
             "strategy": "json_ld",
             "extraction": {"title": "title", "url": "url"},

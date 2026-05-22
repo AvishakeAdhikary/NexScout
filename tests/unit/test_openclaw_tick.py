@@ -59,9 +59,7 @@ def test_tick_runs_all_stages_with_mocks(
     assert summary["duration_s"] >= 0
 
 
-def test_tick_catches_stage_errors(
-    conn: sqlite3.Connection, profile: Profile, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_tick_catches_stage_errors(conn: sqlite3.Connection, profile: Profile, monkeypatch: pytest.MonkeyPatch) -> None:
     def boom(*a, **k):
         raise RuntimeError("oops")
 
@@ -79,9 +77,7 @@ def test_tick_catches_stage_errors(
     assert summary["enriched"] == 1
 
 
-def test_tick_respects_wall_clock(
-    conn: sqlite3.Connection, profile: Profile, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_tick_respects_wall_clock(conn: sqlite3.Connection, profile: Profile, monkeypatch: pytest.MonkeyPatch) -> None:
     """When the wall clock is 0, every stage is skipped."""
     called: list[str] = []
 
@@ -106,9 +102,7 @@ def test_tick_respects_wall_clock(
     assert summary["discovered"] == 0
 
 
-def test_tick_filters_stages(
-    conn: sqlite3.Connection, profile: Profile, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_tick_filters_stages(conn: sqlite3.Connection, profile: Profile, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(tick, "_stage_discover", lambda *a, **k: 5)
     monkeypatch.setattr(tick, "_stage_enrich", lambda *a, **k: 99)
     summary = tick.run(profile=profile, db=conn, stages={"discover"})

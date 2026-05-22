@@ -53,13 +53,13 @@ class _GmailDriverOK:
     def find_elements(self, by: str, value: str) -> list[Any]:
         _ = by
         # Always pretend that login screens never appear (compose URL works).
-        if "input[type=\"email\"]" in value or "Passwd" in value or "identifier" in value:
+        if 'input[type="email"]' in value or "Passwd" in value or "identifier" in value:
             return []
         # File input selector comes inside the dialog selector — check this
         # FIRST because the substring "dialog" also appears in it.
-        if "input[type=\"file\"]" in value:
+        if 'input[type="file"]' in value:
             return [_FileInput(self.attach_paths)]
-        if "Send" in value or "aria-label^=\"Send\"" in value:
+        if "Send" in value or 'aria-label^="Send"' in value:
             return [_SendButton(self)]
         if "aria-live" in value:
             return [_Element()]
@@ -156,9 +156,7 @@ def test_send_email_uses_explicit_smtp_factory(bundle_dir: Path, resume_pdf: Pat
 # ---------------------------------------------------------------------------
 
 
-def test_send_email_uses_smtp_from_profile(
-    bundle_dir: Path, resume_pdf: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_send_email_uses_smtp_from_profile(bundle_dir: Path, resume_pdf: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     sent: list[Any] = []
 
     class _CapturedSMTP:

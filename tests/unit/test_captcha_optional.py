@@ -160,9 +160,7 @@ def test_doctor_reports_captcha_warn_when_no_key(
     assert "captcha_missing" not in combined.lower()
 
 
-def test_doctor_quiet_exits_zero_when_t2_healthy(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_doctor_quiet_exits_zero_when_t2_healthy(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """--quiet should exit 0 when tier == T2 even without CAPTCHA key."""
     monkeypatch.setenv("NEXSCOUT_DIR", str(tmp_path / ".nexscout"))
     monkeypatch.setattr("nexscout.cli.get_chrome_path", lambda: "/usr/bin/chromium")

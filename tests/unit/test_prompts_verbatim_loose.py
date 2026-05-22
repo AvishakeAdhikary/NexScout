@@ -64,7 +64,7 @@ def _slice_fenced_block(start_line: int, end_line: int) -> str:
     `end_line` is the line number of the closing fence. Returns the content
     *between* them.
     """
-    return "\n".join(PLAN_LINES[start_line:end_line - 1])
+    return "\n".join(PLAN_LINES[start_line : end_line - 1])
 
 
 def _find_fence(starting_text: str) -> tuple[int, int]:
@@ -73,11 +73,7 @@ def _find_fence(starting_text: str) -> tuple[int, int]:
     """
     open_idx = -1
     for i, line in enumerate(PLAN_LINES):
-        if (
-            line.strip() == "```"
-            and i + 1 < len(PLAN_LINES)
-            and PLAN_LINES[i + 1].lstrip().startswith(starting_text)
-        ):
+        if line.strip() == "```" and i + 1 < len(PLAN_LINES) and PLAN_LINES[i + 1].lstrip().startswith(starting_text):
             open_idx = i
             break
     if open_idx < 0:

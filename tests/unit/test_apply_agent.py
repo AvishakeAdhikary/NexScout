@@ -74,9 +74,7 @@ def test_transcript_lines_missing_file(tmp_path: Path) -> None:
 
 
 def test_transcript_lines_round_trip(tmp_path: Path) -> None:
-    (tmp_path / "transcript.jsonl").write_text(
-        '{"a":1}\n\n{"b":2}\nnot json\n', encoding="utf-8"
-    )
+    (tmp_path / "transcript.jsonl").write_text('{"a":1}\n\n{"b":2}\nnot json\n', encoding="utf-8")
     out = list(transcript_lines(tmp_path))
     assert out == [{"a": 1}, {"b": 2}]
 
@@ -163,10 +161,12 @@ def test_run_agent_router_exception_marks_page_error(tmp_path: Path) -> None:
 
 
 def test_run_agent_navigate_then_done(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    router = _ScriptedRouter([
-        '{"tool":"navigate","args":{"url":"https://x.com"}}',
-        '{"tool":"done","args":{"result":"RESULT:APPLIED"}}',
-    ])
+    router = _ScriptedRouter(
+        [
+            '{"tool":"navigate","args":{"url":"https://x.com"}}',
+            '{"tool":"done","args":{"result":"RESULT:APPLIED"}}',
+        ]
+    )
     drv = MagicMock()
     code, _, _, _ = run_agent(
         job={"url": "https://x.com", "title": "Eng"},
@@ -181,10 +181,12 @@ def test_run_agent_navigate_then_done(tmp_path: Path, monkeypatch: pytest.Monkey
 
 
 def test_run_agent_dashboard_ticks(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    router = _ScriptedRouter([
-        '{"tool":"wait","args":{"ms":0}}',
-        "RESULT:APPLIED",
-    ])
+    router = _ScriptedRouter(
+        [
+            '{"tool":"wait","args":{"ms":0}}',
+            "RESULT:APPLIED",
+        ]
+    )
     ticks: list[Any] = []
 
     class _DB:
@@ -222,10 +224,12 @@ def test_run_agent_solve_captcha_marks_solved(tmp_path: Path, monkeypatch: pytes
         def solve(self, *a: Any, **kw: Any) -> str:
             return "tok"
 
-    router = _ScriptedRouter([
-        '{"tool":"solve_captcha","args":{}}',
-        "RESULT:APPLIED",
-    ])
+    router = _ScriptedRouter(
+        [
+            '{"tool":"solve_captcha","args":{}}',
+            "RESULT:APPLIED",
+        ]
+    )
     code, _reason, _cost, solved = run_agent(
         job={"url": "https://x.com", "title": "Eng"},
         profile=_profile(),
@@ -240,11 +244,13 @@ def test_run_agent_solve_captcha_marks_solved(tmp_path: Path, monkeypatch: pytes
 
 def test_run_agent_screenshot_indexing(tmp_path: Path) -> None:
     """Screenshots use sequential NNN_<name> naming via the agent's idx counter."""
-    router = _ScriptedRouter([
-        '{"tool":"screenshot","args":{"name":"first"}}',
-        '{"tool":"screenshot","args":{"name":"second"}}',
-        "RESULT:APPLIED",
-    ])
+    router = _ScriptedRouter(
+        [
+            '{"tool":"screenshot","args":{"name":"first"}}',
+            '{"tool":"screenshot","args":{"name":"second"}}',
+            "RESULT:APPLIED",
+        ]
+    )
     drv = MagicMock()
 
     def _save(path: str) -> bool:

@@ -55,7 +55,7 @@ def test_keeps_allow_listed_attrs() -> None:
     assert 'aria-label="Submit"' in cleaned
     assert 'id="title"' in cleaned
     assert 'name="first"' in cleaned
-    assert 'for=' not in cleaned  # no <label for=…> in fixture; just confirming substring search
+    assert "for=" not in cleaned  # no <label for=…> in fixture; just confirming substring search
 
 
 def test_drops_long_class_attributes() -> None:
@@ -72,9 +72,9 @@ def test_drops_long_class_attributes() -> None:
 def test_drops_unlisted_attrs() -> None:
     cleaned = simplify_dom(FIXTURE_HTML)
     # ``placeholder`` is not in the allow-list.
-    assert 'placeholder=' not in cleaned
+    assert "placeholder=" not in cleaned
     # ``required`` is not in allow-list.
-    assert 'required=' not in cleaned
+    assert "required=" not in cleaned
 
 
 def test_head_is_removed() -> None:

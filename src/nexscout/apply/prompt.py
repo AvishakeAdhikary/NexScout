@@ -1,7 +1,5 @@
 """System-prompt builder for the apply ReAct agent (verbatim §13.4)."""
 
-
-
 from __future__ import annotations
 
 import re
@@ -200,9 +198,9 @@ Stop immediately. Output your RESULT. Do not loop."""
 
 # Cover letter placeholder text (verbatim §13.4 fallback).
 COVER_LETTER_PLACEHOLDER = (
-    'None available. Skip if optional. If required,\n'
-    'write 2 factual sentences: (1) relevant experience from resume matching\n'
-    'this role, (2) available immediately and based in {city}.'
+    "None available. Skip if optional. If required,\n"
+    "write 2 factual sentences: (1) relevant experience from resume matching\n"
+    "this role, (2) available immediately and based in {city}."
 )
 
 

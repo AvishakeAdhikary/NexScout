@@ -145,11 +145,7 @@ def test_tier1_jsonld_no_blocks() -> None:
 
 
 def test_tier1_jsonld_description_html_cleaned() -> None:
-    html = (
-        '<script type="application/ld+json">'
-        '{"@type":"JobPosting","description":"<p>' + "a" * 60 + '</p>"}'
-        "</script>"
-    )
+    html = '<script type="application/ld+json">{"@type":"JobPosting","description":"<p>' + "a" * 60 + '</p>"}</script>'
     res = ed.tier1_jsonld(html)
     assert res and "<p>" not in res.full_description
 
@@ -243,11 +239,7 @@ def test_enrich_html_empty_returns_none() -> None:
 
 
 def test_enrich_html_tier1_first() -> None:
-    html = (
-        '<script type="application/ld+json">'
-        '{"@type":"JobPosting","description":"' + "a" * 60 + '"}'
-        "</script>"
-    )
+    html = '<script type="application/ld+json">{"@type":"JobPosting","description":"' + "a" * 60 + '"}</script>'
     res = ed.enrich_html(html, url="x", title="t")
     assert res and res.tier == "json_ld"
 
@@ -343,9 +335,7 @@ def test_enrich_row_drives_driver(monkeypatch: pytest.MonkeyPatch) -> None:
 
     class _Drv:
         page_source = (
-            '<script type="application/ld+json">'
-            '{"@type":"JobPosting","description":"' + "a" * 60 + '"}'
-            "</script>"
+            '<script type="application/ld+json">{"@type":"JobPosting","description":"' + "a" * 60 + '"}</script>'
         )
 
         def get(self, url: str) -> None:

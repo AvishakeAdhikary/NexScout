@@ -30,9 +30,7 @@ def _openclaw_status() -> dict[str, Any]:
 
 def _recent_events(limit: int = 20) -> list[dict[str, Any]]:
     conn = init_db()
-    rows = conn.execute(
-        "SELECT ts, kind, payload_json FROM events ORDER BY id DESC LIMIT ?", (limit,)
-    ).fetchall()
+    rows = conn.execute("SELECT ts, kind, payload_json FROM events ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
     return [dict(r) for r in rows]
 
 

@@ -168,11 +168,7 @@ class LiveDashboard:
         for w in sorted(self.workers):
             state = self.workers[w]
             colour = STATUS_PALETTE.get(state.status, "white")
-            job_descr = (
-                f"{state.job_title} @ {state.company}"
-                if state.job_title
-                else "(idle)"
-            )
+            job_descr = f"{state.job_title} @ {state.company}" if state.job_title else "(idle)"
             table.add_row(
                 str(w),
                 job_descr,

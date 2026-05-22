@@ -42,9 +42,7 @@ def test_questions_page_lists_pending(client: TestClient) -> None:
     assert "Are you authorised to work in Canada?" in resp.text
 
 
-def test_answer_updates_db_and_writes_memory(
-    client: TestClient, db: sqlite3.Connection, tmp_path: Path
-) -> None:
+def test_answer_updates_db_and_writes_memory(client: TestClient, db: sqlite3.Connection, tmp_path: Path) -> None:
     qid = int(db.execute("SELECT id FROM pending_questions ORDER BY id DESC LIMIT 1").fetchone()["id"])
     resp = client.post(
         "/api/answer",

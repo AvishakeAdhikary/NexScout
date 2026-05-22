@@ -77,18 +77,12 @@ MAX_CLASS_LEN = 30
 
 #: Allow-listed attribute names per §13.2. ``data-*`` and ``aria-*`` are
 #: handled as prefixes; everything else is matched verbatim.
-ALLOW_ATTRS_LITERAL: frozenset[str] = frozenset(
-    {"id", "href", "role", "type", "name", "for"}
-)
+ALLOW_ATTRS_LITERAL: frozenset[str] = frozenset({"id", "href", "role", "type", "name", "for"})
 ALLOW_ATTR_PREFIXES: tuple[str, ...] = ("data-", "aria-")
-SPECIFIC_DATA_ALLOWLIST: frozenset[str] = frozenset(
-    {"data-testid", "data-id", "data-type", "data-slug"}
-)
+SPECIFIC_DATA_ALLOWLIST: frozenset[str] = frozenset({"data-testid", "data-id", "data-type", "data-slug"})
 
 #: Tags we always strip outright before serialising.
-STRIP_TAGS: frozenset[str] = frozenset(
-    {"script", "style", "noscript", "svg", "iframe", "link", "meta"}
-)
+STRIP_TAGS: frozenset[str] = frozenset({"script", "style", "noscript", "svg", "iframe", "link", "meta"})
 
 
 def simplify_dom(html: str) -> str:

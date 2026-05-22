@@ -64,8 +64,7 @@ class TestMarkResultKwargs:
             bundle_dir="/tmp/bundle",
         )
         row = db.execute(
-            "SELECT apply_duration_ms, cost_usd, captcha_solved, bundle_dir "
-            "FROM jobs WHERE url=?",
+            "SELECT apply_duration_ms, cost_usd, captcha_solved, bundle_dir FROM jobs WHERE url=?",
             ("https://a.com/1",),
         ).fetchone()
         assert row["apply_duration_ms"] == 4321
@@ -89,18 +88,14 @@ class TestMarkResultKwargs:
     def test_expired_is_permanent(self, db: sqlite3.Connection) -> None:
         _insert(db, "https://a.com/1")
         mark_result("https://a.com/1", "EXPIRED", None, db)
-        row = db.execute(
-            "SELECT apply_status, apply_attempts FROM jobs WHERE url=?", ("https://a.com/1",)
-        ).fetchone()
+        row = db.execute("SELECT apply_status, apply_attempts FROM jobs WHERE url=?", ("https://a.com/1",)).fetchone()
         assert row["apply_status"] == "expired"
         assert row["apply_attempts"] == 99
 
     def test_login_issue_is_permanent(self, db: sqlite3.Connection) -> None:
         _insert(db, "https://a.com/1")
         mark_result("https://a.com/1", "LOGIN_ISSUE", None, db)
-        row = db.execute(
-            "SELECT apply_status, apply_attempts FROM jobs WHERE url=?", ("https://a.com/1",)
-        ).fetchone()
+        row = db.execute("SELECT apply_status, apply_attempts FROM jobs WHERE url=?", ("https://a.com/1",)).fetchone()
         assert row["apply_status"] == "login_issue"
         assert row["apply_attempts"] == 99
 
@@ -153,10 +148,12 @@ def test_worker_loop_processes_then_exits(
     _insert(db, "https://a.com/1", score=9)
     _insert(db, "https://b.com/2", score=8)
 
-    runner = _FakeRunner([
-        ("APPLIED", None, 0.05, False),
-        ("APPLIED", None, 0.07, True),
-    ])
+    runner = _FakeRunner(
+        [
+            ("APPLIED", None, 0.05, False),
+            ("APPLIED", None, 0.07, True),
+        ]
+    )
     dashboard = _NoOpDashboard()
     count = worker_loop(
         worker_id=0,
@@ -185,16 +182,16 @@ def test_worker_loop_processes_then_exits(
     assert payload["backend"] == "native"
 
 
-def test_worker_loop_respects_limit(
-    db: sqlite3.Connection, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_worker_loop_respects_limit(db: sqlite3.Connection, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("nexscout.apply.orchestrator.bundle_dir_for", _ensure_bundle(tmp_path))
     _insert(db, "https://a.com/1", score=9)
     _insert(db, "https://b.com/2", score=8)
-    runner = _FakeRunner([
-        ("APPLIED", None, 0.0, False),
-        ("APPLIED", None, 0.0, False),
-    ])
+    runner = _FakeRunner(
+        [
+            ("APPLIED", None, 0.0, False),
+            ("APPLIED", None, 0.0, False),
+        ]
+    )
     count = worker_loop(
         worker_id=0,
         profile=_profile(),
@@ -279,9 +276,7 @@ def test_acquire_excludes_blocked_sites(
     assert acquire_job(_profile(), db, agent_id="worker-0") is None
 
 
-def test_acquire_excludes_blocked_url_patterns(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_acquire_excludes_blocked_url_patterns(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     _insert(db, "https://glassdoor.com/job/1", score=9)
     from nexscout.apply.policy import ApplyPolicy
 

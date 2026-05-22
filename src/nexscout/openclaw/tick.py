@@ -110,59 +110,78 @@ def run(
     conn = db if db is not None else init_db(database_path())
     budget = profile.openclaw.tick_budget
 
-    stage_set = set(stages) if stages else {
-        "discover", "enrich", "score", "tailor", "render", "apply", "questions"
-    }
+    stage_set = set(stages) if stages else {"discover", "enrich", "score", "tailor", "render", "apply", "questions"}
 
     if "discover" in stage_set:
-        summary.discovered = _run_stage(
-            "discover",
-            lambda: _stage_discover(profile, conn, budget.discover_per_engine),
-            summary=summary,
-            deadline=deadline,
-        ) or 0
+        summary.discovered = (
+            _run_stage(
+                "discover",
+                lambda: _stage_discover(profile, conn, budget.discover_per_engine),
+                summary=summary,
+                deadline=deadline,
+            )
+            or 0
+        )
     if "enrich" in stage_set:
-        summary.enriched = _run_stage(
-            "enrich",
-            lambda: _stage_enrich(profile, conn, budget.enrich),
-            summary=summary,
-            deadline=deadline,
-        ) or 0
+        summary.enriched = (
+            _run_stage(
+                "enrich",
+                lambda: _stage_enrich(profile, conn, budget.enrich),
+                summary=summary,
+                deadline=deadline,
+            )
+            or 0
+        )
     if "score" in stage_set:
-        summary.scored = _run_stage(
-            "score",
-            lambda: _stage_score(profile, conn, budget.score),
-            summary=summary,
-            deadline=deadline,
-        ) or 0
+        summary.scored = (
+            _run_stage(
+                "score",
+                lambda: _stage_score(profile, conn, budget.score),
+                summary=summary,
+                deadline=deadline,
+            )
+            or 0
+        )
     if "tailor" in stage_set:
-        summary.tailored = _run_stage(
-            "tailor",
-            lambda: _stage_tailor(profile, conn, budget.tailor),
-            summary=summary,
-            deadline=deadline,
-        ) or 0
+        summary.tailored = (
+            _run_stage(
+                "tailor",
+                lambda: _stage_tailor(profile, conn, budget.tailor),
+                summary=summary,
+                deadline=deadline,
+            )
+            or 0
+        )
     if "render" in stage_set:
-        summary.rendered = _run_stage(
-            "render",
-            lambda: _stage_render(profile, conn),
-            summary=summary,
-            deadline=deadline,
-        ) or 0
+        summary.rendered = (
+            _run_stage(
+                "render",
+                lambda: _stage_render(profile, conn),
+                summary=summary,
+                deadline=deadline,
+            )
+            or 0
+        )
     if "apply" in stage_set:
-        summary.applied = _run_stage(
-            "apply",
-            lambda: _stage_apply(profile, conn, budget.apply),
-            summary=summary,
-            deadline=deadline,
-        ) or 0
+        summary.applied = (
+            _run_stage(
+                "apply",
+                lambda: _stage_apply(profile, conn, budget.apply),
+                summary=summary,
+                deadline=deadline,
+            )
+            or 0
+        )
     if "questions" in stage_set:
-        summary.questions_surfaced = _run_stage(
-            "questions",
-            lambda: _stage_surface_questions(profile, conn),
-            summary=summary,
-            deadline=deadline,
-        ) or 0
+        summary.questions_surfaced = (
+            _run_stage(
+                "questions",
+                lambda: _stage_surface_questions(profile, conn),
+                summary=summary,
+                deadline=deadline,
+            )
+            or 0
+        )
 
     summary.finished_at = _ts()
     summary.duration_s = time.monotonic() - started
@@ -347,8 +366,7 @@ def _stage_surface_questions(profile: Profile, conn: sqlite3.Connection) -> int:
     """Write any newly-pending questions to ``~/.openclaw/inbox/nexscout-<ts>.md``."""
     _ = profile
     rows = conn.execute(
-        "SELECT id, job_url, question, asked_at FROM pending_questions "
-        "WHERE answered_at IS NULL ORDER BY id"
+        "SELECT id, job_url, question, asked_at FROM pending_questions WHERE answered_at IS NULL ORDER BY id"
     ).fetchall()
     if not rows:
         return 0

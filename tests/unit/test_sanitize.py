@@ -18,7 +18,7 @@ def test_en_dash_becomes_hyphen() -> None:
 
 
 def test_smart_quotes_normalised() -> None:
-    assert sanitize_text("“hello” ‘world’") == '"hello" \'world\''
+    assert sanitize_text("“hello” ‘world’") == "\"hello\" 'world'"
 
 
 def test_whitespace_is_stripped() -> None:

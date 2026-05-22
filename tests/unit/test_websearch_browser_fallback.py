@@ -123,10 +123,7 @@ def test_browser_provider_returns_empty_when_no_factory() -> None:
 
 
 def test_browser_provider_caps_max_results() -> None:
-    html = "".join(
-        f'<a data-testid="result-title-a" href="https://greenhouse.io/x/{i}">{i}</a>'
-        for i in range(30)
-    )
+    html = "".join(f'<a data-testid="result-title-a" href="https://greenhouse.io/x/{i}">{i}</a>' for i in range(30))
     driver = _FakeDriver({"duckduckgo.com": f"<html><body>{html}</body></html>"})
     factory = _FakeFactory(driver)
     provider = BrowserSearchProvider(factory=factory, settle_seconds=0.0)
@@ -158,16 +155,12 @@ def test_run_websearch_uses_browser_when_no_api_providers(
     )
     assert new >= 1
     # Verify the row landed with strategy=websearch and host-derived site.
-    rows = conn.execute(
-        "SELECT url, site, strategy, web_search_query FROM jobs"
-    ).fetchall()
+    rows = conn.execute("SELECT url, site, strategy, web_search_query FROM jobs").fetchall()
     assert any("greenhouse" in (r["site"] or "") for r in rows)
     assert all(r["strategy"] == "websearch" for r in rows)
 
 
-def test_run_websearch_respects_daily_cap(
-    conn: sqlite3.Connection, profile_with_websearch: Profile
-) -> None:
+def test_run_websearch_respects_daily_cap(conn: sqlite3.Connection, profile_with_websearch: Profile) -> None:
     profile_with_websearch.search.boards.websearch.queries_per_day = 0
     result = run_websearch(profile_with_websearch, conn=conn)
     assert result == (0, 0)

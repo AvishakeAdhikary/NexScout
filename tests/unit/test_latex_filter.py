@@ -7,9 +7,7 @@ from nexscout.scoring.render.latex_filter import currency_fmt, latex_escape
 
 
 def test_escape_special_characters() -> None:
-    assert latex_escape("& % $ # _ { } ~ ^") == (
-        r"\& \% \$ \# \_ \{ \} \textasciitilde{} \textasciicircum{}"
-    )
+    assert latex_escape("& % $ # _ { } ~ ^") == (r"\& \% \$ \# \_ \{ \} \textasciitilde{} \textasciicircum{}")
 
 
 def test_escape_backslash() -> None:

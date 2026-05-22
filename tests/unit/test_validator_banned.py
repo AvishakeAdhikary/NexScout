@@ -7,11 +7,13 @@ from nexscout.scoring.validator import has_banned_word, validate_cover_letter
 
 
 def _profile() -> Profile:
-    return Profile.model_validate({
-        "me": {"legal": "X", "pref": "X", "email": "x@x", "phone": "1"},
-        "facts": {"companies": ["X"], "school": "U"},
-        "skills": {"lang": ["Python"]},
-    })
+    return Profile.model_validate(
+        {
+            "me": {"legal": "X", "pref": "X", "email": "x@x", "phone": "1"},
+            "facts": {"companies": ["X"], "school": "U"},
+            "skills": {"lang": ["Python"]},
+        }
+    )
 
 
 def test_word_boundary_hits_passionate() -> None:

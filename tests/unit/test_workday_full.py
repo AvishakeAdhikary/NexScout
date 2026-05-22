@@ -95,9 +95,7 @@ def test_build_client_with_proxy_quad() -> None:
 def test_search_page_calls_post() -> None:
     client = MagicMock()
     client.post.return_value.json.return_value = {"jobPostings": []}
-    out = wd._search_page(
-        client, base_url="https://x.com/", tenant="t", site_id="s", query="eng", offset=0
-    )
+    out = wd._search_page(client, base_url="https://x.com/", tenant="t", site_id="s", query="eng", offset=0)
     assert out == {"jobPostings": []}
     client.post.assert_called_once()
 
@@ -136,12 +134,11 @@ def test_run_workday_no_eligible_queries(db: sqlite3.Connection, monkeypatch: py
     assert (new, dup) == (0, 0)
 
 
-def test_run_workday_paginates_and_terminates(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_workday_paginates_and_terminates(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """Simulate three pages, terminating at ``total``."""
     monkeypatch.setattr(
-        wd, "load_employers",
+        wd,
+        "load_employers",
         lambda *a, **kw: {
             "acme": {
                 "name": "Acme",
@@ -158,15 +155,14 @@ def test_run_workday_paginates_and_terminates(
     ) -> dict[str, Any]:
         page_calls.append(offset)
         return {
-            "jobPostings": [
-                {"externalPath": f"/jobs/{offset}", "title": f"Eng-{offset}", "locationsText": "Remote"}
-            ],
+            "jobPostings": [{"externalPath": f"/jobs/{offset}", "title": f"Eng-{offset}", "locationsText": "Remote"}],
             "total": 1,
         }
 
     monkeypatch.setattr(wd, "_search_page", _fake_search_page)
     monkeypatch.setattr(
-        wd, "_fetch_detail",
+        wd,
+        "_fetch_detail",
         lambda client, **kw: {"jobPostingInfo": {"jobDescription": "<p>desc</p>", "externalUrl": "https://x.com/1"}},
     )
     monkeypatch.setattr(wd.time, "sleep", lambda s: None)
@@ -176,11 +172,10 @@ def test_run_workday_paginates_and_terminates(
     assert page_calls == [0]
 
 
-def test_run_workday_http_error_breaks_pagination(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_workday_http_error_breaks_pagination(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        wd, "load_employers",
+        wd,
+        "load_employers",
         lambda *a, **kw: {
             "acme": {
                 "name": "Acme",
@@ -199,24 +194,22 @@ def test_run_workday_http_error_breaks_pagination(
     assert new == 0
 
 
-def test_run_workday_skips_employers_missing_fields(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_workday_skips_employers_missing_fields(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """An employer missing base_url/tenant/site_id is skipped silently."""
     monkeypatch.setattr(
-        wd, "load_employers",
+        wd,
+        "load_employers",
         lambda *a, **kw: {"bad": {"name": "Bad"}},
     )
     new, dup = wd.run_workday(_profile(), conn=db)
     assert (new, dup) == (0, 0)
 
 
-def test_run_workday_rejects_off_location(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_workday_rejects_off_location(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """A job in a rejected location is skipped without inserting."""
     monkeypatch.setattr(
-        wd, "load_employers",
+        wd,
+        "load_employers",
         lambda *a, **kw: {
             "acme": {
                 "name": "Acme",
@@ -229,9 +222,7 @@ def test_run_workday_rejects_off_location(
 
     def _fake_search_page(*a: Any, **kw: Any) -> dict[str, Any]:
         return {
-            "jobPostings": [
-                {"externalPath": "/jobs/1", "title": "Eng", "locationsText": "Berlin"}
-            ],
+            "jobPostings": [{"externalPath": "/jobs/1", "title": "Eng", "locationsText": "Berlin"}],
             "total": 1,
         }
 

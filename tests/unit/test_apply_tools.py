@@ -551,9 +551,7 @@ def test_send_email_gmail_browser_path(monkeypatch: pytest.MonkeyPatch) -> None:
         me=SimpleNamespace(email="me@gmail.com"),
         gmail_password="app-pw",
     )
-    r = send_email(
-        MagicMock(), {"to": "a@b.com", "subject": "x", "body": "y"}, Path("/tmp"), profile=profile
-    )
+    r = send_email(MagicMock(), {"to": "a@b.com", "subject": "x", "body": "y"}, Path("/tmp"), profile=profile)
     assert r.ok
     assert sent
 

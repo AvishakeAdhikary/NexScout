@@ -179,8 +179,7 @@ def mark_result(
         ).fetchone()
         if existing is None:
             conn.execute(
-                "INSERT INTO pending_questions (job_url, question, asked_at, channel) "
-                "VALUES (?, ?, ?, 'cli')",
+                "INSERT INTO pending_questions (job_url, question, asked_at, channel) VALUES (?, ?, ?, 'cli')",
                 (job_url, question, now),
             )
 

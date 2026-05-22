@@ -129,14 +129,13 @@ def test_render_cover_letter_pdf_missing_pdf(monkeypatch: pytest.MonkeyPatch, tm
 
     p = Profile.model_validate({"me": {"legal": "x", "pref": "x", "email": "e@x.com", "phone": "1"}})
     with pytest.raises(LatexEngineError):
-        eng.render_cover_letter_pdf(
-            bundle_dir=tmp_path, profile=p, letter_text="X", job={"title": "Eng"}
-        )
+        eng.render_cover_letter_pdf(bundle_dir=tmp_path, profile=p, letter_text="X", job={"title": "Eng"})
 
 
 def test_run_returns_subprocess_output(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
-        eng.subprocess, "run",
+        eng.subprocess,
+        "run",
         lambda *a, **kw: SimpleNamespace(returncode=0, stdout="ok", stderr=""),
     )
     code, out = eng._run(["echo", "x"], cwd=tmp_path)

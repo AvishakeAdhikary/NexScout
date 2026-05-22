@@ -287,9 +287,7 @@ def validate_json_fields(data: dict[str, Any] | None, profile: Profile, mode: Mo
         result.errors.append(f"fabrication-watchlist term in skills: {fab!r}")
 
     experience = data.get("experience") or []
-    headers = " | ".join(
-        str(item.get("header", "")) for item in experience if isinstance(item, dict)
-    ).lower()
+    headers = " | ".join(str(item.get("header", "")) for item in experience if isinstance(item, dict)).lower()
     for company in profile.facts.companies:
         if company and company.lower() not in headers:
             result.errors.append(f"preserved company missing from experience: {company!r}")

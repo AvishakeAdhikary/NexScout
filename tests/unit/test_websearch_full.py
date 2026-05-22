@@ -60,7 +60,8 @@ def test_tavily_no_key() -> None:
 
 def test_tavily_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        httpx, "post",
+        httpx,
+        "post",
         lambda *a, **kw: _make_resp(
             json_body={"results": [{"url": "https://x.com", "title": "X", "content": "snippet"}]}
         ),
@@ -88,7 +89,8 @@ def test_brave_no_key() -> None:
 
 def test_brave_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        httpx, "get",
+        httpx,
+        "get",
         lambda *a, **kw: _make_resp(
             json_body={"web": {"results": [{"url": "https://x.com", "title": "X", "description": "y"}]}}
         ),
@@ -140,7 +142,8 @@ def test_searxng_no_url() -> None:
 
 def test_searxng_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        httpx, "get",
+        httpx,
+        "get",
         lambda *a, **kw: _make_resp(json_body={"results": [{"url": "https://x.com", "title": "X", "content": "z"}]}),
     )
     out = ws.SearXNGProvider(base_url="https://searx.test").search("q")
@@ -161,7 +164,8 @@ def test_google_cse_no_keys() -> None:
 
 def test_google_cse_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        httpx, "get",
+        httpx,
+        "get",
         lambda *a, **kw: _make_resp(json_body={"items": [{"link": "https://x.com", "title": "X", "snippet": "y"}]}),
     )
     out = ws.GoogleCSEProvider(api_key="k", cx="c").search("q")
@@ -299,15 +303,11 @@ def test_run_websearch_inserts_ats_host(db: sqlite3.Connection, monkeypatch: pyt
     monkeypatch.setattr(ws, "build_chain", lambda providers: [_FakeProvider()])
     new, _dup = ws.run_websearch(p, conn=db)
     assert new >= 1
-    row = db.execute(
-        "SELECT site FROM jobs WHERE url=?", ("https://boards.greenhouse.io/acme/jobs/1",)
-    ).fetchone()
+    row = db.execute("SELECT site FROM jobs WHERE url=?", ("https://boards.greenhouse.io/acme/jobs/1",)).fetchone()
     assert "greenhouse" in (row["site"] or "")
 
 
-def test_run_websearch_browser_fallback_when_empty(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_websearch_browser_fallback_when_empty(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     p = _profile(providers=["tavily"], queries_per_day=1)
 
     class _Empty:
@@ -332,9 +332,7 @@ def test_run_websearch_browser_fallback_when_empty(
     assert new >= 1
 
 
-def test_run_websearch_provider_exception_skips(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_websearch_provider_exception_skips(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     p = _profile(providers=["tavily"], queries_per_day=1)
 
     class _Bad:

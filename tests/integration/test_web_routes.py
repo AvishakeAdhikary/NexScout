@@ -40,13 +40,11 @@ def db() -> Iterator[sqlite3.Connection]:
         ("https://x.com/2", "Engineer B", "lever", "SF", 9, None, "2025"),
     )
     conn.execute(
-        "INSERT INTO jobs (url, title, site, location, fit_score, apply_status) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO jobs (url, title, site, location, fit_score, apply_status) VALUES (?, ?, ?, ?, ?, ?)",
         ("https://x.com/3", "Designer", "ashby", "NYC", 6, "failed"),
     )
     conn.execute(
-        "INSERT INTO jobs (url, title, site, location, fit_score, apply_status) "
-        "VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO jobs (url, title, site, location, fit_score, apply_status) VALUES (?, ?, ?, ?, ?, ?)",
         ("https://x.com/4", "Paused", "greenhouse", "Remote", 7, "paused_for_question"),
     )
     conn.execute(
@@ -266,8 +264,7 @@ def test_profile_get_missing_profile(client: TestClient, monkeypatch: pytest.Mon
 
 def test_profile_post_valid(client: TestClient) -> None:
     yaml_text = (
-        "me:\n  legal: x\n  pref: x\n  email: e@x.com\n  phone: \"1\"\n"
-        "captcha:\n  provider: capsolver\n  api_key: ''\n"
+        "me:\n  legal: x\n  pref: x\n  email: e@x.com\n  phone: \"1\"\ncaptcha:\n  provider: capsolver\n  api_key: ''\n"
     )
     resp = client.post("/profile", data={"yaml_text": yaml_text}, follow_redirects=False)
     # Redirects on success.

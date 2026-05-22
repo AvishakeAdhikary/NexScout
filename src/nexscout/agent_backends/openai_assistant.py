@@ -36,9 +36,7 @@ def run(
     """Drive an OpenAI Assistant. Falls back to ConfigError when unavailable."""
     _ = (driver, solver, router, dashboard, worker_id, max_iterations)
     if not os.environ.get("OPENAI_API_KEY"):
-        raise ConfigError(
-            "openai_assistant backend requires OPENAI_API_KEY; use --backend native."
-        )
+        raise ConfigError("openai_assistant backend requires OPENAI_API_KEY; use --backend native.")
     try:
         from openai import OpenAI  # type: ignore[import-not-found]
     except ImportError as e:
@@ -77,9 +75,7 @@ def run(
             role="user",
             content=f"Apply to: {job.get('title') or ''}",
         )
-        run_obj = client.beta.threads.runs.create_and_poll(
-            thread_id=thread.id, assistant_id=assistant.id
-        )
+        run_obj = client.beta.threads.runs.create_and_poll(thread_id=thread.id, assistant_id=assistant.id)
     except Exception as e:
         return "FAILED", f"openai_assistant_error: {e}", 0.0, False
 

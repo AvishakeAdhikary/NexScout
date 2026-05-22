@@ -7,11 +7,13 @@ from nexscout.scoring.validator import has_fabrication, validate_json_fields
 
 
 def _profile() -> Profile:
-    return Profile.model_validate({
-        "me": {"legal": "X", "pref": "X", "email": "x@x", "phone": "1"},
-        "facts": {"companies": ["Acme"], "school": "State U"},
-        "skills": {"lang": ["Python"]},
-    })
+    return Profile.model_validate(
+        {
+            "me": {"legal": "X", "pref": "X", "email": "x@x", "phone": "1"},
+            "facts": {"companies": ["Acme"], "school": "State U"},
+            "skills": {"lang": ["Python"]},
+        }
+    )
 
 
 def test_has_fabrication_finds_watchlisted_term() -> None:

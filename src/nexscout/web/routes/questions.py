@@ -18,8 +18,7 @@ router = APIRouter()
 async def list_questions(request: Request) -> HTMLResponse:
     conn = init_db()
     rows = conn.execute(
-        "SELECT id, job_url, question, asked_at, channel, answered_at, answer "
-        "FROM pending_questions ORDER BY id DESC"
+        "SELECT id, job_url, question, asked_at, channel, answered_at, answer FROM pending_questions ORDER BY id DESC"
     ).fetchall()
     templates = request.app.state.templates
     return templates.TemplateResponse(request, "questions.html", {"rows": [dict(r) for r in rows]})
@@ -32,9 +31,7 @@ async def answer(
     reply: str = Form(...),
 ) -> RedirectResponse:
     conn = init_db()
-    row = conn.execute(
-        "SELECT id, job_url, question FROM pending_questions WHERE id = ?", (question_id,)
-    ).fetchone()
+    row = conn.execute("SELECT id, job_url, question FROM pending_questions WHERE id = ?", (question_id,)).fetchone()
     if row is None:
         return RedirectResponse(url="/questions", status_code=303)
 

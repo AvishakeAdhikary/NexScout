@@ -132,7 +132,7 @@ def send_via_gmail_browser(
     email_input = _wait_for(driver, ['input[type="email"]', 'input[name="identifier"]'], timeout=5.0)
     if email_input is not None:
         _safe_send_keys(email_input, user_email)
-        next_btn = _find_first(driver, ["#identifierNext button", '[id="identifierNext"]', 'button:has(span)'])
+        next_btn = _find_first(driver, ["#identifierNext button", '[id="identifierNext"]', "button:has(span)"])
         if next_btn is not None:
             _click(next_btn)
         else:
@@ -148,7 +148,7 @@ def send_via_gmail_browser(
         if pwd_input is None:
             return False, "password field never appeared"
         _safe_send_keys(pwd_input, password)
-        pwd_next = _find_first(driver, ["#passwordNext button", '[id="passwordNext"]', 'button:has(span)'])
+        pwd_next = _find_first(driver, ["#passwordNext button", '[id="passwordNext"]', "button:has(span)"])
         if pwd_next is not None:
             _click(pwd_next)
         else:

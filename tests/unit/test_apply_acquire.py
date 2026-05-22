@@ -84,9 +84,7 @@ class TestAcquireJob:
         _insert_job(db, "https://a.com/1")
         got = acquire_job(_profile(), db, agent_id="worker-7")
         assert got is not None
-        row = db.execute(
-            "SELECT apply_status, agent_id FROM jobs WHERE url=?", (got["url"],)
-        ).fetchone()
+        row = db.execute("SELECT apply_status, agent_id FROM jobs WHERE url=?", (got["url"],)).fetchone()
         assert row["apply_status"] == "in_progress"
         assert row["agent_id"] == "worker-7"
 

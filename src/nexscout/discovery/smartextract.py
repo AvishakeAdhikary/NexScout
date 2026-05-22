@@ -491,9 +491,7 @@ class _DriverLike(Protocol):
 
 
 _API_URL_HINTS: tuple[str, ...] = ("/api/", "algolia", "graphql")
-_NETWORK_EVENT_TYPES: frozenset[str] = frozenset(
-    {"XHR", "Fetch", "Document", "Script", "Other"}
-)
+_NETWORK_EVENT_TYPES: frozenset[str] = frozenset({"XHR", "Fetch", "Document", "Script", "Other"})
 
 
 def _looks_like_api(url: str, content_type: str) -> bool:

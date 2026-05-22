@@ -42,10 +42,7 @@ def run(
     _ = (driver, solver, router, dashboard, worker_id, max_iterations)
     binary = _claude_path()
     if binary is None:
-        raise ConfigError(
-            "claude_code backend requires the `claude` CLI on PATH; "
-            "use --backend native instead."
-        )
+        raise ConfigError("claude_code backend requires the `claude` CLI on PATH; use --backend native instead.")
 
     tailored = ""
     cover_letter: str | None = None

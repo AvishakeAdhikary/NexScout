@@ -186,7 +186,7 @@ def test_apply_runs_backend(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> 
 
     monkeypatch.setattr(
         "nexscout.agent_backends.get_backend",
-        lambda name: (lambda **kw: ("APPLIED", None, 0.0, False)),
+        lambda name: lambda **kw: ("APPLIED", None, 0.0, False),
     )
 
     class _FakePool:

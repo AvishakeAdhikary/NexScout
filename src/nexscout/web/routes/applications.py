@@ -33,9 +33,7 @@ async def list_applications(request: Request) -> HTMLResponse:
 @router.get("/applications/download.zip")
 async def download_all_zip() -> StreamingResponse:
     conn = init_db()
-    rows = conn.execute(
-        "SELECT rowid AS id FROM jobs WHERE apply_status='applied'"
-    ).fetchall()
+    rows = conn.execute("SELECT rowid AS id FROM jobs WHERE apply_status='applied'").fetchall()
 
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:

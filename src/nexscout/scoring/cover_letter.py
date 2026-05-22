@@ -143,9 +143,7 @@ def write_cover_letter(
         sys_prompt = system_prompt
         if avoid_notes:
             sys_prompt = (
-                system_prompt
-                + "\n\n## AVOID THESE ISSUES (from previous attempt):\n- "
-                + "\n- ".join(avoid_notes)
+                system_prompt + "\n\n## AVOID THESE ISSUES (from previous attempt):\n- " + "\n- ".join(avoid_notes)
             )
         messages: list[Message] = [
             Message(role="system", content=sys_prompt),

@@ -23,10 +23,7 @@ def _wrap(payload: str) -> str:
 def test_tier1_accepts_long_description() -> None:
     desc = "This is a long enough description with plenty of meaningful content to exceed fifty characters."
     payload = (
-        '{"@type":"JobPosting",'
-        f'"description":"{desc}",'
-        '"directApply":true,'
-        '"url":"https://example.com/apply/123"}'
+        f'{{"@type":"JobPosting","description":"{desc}","directApply":true,"url":"https://example.com/apply/123"}}'
     )
     result = tier1_jsonld(_wrap(payload))
     assert result is not None

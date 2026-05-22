@@ -346,8 +346,7 @@ def question_list(
 
     conn = init_db()
     rows = conn.execute(
-        "SELECT id, job_url, question, asked_at FROM pending_questions "
-        "WHERE answered_at IS NULL ORDER BY id"
+        "SELECT id, job_url, question, asked_at FROM pending_questions WHERE answered_at IS NULL ORDER BY id"
     ).fetchall()
     items = [dict(r) for r in rows]
     if fmt == "json":

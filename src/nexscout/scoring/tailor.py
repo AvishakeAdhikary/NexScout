@@ -254,9 +254,7 @@ def tailor_resume(
         sys_prompt = system_prompt
         if avoid_notes:
             sys_prompt = (
-                system_prompt
-                + "\n\n## AVOID THESE ISSUES (from previous attempt):\n- "
-                + "\n- ".join(avoid_notes)
+                system_prompt + "\n\n## AVOID THESE ISSUES (from previous attempt):\n- " + "\n- ".join(avoid_notes)
             )
         messages: list[Message] = [
             Message(role="system", content=sys_prompt),
@@ -308,8 +306,10 @@ def tailor_resume(
         avoid_notes = list(last_errors)
 
     if last_data is not None and last_text:
-        status = "approved_with_judge_warning" if "judge fail" in (last_errors[0] if last_errors else "") else (
-            "failed_validation"
+        status = (
+            "approved_with_judge_warning"
+            if "judge fail" in (last_errors[0] if last_errors else "")
+            else ("failed_validation")
         )
         return TailorResult(
             status=status,

@@ -66,9 +66,7 @@ def test_run_stage_success() -> None:
     assert tick._run_stage("ok", lambda: 7, summary=s) == 7
 
 
-def test_run_full_with_mocked_stages(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_full_with_mocked_stages(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """Drive every stage with a no-op so the orchestration loop is fully covered."""
     monkeypatch.setattr(tick, "_stage_discover", lambda p, c, n: 3)
     monkeypatch.setattr(tick, "_stage_enrich", lambda p, c, n: 2)
@@ -106,9 +104,7 @@ def test_run_subset_of_stages(db: sqlite3.Connection, monkeypatch: pytest.Monkey
     assert called == ["discover", "score"]
 
 
-def test_stage_discover_router_failure(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_stage_discover_router_failure(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """If LLMRouter fails to build, _stage_discover still runs without a router."""
 
     class _BadRouter:
@@ -121,9 +117,7 @@ def test_stage_discover_router_failure(
     assert out == 4
 
 
-def test_stage_enrich_no_browser(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_stage_enrich_no_browser(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """If the browser factory can't be built, _stage_enrich returns 0."""
 
     def _boom(*a: Any, **kw: Any) -> Any:
@@ -134,9 +128,7 @@ def test_stage_enrich_no_browser(
     assert out == 0
 
 
-def test_stage_enrich_runs_with_factory(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_stage_enrich_runs_with_factory(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """Factory succeeds → returns the count from run_enrich_stage."""
 
     class _Fac:
@@ -215,9 +207,7 @@ def test_stage_apply_runs(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatc
     assert out == 1
 
 
-def test_stage_apply_router_failure(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_stage_apply_router_failure(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     db.execute(
         "INSERT INTO jobs (url, tailored_resume_path, apply_status) VALUES (?, ?, NULL)",
         ("https://x.com/1", "/tmp/r.txt"),
@@ -241,9 +231,7 @@ def test_stage_apply_router_failure(
     assert out == 0
 
 
-def test_stage_apply_pool_failure(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_stage_apply_pool_failure(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     db.execute(
         "INSERT INTO jobs (url, tailored_resume_path, apply_status) VALUES (?, ?, NULL)",
         ("https://x.com/1", "/tmp/r.txt"),
@@ -259,9 +247,7 @@ def test_stage_apply_pool_failure(
     assert out == 0
 
 
-def test_stage_apply_worker_crash(
-    db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_stage_apply_worker_crash(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     db.execute(
         "INSERT INTO jobs (url, tailored_resume_path, apply_status) VALUES (?, ?, NULL)",
         ("https://x.com/1", "/tmp/r.txt"),

@@ -234,7 +234,7 @@ def test_send_via_gmail_browser_send_button_missing(tmp_path: Path, monkeypatch:
 
     def _find_elements(by: str, sel: str) -> list[Any]:
         state["calls"] += 1
-        if "Send" in sel or "aria-label^=\"Send\"" in sel or "data-tooltip" in sel:
+        if "Send" in sel or 'aria-label^="Send"' in sel or "data-tooltip" in sel:
             return []
         return [visible_el]
 
