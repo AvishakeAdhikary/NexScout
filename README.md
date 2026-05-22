@@ -8,11 +8,18 @@
 **NexScout** is an always-on, autonomous job-application agent. It discovers
 jobs across the web, scores them against your profile, tailors a
 LaTeX-rendered resume (and cover letter when required) per application, and
-submits the application through an undetected Chrome driver with mandatory
-CAPTCHA solving. It runs continuously inside an OpenClaw / NemoClaw
-heartbeat or as a plain standalone loop, exposes a FastAPI + HTMX web UI for
-you, and stores every application's full bundle (PDFs, screenshots,
-transcript) on disk.
+submits the application through an undetected Chrome driver. It runs
+continuously inside an OpenClaw / NemoClaw heartbeat or as a plain
+standalone loop, exposes a FastAPI + HTMX web UI for you, and stores every
+application's full bundle (PDFs, screenshots, transcript) on disk.
+
+CAPTCHA solving is **optional**: when a key is configured (CapSolver /
+2Captcha / Anti-Captcha) it solves them inline; otherwise jobs that hit a
+CAPTCHA wall are parked with `apply_status='captcha_manual'` and surfaced
+to you as a pending question. Web discovery falls back to an undetected
+Chrome search of DuckDuckGo + Google when no API key is configured. Email
+delivery falls back from SMTP to a browser-driven Gmail login when only an
+email + password are provided.
 
 The single source of truth for behaviour is `plan.md`. Every LLM prompt is
 **byte-equal** to that spec — `tests/unit/test_prompts_verbatim.py` will
@@ -45,8 +52,8 @@ cd nexscout
 pip install -e ".[dev,web]"
 pip install --no-deps python-jobspy && pip install pydantic tls-client requests markdownify regex
 nexscout init                              # YAML wizard fills ~/.nexscout/profile.yaml
-export CAPTCHA_API_KEY=...
-nexscout doctor                            # all green
+export CAPTCHA_API_KEY=...                 # optional; manual review path is automatic when unset
+nexscout doctor                            # tiered T1/T2/T3 report; --quiet exits 0 when T2+ healthy
 nexscout run                               # discover -> enrich -> score -> tailor -> cover -> render
 nexscout web &                             # http://127.0.0.1:8765
 nexscout apply --workers 2                 # submit applications
@@ -57,7 +64,9 @@ openclaw skill install ./src/nexscout/openclaw/manifest.toml
 ...and observes:
 
 - `ruff check src/` returns 0.
-- `pytest` is green.
+- `ruff format --check src/ tests/` returns 0.
+- `pytest -q` is green (835 tests).
+- `pytest --cov=src/nexscout` reports ≥80% per module and 93% project-wide.
 - The web UI lists applied jobs with their tailored PDFs.
 
 ---
@@ -73,8 +82,18 @@ openclaw skill install ./src/nexscout/openclaw/manifest.toml
 - **A LaTeX engine** for resume PDF rendering. **Tectonic** is preferred
   (self-contained); `latexmk` and `pdflatex` are also auto-detected. The
   Docker image installs Tectonic for you.
-- **A CAPTCHA provider key.** NexScout refuses to start `run` or `apply`
-  without one. Supported: CapSolver, 2Captcha, Anti-Captcha.
+- **(Optional) A CAPTCHA provider key.** When set, NexScout solves CAPTCHAs
+  inline via CapSolver / 2Captcha / Anti-Captcha. When unset, jobs that
+  trigger a CAPTCHA wall are marked `apply_status='captcha_manual'` and
+  surfaced as pending questions for manual review — `nexscout doctor`
+  reports WARN (not error) and the apply pipeline continues.
+- **(Optional) Search API key.** Tavily / Brave / Google CSE / SearXNG are
+  used first if configured. With none of them set, NexScout falls back to
+  an undetected Chrome search of DuckDuckGo + Google for the WebSearch
+  discovery engine.
+- **(Optional) SMTP credentials.** For email-only postings, NexScout uses
+  `profile.smtp.*` first, then your Gmail email + password via a
+  browser-driven Gmail login (compose URL + Send button).
 
 ### From source
 
@@ -107,10 +126,21 @@ docker build -t nexscout .
 docker run --rm -v "$HOME/.nexscout:/sandbox/nexscout" nexscout doctor
 
 # Full stack with the OpenClaw + local LLM profiles
-docker compose --profile local-llm --profile openclaw up
+docker compose --profile local-llm --profile openclaw up -d
 ```
 
-See `docs/openclaw.md` for the sandbox-mount contract.
+Compose ships three named containers:
+
+| Service    | Container             | Purpose                                  |
+|------------|-----------------------|------------------------------------------|
+| `nexscout` | `nexscout`            | the agent itself (runs `nexscout run`)   |
+| `ollama`   | `nexscout-ollama`     | local LLM endpoint (opt-in profile)      |
+| `openclaw` | `nexscout-openclaw`   | heartbeat daemon (opt-in profile)        |
+
+The `nexscout` service has a healthcheck that runs `nexscout doctor --quiet`
+every 60s; the OpenClaw container `depends_on: service_healthy` so a cold
+`docker compose up` waits for NexScout's prereqs before starting the
+heartbeat. See `docs/openclaw.md` for the full mount + env contract.
 
 ---
 
@@ -152,9 +182,11 @@ nexscout web &
 ```bash
 nexscout init                # interactive wizard -> ~/.nexscout/profile.yaml
 nexscout doctor              # tiered readiness: T1 discover, T2 LLM, T3 apply
+nexscout doctor --quiet      # exits 0 when T2+ healthy; used by the Docker healthcheck
 
-export CAPTCHA_API_KEY=...
 export GEMINI_API_KEY=...    # or OPENAI_API_KEY / ANTHROPIC_API_KEY
+export CAPTCHA_API_KEY=...   # optional — manual review when unset
+export TAVILY_API_KEY=...    # optional — browser fallback when none of Tavily/Brave/CSE are set
 
 nexscout run                 # one tick: discover -> enrich -> score -> tailor -> cover -> render
 nexscout apply --workers 2   # submit the highest-scoring tailored jobs
@@ -180,6 +212,8 @@ nexscout chrome reset --worker N
 nexscout budget show|reset
 nexscout question list|answer
 nexscout profile validate|migrate
+nexscout doctor [--quiet]          tiered readiness; --quiet exits 0 when T2+ healthy
+nexscout tick                      one bounded unit of work (OpenClaw heartbeat entry)
 ```
 
 ---
@@ -226,7 +260,12 @@ reference copy lives at `examples/profile.example.yaml`. Key blocks:
 - `llm` — primary, fallback, judge models + monthly USD + daily-call
   budgets.
 - `apply` — workers, headless, dry-run, retry budget, permitted ATSs.
-- `captcha` — provider + `${env:CAPTCHA_API_KEY}` substitution.
+- `captcha` — **optional** provider + `${env:CAPTCHA_API_KEY}`
+  substitution. When unset, CAPTCHA-walled jobs are parked for manual
+  review (visible at `/questions` in the web UI).
+- `smtp` — **optional** SMTP host/port/user/password for email-only
+  postings. If absent and `me.email` is a Gmail address, the apply agent
+  falls back to a browser-driven Gmail compose URL + login flow.
 - `openclaw.tick_budget` — bounded-unit-of-work limits per stage.
 
 Environment variables are read via `${env:NAME}` substitution at load
@@ -250,15 +289,11 @@ mypy src/nexscout/core src/nexscout/llm src/nexscout/scoring \
      src/nexscout/apply/agent.py
 ```
 
-Coverage targets per `plan.md` §23:
-
-| Subpackage              | Threshold |
-|-------------------------|-----------|
-| `core/`                 | 90 %      |
-| `llm/`                  | 80 %      |
-| `scoring/`              | 80 %      |
-| `captcha/`              | 70 %      |
-| `apply/orchestrator.py` | 80 %      |
+Coverage targets — every module under `src/nexscout/` reaches **≥80%**;
+total project coverage sits at **93%** as of v0.1.0 (835 tests passing).
+The plan.md §23 minimums (`core/ ≥ 90%`, `llm/ ≥ 80%`, `scoring/ ≥ 80%`,
+`captcha/ ≥ 70%`, `apply/orchestrator.py ≥ 80%`) are all exceeded; CI gates
+on the project-wide 80% floor.
 
 Full developer guide: **[docs/developer-guide.md](docs/developer-guide.md)**.
 

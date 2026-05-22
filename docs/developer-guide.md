@@ -49,15 +49,28 @@ mypy src/nexscout/core src/nexscout/llm src/nexscout/scoring \
      src/nexscout/apply/agent.py
 ```
 
-## Coverage targets (§23)
+## Coverage targets
 
-| Subpackage             | Threshold |
-|------------------------|-----------|
-| `core/`                | 90 %      |
-| `llm/`                 | 80 %      |
-| `scoring/`             | 80 %      |
-| `captcha/`             | 70 %      |
-| `apply/orchestrator.py`| 80 %      |
+Every module under `src/nexscout/` reaches **≥80 %** line coverage; the
+project-wide total sits at **93 %** as of v0.1.0 (835 tests). The plan.md
+§23 minimums are floors, not ceilings:
+
+| Subpackage             | §23 floor | Observed |
+|------------------------|-----------|----------|
+| `core/`                | 90 %      | 95 %     |
+| `llm/`                 | 80 %      | 95 %     |
+| `scoring/`             | 80 %      | 91 %     |
+| `captcha/`             | 70 %      | 98 %     |
+| `apply/orchestrator.py`| 80 %      | 93 %     |
+| `discovery/`           | —         | 92 %     |
+| `enrichment/`          | —         | 88 %     |
+| `web/`                 | —         | 98 %     |
+| `apply/` (rest)        | —         | 93 %     |
+| `browser/`             | —         | 97 %     |
+| `cli.py`               | —         | 92 %     |
+
+CI gates on the project-wide 80 % floor and the per-module 80 % floor —
+new code that drops a module below 80 % fails CI.
 
 ## Adding a new discovery source
 
@@ -99,20 +112,30 @@ def discover(profile: Profile) -> tuple[int, int]:
     return insert_jobs(rows)
 ```
 
-Then wire it into the pipeline by adding it to the `_DISCOVERY_ENGINES` list
-in `src/nexscout/pipeline.py`:
+Then wire it into the pipeline. `src/nexscout/pipeline.py`'s
+`run_discover_stage` lazy-imports each engine module under its own
+`try/except ImportError` block and calls its module-level entrypoint
+(`run_jobspy`, `run_workday`, `run_websearch`, `run_smartextract`). To add
+your engine, expose a `run_myboard(profile, *, conn) -> tuple[int, int]`
+function and add a matching block to `run_discover_stage`:
 
 ```python
-from .discovery import myboard
-
-_DISCOVERY_ENGINES = [
-    jobspy.discover,
-    workday.discover,
-    smartextract.discover,
-    websearch.discover,
-    myboard.discover,           # <-- new
-]
+# inside run_discover_stage()
+try:
+    from .discovery import myboard as _myboard_mod
+except ImportError:
+    log.info("discovery.myboard unavailable; skipping")
+else:
+    try:
+        new, _dup = _myboard_mod.run_myboard(profile, conn=conn)
+        total += int(new)
+    except Exception as e:
+        log.warning("myboard engine failed: %s", e)
 ```
+
+Engines that need the LLM router (e.g. for AI-driven scraping like
+SmartExtract) should gate themselves on `router is not None` — the
+heartbeat tick may pass `router=None` when the user's budget is exhausted.
 
 If your source needs a registry file (e.g. a list of tenants), drop the
 YAML next to the engine — `discovery/employers.yaml` (§21) and

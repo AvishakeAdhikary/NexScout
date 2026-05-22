@@ -96,6 +96,24 @@ When the apply agent needs an answer that is not in the profile or in
 5. On the next tick, the job resumes — the addendum is merged into the apply
    agent's profile context.
 
+### Manual CAPTCHA queue
+
+When `profile.captcha.api_key` is unset (or a sitekey type is unsupported
+by the configured solver) and the apply agent hits a CAPTCHA wall, it
+calls `done(RESULT:CAPTCHA_MANUAL, …)`. The orchestrator then:
+
+1. Sets `apply_status='captcha_manual'`. The result code is in the
+   permanent-failure set so it is not retried automatically.
+2. Inserts an idempotent row into `pending_questions` with the question
+   text `Job requires manual CAPTCHA solving: <job_url>` and
+   `channel='cli'`.
+3. The next heartbeat tick surfaces the row via `_stage_surface_questions`
+   into `~/.openclaw/inbox/nexscout-<ts>.md`, which OpenClaw delivers to
+   the active channel.
+4. Once you solve the CAPTCHA manually (in your own browser) and answer
+   the question with the next step (or "skip"), the orchestrator either
+   resumes the job or marks it `apply_status='manual'`.
+
 Memory file layout under `~/.openclaw/memory/nexscout/`:
 
 ```

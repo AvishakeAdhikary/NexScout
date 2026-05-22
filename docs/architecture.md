@@ -12,7 +12,8 @@ flowchart LR
         D1[JobSpy]
         D2[Workday CXS]
         D3[SmartExtract]
-        D4[WebSearch]
+        D4[WebSearch API: Tavily/Brave/DDG/SearXNG/CSE]
+        D5[WebSearch Browser fallback - undetected Chrome DDG+Google]
     end
 
     subgraph Enrich[Stage 2 - Enrichment]
@@ -27,9 +28,14 @@ flowchart LR
     Render[Stage 5b - PDF Render]
 
     subgraph Apply[Stage 6 - Application]
-        A1[Browser Pool]
+        A1[Browser Pool - undetected_chromedriver]
         A2[ReAct Agent]
-        A3[CAPTCHA Solver]
+        A3{CAPTCHA?}
+        A3a[Solver: CapSolver/2Captcha/Anti-Captcha]
+        A3b[Manual review - apply_status=captcha_manual]
+        A4{Email-only?}
+        A4a[SMTP via profile.smtp]
+        A4b[Gmail browser-driven compose]
     end
 
     DB[(SQLite jobs)]
@@ -40,6 +46,8 @@ flowchart LR
     D2 --> DB
     D3 --> DB
     D4 --> DB
+    D4 -. all APIs empty .-> D5
+    D5 --> DB
 
     DB --> E1
     E1 -. fallback .-> E2
@@ -55,7 +63,14 @@ flowchart LR
     Cover --> DB
     Bundle --> Render --> Bundle
     DB --> Apply
-    A1 --> A2 --> A3 --> A2
+    A1 --> A2
+    A2 --> A3
+    A3 -- solver wired --> A3a --> A2
+    A3 -- no solver --> A3b
+    A3b --> Memory
+    A2 --> A4
+    A4 -- profile.smtp set --> A4a
+    A4 -- gmail credentials only --> A4b
     A2 --> Bundle
     A2 --> DB
     A2 <--> Memory
@@ -102,6 +117,19 @@ flowchart LR
    (`navigate`, `read_page`, `click`, `fill_form`, `upload`,
    `solve_captcha`, ...). Every step is logged to
    `applications/<job_id>/transcript.jsonl`.
+
+## Optional fallback paths
+
+Each external dependency is genuinely optional. The agent never refuses to
+start; instead it picks a fallback and proceeds.
+
+| Subsystem    | Primary                              | Fallback                                                          |
+|--------------|--------------------------------------|-------------------------------------------------------------------|
+| WebSearch    | Tavily / Brave / DDG-HTML / SearXNG / Google CSE | `BrowserSearchProvider` — undetected Chrome scrapes DDG + Google. |
+| CAPTCHA      | CapSolver / 2Captcha / Anti-Captcha  | Mark `apply_status='captcha_manual'`; insert a row into `pending_questions`; OpenClaw surfaces it to the user. |
+| Email-only postings | `profile.smtp.*` (host/port/user/password) | `apply.email_browser` drives Gmail's compose URL + login form via undetected Chrome. |
+| LLM provider | `profile.llm.primary`                | `profile.llm.fallback` (Ollama by default); budget ledger blocks calls past `monthly_usd` / `daily_calls`. |
+| LaTeX engine | Tectonic                             | `latexmk`, then `pdflatex` (twice for refs).                      |
 
 ## Bundle layout
 
