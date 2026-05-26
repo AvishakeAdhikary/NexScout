@@ -76,7 +76,12 @@ def _run_stage(
     deadline: float | None = None,
 ) -> Any:
     """Invoke ``fn``; record errors in the summary. Returns the callable result or 0."""
-    if deadline is not None and time.monotonic() > deadline:
+    # NOTE: ``>=`` (not ``>``) so a same-tick comparison still counts as
+    # expired. Windows ``time.monotonic()`` only ticks every ~15.6 ms by
+    # default, so two consecutive calls within the same tick return the
+    # identical float and the strict-greater-than check leaks past a
+    # zero/negative budget on Windows.
+    if deadline is not None and time.monotonic() >= deadline:
         log.info("tick: skipping %s (out of budget)", name)
         return None
     try:
@@ -106,7 +111,9 @@ def run(
     """Run a single tick. Returns the summary dict."""
     summary = TickSummary(started_at=_ts())
     started = time.monotonic()
-    deadline = started + max(0.0, float(wall_clock_s))
+    # No ``max(0.0, ...)`` clamp: a negative wall-clock budget should produce a
+    # deadline in the past so every stage short-circuits via ``_run_stage``.
+    deadline = started + float(wall_clock_s)
     conn = db if db is not None else init_db(database_path())
     budget = profile.openclaw.tick_budget
 
