@@ -92,17 +92,21 @@ def test_dashboard_openclaw_corrupt(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     from nexscout.web.routes import dashboard
 
     monkeypatch.setattr(dashboard, "nexscout_dir", lambda: tmp_path)
+    monkeypatch.setattr(dashboard, "_profile_channel", lambda: None)
     (tmp_path / "last-tick.json").write_text("{not json")
     out = dashboard._openclaw_status()
-    assert out == {"last_tick": None, "channel": None}
+    assert out["last_tick"] is None
+    assert out["channel"] is None
 
 
 def test_dashboard_openclaw_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     from nexscout.web.routes import dashboard
 
     monkeypatch.setattr(dashboard, "nexscout_dir", lambda: tmp_path / "no")
+    monkeypatch.setattr(dashboard, "_profile_channel", lambda: None)
     out = dashboard._openclaw_status()
-    assert out == {"last_tick": None, "channel": None}
+    assert out["last_tick"] is None
+    assert out["channel"] is None
 
 
 def test_dashboard_openclaw_valid(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -112,6 +116,53 @@ def test_dashboard_openclaw_valid(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     (tmp_path / "last-tick.json").write_text('{"ts": "2025", "channel": "cli"}')
     out = dashboard._openclaw_status()
     assert out["last_tick"] == "2025"
+
+
+def test_dashboard_renders_all_counters(client: TestClient) -> None:
+    """The dashboard now surfaces every counter from ``get_stats``."""
+    resp = client.get("/")
+    assert resp.status_code == 200
+    for label in (
+        "Pending detail",
+        "With description",
+        "Detail errors",
+        "Tailored",
+        "Untailored eligible",
+        "Tailor exhausted",
+        "With cover letter",
+        "Cover exhausted",
+        "Apply errors",
+        "Ready to apply",
+        "Score distribution",
+        "OpenClaw status",
+        "Recent Events",
+        "Pending Telegram deliveries",
+    ):
+        assert label in resp.text
+
+
+def test_dashboard_empty_distribution_does_not_crash(client: TestClient, db: sqlite3.Connection) -> None:
+    """Even with no scored jobs, the dashboard still renders (with a 'no scored jobs yet' card)."""
+    db.execute("UPDATE jobs SET fit_score=NULL")
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert "no scored jobs yet" in resp.text
+
+
+def test_dashboard_pending_telegram_count(client: TestClient, db: sqlite3.Connection) -> None:
+    """Pending Telegram deliveries counts pending_questions without channel_delivered_at."""
+    db.execute(
+        "INSERT INTO pending_questions (job_url, question, asked_at) VALUES (?, ?, ?)",
+        ("https://x.com/p1", "Sponsor?", "2025-01-01"),
+    )
+    db.execute(
+        "INSERT INTO pending_questions (job_url, question, asked_at, channel_delivered_at) VALUES (?, ?, ?, ?)",
+        ("https://x.com/p2", "Authorized?", "2025-01-01", "2025-01-01"),
+    )
+    resp = client.get("/")
+    assert resp.status_code == 200
+    # One row has channel_delivered_at NULL → indicator should read "1".
+    assert 'id="pending-telegram-count">1</strong>' in resp.text
 
 
 # ---------------------------------------------------------------------------

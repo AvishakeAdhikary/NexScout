@@ -241,3 +241,20 @@ def test_detect_tier_branches() -> None:
     assert cli._detect_tier(None, "/chrome", None) == "T1"
     assert cli._detect_tier(profile, "/chrome", None) == "T2"
     assert cli._detect_tier(profile, "/chrome", "/pdflatex") == "T3"
+
+
+def test_dashboard_export_writes_html(tmp_path: Path) -> None:
+    """`nexscout dashboard --export <file>` writes a self-contained HTML file."""
+    out = tmp_path / "out.html"
+    result = runner.invoke(cli.app, ["dashboard", "--export", str(out)])
+    assert result.exit_code == 0, result.output
+    text = out.read_text(encoding="utf-8")
+    assert "<!doctype html>" in text
+    assert "NexScout" in text
+    assert "<style>" in text
+
+
+def test_dashboard_requires_export_flag() -> None:
+    result = runner.invoke(cli.app, ["dashboard"])
+    assert result.exit_code == 1
+    assert "required" in result.output

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 
+import pytest
 from rich.console import Console
 
 from nexscout.apply.dashboard import STATUS_PALETTE, LiveDashboard, WorkerState
@@ -113,3 +114,46 @@ def test_render_handles_no_events() -> None:
     d = LiveDashboard(workers=2, console=_console())
     group = d._render()
     assert group is not None  # smoke test
+
+
+def test_captcha_manual_transition() -> None:
+    """The new CAPTCHA_MANUAL result code maps to its own status colour."""
+    d = LiveDashboard(workers=1, console=_console())
+    d.start_job(0, {"title": "x", "site": "y"})
+    d.finish_job(0, "CAPTCHA_MANUAL")
+    assert d.workers[0].status == "captcha_manual"
+    assert d.workers[0].jobs_failed == 1
+    assert STATUS_PALETTE["captcha_manual"]
+
+
+def test_notify_telegram_delivery_logs_event() -> None:
+    d = LiveDashboard(workers=1, console=_console())
+    d.notify_telegram_delivery(ok=True, kind="question")
+    assert any("Telegram" in e and "delivered" in e for e in d._events)
+    d.notify_telegram_delivery(ok=False, kind="captcha")
+    assert any("FAILED" in e for e in d._events)
+
+
+def test_refresh_hz_default_is_2() -> None:
+    """The dashboard's Live ``refresh_per_second`` is 2 Hz per §13.6."""
+    d = LiveDashboard(workers=1, console=_console())
+    assert d._refresh_hz == 2.0
+
+
+def test_refresh_count_uses_frozen_clock(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Several mutate calls each schedule a refresh; freeze time + count them."""
+    d = LiveDashboard(workers=1, console=_console())
+    calls = {"n": 0}
+
+    class _FakeLive:
+        def __init__(self) -> None:
+            pass
+
+        def update(self, _renderable: object) -> None:
+            calls["n"] += 1
+
+    d._live = _FakeLive()  # type: ignore[assignment]
+    d.tick_action(0, "navigate")
+    d.tick_action(0, "click")
+    d.tick_action(0, "submit")
+    assert calls["n"] >= 3

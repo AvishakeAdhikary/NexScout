@@ -28,6 +28,7 @@ STATUS_PALETTE: dict[str, str] = {
     "failed": "red",
     "expired": "dim red",
     "captcha": "magenta",
+    "captcha_manual": "bold magenta",
     "login_issue": "red",
     "sso_required": "red",
     "done": "bold",
@@ -131,6 +132,9 @@ class LiveDashboard:
             elif up == "CAPTCHA":
                 state.status = "captcha"
                 state.jobs_failed += 1
+            elif up == "CAPTCHA_MANUAL":
+                state.status = "captcha_manual"
+                state.jobs_failed += 1
             elif up == "LOGIN_ISSUE":
                 state.status = "login_issue"
                 state.jobs_failed += 1
@@ -139,6 +143,13 @@ class LiveDashboard:
                 state.jobs_failed += 1
         suffix = f" — {reason}" if reason else ""
         self.add_event(f"Done: {code}{suffix}", worker_id=worker_id)
+
+    def notify_telegram_delivery(self, *, ok: bool, kind: str = "question") -> None:
+        """Log a Telegram-delivery success/failure into the events panel."""
+        if ok:
+            self.add_event(f"Telegram: {kind} delivered")
+        else:
+            self.add_event(f"Telegram: {kind} delivery FAILED")
 
     def add_cost(self, worker_id: int, delta: float) -> None:
         with self._lock:

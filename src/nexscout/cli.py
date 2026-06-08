@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import shutil
 import sys
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -427,6 +428,36 @@ def web(
     except ImportError as e:
         raise ConfigError("uvicorn is not installed") from e
     uvicorn.run(create_app, host=host, port=port, factory=True)
+
+
+@app.command()
+def dashboard(
+    export: Annotated[
+        Path | None,
+        typer.Option("--export", help="Write a self-contained HTML dashboard to this file."),
+    ] = None,
+) -> None:
+    """Static-HTML dashboard export (§17.2).
+
+    Produces a single self-contained HTML file with header stats, an
+    inline-SVG score-distribution chart, a by-site table, and a card per
+    job at ``fit_score >= 5``. No external CSS/JS references.
+    """
+    from .core.database import get_stats, init_db
+    from .web.export import render_static_dashboard
+
+    if export is None:
+        console().print("[red]--export FILE is required[/red]")
+        raise typer.Exit(code=1)
+    conn = init_db()
+    stats = get_stats(conn)
+    rows = conn.execute(
+        "SELECT rowid AS id, url, title, site, location, fit_score, apply_status, "
+        "discovered_at, applied_at FROM jobs WHERE fit_score >= 5 ORDER BY fit_score DESC, url"
+    ).fetchall()
+    html = render_static_dashboard(stats, [dict(r) for r in rows])
+    export.write_text(html, encoding="utf-8")
+    console().print(f"[green]Dashboard written to {export}[/green]")
 
 
 controls_app = typer.Typer(help="Pause / resume / tick controls.")

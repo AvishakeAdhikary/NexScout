@@ -2,25 +2,75 @@
 {% block title %}Dashboard{% endblock %}
 {% block body %}
 <h2>Dashboard</h2>
+
 <section class="stats">
   <div class="card"><h3>Total</h3><p>{{ stats.total }}</p></div>
+  <div class="card"><h3>Pending detail</h3><p>{{ stats.pending_detail }}</p></div>
+  <div class="card"><h3>With description</h3><p>{{ stats.with_description }}</p></div>
+  <div class="card"><h3>Detail errors</h3><p>{{ stats.detail_errors }}</p></div>
   <div class="card"><h3>Scored</h3><p>{{ stats.scored }}</p></div>
+  <div class="card"><h3>Unscored</h3><p>{{ stats.unscored }}</p></div>
+  <div class="card"><h3>Tailored</h3><p>{{ stats.tailored }}</p></div>
+  <div class="card"><h3>Untailored eligible</h3><p>{{ stats.untailored_eligible }}</p></div>
+  <div class="card"><h3>Tailor exhausted</h3><p>{{ stats.tailor_exhausted }}</p></div>
+  <div class="card"><h3>With cover letter</h3><p>{{ stats.with_cover_letter }}</p></div>
+  <div class="card"><h3>Cover exhausted</h3><p>{{ stats.cover_exhausted }}</p></div>
   <div class="card"><h3>Applied</h3><p>{{ stats.applied }}</p></div>
-  <div class="card"><h3>Ready to apply</h3><p>{{ stats.ready_to_apply }}</p></div>
   <div class="card"><h3>Apply errors</h3><p>{{ stats.apply_errors }}</p></div>
+  <div class="card"><h3>Ready to apply</h3><p>{{ stats.ready_to_apply }}</p></div>
+</section>
+
+<section class="by-site">
+  <h3>By source</h3>
+  <table class="rows">
+    <thead><tr><th>Site</th><th>Count</th></tr></thead>
+    <tbody>
+    {% for site, count in stats.by_site.items() %}
+      <tr><td>{{ site or '(unknown)' }}</td><td>{{ count }}</td></tr>
+    {% else %}
+      <tr><td colspan="2">no jobs yet</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </section>
 
 <h3>Score distribution</h3>
+<div class="score-chart">
+  {{ score_distribution_svg | safe }}
+</div>
 <table class="dist">
+  <thead><tr><th>Score</th><th>Count</th></tr></thead>
+  <tbody>
   {% for score, count in stats.score_distribution.items() %}
-  <tr><td>{{ score }}</td><td><div class="bar" style="width: {{ count * 10 }}px"></div> {{ count }}</td></tr>
+    <tr><td>{{ score }}</td><td><div class="bar" style="width: {{ count * 10 }}px"></div> {{ count }}</td></tr>
+  {% else %}
+    <tr><td colspan="2">no scored jobs yet</td></tr>
   {% endfor %}
+  </tbody>
 </table>
 
-<h3>OpenClaw</h3>
-<p>Last tick: {{ openclaw.last_tick or "never" }} · Channel: {{ openclaw.channel or "—" }}</p>
+<section class="openclaw">
+  <h3>OpenClaw status</h3>
+  <p>
+    Last tick: <strong>{{ openclaw.last_tick or "never" }}</strong> &middot;
+    Channel: <strong>{{ openclaw.channel or "cli" }}</strong>
+  </p>
+  <p class="pending-telegram">
+    Pending Telegram deliveries:
+    <strong id="pending-telegram-count">{{ pending_telegram }}</strong>
+  </p>
+  <form method="post" action="/controls/tick">
+    <button>Run tick now</button>
+  </form>
+  <form method="post" action="/controls/pause" style="display:inline">
+    <button>Pause</button>
+  </form>
+  <form method="post" action="/controls/resume" style="display:inline">
+    <button>Resume</button>
+  </form>
+</section>
 
-<h3>Recent events</h3>
+<h3>Recent Events</h3>
 <ul class="events">
   {% for e in events %}
   <li>[{{ e.ts }}] <strong>{{ e.kind }}</strong> {{ e.payload_json }}</li>
