@@ -2,11 +2,21 @@ services:
   nexscout:
     container_name: nexscout
     build: .
+    image: nexscout:latest
     restart: unless-stopped
+    shm_size: 2g
+    ports:
+      - "8765:8765"
+    extra_hosts:
+      # Lets the container resolve host.docker.internal on Linux Docker hosts
+      # the same way Docker Desktop already does on Windows/Mac. Used for the
+      # default LMSTUDIO_URL=http://host.docker.internal:1234/v1.
+      - "host.docker.internal:host-gateway"
     volumes:
       - "${HOME}/.nexscout:/sandbox/nexscout"
     environment:
       - NEXSCOUT_DIR=/sandbox/nexscout
+      - LMSTUDIO_URL=${LMSTUDIO_URL:-http://host.docker.internal:1234/v1}
       # CAPTCHA is OPTIONAL — when unset, jobs requiring a CAPTCHA solve are
       # parked with apply_status='captcha_manual' and surfaced as a pending
       # question for manual review.
@@ -18,6 +28,12 @@ services:
       - BRAVE_API_KEY
       - GOOGLE_CSE_KEY
       - GOOGLE_CSE_CX
+      # OpenClaw channel (Telegram). Values are read from the host environment;
+      # no secrets are baked into this file.
+      - TELEGRAM_BOT_TOKEN
+      - TELEGRAM_CHAT_ID
+    networks:
+      - nexscout-net
     depends_on:
       ollama:
         condition: service_started
@@ -36,12 +52,16 @@ services:
     restart: unless-stopped
     volumes: [ollama:/root/.ollama]
     ports: ["11434:11434"]
+    networks:
+      - nexscout-net
     profiles: ["local-llm"]
 
   openclaw:
     container_name: nexscout-openclaw
     image: openclaw/openclaw:latest
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - "${HOME}/.openclaw:/root/.openclaw"
       - "${HOME}/.nexscout:/sandbox/nexscout"
@@ -49,12 +69,21 @@ services:
       - OPENCLAW_MEMORY_DIR=/root/.openclaw/memory
       - OPENCLAW_SKILLS_DIR=/sandbox/nexscout/skills
       - OPENCLAW_HEARTBEAT_INTERVAL_MINUTES=30
-      - OPENCLAW_DEFAULT_CHANNEL=${OPENCLAW_DEFAULT_CHANNEL:-webchat}
+      - OPENCLAW_DEFAULT_CHANNEL=${OPENCLAW_DEFAULT_CHANNEL:-telegram}
       - OPENCLAW_LOG_LEVEL=${OPENCLAW_LOG_LEVEL:-info}
+      - TELEGRAM_BOT_TOKEN
+      - TELEGRAM_CHAT_ID
+    networks:
+      - nexscout-net
     depends_on:
       nexscout:
         condition: service_healthy
     profiles: ["openclaw"]
+
+networks:
+  nexscout-net:
+    name: nexscout-net
+    driver: bridge
 
 volumes:
   ollama:
