@@ -217,6 +217,11 @@ class OpenClawTickBudget(BaseModel):
 
 class OpenClawConfig(BaseModel):
     tick_budget: OpenClawTickBudget = Field(default_factory=OpenClawTickBudget)
+    #: Active delivery channel: ``cli``, ``telegram`` (or future ``slack`` /
+    #: ``discord``). ``cli`` means inbox-only — no message is pushed to a
+    #: bot. ``telegram`` requires ``TELEGRAM_BOT_TOKEN`` +
+    #: ``TELEGRAM_CHAT_ID`` in the environment.
+    channel: str = "cli"
 
 
 # ---------------------------------------------------------------------------

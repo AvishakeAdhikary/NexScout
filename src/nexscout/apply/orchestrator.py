@@ -182,6 +182,55 @@ def mark_result(
                 "INSERT INTO pending_questions (job_url, question, asked_at, channel) VALUES (?, ?, ?, 'cli')",
                 (job_url, question, now),
             )
+        # Push the alert through the active OpenClaw channel immediately —
+        # CAPTCHA jobs are user-action gated; we don't want to wait for the
+        # next tick. Failures are swallowed so the apply pipeline keeps
+        # moving.
+        _emit_captcha_alert(job_url, conn)
+
+
+def _emit_captcha_alert(job_url: str, conn: sqlite3.Connection) -> None:
+    """Notify the active OpenClaw channel that ``job_url`` needs manual CAPTCHA.
+
+    Reads the user's profile, builds the active channel, and pushes a
+    ``send_captcha_alert`` message. The newly-inserted pending_questions
+    row's ``channel_delivered_at`` is updated on success. Any failure is
+    logged and swallowed.
+    """
+    try:
+        from ..core.profile import Profile
+        from ..openclaw.channels import get_channel
+
+        profile = Profile.from_path()
+    except Exception as e:
+        log.debug("captcha alert: cannot load profile (%s)", e)
+        return
+
+    channel = None
+    try:
+        channel = get_channel(profile)
+    except Exception as e:
+        log.debug("captcha alert: cannot build channel (%s)", e)
+
+    if channel is None or not getattr(channel, "enabled", False):
+        return
+
+    title_row = conn.execute("SELECT title FROM jobs WHERE url=?", (job_url,)).fetchone()
+    title = title_row["title"] if title_row is not None else None
+
+    try:
+        delivered = channel.send_captcha_alert(job_url, title)
+    except Exception as e:
+        log.warning("captcha alert: send failed (%s)", e)
+        return
+
+    if delivered:
+        question = f"Job requires manual CAPTCHA solving: {job_url}"
+        conn.execute(
+            "UPDATE pending_questions SET channel_delivered_at=? "
+            "WHERE job_url=? AND question=? AND answered_at IS NULL",
+            (_ts(), job_url, question),
+        )
 
 
 def _status_for_code(code: str) -> str:

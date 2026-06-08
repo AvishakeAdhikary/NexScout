@@ -128,6 +128,57 @@ The Markdown reader/writer lives in `src/nexscout/openclaw/memory.py` and
 parses each file into structured entries while preserving the human-readable
 Markdown on disk.
 
+## Telegram channel
+
+NexScout ships a built-in Telegram delivery channel so questions and
+manual-CAPTCHA alerts reach you on your phone without an external
+OpenClaw runtime. Enable it in two steps:
+
+1. **Create a bot.** In Telegram, message [@BotFather](https://t.me/BotFather)
+   and run `/newbot`. Save the bot token it returns (looks like
+   `123456789:AAH...`).
+2. **Find your chat id.** Send any message to your new bot, then open
+   `https://api.telegram.org/bot<TOKEN>/getUpdates` in a browser and
+   read `result[0].message.chat.id`. It's a small integer (or a `-`
+   prefixed integer for a group).
+
+Set both values in the environment (e.g. via the `docker-compose.yml`
+`env_file:` block):
+
+```bash
+export TELEGRAM_BOT_TOKEN="123456789:AAH..."
+export TELEGRAM_CHAT_ID="987654321"
+```
+
+…and switch the profile to the new channel:
+
+```yaml
+# ~/.nexscout/profile.yaml
+openclaw:
+  channel: telegram
+```
+
+What gets pushed:
+
+| Trigger                                | Message                                |
+|----------------------------------------|----------------------------------------|
+| `_stage_surface_questions`             | one message per unanswered question    |
+| Apply agent returns `CAPTCHA_MANUAL`   | immediate "manual CAPTCHA required"    |
+| `send_apply_summary(...)` (tick hook)  | tick summary one-liner                 |
+
+Delivery is idempotent — once a row's `pending_questions.channel_delivered_at`
+column is non-null, that question is not pushed again. The channel
+retries on transient errors (HTTP 429 with `retry_after`, HTTP 5xx,
+network errors) up to 3 times with 2/4/8 second backoff. CAPTCHA-free
+jobs still flow through the apply pipeline automatically; the Telegram
+channel only fires on questions and manual-CAPTCHA alerts.
+
+To answer a queued question, reply to the bot with
+`/answer <id> <your reply>` — OpenClaw forwards it back to
+`nexscout question answer`, which updates the row and resumes the job
+on the next tick. You can also answer via the web UI's `/questions`
+page.
+
 ## Tick budget
 
 A heartbeat tick performs the smallest useful slice of work and returns

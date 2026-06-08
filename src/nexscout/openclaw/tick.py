@@ -22,6 +22,7 @@ import logging
 import sqlite3
 import time
 from collections.abc import Iterable
+from contextlib import suppress
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -363,17 +364,22 @@ def _stage_apply(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
         log.warning("tick: apply worker_loop crashed (%s)", e)
         return 0
     finally:
-        from contextlib import suppress
-
         with suppress(Exception):
             pool.close_all()
 
 
 def _stage_surface_questions(profile: Profile, conn: sqlite3.Connection) -> int:
-    """Write any newly-pending questions to ``~/.openclaw/inbox/nexscout-<ts>.md``."""
-    _ = profile
+    """Write any newly-pending questions to ``~/.openclaw/inbox/nexscout-<ts>.md``.
+
+    Also push each row through the active OpenClaw delivery channel (e.g.
+    Telegram) and update ``pending_questions.channel_delivered_at`` on
+    success.
+    """
+    import json as _json
+
     rows = conn.execute(
-        "SELECT id, job_url, question, asked_at FROM pending_questions WHERE answered_at IS NULL ORDER BY id"
+        "SELECT id, job_url, question, asked_at, channel_delivered_at "
+        "FROM pending_questions WHERE answered_at IS NULL ORDER BY id"
     ).fetchall()
     if not rows:
         return 0
@@ -391,16 +397,51 @@ def _stage_surface_questions(profile: Profile, conn: sqlite3.Connection) -> int:
         payload.append("")
     (inbox / fname).write_text("\n".join(payload), encoding="utf-8")
 
+    # Push through the active delivery channel (Telegram, ...). Failures
+    # never block the inbox drop — the user can still answer via the web UI.
+    delivered = 0
+    try:
+        from .channels import get_channel
+
+        channel = get_channel(profile)
+    except Exception as e:  # pragma: no cover - defensive
+        log.warning("tick: cannot build delivery channel (%s)", e)
+        channel = None
+
+    if channel is not None and getattr(channel, "enabled", False):
+        for r in rows:
+            if r["channel_delivered_at"]:
+                continue
+            ok = False
+            with suppress(Exception):
+                ok = channel.send_question(int(r["id"]), str(r["question"]), r["job_url"])
+            if ok:
+                conn.execute(
+                    "UPDATE pending_questions SET channel_delivered_at=? WHERE id=?",
+                    (_ts(), int(r["id"])),
+                )
+                delivered += 1
+
     # Record an event so the dashboard shows it.
     conn.execute(
         "INSERT INTO events (ts, kind, payload_json) VALUES (?, 'tick', ?)",
-        (_ts(), f'{{"questions_surfaced": {len(rows)}}}'),
+        (
+            _ts(),
+            _json.dumps({"questions_surfaced": len(rows), "channel_delivered": delivered}),
+        ),
     )
 
     # Persist a marker so the web UI's "Last tick" knows we ran.
     marker = nexscout_dir() / "last-tick.json"
     marker.write_text(
-        f'{{"ts": "{_ts()}", "questions": {len(rows)}}}',
+        _json.dumps(
+            {
+                "ts": _ts(),
+                "questions": len(rows),
+                "channel_delivered": delivered,
+                "channel": profile.openclaw.channel,
+            }
+        ),
         encoding="utf-8",
     )
     return len(rows)

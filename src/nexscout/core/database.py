@@ -192,10 +192,20 @@ def init_db(path: Path | None = None) -> sqlite3.Connection:
     return conn
 
 
-def ensure_columns(conn: sqlite3.Connection | None = None) -> list[str]:
-    """ALTER TABLE jobs to add any columns missing relative to ``_ALL_COLUMNS``.
+#: Auxiliary columns added to non-``jobs`` tables. Forward-only per §5.
+_AUX_COLUMNS: dict[str, dict[str, str]] = {
+    "pending_questions": {
+        # Timestamp set when an OpenClaw delivery channel (e.g. Telegram)
+        # successfully relayed the question to the user.
+        "channel_delivered_at": "TEXT",
+    },
+}
 
-    Returns the list of added column names.
+
+def ensure_columns(conn: sqlite3.Connection | None = None) -> list[str]:
+    """ALTER missing columns into ``jobs`` (and auxiliary tables) in-place.
+
+    Returns the list of added column names (across all tables).
     """
     c = conn or get_conn()
     existing: set[str] = {row[1] for row in c.execute("PRAGMA table_info(jobs)").fetchall()}
@@ -212,6 +222,18 @@ def ensure_columns(conn: sqlite3.Connection | None = None) -> list[str]:
         safe_ddl = ddl.replace("PRIMARY KEY", "").strip()
         c.execute(f"ALTER TABLE jobs ADD COLUMN {name} {safe_ddl}")
         added.append(name)
+
+    # Forward-only migrations for auxiliary tables (channel_delivered_at, ...).
+    for table, cols in _AUX_COLUMNS.items():
+        aux_existing = {row[1] for row in c.execute(f"PRAGMA table_info({table})").fetchall()}
+        if not aux_existing:
+            continue  # the table itself was not created — skip silently.
+        for name, ddl in cols.items():
+            if name in aux_existing:
+                continue
+            safe_ddl = ddl.replace("PRIMARY KEY", "").strip()
+            c.execute(f"ALTER TABLE {table} ADD COLUMN {name} {safe_ddl}")
+            added.append(f"{table}.{name}")
     return added
 
 
