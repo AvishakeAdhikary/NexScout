@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from ...core.bundle import bundle_dir_for
 from ...core.database import init_db
@@ -70,17 +70,16 @@ async def list_jobs(
     rows = [dict(r) for r in conn.execute(list_sql, params).fetchall()]
     total = int(conn.execute(count_sql, count_params).fetchone()["n"])
     templates = request.app.state.templates
-    return templates.TemplateResponse(
-        request,
-        "jobs.html",
-        {
-            "rows": rows,
-            "total": total,
-            "page": page,
-            "per_page": per_page,
-            "filters": {"min_score": min_score, "site": site, "status": status, "sort": sort},
-        },
-    )
+    context = {
+        "rows": rows,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "filters": {"min_score": min_score, "site": site, "status": status, "sort": sort},
+    }
+    # htmx swaps the `#jobs-table` element — return just the partial.
+    template_name = "_jobs_table.html" if request.headers.get("HX-Request") else "jobs.html"
+    return templates.TemplateResponse(request, template_name, context)
 
 
 @router.get("/jobs/{job_id}", response_class=HTMLResponse)
@@ -115,6 +114,53 @@ async def job_detail(request: Request, job_id: int) -> HTMLResponse:
             "has_cover_pdf": (bundle / "cover_letter.pdf").exists(),
         },
     )
+
+
+@router.post("/api/reapply")
+async def reapply(request: Request) -> Any:
+    """Reset a job so the next apply pass picks it up.
+
+    Accepts both the form-style submission used by the "Re-apply" button
+    on ``/jobs/{job_id}`` (redirects on success) AND a JSON body
+    ``{"job_id": N}`` for tooling (returns ``{"status": "ok", ...}``).
+    """
+    content_type = (request.headers.get("content-type") or "").lower()
+    job_id: int | None = None
+    is_json = "application/json" in content_type
+
+    if is_json:
+        body = await request.json()
+        if isinstance(body, dict) and "job_id" in body:
+            try:
+                job_id = int(body["job_id"])
+            except (TypeError, ValueError):
+                raise HTTPException(status_code=422, detail="job_id must be an integer") from None
+    else:
+        form = await request.form()
+        raw = form.get("job_id")
+        if raw is not None:
+            try:
+                job_id = int(str(raw))
+            except ValueError:
+                raise HTTPException(status_code=422, detail="job_id must be an integer") from None
+
+    if job_id is None:
+        raise HTTPException(status_code=422, detail="job_id is required")
+
+    conn = init_db()
+    row = conn.execute("SELECT rowid AS id, url FROM jobs WHERE rowid=?", (job_id,)).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="job not found")
+    conn.execute(
+        "UPDATE jobs SET apply_status=NULL, apply_attempts=0, apply_error=NULL WHERE rowid=?",
+        (job_id,),
+    )
+
+    if is_json:
+        from fastapi.responses import JSONResponse as _JR
+
+        return _JR({"status": "ok", "id": job_id, "url": row["url"]})
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @router.get("/bundles/{job_id}/{filename}")

@@ -374,6 +374,127 @@ def test_api_metrics(client: TestClient) -> None:
     assert "nexscout_jobs_total" in resp.text
 
 
+def test_api_applications(client: TestClient) -> None:
+    """`/api/applications` returns the applied jobs as JSON."""
+    resp = client.get("/api/applications")
+    assert resp.status_code == 200
+    rows = resp.json()
+    assert isinstance(rows, list)
+    # Seed data has one applied row → "Engineer A" / greenhouse.
+    assert any(r.get("title") == "Engineer A" for r in rows)
+    # Every row must carry the standard application fields.
+    for r in rows:
+        assert "url" in r
+        assert "site" in r
+        assert "applied_at" in r
+
+
+def test_api_questions(client: TestClient, db: sqlite3.Connection) -> None:
+    db.execute(
+        "INSERT INTO pending_questions (job_url, question, asked_at) VALUES (?, ?, ?)",
+        ("https://x.com/q1", "Sponsor?", "2025-01-01"),
+    )
+    resp = client.get("/api/questions")
+    assert resp.status_code == 200
+    rows = resp.json()
+    assert any(r["question"] == "Sponsor?" for r in rows)
+    # channel_delivered_at is exposed in the JSON payload.
+    assert all("channel_delivered_at" in r for r in rows)
+
+
+def test_api_answer_json_success(client: TestClient, db: sqlite3.Connection) -> None:
+    cur = db.execute(
+        "INSERT INTO pending_questions (job_url, question, asked_at) VALUES (?, ?, ?) RETURNING id",
+        ("https://x.com/q2", "Authorized?", "2025-01-01"),
+    )
+    qid = int(cur.fetchone()["id"])
+    resp = client.post("/api/answer/json", json={"question_id": qid, "reply": "Yes"})
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+    row = db.execute("SELECT answer FROM pending_questions WHERE id=?", (qid,)).fetchone()
+    assert row["answer"] == "Yes"
+
+
+def test_api_answer_json_not_found(client: TestClient) -> None:
+    resp = client.post("/api/answer/json", json={"question_id": 999999, "reply": "x"})
+    assert resp.status_code == 404
+
+
+def test_api_reapply_success(client: TestClient, db: sqlite3.Connection) -> None:
+    row = db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/3'").fetchone()
+    jid = int(row["rowid"])
+    # The seed row is 'failed' — reapply clears that.
+    resp = client.post("/api/reapply", json={"job_id": jid})
+    assert resp.status_code == 200
+    after = db.execute("SELECT apply_status, apply_attempts FROM jobs WHERE rowid=?", (jid,)).fetchone()
+    assert after["apply_status"] is None
+    assert int(after["apply_attempts"]) == 0
+
+
+def test_api_reapply_not_found(client: TestClient) -> None:
+    resp = client.post("/api/reapply", json={"job_id": 999999})
+    assert resp.status_code == 404
+
+
+def test_reapply_form_submits(client: TestClient, db: sqlite3.Connection) -> None:
+    """The form-style POST used by job_detail.html resets apply state."""
+    row = db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/3'").fetchone()
+    jid = int(row["rowid"])
+    resp = client.post("/api/reapply", data={"job_id": str(jid)}, follow_redirects=False)
+    assert resp.status_code == 303
+    assert resp.headers["location"] == f"/jobs/{jid}"
+
+
+def test_profile_migrate_route(client: TestClient) -> None:
+    resp = client.get("/profile/migrate", follow_redirects=False)
+    # Redirects whether the profile is current or not.
+    assert resp.status_code == 303
+
+
+def test_jobs_htmx_returns_fragment(client: TestClient) -> None:
+    """HTMX requests get just the `#jobs-table` fragment, not the full page."""
+    resp = client.get("/jobs", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    assert '<table id="jobs-table"' in resp.text
+    # The fragment should not include the sidebar or filter form.
+    assert "<aside" not in resp.text
+    assert 'id="jobs-filter"' not in resp.text
+
+
+def test_api_jobs_site_filter(client: TestClient) -> None:
+    resp = client.get("/api/jobs?site=greenhouse&min_score=0&limit=10")
+    assert resp.status_code == 200
+    rows = resp.json()
+    for r in rows:
+        assert r["site"] == "greenhouse"
+
+
+def test_api_stats_shape(client: TestClient) -> None:
+    """`/api/stats` exposes every counter documented in §5."""
+    resp = client.get("/api/stats")
+    assert resp.status_code == 200
+    data = resp.json()
+    for key in (
+        "total",
+        "by_site",
+        "pending_detail",
+        "with_description",
+        "detail_errors",
+        "scored",
+        "unscored",
+        "score_distribution",
+        "tailored",
+        "untailored_eligible",
+        "tailor_exhausted",
+        "with_cover_letter",
+        "cover_exhausted",
+        "applied",
+        "apply_errors",
+        "ready_to_apply",
+    ):
+        assert key in data
+
+
 # ---------------------------------------------------------------------------
 # App factory wiring
 # ---------------------------------------------------------------------------

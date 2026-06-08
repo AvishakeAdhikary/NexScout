@@ -45,4 +45,22 @@ async def save_profile(yaml_text: str = Form(...)) -> RedirectResponse:
     return RedirectResponse(url="/profile", status_code=303)
 
 
+@router.get("/profile/migrate")
+async def migrate_profile() -> RedirectResponse:
+    """Bump the profile's ``meta.v`` to the current schema version.
+
+    The template surfaces a "Migrate" button when ``meta.v`` is older
+    than :data:`CURRENT_SCHEMA_VERSION`. The actual migration logic
+    lives in :func:`nexscout.core.profile._migrate`; loading + saving
+    here re-runs it.
+    """
+    try:
+        profile = Profile.from_path()
+    except ConfigError:
+        return RedirectResponse(url="/profile", status_code=303)
+    profile.meta.v = CURRENT_SCHEMA_VERSION
+    profile.save()
+    return RedirectResponse(url="/profile", status_code=303)
+
+
 __all__ = ["router"]

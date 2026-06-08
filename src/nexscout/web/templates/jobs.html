@@ -23,20 +23,5 @@
   </label>
 </form>
 
-<table id="jobs-table" class="rows">
-  <thead><tr><th>Score</th><th>Title</th><th>Company</th><th>Status</th><th>Discovered</th></tr></thead>
-  <tbody>
-    {% for row in rows %}
-    <tr>
-      <td>{{ row.fit_score or '—' }}</td>
-      <td><a href="/jobs/{{ row.id }}">{{ row.title or row.url }}</a></td>
-      <td>{{ row.site or '' }}</td>
-      <td>{{ row.apply_status or 'pending' }}</td>
-      <td>{{ row.discovered_at or '' }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">no jobs match</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% include "_jobs_table.html" %}
 {% endblock %}
