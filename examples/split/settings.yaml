@@ -1,0 +1,82 @@
+# NexScout operational settings — search / llm / apply / openclaw / captcha
+# provider / smtp (non-secret fields).
+#
+# Middle-priority file: deep-merged on top of profile.yaml and below
+# credentials.yaml. Anything here overrides profile.yaml; a secret in
+# credentials.yaml overrides the same key here. `${env:NAME}` works in any of
+# the three files.
+#
+# Keep SECRETS out of this file — captcha.api_key, smtp.password, gmail/account
+# passwords and proxy creds belong in credentials.yaml.
+
+search:
+  queries:
+    - {q: "staff engineer",    tier: 1}
+    - {q: "senior backend",    tier: 1}
+    - {q: "platform engineer", tier: 2}
+    - {q: "infra engineer",    tier: 3}
+  locations:
+    - {label: "Bay Area",  q: "San Francisco, CA", remote: false}
+    - {label: "Remote US", q: "Remote",            remote: true}
+  exclude_titles: [intern, "vp", chief, "co-op", clearance]
+  hours_old: 72
+  min_score: 7
+  boards:
+    jobspy: [indeed, linkedin, glassdoor, zip_recruiter, google]
+    websearch:
+      providers: [tavily, brave, duckduckgo, searxng]
+      queries_per_day: 200
+
+llm:
+  # LM Studio (OpenAI-compatible) is the default backend: set primary to
+  # `lmstudio:<model-id>`. Cloud models (gemini-*, openai:*, anthropic:*) and
+  # `ollama:*` also work. fallback is used when primary errors or the budget
+  # ledger blocks it.
+  primary: gemini-2.0-flash
+  fallback: ollama:llama3.1:70b
+  judge: anthropic:claude-haiku-4-5-20251001
+  budgets:
+    monthly_usd: 30
+    daily_calls: 5000
+
+apply:
+  workers: 2
+  headless: true
+  dry_run: false
+  max_attempts: 3
+  max_per_run: 0
+  permitted_atss: [greenhouse, lever, ashby, workday, taleo, icims, smartrecruiters]
+
+# CAPTCHA is OPTIONAL. Only the non-secret `provider` lives here; the api_key
+# goes in credentials.yaml. When no key is configured the project still runs —
+# CAPTCHA-walled jobs are parked with apply_status='captcha_manual' and
+# surfaced as a pending question for manual review.
+captcha:
+  provider: capsolver
+
+# Email transport for the `send_email` tool (email-only postings). Only the
+# non-secret fields live here; smtp.password goes in credentials.yaml. If
+# `host` is set we use smtplib directly. If `host` is empty AND me.email is a
+# @gmail.com address AND a gmail/smtp password is set in credentials.yaml, the
+# agent drives a browser-driven Gmail compose + login flow instead.
+# smtp:
+#   host: smtp.gmail.com
+#   port: 465
+#   user: "${env:GMAIL_USER}"
+#   use_ssl: true
+#   use_tls: false
+
+openclaw:
+  # Active delivery channel: cli | telegram | discord.
+  #   cli      — inbox-only; nothing is pushed to a bot (default).
+  #   telegram — requires TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID in the env.
+  #   discord  — requires DISCORD_WEBHOOK_URL (preferred) OR
+  #              DISCORD_BOT_TOKEN + DISCORD_CHANNEL_ID in the env.
+  # Channel credentials are NEVER stored in these files — only the env vars.
+  channel: cli
+  tick_budget:
+    discover_per_engine: 10
+    enrich: 20
+    score: 50
+    tailor: 5
+    apply: 3

@@ -231,6 +231,28 @@ class TailorResult:
     judge_issues: str | None = None
 
 
+def _repair_json_object(raw: str) -> dict[str, Any] | None:
+    """Tolerant JSON recovery for weak local models that emit slightly broken
+    JSON (missing/trailing commas, unquoted keys).
+
+    Tried only after the strict :func:`extract_json` path fails. Uses
+    ``json_repair`` when available; returns the repaired value only when it is
+    a ``dict`` so callers can keep their ``isinstance(..., dict)`` guard. The
+    import is lazy so the dependency stays optional at import time.
+    """
+    if not raw:
+        return None
+    try:
+        import json_repair
+    except ImportError:  # pragma: no cover - dependency is declared in pyproject
+        return None
+    try:
+        repaired = json_repair.loads(raw)
+    except Exception:  # pragma: no cover - json_repair is very permissive
+        return None
+    return repaired if isinstance(repaired, dict) else None
+
+
 def tailor_resume(
     *,
     router: LLMRouter,
@@ -267,6 +289,14 @@ def tailor_resume(
             continue
 
         data = extract_json(raw)
+        if not isinstance(data, dict):
+            # Tolerant fallback for weak local models (e.g. small reasoning
+            # models on LM Studio) that emit slightly malformed JSON — a
+            # missing comma, trailing comma, or unquoted key. Tried only after
+            # the strict extractor fails, and only the structured object is
+            # accepted; the result still passes through the same validator +
+            # judge below, so a garbage repair is rejected downstream.
+            data = _repair_json_object(raw)
         if not isinstance(data, dict):
             last_errors = ["LLM did not return valid JSON"]
             avoid_notes = list(last_errors)

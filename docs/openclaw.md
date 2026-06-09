@@ -53,7 +53,7 @@ The compose file ships three named containers:
 |------------|-----------------------|------------------------------------------|
 | `nexscout` | `nexscout`            | the agent itself (runs `nexscout run`)   |
 | `ollama`   | `nexscout-ollama`     | local LLM endpoint (opt-in)              |
-| `openclaw` | `nexscout-openclaw`   | heartbeat daemon (opt-in via profile)    |
+| `openclaw` | `nexscout-openclaw`   | OpenClaw gateway / heartbeat — runs `openclaw gateway --port 18789`, serves its Control UI on <http://localhost:18789/> (opt-in via profile) |
 
 The `nexscout` service has a `healthcheck` that runs
 `nexscout doctor --quiet` every 60 seconds. The OpenClaw container `depends_on`
@@ -179,6 +179,61 @@ To answer a queued question, reply to the bot with
 on the next tick. You can also answer via the web UI's `/questions`
 page.
 
+## Discord channel
+
+NexScout also ships a built-in Discord delivery channel that mirrors the
+Telegram one — same triggers, same retry/backoff, same idempotency. It
+talks to Discord directly (no external OpenClaw runtime required) and
+supports two credential modes; the **webhook** mode is the easiest.
+
+1. **Webhook (preferred).** In your Discord server open **Server Settings
+   → Integrations → Webhooks → New Webhook**, pick the target channel, and
+   **Copy Webhook URL**. That single URL is all you need.
+2. **Bot token + channel id (alternative).** Create an application + bot at
+   the [Discord Developer Portal](https://discord.com/developers/applications),
+   invite it to your server with the *Send Messages* permission, and copy
+   the bot token plus the numeric channel id (right-click the channel →
+   *Copy Channel ID* with Developer Mode on).
+
+Set the credentials in the environment (same host-env passthrough as
+Telegram in `docker-compose.yml`). Webhook wins if both are present:
+
+```bash
+# Mode 1 — webhook (preferred)
+export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/123/abc..."
+
+# Mode 2 — bot token + channel id (used only when no webhook URL is set)
+export DISCORD_BOT_TOKEN="MT!..."
+export DISCORD_CHANNEL_ID="987654321098765432"
+```
+
+…and switch the channel in your config:
+
+```yaml
+# ~/.nexscout/settings.yaml  (or the openclaw block of a monolithic profile.yaml)
+openclaw:
+  channel: discord
+```
+
+What gets pushed (identical to Telegram):
+
+| Trigger                                | Message                                |
+|----------------------------------------|----------------------------------------|
+| `_stage_surface_questions`             | one message per unanswered question    |
+| Apply agent returns `CAPTCHA_MANUAL`   | immediate "manual CAPTCHA required"    |
+| `send_apply_summary(...)` (tick hook)  | tick summary one-liner                 |
+
+Messages are formatted with **Discord markdown** (`**bold**`, inline
+`code`, and plain URLs) rather than the HTML Telegram uses, so no escaping
+is applied. Delivery is idempotent — once a row's
+`pending_questions.channel_delivered_at` is non-null the question is not
+pushed again. The channel retries on transient failures (HTTP 429 honouring
+Discord's `retry_after`, HTTP 5xx, and network errors) up to 3 times with
+2/4/8 second backoff. Webhook delivery treats HTTP 204 as success; bot-mode
+delivery treats HTTP 200. To answer a queued question, reply
+`/answer <id> <your reply>` (or use the web UI's `/questions` page) — the
+flow back into `nexscout question answer` is the same as for Telegram.
+
 ## Tick budget
 
 A heartbeat tick performs the smallest useful slice of work and returns
@@ -194,4 +249,41 @@ within a soft 5-minute budget:
 8. Print a one-line summary to stdout for OpenClaw to log.
 
 Limits are configurable per `profile.openclaw.tick_budget` — see
-`examples/profile.example.yaml`.
+`examples/profile.example.yaml` (monolithic) or
+`examples/split/settings.yaml` (three-file split layout).
+
+## Config file layout
+
+NexScout reads up to **three** deep-merged YAML files from its config
+directory (`$NEXSCOUT_DIR` if set, else `~/.nexscout`), with merge priority
+`profile.yaml` < `settings.yaml` < `credentials.yaml` (later files win):
+
+| File               | Holds                                                       |
+|--------------------|-------------------------------------------------------------|
+| `profile.yaml`     | résumé / applicant facts (`me`, `auth`, `skills`, `facts`, …) plus optional CV extras (`certifications`/`publications`/`languages`) |
+| `settings.yaml`    | operational config (`search`, `llm`, `apply`, `openclaw`) + `captcha.provider` + non-secret `smtp.*` fields |
+| `credentials.yaml` | secrets — `captcha.api_key`, `smtp.password`, `gmail_password`, account `password`, `proxy` |
+
+`${env:NAME}` substitution works in any of the three files. The split is
+optional and fully backward-compatible: a single monolithic `profile.yaml`
+loads exactly as before. The `openclaw.channel` selector lives in
+`settings.yaml`; channel tokens (Telegram / Discord) come from the
+environment, never from these files. A clean, commented reference set lives
+in `examples/split/` — `cp examples/split/*.yaml ~/.nexscout/` to start.
+
+## OpenClaw gateway dashboard
+
+The `openclaw` compose service runs OpenClaw's own gateway
+(`openclaw gateway --port 18789`) and maps the port, so its **native
+Control UI / dashboard** is reachable at <http://localhost:18789/> once the
+stack is up. This is OpenClaw's own dashboard, *not* a NexScout-built one —
+it shows heartbeat/skill state from the OpenClaw side. Access may require an
+`OPENCLAW_GATEWAY_TOKEN` (read from the host environment by the compose
+service); running `openclaw dashboard` opens it with a pre-authenticated
+link.
+
+Separately, NexScout's own web UI (<http://localhost:8765/>) shows an
+**OpenClaw status panel** on its dashboard — last tick timestamp, the active
+channel, and the count of pending channel deliveries — sourced from the
+`pending_questions` table and the last-tick marker, independent of the
+OpenClaw gateway.

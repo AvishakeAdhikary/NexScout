@@ -49,8 +49,14 @@ A fresh contributor on a clean machine runs:
 ```bash
 git clone <repo>
 cd nexscout
+
+# Dependencies — pick ONE of:
+#   pip:
 pip install -e ".[dev,web]"
 pip install --no-deps python-jobspy && pip install pydantic tls-client requests markdownify regex
+#   uv (what CI now runs):
+uv sync --extra dev --extra web            # then prefix commands below with `uv run`
+
 nexscout init                              # YAML wizard fills ~/.nexscout/profile.yaml
 export CAPTCHA_API_KEY=...                 # optional; manual review path is automatic when unset
 nexscout doctor                            # tiered T1/T2/T3 report; --quiet exits 0 when T2+ healthy
@@ -95,6 +101,26 @@ openclaw skill install ./src/nexscout/openclaw/manifest.toml
   `profile.smtp.*` first, then your Gmail email + password via a
   browser-driven Gmail login (compose URL + Send button).
 
+### Quick start via scripts
+
+The fastest path is the cross-platform launchers in `scripts/`. They
+(re)generate the three config files interactively, bring up your chosen run
+method, wait for the web UI, then open both dashboards:
+
+```powershell
+# Windows — pass -Setup the first time to generate config
+powershell -File scripts\windows\start-uv.ps1 -Setup       # or start-direct.ps1 / start-docker.ps1
+```
+```bash
+# Linux — pass --setup the first time
+./scripts/linux/start-uv.sh --setup                        # or start-direct.sh / start-docker.sh
+```
+
+`scripts/common/generate_config.py` is the standalone interactive generator
+(Enter accepts a default, `-` skips a key). See **[scripts/README.md](scripts/README.md)**
+for the full launcher / generator reference. The manual paths below remain
+fully supported.
+
 ### From source
 
 ```bash
@@ -105,7 +131,13 @@ python3.11 -m venv .venv
 source .venv/bin/activate
 # Windows PowerShell:
 .venv\Scripts\Activate.ps1
+```
 
+Then install dependencies with **either** pip or uv.
+
+**pip:**
+
+```bash
 pip install -e ".[dev,web]"
 pip install --no-deps python-jobspy
 pip install pydantic tls-client requests markdownify regex
@@ -115,6 +147,16 @@ The `--no-deps` step on `python-jobspy` is required: that package pins an
 exact numpy version that conflicts with pip's resolver but works fine at
 runtime. The follow-up `pip install pydantic tls-client requests
 markdownify regex` brings in its real runtime deps.
+
+**uv** (what CI now runs):
+
+```bash
+uv sync --extra dev --extra web
+uv run nexscout doctor          # prefix any nexscout command with `uv run`
+```
+
+`uv sync` provisions the virtualenv and resolves dependencies in one step;
+prefix subsequent `nexscout`/`pytest`/`ruff` invocations with `uv run`.
 
 ### Via Docker
 
@@ -135,12 +177,16 @@ Compose ships three named containers:
 |------------|-----------------------|------------------------------------------|
 | `nexscout` | `nexscout`            | the agent itself (runs `nexscout run`)   |
 | `ollama`   | `nexscout-ollama`     | local LLM endpoint (opt-in profile)      |
-| `openclaw` | `nexscout-openclaw`   | heartbeat daemon (opt-in profile)        |
+| `openclaw` | `nexscout-openclaw`   | OpenClaw gateway — runs `openclaw gateway --port 18789`, serves its Control UI on :18789 (opt-in profile) |
 
 The `nexscout` service has a healthcheck that runs `nexscout doctor --quiet`
 every 60s; the OpenClaw container `depends_on: service_healthy` so a cold
 `docker compose up` waits for NexScout's prereqs before starting the
-heartbeat. See `docs/openclaw.md` for the full mount + env contract.
+gateway. Two dashboards are then reachable: NexScout's own web UI at
+<http://localhost:8765> (which also surfaces an OpenClaw status panel), and
+OpenClaw's native gateway Control UI at <http://localhost:18789>
+(`openclaw dashboard` opens it with an auth link; an `OPENCLAW_GATEWAY_TOKEN`
+may be required). See `docs/openclaw.md` for the full mount + env contract.
 
 ---
 
@@ -246,9 +292,22 @@ See `docs/latex-templates.md` for the Jinja2 / LaTeX template contract.
 
 ## Configuration
 
-The only file you fill in is `~/.nexscout/profile.yaml`. `nexscout init`
-walks you through it; the schema is documented in §3 of `plan.md` and a
-reference copy lives at `examples/profile.example.yaml`. Key blocks:
+Configuration is one file or three — both work. A single monolithic
+`~/.nexscout/profile.yaml` (the default) still loads exactly as before.
+Optionally you may split it into three deep-merged files in the same
+directory (priority `profile.yaml` < `settings.yaml` < `credentials.yaml`):
+
+| File               | Holds                                                       |
+|--------------------|-------------------------------------------------------------|
+| `profile.yaml`     | résumé / applicant facts (`me`, `auth`, `skills`, `facts`, …) + optional CV extras (`certifications`/`publications`/`languages`) |
+| `settings.yaml`    | operational config (`search`, `llm`, `apply`, `openclaw`) + `captcha.provider` + non-secret `smtp.*` |
+| `credentials.yaml` | secrets — `captcha.api_key`, `smtp.password`, `gmail_password`, account `password`, `proxy` |
+
+A commented reference set lives in `examples/split/` — copy it with
+`cp examples/split/*.yaml ~/.nexscout/`. `nexscout init` walks you through a
+monolithic profile; the schema is documented in §3 of `plan.md` and a
+single-file reference copy lives at `examples/profile.example.yaml`. Key
+blocks:
 
 - `me`, `auth`, `pay`, `avail`, `exp` — applicant facts (preserved
   verbatim through tailoring).
@@ -266,21 +325,27 @@ reference copy lives at `examples/profile.example.yaml`. Key blocks:
 - `smtp` — **optional** SMTP host/port/user/password for email-only
   postings. If absent and `me.email` is a Gmail address, the apply agent
   falls back to a browser-driven Gmail compose URL + login flow.
+- `openclaw.channel` — notification channel: `cli` (inbox-only, default),
+  `telegram`, or `discord`. Telegram needs `TELEGRAM_BOT_TOKEN` +
+  `TELEGRAM_CHAT_ID`; Discord needs `DISCORD_WEBHOOK_URL` (preferred) or
+  `DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID`. Channel tokens come from the
+  environment, never from the config files — see `docs/openclaw.md`.
 - `openclaw.tick_budget` — bounded-unit-of-work limits per stage.
 
 Environment variables are read via `${env:NAME}` substitution at load
-time. Pydantic validates the file and emits human-readable errors.
+time (in any of the one/three config files). Pydantic validates the merged
+result and emits human-readable errors.
 
 ---
 
 ## Development
 
 ```bash
-pip install -e ".[dev,web]"
+pip install -e ".[dev,web]"          # or: uv sync --extra dev --extra web
 pre-commit install
 pre-commit run --all-files
 
-pytest -q
+pytest -q                            # or: uv run pytest -q
 pytest -q --cov=src/nexscout --cov-report=term-missing
 
 ruff check src/ tests/
@@ -288,6 +353,10 @@ mypy src/nexscout/core src/nexscout/llm src/nexscout/scoring \
      src/nexscout/captcha src/nexscout/apply/orchestrator.py \
      src/nexscout/apply/agent.py
 ```
+
+CI now runs on **uv** (`uv sync --extra dev --extra web` then `uv run …`);
+the pip path above remains fully supported for local work. Prefix any
+command with `uv run` to use the uv-managed virtualenv.
 
 Coverage targets — every module under `src/nexscout/` reaches **≥80%**;
 total project coverage sits at **93%** as of v0.1.0 (835 tests passing).

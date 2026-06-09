@@ -73,7 +73,12 @@ def score_job(
     job: dict[str, Any],
     *,
     temperature: float = 0.0,
-    max_tokens: int = 512,
+    # Headroom for reasoning models (e.g. LM Studio gemma/qwen "thinking"
+    # variants) that spend tokens on a hidden reasoning channel before the
+    # final SCORE/KEYWORDS/REASONING answer. 512 truncated mid-thought and
+    # yielded an empty body → score 0 for every job. The cap only bounds
+    # reasoning models; ordinary models stop at their natural end.
+    max_tokens: int = 1536,
 ) -> tuple[int, str]:
     """Score a single job. Returns ``(score, reasoning)``.
 

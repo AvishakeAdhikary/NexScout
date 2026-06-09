@@ -32,6 +32,11 @@ services:
       # no secrets are baked into this file.
       - TELEGRAM_BOT_TOKEN
       - TELEGRAM_CHAT_ID
+      # Discord notification channel. Same host-env passthrough as Telegram;
+      # no secrets are baked into this file.
+      - DISCORD_WEBHOOK_URL
+      - DISCORD_BOT_TOKEN
+      - DISCORD_CHANNEL_ID
     networks:
       - nexscout-net
     depends_on:
@@ -62,6 +67,13 @@ services:
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # Start the OpenClaw gateway on its Control UI / dashboard port. The image's
+    # ENTRYPOINT is the `openclaw` binary, so this is just its subcommand+args.
+    # Dashboard is then reachable at http://localhost:18789/ — an
+    # OPENCLAW_GATEWAY_TOKEN may be needed for auth (read from host env below).
+    command: ["gateway", "--port", "18789"]
+    ports:
+      - "18789:18789"
     volumes:
       - "${HOME}/.openclaw:/root/.openclaw"
       - "${HOME}/.nexscout:/sandbox/nexscout"
@@ -71,8 +83,15 @@ services:
       - OPENCLAW_HEARTBEAT_INTERVAL_MINUTES=30
       - OPENCLAW_DEFAULT_CHANNEL=${OPENCLAW_DEFAULT_CHANNEL:-telegram}
       - OPENCLAW_LOG_LEVEL=${OPENCLAW_LOG_LEVEL:-info}
+      # Gateway dashboard auth token (read from host environment).
+      - OPENCLAW_GATEWAY_TOKEN
       - TELEGRAM_BOT_TOKEN
       - TELEGRAM_CHAT_ID
+      # Discord notification channel. Same host-env passthrough as Telegram;
+      # no secrets are baked into this file.
+      - DISCORD_WEBHOOK_URL
+      - DISCORD_BOT_TOKEN
+      - DISCORD_CHANNEL_ID
     networks:
       - nexscout-net
     depends_on:

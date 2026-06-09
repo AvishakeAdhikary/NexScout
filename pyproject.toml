@@ -35,6 +35,9 @@ dependencies = [
   "ollama>=0.3",
   "pandas>=2.0",
   "playwright>=1.40",
+  # Tolerant JSON recovery for the tailor stage when weak local models emit
+  # slightly malformed JSON (missing/trailing commas). Pure-python, no deps.
+  "json-repair>=0.30",
 ]
 
 [project.optional-dependencies]
@@ -59,6 +62,10 @@ artifacts = [
   "src/nexscout/discovery/employers.yaml",
   "src/nexscout/discovery/sites.yaml",
 ]
+
+[tool.uv]
+# Build and install this project itself (not just its deps) on `uv sync`.
+package = true
 
 [tool.ruff]
 target-version = "py311"

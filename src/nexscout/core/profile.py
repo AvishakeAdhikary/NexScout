@@ -15,11 +15,47 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from .config import profile_path
+from .config import credentials_path, profile_path, settings_path
 from .errors import ConfigError
 
 CURRENT_SCHEMA_VERSION = 1
 _ENV_PATTERN = re.compile(r"\$\{env:([A-Z0-9_]+)\}")
+
+#: Top-level sections that belong in the résumé file (``profile.yaml``). Any
+#: unknown ``extra="allow"`` key (e.g. ``certifications``/``publications``/
+#: ``languages``) also routes here when splitting.
+_PROFILE_SECTIONS = ("meta", "me", "auth", "pay", "avail", "exp", "skills", "facts", "eeo")
+#: Top-level sections that belong in the operational-config file (``settings.yaml``).
+_SETTINGS_SECTIONS = ("search", "llm", "apply", "openclaw")
+#: Top-level keys that belong in the secrets file (``credentials.yaml``).
+_CREDENTIAL_KEYS = ("gmail_password", "password", "proxy")
+
+
+def _deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
+    """Recursively merge ``overlay`` into ``base`` in place (overlay wins).
+
+    Nested mappings are merged key-by-key; any non-mapping value replaces the
+    value in ``base``. Used to combine ``profile.yaml`` < ``settings.yaml`` <
+    ``credentials.yaml``.
+    """
+    for k, v in overlay.items():
+        if isinstance(v, dict) and isinstance(base.get(k), dict):
+            _deep_merge(base[k], v)
+        else:
+            base[k] = v
+    return base
+
+
+def _load_sidecar(path: Path) -> dict[str, Any] | None:
+    """Read a sidecar YAML mapping, or ``None`` if absent/empty/not-a-mapping."""
+    if not path.exists():
+        return None
+    doc = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if doc is None:
+        return None
+    if not isinstance(doc, dict):
+        raise ConfigError(f"config sidecar at {path} is not a YAML mapping")
+    return doc
 
 
 def _resolve_env(value: Any) -> Any:
@@ -217,10 +253,11 @@ class OpenClawTickBudget(BaseModel):
 
 class OpenClawConfig(BaseModel):
     tick_budget: OpenClawTickBudget = Field(default_factory=OpenClawTickBudget)
-    #: Active delivery channel: ``cli``, ``telegram`` (or future ``slack`` /
-    #: ``discord``). ``cli`` means inbox-only — no message is pushed to a
-    #: bot. ``telegram`` requires ``TELEGRAM_BOT_TOKEN`` +
-    #: ``TELEGRAM_CHAT_ID`` in the environment.
+    #: Active delivery channel: ``cli``, ``telegram`` or ``discord`` (future:
+    #: ``slack``). ``cli`` means inbox-only — no message is pushed to a bot.
+    #: ``telegram`` requires ``TELEGRAM_BOT_TOKEN`` + ``TELEGRAM_CHAT_ID``;
+    #: ``discord`` requires ``DISCORD_WEBHOOK_URL`` (or ``DISCORD_BOT_TOKEN`` +
+    #: ``DISCORD_CHANNEL_ID``) in the environment.
     channel: str = "cli"
 
 
@@ -264,13 +301,42 @@ class Profile(BaseModel):
 
     # ---- IO ----
     @classmethod
-    def from_path(cls, path: str | Path | None = None) -> Profile:
+    def from_path(
+        cls,
+        path: str | Path | None = None,
+        *,
+        settings: str | Path | None = None,
+        credentials: str | Path | None = None,
+    ) -> Profile:
+        """Load the profile, deep-merging optional ``settings``/``credentials`` sidecars.
+
+        The résumé lives in ``profile.yaml``; operational config and secrets may
+        be split into sibling ``settings.yaml`` and ``credentials.yaml`` files
+        (merge priority profile < settings < credentials). When those sidecars
+        are absent, a single monolithic ``profile.yaml`` loads exactly as before
+        — the split is fully backward-compatible.
+        """
         p = Path(path) if path else profile_path()
         if not p.exists():
             raise ConfigError(f"profile not found at {p}; run `nexscout init` first")
         raw = yaml.safe_load(p.read_text(encoding="utf-8"))
         if not isinstance(raw, dict):
             raise ConfigError(f"profile at {p} is not a YAML mapping")
+
+        # Resolve sidecar locations: explicit args win, else default sibling
+        # paths next to the profile file (``<dir>/settings.yaml`` etc.).
+        if path is None:
+            settings_p = Path(settings) if settings else settings_path()
+            creds_p = Path(credentials) if credentials else credentials_path()
+        else:
+            settings_p = Path(settings) if settings else p.parent / "settings.yaml"
+            creds_p = Path(credentials) if credentials else p.parent / "credentials.yaml"
+
+        for sidecar in (settings_p, creds_p):
+            doc = _load_sidecar(sidecar)
+            if doc is not None:
+                _deep_merge(raw, doc)
+
         raw = _resolve_env(raw)
         raw = _migrate(raw)
         try:
@@ -286,6 +352,63 @@ class Profile(BaseModel):
         p = Path(path) if path else profile_path()
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(self.to_yaml(), encoding="utf-8")
+
+    def save_split(self, directory: str | Path | None = None) -> dict[str, Path]:
+        """Write the profile across three files: profile / settings / credentials.
+
+        Routes résumé sections to ``profile.yaml``, operational config to
+        ``settings.yaml``, and secrets to ``credentials.yaml`` (``captcha`` and
+        ``smtp`` are split so their secret field lives in ``credentials.yaml``
+        while the rest stays in ``settings.yaml``). All three files are written
+        so the split layout is internally consistent and round-trips through
+        :meth:`from_path`. Returns the paths written, keyed by ``profile`` /
+        ``settings`` / ``credentials``.
+        """
+        d = Path(directory) if directory else profile_path().parent
+        d.mkdir(parents=True, exist_ok=True)
+        data = self.model_dump(mode="json", exclude_none=False)
+
+        profile_doc: dict[str, Any] = {}
+        settings_doc: dict[str, Any] = {}
+        cred_doc: dict[str, Any] = {}
+
+        for key, val in data.items():
+            if key in _SETTINGS_SECTIONS:
+                settings_doc[key] = val
+            elif key == "captcha" and isinstance(val, dict):
+                api_key = val.get("api_key")
+                settings_doc["captcha"] = {k: v for k, v in val.items() if k != "api_key"}
+                if api_key:
+                    cred_doc["captcha"] = {"api_key": api_key}
+            elif key == "smtp" and isinstance(val, dict):
+                password = val.get("password")
+                settings_doc["smtp"] = {k: v for k, v in val.items() if k != "password"}
+                if password:
+                    cred_doc["smtp"] = {"password": password}
+            elif key in _CREDENTIAL_KEYS:
+                if val not in (None, ""):
+                    cred_doc[key] = val
+            else:
+                # _PROFILE_SECTIONS plus any extra="allow" CV keys.
+                profile_doc[key] = val
+
+        def _dump(doc: dict[str, Any]) -> str:
+            return yaml.safe_dump(doc, sort_keys=False, allow_unicode=True)
+
+        paths = {
+            "profile": d / "profile.yaml",
+            "settings": d / "settings.yaml",
+            "credentials": d / "credentials.yaml",
+        }
+        headers = {
+            "profile": "# NexScout résumé — who you are. Tailored into every application.\n",
+            "settings": "# NexScout settings — search / llm / apply / openclaw / captcha provider / smtp.\n",
+            "credentials": "# NexScout secrets — plaintext. Keep private; never commit. ${env:NAME} also works here.\n",
+        }
+        docs = {"profile": profile_doc, "settings": settings_doc, "credentials": cred_doc}
+        for name, target in paths.items():
+            target.write_text(headers[name] + _dump(docs[name]), encoding="utf-8")
+        return paths
 
     # ---- Helpers ----
     def to_resume_text(self) -> str:

@@ -18,8 +18,12 @@ the expected outputs at each stage.
   with a chat model loaded and the OpenAI-compatible server started.
   Without it, `nexscout apply` and the score / tailor stages will fail
   with a network error to `host.docker.internal:1234`.
-* (Optional) `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` exported in the
-  shell that runs `docker compose` if you want OpenClaw alerts.
+* (Optional) Channel credentials exported in the shell that runs
+  `docker compose` if you want OpenClaw alerts. Pick one channel and set
+  `openclaw.channel` to match:
+  * Telegram — `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
+  * Discord — `DISCORD_WEBHOOK_URL` (preferred), or `DISCORD_BOT_TOKEN` +
+    `DISCORD_CHANNEL_ID`.
 
 ## 1. Bring the container up
 
@@ -82,9 +86,14 @@ Invoke-WebRequest -Uri http://localhost:8765/healthz -UseBasicParsing
 ```
 
 Both should return HTTP 200. The dashboard HTML at `/` includes the
-counter labels `total`, `scored`, `applied`. The `/` route is not auth-
-gated; the protected routes (write actions, the controls panel) check
-the session cookie set by `nexscout web --init-pw`.
+counter labels `total`, `scored`, `applied`, plus an **OpenClaw status
+panel** (last tick, active channel, pending channel deliveries). The `/`
+route is not auth-gated; the protected routes (write actions, the controls
+panel) check the session cookie set by `nexscout web --init-pw`.
+
+This is NexScout's own web UI on `:8765`. When you bring up the `openclaw`
+profile (§7) a *second*, separate dashboard — OpenClaw's native gateway
+Control UI — is served on <http://localhost:18789/>.
 
 Static export:
 
@@ -195,15 +204,29 @@ DB lives on the host volume mount, not in a named volume, so it survives
 
 ## 7. Adding OpenClaw
 
-After step 1 / 2 succeed:
+After step 1 / 2 succeed, export the credentials for whichever channel you
+set in `openclaw.channel`, then bring up the `openclaw` profile:
 
 ```powershell
+# Telegram channel:
 $env:TELEGRAM_BOT_TOKEN = '...'
 $env:TELEGRAM_CHAT_ID   = '...'
+# …or Discord channel (webhook is easiest):
+$env:DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/...'
+# (alternatively $env:DISCORD_BOT_TOKEN + $env:DISCORD_CHANNEL_ID)
+
+# Optional: token for the OpenClaw gateway Control UI auth.
+$env:OPENCLAW_GATEWAY_TOKEN = '...'
+
 & 'C:\Program Files\Docker\Docker\resources\bin\docker.exe' compose `
     -f 'c:\Projects\NexScout\docker-compose.yml' --profile openclaw up -d
 ```
 
 The OpenClaw container depends on `nexscout` being healthy (driven by the
 compose healthcheck that runs `nexscout doctor --quiet` every 60 s), so it
-only starts once the nexscout container reports healthy.
+only starts once the nexscout container reports healthy. It runs
+`openclaw gateway --port 18789`, so OpenClaw's own Control UI / dashboard is
+then reachable on the host at <http://localhost:18789/> (this is OpenClaw's
+native dashboard, not the NexScout web UI on `:8765`). The gateway may
+require `OPENCLAW_GATEWAY_TOKEN` for auth; `openclaw dashboard` opens it with
+a pre-authenticated link.

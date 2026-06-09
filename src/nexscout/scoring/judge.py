@@ -101,7 +101,9 @@ def judge_resume(
     """Call the judge LLM. Returns ``(verdict, issues)`` strings."""
     messages = build_judge_messages(profile, job, tailored_text)
     try:
-        text = router.ask("judge", messages, temperature=0.0, max_tokens=512)
+        # 1024 (was 512) leaves room for reasoning models that emit a hidden
+        # thinking channel before the PASS/FAIL verdict.
+        text = router.ask("judge", messages, temperature=0.0, max_tokens=1024)
     except Exception as e:  # pragma: no cover — router already retries
         log.warning("judge call failed: %s", e)
         return "FAIL", f"judge error: {e}"

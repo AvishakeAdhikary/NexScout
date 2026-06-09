@@ -23,6 +23,24 @@ def profile_path() -> Path:
     return nexscout_dir() / "profile.yaml"
 
 
+def settings_path() -> Path:
+    """Operational-config sidecar (``search``/``llm``/``apply``/``openclaw``/...).
+
+    Deep-merged on top of :func:`profile_path` at load time. Optional — a
+    single monolithic ``profile.yaml`` still loads on its own.
+    """
+    return nexscout_dir() / "settings.yaml"
+
+
+def credentials_path() -> Path:
+    """Secrets sidecar (captcha api_key, smtp/gmail passwords, ...).
+
+    Deep-merged last (highest priority) so a secret here overrides any value
+    in ``settings.yaml`` or ``profile.yaml``.
+    """
+    return nexscout_dir() / "credentials.yaml"
+
+
 def database_path() -> Path:
     return nexscout_dir() / "nexscout.sqlite"
 

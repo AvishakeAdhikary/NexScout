@@ -150,7 +150,9 @@ def write_cover_letter(
             Message(role="user", content=user_payload),
         ]
         try:
-            raw = router.ask("cover", messages, temperature=0.4, max_tokens=1024)
+            # 2048 (was 1024) leaves room for reasoning models that emit a
+            # hidden thinking channel before the cover-letter body.
+            raw = router.ask("cover", messages, temperature=0.4, max_tokens=2048)
         except Exception as e:  # pragma: no cover — provider already retries
             last_errors = [f"router error: {e}"]
             continue

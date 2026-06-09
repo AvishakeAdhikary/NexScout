@@ -39,9 +39,17 @@ async def show_profile(request: Request) -> HTMLResponse:
 async def save_profile(yaml_text: str = Form(...)) -> RedirectResponse:
     import yaml as yaml_mod
 
+    from ...core.config import credentials_path, settings_path
+
     raw = yaml_mod.safe_load(yaml_text) or {}
     profile = Profile.model_validate(raw)
-    profile.save()
+    # Preserve the on-disk layout: if the user has split sidecars, re-split on
+    # save (so edits don't get shadowed by a stale settings/credentials file);
+    # otherwise keep the single monolithic profile.yaml.
+    if settings_path().exists() or credentials_path().exists():
+        profile.save_split()
+    else:
+        profile.save()
     return RedirectResponse(url="/profile", status_code=303)
 
 

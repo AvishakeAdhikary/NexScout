@@ -89,7 +89,7 @@ flowchart LR
 | `nexscout.captcha`          | Detect, CapSolver / 2Captcha / Anti-Captcha providers         |
 | `nexscout.apply`            | ReAct agent, orchestrator, tools, dashboard                   |
 | `nexscout.agent_backends`   | Pluggable backends (native, claude_code, openai_assistant)    |
-| `nexscout.openclaw`         | Skill manifest, memory r/w, `tick` entrypoint                 |
+| `nexscout.openclaw`         | Skill manifest, memory r/w, `tick` entrypoint, notification channels (Telegram / Discord) |
 | `nexscout.web`              | FastAPI + HTMX UI                                             |
 | `nexscout.pipeline`         | Streaming orchestrator                                        |
 | `nexscout.wizard`           | Interactive `init` wizard                                     |
@@ -126,7 +126,7 @@ start; instead it picks a fallback and proceeds.
 | Subsystem    | Primary                              | Fallback                                                          |
 |--------------|--------------------------------------|-------------------------------------------------------------------|
 | WebSearch    | Tavily / Brave / DDG-HTML / SearXNG / Google CSE | `BrowserSearchProvider` — undetected Chrome scrapes DDG + Google. |
-| CAPTCHA      | CapSolver / 2Captcha / Anti-Captcha  | Mark `apply_status='captcha_manual'`; insert a row into `pending_questions`; OpenClaw surfaces it to the user. |
+| CAPTCHA      | CapSolver / 2Captcha / Anti-Captcha  | Mark `apply_status='captcha_manual'`; insert a row into `pending_questions`; the active channel (Telegram / Discord) or the OpenClaw inbox surfaces it to the user. |
 | Email-only postings | `profile.smtp.*` (host/port/user/password) | `apply.email_browser` drives Gmail's compose URL + login form via undetected Chrome. |
 | LLM provider | `profile.llm.primary`                | `profile.llm.fallback` (Ollama by default); budget ledger blocks calls past `monthly_usd` / `daily_calls`. |
 | LaTeX engine | Tectonic                             | `latexmk`, then `pdflatex` (twice for refs).                      |
@@ -149,6 +149,34 @@ Each application produces a self-contained directory:
 ├── _REPORT.json          tailor validator/judge report
 └── result.json           {status, attempts, duration_ms, cost_usd}
 ```
+
+## Notification channels
+
+Pending questions and manual-CAPTCHA alerts are pushed to the user through a
+delivery channel selected by `profile.openclaw.channel` (or
+`settings.yaml -> openclaw.channel` in the split layout):
+
+| `channel` value | Implementation                       | Credentials (env only)                                  |
+|-----------------|--------------------------------------|---------------------------------------------------------|
+| `cli` (default) | none — OpenClaw inbox only           | —                                                       |
+| `telegram`      | `openclaw.telegram.TelegramChannel`  | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`               |
+| `discord`       | `openclaw.discord.DiscordChannel`    | `DISCORD_WEBHOOK_URL` (preferred) or `DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID` |
+
+`openclaw.channels.get_channel(profile)` resolves the right implementation
+from env at runtime. Both channels share the same retry/backoff (3 attempts,
+2/4/8s, honouring HTTP 429 `retry_after`) and idempotency
+(`pending_questions.channel_delivered_at`) semantics; Telegram formats as
+HTML, Discord as markdown.
+
+## Two dashboards
+
+- **NexScout web UI** (`nexscout web --host 0.0.0.0 --port 8765`) —
+  FastAPI + HTMX. Its dashboard includes an OpenClaw status panel (last tick,
+  active channel, pending channel deliveries).
+- **OpenClaw gateway Control UI** (<http://localhost:18789/>) — OpenClaw's own
+  native dashboard, served by the `openclaw gateway --port 18789` compose
+  service; not a NexScout-built UI. `openclaw dashboard` opens it with an auth
+  link.
 
 ## Two run modes
 

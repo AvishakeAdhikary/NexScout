@@ -2,13 +2,22 @@
 
 ## Quickstart
 
+Install dependencies with **either** pip or uv. CI now runs on uv; both
+paths are fully supported locally.
+
 ```bash
 git clone <repo>
 cd nexscout
+
+# --- pip path ---
 python3.11 -m venv .venv && source .venv/bin/activate   # or .venv\Scripts\Activate.ps1
 pip install -e ".[dev,web]"
 pip install --no-deps python-jobspy
 pip install pydantic tls-client requests markdownify regex
+
+# --- uv path (what CI runs) ---
+uv sync --extra dev --extra web                         # provisions the venv + deps
+# then prefix the commands below with `uv run`, e.g. `uv run nexscout doctor`
 
 # Required environment
 export CAPTCHA_API_KEY=...
@@ -25,6 +34,10 @@ nexscout web &              # http://127.0.0.1:8765
 nexscout apply --workers 2  # submit applications
 ```
 
+> The fastest path for a fresh machine is `scripts/` (see
+> [scripts/README.md](../scripts/README.md)): cross-platform launchers for the
+> direct/uv/docker run methods plus an interactive config generator.
+
 ## Repository layout
 
 See `docs/architecture.md` for the high-level pipeline map. Key directories:
@@ -32,10 +45,16 @@ See `docs/architecture.md` for the high-level pipeline map. Key directories:
 - `src/nexscout/` — the package itself.
 - `tests/unit/` — fast, hermetic unit tests. Run with `pytest -q`.
 - `tests/integration/` — slower tests that touch real subprocesses / DB.
-- `examples/profile.example.yaml` — copy this to `~/.nexscout/profile.yaml`.
+- `examples/profile.example.yaml` — monolithic reference; copy to
+  `~/.nexscout/profile.yaml`. (Also loaded as a test fixture — keep it a valid
+  single-file profile.)
+- `examples/split/{profile,settings,credentials}.yaml` — three-file split
+  reference; `cp examples/split/*.yaml ~/.nexscout/`.
+- `scripts/` — cross-platform launchers + interactive config generator
+  (see `scripts/README.md`).
 - `docs/` — this directory.
 - `Dockerfile`, `docker-compose.yml` — container packaging (M10).
-- `.github/workflows/ci.yml` — Ruff, mypy, pytest matrix.
+- `.github/workflows/ci.yml` — uv-based Ruff, mypy, pytest matrix.
 
 ## Running tests
 

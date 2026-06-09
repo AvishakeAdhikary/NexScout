@@ -1,0 +1,99 @@
+# NexScout résumé — who you are. Tailored into every application.
+#
+# This is the lowest-priority file of the three-file split layout. Copy the
+# whole set into your config dir and edit in place:
+#
+#   cp examples/split/*.yaml ~/.nexscout/        # (Linux/macOS)
+#   copy examples\split\*.yaml $HOME\.nexscout\   # (Windows PowerShell)
+#
+# At load time NexScout deep-merges profile.yaml < settings.yaml <
+# credentials.yaml into one model (later files win). A single monolithic
+# profile.yaml still works — the split is fully backward-compatible.
+#
+# Everything below is preserved verbatim through tailoring: the LLM may
+# reorder or rephrase, but the validator treats any skill/company/metric it
+# did not see here as fabrication.
+
+meta:
+  v: 1
+  locale: en_US
+  updated: 2026-05-20
+
+me:
+  legal: Jane Q. Public
+  pref: Jane
+  email: jane@example.com
+  phone: "+1-415-555-0100"
+  city: San Francisco
+  region: CA
+  country: USA
+  postcode: "94110"
+  address: "123 Main St"
+  links:
+    li: linkedin.com/in/janepublic
+    gh: github.com/janepublic
+    web: jane.dev
+    portfolio: jane.dev/work
+
+auth:
+  authorized: true       # legally authorized to work in `country`
+  sponsor: false         # do you require visa sponsorship?
+  permit: USC            # USC | GC | H1B | OPT | ...
+
+pay:
+  expect: 165000
+  range: [150000, 200000]
+  currency: USD
+  hourly_note: "divide annual by 2080"
+
+avail:
+  start: "Immediately"
+  fulltime: true
+  contract: false
+  notice: 2w
+
+exp:
+  years: 7
+  edu: "BSc Computer Science"
+  current_title: "Senior Software Engineer"
+  target_titles:
+    - Staff Engineer
+    - Senior Backend Engineer
+    - Principal Engineer
+
+skills:
+  lang:   [Python, TypeScript, Go, SQL, Bash]
+  fw:     [FastAPI, React, Django, Next.js]
+  infra:  [Docker, Kubernetes, AWS, Terraform, GitHub Actions]
+  data:   [Postgres, Redis, Kafka, ClickHouse]
+  tools:  [Git, Linux, Vim]
+
+facts:
+  companies: [Acme Corp, Globex]
+  projects:
+    - "Search Indexer (50M docs/day)"
+    - "Auth Gateway"
+  school: "State University"
+  metrics:
+    - "reduced p99 by 38%"
+    - "10M MAU"
+    - "saved $2.1M/yr"
+
+eeo:
+  gender: decline
+  race: decline
+  veteran: not-protected
+  disability: decline
+
+# ---------------------------------------------------------------------------
+# Optional CV extras. These are not part of the core schema but are preserved
+# (extra="allow") and routed into profile.yaml on `save_split`. Add them if
+# your applications benefit from them; delete the blocks you don't use.
+# ---------------------------------------------------------------------------
+# certifications:
+#   - "AWS Certified Solutions Architect — Professional (2024)"
+# publications:
+#   - "Scaling Search at 50M docs/day, ACM Queue 2023"
+# languages:
+#   - {name: English, level: native}
+#   - {name: Spanish, level: professional}
