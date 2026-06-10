@@ -68,28 +68,35 @@ and serve the MCP endpoint at `/mcp`.
 
 ### Gateway registration
 
-OpenClaw consumes MCP servers via an `mcpServers` map in
-`~/.openclaw/openclaw.json`. NexScout is registered as a Streamable-HTTP server
-pointing at the in-network URL (the OpenClaw container resolves
-`nexscout-mcp` on `nexscout-net`):
+The recommended way to register NexScout is the OpenClaw CLI — it validates the
+schema and **probes the server** (lists its tools) before saving:
+
+```bash
+openclaw mcp add nexscout --url http://nexscout-mcp:8770/mcp --transport streamable-http
+openclaw mcp probe          # should report: nexscout: 10 tools
+```
+
+The OpenClaw container resolves `nexscout-mcp` on `nexscout-net`. The CLI writes
+the entry under the `mcp.servers` map in `~/.openclaw/openclaw.json` (note: it is
+`mcp.servers.<name>`, **not** a top-level `mcpServers` key — that fails schema
+validation and the gateway refuses to start):
 
 ```jsonc
 {
-  "mcpServers": {
-    "nexscout": {
-      "transport": "streamable-http",
-      "url": "http://nexscout-mcp:8770/mcp",
-      "description": "NexScout autonomous job-application agent: ..."
+  "mcp": {
+    "servers": {
+      "nexscout": {
+        "url": "http://nexscout-mcp:8770/mcp",
+        "transport": "streamable-http"
+      }
     }
   }
 }
 ```
 
-The same entry can be added from the CLI:
-
-```bash
-openclaw mcp add nexscout --url http://nexscout-mcp:8770/mcp --transport streamable-http
-```
+Restart the gateway after editing the config by hand
+(`docker compose --profile openclaw up -d --force-recreate openclaw`); `openclaw
+mcp add` + `openclaw mcp reload` avoid the manual edit entirely.
 
 ### Exposed tools
 
