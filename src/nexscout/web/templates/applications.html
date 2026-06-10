@@ -1,22 +1,44 @@
 {% extends "base.html" %}
+{% set active_nav = '/applications' %}
 {% block title %}Applications{% endblock %}
 {% block body %}
-<h2>Applications ({{ rows|length }})</h2>
-<p><a class="button" href="/applications/download.zip">Download all bundles (ZIP)</a></p>
-<table class="rows">
-  <thead><tr><th>Applied</th><th>Title</th><th>Company</th><th>Score</th><th>Cost</th></tr></thead>
-  <tbody>
-    {% for r in rows %}
-    <tr>
-      <td>{{ r.applied_at or '' }}</td>
-      <td><a href="/jobs/{{ r.id }}">{{ r.title }}</a></td>
-      <td>{{ r.site or '' }}</td>
-      <td>{{ r.fit_score or '' }}</td>
-      <td>${{ '%.3f'|format(r.cost_usd or 0) }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">no applications yet</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="mb-4 flex flex-wrap items-center gap-3">
+  <h1 class="text-2xl font-bold">Applications</h1>
+  <span class="text-sm text-slate-500 dark:text-slate-400">{{ rows|length }} submitted</span>
+  <a href="/applications/download.zip"
+     class="ml-auto inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600">
+    Download everything (ZIP)
+  </a>
+</div>
+<p class="mb-4 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+  These are the jobs NexScout has already applied to on your behalf. Click a job to see the exact résumé and
+  cover letter that were sent.
+</p>
+
+<div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+  <table class="w-full text-sm">
+    <thead class="border-b border-slate-200 dark:border-slate-800 text-left text-slate-500 dark:text-slate-400">
+      <tr>
+        <th class="px-4 py-2 font-medium">Applied on</th>
+        <th class="px-4 py-2 font-medium">Job title</th>
+        <th class="px-4 py-2 font-medium">Job site</th>
+        <th class="px-4 py-2 font-medium">Match</th>
+        <th class="px-4 py-2 font-medium">Cost</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+      {% for r in rows %}
+      <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+        <td class="px-4 py-2.5 text-slate-400">{{ r.applied_at or '' }}</td>
+        <td class="px-4 py-2.5"><a href="/jobs/{{ r.id }}" class="font-medium text-amber-600 hover:underline dark:text-amber-400">{{ r.title }}</a></td>
+        <td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">{{ r.site or '' }}</td>
+        <td class="px-4 py-2.5">{% if r.fit_score is not none %}{{ r.fit_score }}/10{% else %}—{% endif %}</td>
+        <td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">${{ '%.3f'|format(r.cost_usd or 0) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">No applications yet — NexScout is still working.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

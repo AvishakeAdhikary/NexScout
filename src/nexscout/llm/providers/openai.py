@@ -22,11 +22,13 @@ class OpenAIProvider:
         api_key: str | None = None,
         base_url: str | None = None,
         timeout: float = 60.0,
+        extra_headers: dict[str, str] | None = None,
     ) -> None:
         self.model = model
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY", "")
         self.base_url = (base_url or os.environ.get("AZURE_OPENAI_ENDPOINT") or DEFAULT_BASE).rstrip("/")
         self.timeout = timeout
+        self.extra_headers = dict(extra_headers or {})
 
     def chat(self, messages: list[Message], *, temperature: float = 0.2, max_tokens: int = 2048) -> str:
         if not self.api_key:
@@ -35,6 +37,7 @@ class OpenAIProvider:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
+        headers.update(self.extra_headers)
         body: dict[str, Any] = {
             "model": self.model,
             "messages": messages,

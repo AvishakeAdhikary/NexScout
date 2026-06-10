@@ -38,6 +38,27 @@ llm:
   budgets:
     monthly_usd: 30
     daily_calls: 5000
+  # ANY OpenAI-compatible endpoint (base_url + model + api_key) is supported via
+  # two extra spec schemes — set them as primary/fallback/judge above:
+  #   nim:<model-id>            NVIDIA NIM (hosted catalog or self-hosted NIM)
+  #   openai_compat:<model-id>  any other OpenAI-compatible vendor / proxy
+  #                             (OpenRouter, Together, Fireworks, Groq, vLLM, ...)
+  # Example:  primary: "nim:meta/llama-3.1-70b-instruct"
+  #
+  # The `providers` block below maps each scheme to its endpoint. It is OPTIONAL:
+  # when omitted, the schemes fall back to env vars (NVIDIA_API_KEY / NIM_BASE_URL
+  # and OPENAI_COMPAT_API_KEY / OPENAI_COMPAT_BASE_URL). Keep API keys out of
+  # this file — use `${env:NAME}` (or move them to credentials.yaml).
+  # providers:
+  #   nim:
+  #     base_url: "https://integrate.api.nvidia.com/v1"   # or your self-hosted NIM URL
+  #     api_key: "${env:NVIDIA_API_KEY}"
+  #     model: ""                # optional default model when the spec omits one
+  #   openai_compat:
+  #     base_url: "https://my-endpoint/v1"
+  #     api_key: "${env:OPENAI_COMPAT_API_KEY}"
+  #     model: ""
+  #     extra_headers: {}        # optional extra HTTP headers (routing tags, etc.)
 
 apply:
   workers: 2

@@ -25,6 +25,7 @@ import json
 import logging
 import re
 from collections.abc import Iterable
+from contextlib import suppress
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -251,19 +252,33 @@ def run_agent(
 
         if name == "screenshot":
             screenshot_idx += 1
-        outcome = dispatch_tool(
-            name,
-            args,
-            driver=driver,
-            bundle_dir=bundle_dir,
-            solver=solver,
-            profile=profile,
-            screenshot_idx=screenshot_idx,
-        )
-        append_transcript(
-            bundle_dir,
-            {"step": step, "kind": "tool", "tool": name, "args": args, "result": outcome.to_jsonable()},
-        )
+        # ``dispatch_tool`` and the individual tools already convert driver
+        # errors into ``ok=False`` ToolResults, but guard the whole block so a
+        # truly unexpected fault (or a transcript write error) ends the loop
+        # cleanly with ``page_error`` instead of bubbling a traceback up.
+        try:
+            outcome = dispatch_tool(
+                name,
+                args,
+                driver=driver,
+                bundle_dir=bundle_dir,
+                solver=solver,
+                profile=profile,
+                screenshot_idx=screenshot_idx,
+            )
+            append_transcript(
+                bundle_dir,
+                {"step": step, "kind": "tool", "tool": name, "args": args, "result": outcome.to_jsonable()},
+            )
+        except Exception as e:
+            log.exception("apply tool %r raised unexpectedly", name)
+            with suppress(Exception):
+                append_transcript(
+                    bundle_dir,
+                    {"step": step, "kind": "tool_error", "tool": name, "error": str(e)},
+                )
+            code, reason = "FAILED", "page_error"
+            break
 
         if name == "solve_captcha" and outcome.ok and outcome.data and outcome.data.get("injected"):
             captcha_solved = True

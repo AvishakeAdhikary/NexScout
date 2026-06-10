@@ -1,14 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Profile{% endblock %}
+{% set active_nav = '/profile' %}
+{% block title %}Settings{% endblock %}
 {% block body %}
-<h2>Profile</h2>
-{% if error %}<p class="error">{{ error }}</p>{% endif %}
-<p>Schema version: {{ meta_v }} (current {{ current_v }})
-  {% if meta_v != current_v %}<a class="button" href="/profile/migrate">Migrate</a>{% endif %}
+<h1 class="text-2xl font-bold">Your settings</h1>
+<p class="mt-1 mb-5 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+  This is your profile — who you are and what jobs you want. NexScout uses it to find matches and write your
+  résumés. It's stored as plain text (YAML); edit carefully and click Save.
 </p>
+
+{% if error %}
+<div class="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+  {{ error }}
+</div>
+{% endif %}
+
+<div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
+  <span class="text-slate-500 dark:text-slate-400">Settings version: <strong>{{ meta_v }}</strong> (latest is {{ current_v }})</span>
+  {% if meta_v != current_v %}
+  <a href="/profile/migrate" class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Update to latest</a>
+  {% endif %}
+</div>
+
 <form method="post" action="/profile">
-  <textarea name="yaml_text" rows="40" cols="80">{{ yaml_text }}</textarea>
-  <br>
-  <button>Save</button>
+  <textarea name="yaml_text" rows="28" spellcheck="false"
+            class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 p-4 font-mono text-sm leading-relaxed">{{ yaml_text }}</textarea>
+  <div class="mt-3">
+    <button class="rounded-lg bg-amber-500 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-600">Save settings</button>
+  </div>
 </form>
 {% endblock %}

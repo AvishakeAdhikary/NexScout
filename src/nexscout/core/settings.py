@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
     azure_openai_endpoint: str | None = Field(default=None, alias="AZURE_OPENAI_ENDPOINT")
 
+    # OpenAI-compatible / NVIDIA NIM endpoints (used by the `openai_compat:` and
+    # `nim:` provider schemes; profile `llm.providers` overrides these).
+    nvidia_api_key: str | None = Field(default=None, alias="NVIDIA_API_KEY")
+    nim_base_url: str | None = Field(default=None, alias="NIM_BASE_URL")
+    openai_compat_api_key: str | None = Field(default=None, alias="OPENAI_COMPAT_API_KEY")
+    openai_compat_base_url: str | None = Field(default=None, alias="OPENAI_COMPAT_BASE_URL")
+
     # Captcha
     captcha_api_key: str | None = Field(default=None, alias="CAPTCHA_API_KEY")
 

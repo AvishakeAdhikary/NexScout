@@ -38,6 +38,9 @@ dependencies = [
   # Tolerant JSON recovery for the tailor stage when weak local models emit
   # slightly malformed JSON (missing/trailing commas). Pure-python, no deps.
   "json-repair>=0.30",
+  # Model Context Protocol server SDK (FastMCP). Exposes the NexScout pipeline
+  # as network-reachable tools the OpenClaw gateway can call autonomously.
+  "mcp>=1.0",
 ]
 
 [project.optional-dependencies]
@@ -47,6 +50,7 @@ openclaw = []
 
 [project.scripts]
 nexscout = "nexscout.cli:app"
+nexscout-mcp = "nexscout.mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

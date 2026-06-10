@@ -208,7 +208,12 @@ def test_worker_loop_respects_limit(db: sqlite3.Connection, tmp_path: Path, monk
 def test_worker_loop_catches_runner_exception(
     db: sqlite3.Connection, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A crashing runner triggers ``release_lock`` and the loop returns 0 (non-continuous)."""
+    """A crashing runner is caught, marked a real fault, and the loop continues.
+
+    The job is marked ``failed`` with ``worker_crashed`` (so apply_attempts
+    bumps and it can't spin forever) — never re-acquired endlessly, never a
+    bubbled traceback.
+    """
     monkeypatch.setattr("nexscout.apply.orchestrator.bundle_dir_for", _ensure_bundle(tmp_path))
     _insert(db, "https://a.com/1", score=9)
 
@@ -222,12 +227,60 @@ def test_worker_loop_catches_runner_exception(
         solver=None,
         llm_router=object(),  # type: ignore[arg-type]
         runner=boom,
+        limit=1,  # process exactly one pass so we can inspect the first mark
         continuous=False,
     )
+    # The job was processed (not abandoned) and the loop returned cleanly.
+    assert count == 1
+    row = db.execute(
+        "SELECT apply_status, apply_error, apply_attempts FROM jobs WHERE url=?",
+        ("https://a.com/1",),
+    ).fetchone()
+    # A genuine fault status with a bumped attempt count (bounded retry, NOT a
+    # permanent freeze and NOT an endless re-acquire).
+    assert row["apply_status"] == "failed"
+    assert row["apply_error"] == "worker_crashed"
+    assert row["apply_attempts"] == 1
+
+
+def test_worker_loop_driver_acquire_failure_backs_off(
+    db: sqlite3.Connection, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A browser/driver launch failure releases the lock and backs off.
+
+    It is an environment-level infra problem, NOT a posting fault, so the job
+    is NOT marked an error (apply_status stays NULL / eligible) and the worker
+    stops churning. No traceback escapes.
+    """
+    monkeypatch.setattr("nexscout.apply.orchestrator.bundle_dir_for", _ensure_bundle(tmp_path))
+    _insert(db, "https://a.com/1", score=9)
+
+    class _BadPool:
+        def acquire(self, _worker_id: int) -> Any:
+            raise RuntimeError("chromedriver not found")
+
+        def release(self, _worker_id: int, _driver: Any) -> None:  # pragma: no cover
+            pass
+
+    count = worker_loop(
+        worker_id=0,
+        profile=_profile(),
+        db_conn=db,
+        solver=None,
+        llm_router=object(),  # type: ignore[arg-type]
+        runner=_FakeRunner([("APPLIED", None, 0.0, False)]),
+        pool=_BadPool(),
+        continuous=False,
+    )
+    # Backed off before completing any job; nothing marked as an error.
     assert count == 0
-    row = db.execute("SELECT apply_status FROM jobs WHERE url=?", ("https://a.com/1",)).fetchone()
-    # release_lock cleared the in_progress marker.
-    assert row["apply_status"] is None
+    row = db.execute(
+        "SELECT apply_status, apply_error, apply_attempts FROM jobs WHERE url=?",
+        ("https://a.com/1",),
+    ).fetchone()
+    assert row["apply_status"] is None  # lock released, still eligible
+    assert row["apply_error"] is None
+    assert row["apply_attempts"] == 0
 
 
 def test_worker_loop_default_runner_resolves(monkeypatch: pytest.MonkeyPatch) -> None:

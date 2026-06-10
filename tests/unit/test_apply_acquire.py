@@ -110,7 +110,9 @@ class TestMarkResult:
         _insert_job(db, "https://a.com/1", apply_status="in_progress")
         mark_result("https://a.com/1", "FAILED", "sso_required", db)
         row = db.execute("SELECT apply_status, apply_attempts FROM jobs WHERE url=?", ("https://a.com/1",)).fetchone()
-        assert row["apply_status"] == "failed"
+        # sso_required is a benign "not accessible" skip (NOT an error) yet is
+        # still a permanent reason, so it freezes at 99 without re-acquiring.
+        assert row["apply_status"] == "skipped"
         assert row["apply_attempts"] == 99
 
     def test_transient_failure_bumps_attempts(self, db: sqlite3.Connection) -> None:
@@ -123,7 +125,8 @@ class TestMarkResult:
         _insert_job(db, "https://a.com/1", apply_status="in_progress")
         mark_result("https://a.com/1", "CAPTCHA", None, db)
         row = db.execute("SELECT apply_status, apply_attempts FROM jobs WHERE url=?", ("https://a.com/1",)).fetchone()
-        assert row["apply_status"] == "captcha"
+        # CAPTCHA parks the job for the user (benign) and freezes it at 99.
+        assert row["apply_status"] == "captcha_manual"
         assert row["apply_attempts"] == 99
 
 

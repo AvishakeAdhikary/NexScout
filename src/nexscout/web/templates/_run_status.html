@@ -1,0 +1,38 @@
+{# Live status banner for the "Check for new jobs now" run.
+   While running, it keeps polling every 2s; once finished it stops polling
+   (no hx-trigger) so the page goes quiet. #}
+<div id="run-status"
+     {% if run_status.running %}
+     hx-get="/controls/status/html"
+     hx-trigger="every 2s"
+     hx-swap="outerHTML"
+     {% endif %}
+     class="rounded-xl border p-4
+            {% if run_status.running %}border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/40
+            {% elif run_status.error %}border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/40
+            {% else %}border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900{% endif %}">
+  <div class="flex items-start gap-3">
+    {% if run_status.running %}
+    <svg class="h-5 w-5 shrink-0 animate-spin text-amber-500" viewBox="0 0 24 24" fill="none">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    {% elif run_status.error %}
+    <span class="text-xl leading-none" aria-hidden="true">⚠️</span>
+    {% else %}
+    <span class="text-xl leading-none" aria-hidden="true">✅</span>
+    {% endif %}
+    <div class="min-w-0">
+      <p class="font-medium">
+        {% if run_status.running %}Working…{% elif run_status.error %}Check had a problem{% else %}Ready{% endif %}
+      </p>
+      <p class="text-sm text-slate-600 dark:text-slate-300 break-words">{{ run_status.message }}</p>
+      {% if run_status.error %}
+      <p class="mt-1 text-xs text-red-600 dark:text-red-400 break-words">{{ run_status.error }}</p>
+      {% endif %}
+      {% if run_status.last_finished and not run_status.running %}
+      <p class="mt-1 text-xs text-slate-400">Last check finished: {{ run_status.last_finished }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>

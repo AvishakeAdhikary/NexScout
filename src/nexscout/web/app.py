@@ -60,6 +60,8 @@ def create_app() -> FastAPI:
     app.include_router(questions_routes.router)
     app.include_router(controls_routes.router)
     app.include_router(api_routes.router)
+    # Top-level /metrics alias (Prometheus convention) in addition to /api/metrics.
+    app.include_router(api_routes.top_router)
     return app
 
 

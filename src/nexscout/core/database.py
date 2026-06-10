@@ -288,9 +288,26 @@ def get_stats(conn: sqlite3.Connection | None = None) -> dict[str, Any]:
         "SELECT COUNT(*) FROM jobs WHERE cover_letter_path IS NULL AND cover_attempts >= 3",
     )
     applied = _scalar(c, "SELECT COUNT(*) FROM jobs WHERE apply_status = 'applied'")
+    # Apply-outcome taxonomy (see apply/result_codes.classify_outcome):
+    #   applied → success
+    #   parked  → needs the user (captcha / pending question) — NOT an error
+    #   skipped → not a fit / not accessible (location, login wall, expired,
+    #             SSO, blocked site, …) — a normal, benign outcome
+    #   error   → genuine fault ('failed'): page crash, infra failure, an
+    #             uncaught exception, no result line. These should be RARE.
+    # ``apply_errors`` counts ONLY genuine faults so the dashboard's "Problems"
+    # card stays ~0 on a healthy run.
+    parked = _scalar(
+        c,
+        "SELECT COUNT(*) FROM jobs WHERE apply_status IN ('captcha_manual','captcha','paused_for_question')",
+    )
+    skipped = _scalar(
+        c,
+        "SELECT COUNT(*) FROM jobs WHERE apply_status IN ('skipped','expired','login_issue')",
+    )
     apply_errors = _scalar(
         c,
-        "SELECT COUNT(*) FROM jobs WHERE apply_status IN ('failed','captcha','login_issue','expired')",
+        "SELECT COUNT(*) FROM jobs WHERE apply_status = 'failed'",
     )
     ready_to_apply = _scalar(
         c,
@@ -312,6 +329,8 @@ def get_stats(conn: sqlite3.Connection | None = None) -> dict[str, Any]:
         "with_cover_letter": with_cover_letter,
         "cover_exhausted": cover_exhausted,
         "applied": applied,
+        "parked": parked,
+        "skipped": skipped,
         "apply_errors": apply_errors,
         "ready_to_apply": ready_to_apply,
     }

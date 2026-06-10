@@ -21,6 +21,41 @@ async def api_stats() -> JSONResponse:
     return JSONResponse(get_stats(init_db()))
 
 
+@router.get("/charts")
+async def api_charts() -> JSONResponse:
+    """Chart-ready data for the dashboard graphs (fed to Chart.js).
+
+    Returns two series:
+
+    * ``score_distribution`` — labels (0-10) + counts for the bar chart.
+    * ``pipeline`` — the discovered → scored → tailored → applied funnel as
+      labels + values for the doughnut chart.
+
+    Both degrade gracefully: empty arrays when there's no data yet, which the
+    front-end renders as a friendly "no data yet" message.
+    """
+    stats = get_stats(init_db())
+    dist: dict[int, int] = stats.get("score_distribution") or {}
+    dist_items = sorted(dist.items(), key=lambda kv: kv[0])
+    total = int(stats.get("total", 0) or 0)
+    scored = int(stats.get("scored", 0) or 0)
+    tailored = int(stats.get("tailored", 0) or 0)
+    applied = int(stats.get("applied", 0) or 0)
+    return JSONResponse(
+        {
+            "score_distribution": {
+                "labels": [str(score) for score, _ in dist_items],
+                "counts": [int(count) for _, count in dist_items],
+            },
+            "pipeline": {
+                "labels": ["Discovered", "Scored", "Tailored", "Applied"],
+                "values": [total, scored, tailored, applied],
+            },
+            "has_data": total > 0,
+        }
+    )
+
+
 @router.get("/jobs")
 async def api_jobs(min_score: int = 0, limit: int = 50, site: str | None = None) -> JSONResponse:
     """JSON mirror of ``/jobs`` with score + site filters."""

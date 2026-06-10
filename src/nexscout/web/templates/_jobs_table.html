@@ -1,16 +1,42 @@
-<table id="jobs-table" class="rows">
-  <thead><tr><th>Score</th><th>Title</th><th>Company</th><th>Status</th><th>Discovered</th></tr></thead>
-  <tbody>
-    {% for row in rows %}
-    <tr>
-      <td>{{ row.fit_score or '—' }}</td>
-      <td><a href="/jobs/{{ row.id }}">{{ row.title or row.url }}</a></td>
-      <td>{{ row.site or '' }}</td>
-      <td>{{ row.apply_status or 'pending' }}</td>
-      <td>{{ row.discovered_at or '' }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">no jobs match</td></tr>
-    {% endfor %}
-  </tbody>
+{% set status_labels = {
+  'applied': ('Applied', 'green'),
+  'failed': ('Problem', 'red'),
+  'captcha': ('Waiting on you', 'amber'),
+  'login_issue': ('Problem', 'red'),
+  'expired': ('Expired', 'slate'),
+  'paused_for_question': ('Waiting on you', 'amber'),
+  'in_progress': ('Applying…', 'blue'),
+} %}
+<table id="jobs-table" class="w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-900">
+    <thead class="border-b border-slate-200 dark:border-slate-800 text-left text-slate-500 dark:text-slate-400">
+      <tr>
+        <th class="px-4 py-2 font-medium">Match</th>
+        <th class="px-4 py-2 font-medium">Job title</th>
+        <th class="px-4 py-2 font-medium">Job site</th>
+        <th class="px-4 py-2 font-medium">Status</th>
+        <th class="px-4 py-2 font-medium">Found</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+      {% for row in rows %}
+      {% set lbl = status_labels.get(row.apply_status, ('Not applied yet', 'slate')) %}
+      <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+        <td class="px-4 py-2.5">
+          {% if row.fit_score is not none %}
+          <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">{{ row.fit_score }}/10</span>
+          {% else %}<span class="text-slate-400">—</span>{% endif %}
+        </td>
+        <td class="px-4 py-2.5">
+          <a href="/jobs/{{ row.id }}" class="font-medium text-amber-600 hover:underline dark:text-amber-400">{{ row.title or row.url }}</a>
+        </td>
+        <td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">{{ row.site or '' }}</td>
+        <td class="px-4 py-2.5">
+          <span class="inline-flex rounded-full bg-{{ lbl[1] }}-100 px-2 py-0.5 text-xs font-medium text-{{ lbl[1] }}-700 dark:bg-{{ lbl[1] }}-900/50 dark:text-{{ lbl[1] }}-300">{{ lbl[0] }}</span>
+        </td>
+        <td class="px-4 py-2.5 text-slate-400">{{ row.discovered_at or '' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">No jobs match these filters yet.</td></tr>
+      {% endfor %}
+    </tbody>
 </table>

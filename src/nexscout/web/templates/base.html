@@ -1,31 +1,87 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NexScout — {% block title %}Dashboard{% endblock %}</title>
-  <link rel="stylesheet" href="/static/app.css">
+
+  <!-- Tailwind CSS (Play CDN — no build step). -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Respect the OS light/dark preference automatically.
+    tailwind.config = { darkMode: 'media' };
+  </script>
+
+  <!-- HTMX for partial updates + polling. -->
   <script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js"
           integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
           crossorigin="anonymous"></script>
+  <!-- Alpine for the mobile menu toggle + small interactions. -->
   <script defer
           src="https://unpkg.com/alpinejs@3.13.7/dist/cdn.min.js"
           integrity="sha384-/MWB2BkpguN3yV2pNuRIRyf21yYsr/v9oC1HQCwy7Imd4VRGEbDvFTQQDvR2RbVL"
           crossorigin="anonymous"></script>
+  <!-- Chart.js for interactive graphs. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* HTMX indicator: hidden by default, shown while a request is in flight. */
+    .htmx-indicator { opacity: 0; transition: opacity 150ms ease-in; }
+    .htmx-request .htmx-indicator,
+    .htmx-request.htmx-indicator { opacity: 1; }
+    [x-cloak] { display: none !important; }
+  </style>
+  {% block head_extra %}{% endblock %}
 </head>
-<body>
-  <aside class="sidebar">
-    <h1>NexScout</h1>
-    <nav>
-      <a href="/">Dashboard</a>
-      <a href="/jobs">Jobs</a>
-      <a href="/applications">Applications</a>
-      <a href="/questions">Questions</a>
-      <a href="/profile">Profile</a>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 antialiased">
+
+  <!-- Sticky top navigation. -->
+  <header x-data="{ open: false }"
+          class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-14">
+        <a href="/" class="flex items-center gap-2 font-bold text-lg text-amber-500">
+          <span aria-hidden="true">🧭</span> NexScout
+        </a>
+
+        <!-- Desktop links. -->
+        <div class="hidden md:flex items-center gap-1">
+          {% set nav_active = active_nav | default('') %}
+          {% for href, label in [('/', 'Home'), ('/jobs', 'Jobs'), ('/applications', 'Applications'), ('/questions', 'Questions'), ('/profile', 'Settings')] %}
+          <a href="{{ href }}"
+             class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800
+                    {% if nav_active == href %}text-amber-600 dark:text-amber-400{% else %}text-slate-600 dark:text-slate-300{% endif %}">
+            {{ label }}
+          </a>
+          {% endfor %}
+        </div>
+
+        <!-- Mobile menu button. -->
+        <button @click="open = !open" type="button"
+                class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                aria-label="Open menu">
+          <svg x-show="!open" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg x-show="open" x-cloak class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Mobile menu panel. -->
+      <div x-show="open" x-cloak class="md:hidden pb-3 space-y-1">
+        {% for href, label in [('/', 'Home'), ('/jobs', 'Jobs'), ('/applications', 'Applications'), ('/questions', 'Questions'), ('/profile', 'Settings')] %}
+        <a href="{{ href }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">{{ label }}</a>
+        {% endfor %}
+      </div>
     </nav>
-  </aside>
-  <main class="content">
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
     {% block body %}{% endblock %}
   </main>
+
+  <footer class="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-xs text-slate-400">
+    NexScout — your automatic job-search assistant.
+  </footer>
+
+  {% block scripts %}{% endblock %}
 </body>
 </html>

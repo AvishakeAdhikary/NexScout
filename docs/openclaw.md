@@ -28,6 +28,92 @@ the `~/.nexscout/` directory must be mounted into `/sandbox/nexscout/`.
 2. **Standalone mode.** Plain `nexscout run --continuous` loop. No heartbeat.
    Same code paths.
 
+## MCP server (autonomous tool use)
+
+The **headline integration**: NexScout runs a **Model Context Protocol (MCP)
+server** that the OpenClaw gateway connects to, giving the agent concrete tools
+to drive NexScout *autonomously*. Before this, asking OpenClaw to "apply at
+jobs, get my resume from NexScout" produced "I have no access to NexScout".
+Now the agent simply calls the NexScout tools.
+
+### Why HTTP (not stdio)
+
+OpenClaw normally spawns local MCP servers as stdio child processes. That can't
+work here: NexScout (Python) runs in the `nexscout` container and OpenClaw
+(Node) runs in the `nexscout-openclaw` container — separate processes on a
+shared Docker network. So the server uses the **Streamable HTTP** transport,
+binds `0.0.0.0:8770`, and is reached by URL.
+
+### Compose service
+
+The `nexscout-mcp` service (in `docker-compose.yml`) reuses the shared
+`*nexscout-base` anchor (same image, volumes, and env — including
+`NEXSCOUT_DIR` and `LMSTUDIO_URL`) and runs the `nexscout-mcp` console-script
+entry point. It publishes `8770` and `restart: unless-stopped`. The `openclaw`
+service `depends_on` it, so the MCP server is up before the gateway starts.
+
+```bash
+docker compose --profile openclaw up -d   # brings up nexscout-mcp + openclaw
+```
+
+Run it standalone for local testing with either:
+
+```bash
+nexscout-mcp                  # console_scripts entry point
+python -m nexscout.mcp.server # module form
+```
+
+Both bind `NEXSCOUT_MCP_HOST` / `NEXSCOUT_MCP_PORT` (default `0.0.0.0:8770`)
+and serve the MCP endpoint at `/mcp`.
+
+### Gateway registration
+
+OpenClaw consumes MCP servers via an `mcpServers` map in
+`~/.openclaw/openclaw.json`. NexScout is registered as a Streamable-HTTP server
+pointing at the in-network URL (the OpenClaw container resolves
+`nexscout-mcp` on `nexscout-net`):
+
+```jsonc
+{
+  "mcpServers": {
+    "nexscout": {
+      "transport": "streamable-http",
+      "url": "http://nexscout-mcp:8770/mcp",
+      "description": "NexScout autonomous job-application agent: ..."
+    }
+  }
+}
+```
+
+The same entry can be added from the CLI:
+
+```bash
+openclaw mcp add nexscout --url http://nexscout-mcp:8770/mcp --transport streamable-http
+```
+
+### Exposed tools
+
+| Tool                              | What it does                                             |
+|-----------------------------------|----------------------------------------------------------|
+| `get_profile()`                   | Structured candidate profile (name, titles, skills, …)   |
+| `get_resume_text()`               | Plain-text résumé NexScout tailors per application       |
+| `pipeline_status()`               | Pipeline counts (total/scored/tailored/applied/…)        |
+| `discover_jobs(limit_per_engine)` | Run discovery; returns new-job count                     |
+| `score_jobs(limit)`               | Score enriched jobs for fit (0-10)                       |
+| `tailor_jobs(limit)`              | Tailor the résumé for high-fit jobs                      |
+| `apply_to_job(url)`               | One-shot apply to a specific job URL                     |
+| `list_open_questions()`           | List unanswered clarifying questions                     |
+| `answer_question(id, answer)`     | Answer a question; persists to learned-answers memory    |
+| `run_once(wall_clock_s)`          | One bounded end-to-end pipeline pass (the heartbeat tick)|
+
+Each tool is defensive: it catches its own exceptions and returns a clear
+`{"ok": false, "error": …}` envelope instead of crashing the long-lived server,
+and heavy stages (browser/LLM) are imported lazily so the server starts even
+when an optional dependency is missing on the host. All tools read the same
+`~/.nexscout` state (via `NEXSCOUT_DIR`) as the rest of the stack, so the
+agent's actions show up immediately in the web UI and the pipeline. The tool
+implementations live in `src/nexscout/mcp/server.py`.
+
 ## Sandbox mount
 
 When running under NemoClaw / OpenShell, NexScout's working directory is

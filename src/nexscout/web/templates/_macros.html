@@ -1,0 +1,26 @@
+{# Reusable UI bits used across pages. #}
+
+{# A small ℹ️ help icon that reveals a plain-language explanation on hover/tap.
+   Usage: {{ help("ATS", "An ATS is the software a company uses to collect job applications.") }} #}
+{% macro help(term, explanation) %}
+<span x-data="{ show: false }" class="relative inline-block align-middle">
+  <button type="button"
+          @mouseenter="show = true" @mouseleave="show = false"
+          @click="show = !show" @focus="show = true" @blur="show = false"
+          class="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-200 cursor-help"
+          aria-label="What is {{ term }}?">i</button>
+  <span x-show="show" x-cloak
+        class="absolute left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-normal leading-snug text-white shadow-lg dark:bg-slate-700">
+    <strong class="block text-amber-300">{{ term }}</strong>{{ explanation }}
+  </span>
+</span>
+{% endmacro %}
+
+{# A stat card: big number + plain label + one-line helper underneath. #}
+{% macro stat(label, value, helper, accent='slate') %}
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+  <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ label }}</p>
+  <p class="mt-1 text-3xl font-bold text-{{ accent }}-600 dark:text-{{ accent }}-400">{{ value }}</p>
+  {% if helper %}<p class="mt-1 text-xs text-slate-400 dark:text-slate-500">{{ helper }}</p>{% endif %}
+</div>
+{% endmacro %}

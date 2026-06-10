@@ -16,8 +16,10 @@ from nexscout.llm.providers.base import Message
 from nexscout.llm.providers.gemini import GeminiProvider
 from nexscout.llm.providers.llamacpp import LlamaCppProvider
 from nexscout.llm.providers.lmstudio import LMStudioProvider
+from nexscout.llm.providers.nim import NIMProvider
 from nexscout.llm.providers.ollama import OllamaProvider
 from nexscout.llm.providers.openai import OpenAIProvider
+from nexscout.llm.providers.openai_compat import OpenAICompatProvider
 from nexscout.llm.providers.vllm import VLLMProvider
 from nexscout.llm.router import (
     LLMRouter,
@@ -49,6 +51,10 @@ class TestParseProvider:
         assert _parse_provider("mistral-large")[0] == "ollama"
         assert _parse_provider("random-model")[0] == "openai"  # fallback
 
+    def test_openai_compatible_schemes(self) -> None:
+        assert _parse_provider("openai_compat:vendor/model")[0] == "openai_compat"
+        assert _parse_provider("nim:meta/llama-3.1-70b-instruct")[0] == "nim"
+
 
 class TestBuildProvider:
     def test_each_scheme_constructs_correct_class(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -59,6 +65,10 @@ class TestBuildProvider:
         monkeypatch.setenv("VLLM_URL", "http://localhost:8000/v1")
         monkeypatch.setenv("LLAMACPP_URL", "http://localhost:8080/v1")
 
+        monkeypatch.setenv("NVIDIA_API_KEY", "x")
+        monkeypatch.setenv("OPENAI_COMPAT_BASE_URL", "https://compat/v1")
+        monkeypatch.setenv("OPENAI_COMPAT_API_KEY", "x")
+
         assert isinstance(_build_provider("openai:gpt-4o"), OpenAIProvider)
         assert isinstance(_build_provider("anthropic:claude-haiku"), AnthropicProvider)
         assert isinstance(_build_provider("gemini:gemini-2.0-flash"), GeminiProvider)
@@ -66,6 +76,9 @@ class TestBuildProvider:
         assert isinstance(_build_provider("lmstudio:local"), LMStudioProvider)
         assert isinstance(_build_provider("vllm:local"), VLLMProvider)
         assert isinstance(_build_provider("llamacpp:local"), LlamaCppProvider)
+        # OpenAI-compatible schemes resolve via env fallback when no providers cfg.
+        assert isinstance(_build_provider("nim:meta/llama-3.1-70b-instruct"), NIMProvider)
+        assert isinstance(_build_provider("openai_compat:vendor/model"), OpenAICompatProvider)
 
     def test_unknown_scheme_raises(self) -> None:
         with pytest.raises(ProviderError, match="unknown"):

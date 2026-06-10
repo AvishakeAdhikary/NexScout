@@ -241,7 +241,7 @@ def _parse_retry_after(resp: httpx.Response) -> float | None:
         body = {}
     if isinstance(body, dict):
         ra = body.get("retry_after")
-        if isinstance(ra, (int, float)):
+        if isinstance(ra, int | float):
             return float(ra)
     header = resp.headers.get("retry-after")
     if header:

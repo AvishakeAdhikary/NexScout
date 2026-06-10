@@ -1,27 +1,60 @@
 {% extends "base.html" %}
+{% from "_macros.html" import help %}
+{% set active_nav = '/jobs' %}
 {% block title %}Jobs{% endblock %}
 {% block body %}
-<h2>Jobs ({{ total }})</h2>
+<div class="mb-4 flex flex-wrap items-baseline gap-2">
+  <h1 class="text-2xl font-bold">Jobs</h1>
+  <span class="text-sm text-slate-500 dark:text-slate-400">{{ total }} found</span>
+</div>
+<p class="mb-4 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+  Every job NexScout has found for you. Use the filters to narrow the list, then click a job to see the
+  résumé we wrote and what happened when we applied.
+</p>
 
-<form id="jobs-filter" hx-get="/jobs" hx-target="#jobs-table" hx-swap="outerHTML" hx-trigger="change, submit">
-  <label>Min score <input name="min_score" type="number" value="{{ filters.min_score or '' }}"></label>
-  <label>Site <input name="site" value="{{ filters.site or '' }}"></label>
-  <label>Status
-    <select name="status">
-      <option value="">any</option>
-      <option value="applied" {% if filters.status == "applied" %}selected{% endif %}>applied</option>
-      <option value="failed" {% if filters.status == "failed" %}selected{% endif %}>failed</option>
-      <option value="pending" {% if filters.status == "pending" %}selected{% endif %}>pending</option>
-      <option value="paused" {% if filters.status == "paused" %}selected{% endif %}>paused</option>
+<form id="jobs-filter"
+      hx-get="/jobs" hx-target="#jobs-table" hx-swap="outerHTML"
+      hx-trigger="change, submit" hx-indicator="#jobs-spinner"
+      class="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:grid-cols-4">
+  <label class="block text-sm">
+    <span class="text-slate-500 dark:text-slate-400">Minimum match score
+      {{ help("fit score", "How well a job matches you, from 0 (poor) to 10 (great). Show only jobs scoring at least this high.") }}
+    </span>
+    <input name="min_score" type="number" min="0" max="10" value="{{ filters.min_score if filters.min_score is not none else '' }}"
+           class="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-2 py-1.5">
+  </label>
+  <label class="block text-sm">
+    <span class="text-slate-500 dark:text-slate-400">Job site</span>
+    <input name="site" value="{{ filters.site or '' }}" placeholder="e.g. greenhouse"
+           class="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-2 py-1.5">
+  </label>
+  <label class="block text-sm">
+    <span class="text-slate-500 dark:text-slate-400">Status</span>
+    <select name="status" class="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-2 py-1.5">
+      <option value="">Any</option>
+      <option value="applied" {% if filters.status == "applied" %}selected{% endif %}>Applied</option>
+      <option value="failed" {% if filters.status == "failed" %}selected{% endif %}>Problems</option>
+      <option value="pending" {% if filters.status == "pending" %}selected{% endif %}>Not applied yet</option>
+      <option value="paused" {% if filters.status == "paused" %}selected{% endif %}>Waiting on you</option>
     </select>
   </label>
-  <label>Sort
-    <select name="sort">
-      <option value="score" {% if filters.sort == "score" %}selected{% endif %}>score</option>
-      <option value="discovered_at" {% if filters.sort == "discovered_at" %}selected{% endif %}>discovered</option>
+  <label class="block text-sm">
+    <span class="text-slate-500 dark:text-slate-400">Sort by</span>
+    <select name="sort" class="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-2 py-1.5">
+      <option value="score" {% if filters.sort == "score" %}selected{% endif %}>Best match first</option>
+      <option value="discovered_at" {% if filters.sort == "discovered_at" %}selected{% endif %}>Newest first</option>
     </select>
   </label>
+  <div class="col-span-2 flex items-center gap-2 sm:col-span-4">
+    <svg id="jobs-spinner" class="htmx-indicator h-4 w-4 animate-spin text-amber-500" viewBox="0 0 24 24" fill="none">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <span class="htmx-indicator text-xs text-slate-400">Filtering…</span>
+  </div>
 </form>
 
-{% include "_jobs_table.html" %}
+<div class="overflow-x-auto">
+  {% include "_jobs_table.html" %}
+</div>
 {% endblock %}

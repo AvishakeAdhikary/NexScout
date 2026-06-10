@@ -14,6 +14,7 @@ from ...core.config import nexscout_dir
 from ...core.database import get_stats, init_db
 from ...core.errors import ConfigError
 from ...core.profile import Profile
+from .. import runner
 
 router = APIRouter()
 
@@ -104,6 +105,10 @@ def _score_distribution_svg(distribution: dict[int, int], *, width: int = 360, h
     return "".join(parts)
 
 
+def _is_paused() -> bool:
+    return (nexscout_dir() / "paused.flag").exists()
+
+
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request) -> HTMLResponse:
     templates = request.app.state.templates
@@ -122,8 +127,25 @@ async def home(request: Request) -> HTMLResponse:
             "openclaw": openclaw,
             "pending_telegram": pending_telegram,
             "score_distribution_svg": score_svg,
+            "run_status": runner.get_status().to_dict(),
+            "paused": _is_paused(),
             "now": datetime.now().isoformat(timespec="seconds"),
         },
+    )
+
+
+@router.get("/controls/status/html", response_class=HTMLResponse)
+async def run_status_html(request: Request) -> HTMLResponse:
+    """HTMX-polled partial: the live status banner for the "Check now" run.
+
+    Returned as a small HTML fragment so ``hx-trigger="every 2s"`` can swap it
+    in place without a full page reload.
+    """
+    templates = request.app.state.templates
+    return templates.TemplateResponse(
+        request,
+        "_run_status.html",
+        {"run_status": runner.get_status().to_dict(), "paused": _is_paused()},
     )
 
 

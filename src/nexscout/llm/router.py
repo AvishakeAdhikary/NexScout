@@ -21,15 +21,17 @@ from typing import Any, Literal
 import httpx
 
 from ..core.errors import ProviderError
-from ..core.profile import Profile
+from ..core.profile import LLMProviderEndpoint, Profile
 from .budget import BudgetLedger
 from .providers.anthropic import AnthropicProvider
 from .providers.base import Message, Provider
 from .providers.gemini import GeminiProvider
 from .providers.llamacpp import LlamaCppProvider
 from .providers.lmstudio import LMStudioProvider
+from .providers.nim import NIMProvider
 from .providers.ollama import OllamaProvider
 from .providers.openai import OpenAIProvider
+from .providers.openai_compat import OpenAICompatProvider
 from .providers.vllm import VLLMProvider
 
 log = logging.getLogger(__name__)
@@ -40,12 +42,25 @@ BACKOFF_BASE = 10.0
 BACKOFF_CAP = 60.0
 
 
+#: Provider schemes that resolve to an explicit ``scheme:model`` backend.
+_KNOWN_SCHEMES = {
+    "openai",
+    "anthropic",
+    "gemini",
+    "ollama",
+    "lmstudio",
+    "vllm",
+    "llamacpp",
+    "openai_compat",
+    "nim",
+}
+
+
 def _parse_provider(spec: str) -> tuple[str, str]:
     """Split ``scheme:model`` (or infer scheme from a bare model name)."""
     if ":" in spec:
         first, rest = spec.split(":", 1)
-        known = {"openai", "anthropic", "gemini", "ollama", "lmstudio", "vllm", "llamacpp"}
-        if first.lower() in known:
+        if first.lower() in _KNOWN_SCHEMES:
             return first.lower(), rest
     s = spec.lower()
     if s.startswith("gpt") or s.startswith("o1") or s.startswith("o3"):
@@ -59,7 +74,7 @@ def _parse_provider(spec: str) -> tuple[str, str]:
     return "openai", spec
 
 
-def _build_provider(spec: str) -> Provider:
+def _build_provider(spec: str, providers: dict[str, LLMProviderEndpoint] | None = None) -> Provider:
     scheme, model = _parse_provider(spec)
     if scheme == "openai":
         return OpenAIProvider(model=model)
@@ -75,7 +90,33 @@ def _build_provider(spec: str) -> Provider:
         return VLLMProvider(model=model)
     if scheme == "llamacpp":
         return LlamaCppProvider(model=model)
+    if scheme in ("openai_compat", "nim"):
+        return _build_openai_compat(scheme, model, providers)
     raise ProviderError(f"unknown provider scheme {scheme!r}")
+
+
+def _build_openai_compat(
+    scheme: str,
+    model: str,
+    providers: dict[str, LLMProviderEndpoint] | None,
+) -> Provider:
+    """Build an ``openai_compat`` / ``nim`` provider from profile + env config.
+
+    Looks up ``llm.providers.<scheme>`` for base_url/api_key/model/extra_headers;
+    any value left empty there falls back to the provider's own env-based
+    defaults (e.g. ``NVIDIA_API_KEY``, ``OPENAI_COMPAT_BASE_URL``). A bare spec
+    such as ``"nim:"`` uses the configured default ``model``.
+    """
+    cfg = (providers or {}).get(scheme) or LLMProviderEndpoint()
+    chosen_model = model or cfg.model
+    if not chosen_model:
+        raise ProviderError(f"{scheme}: no model id (use '{scheme}:<model>' or set llm.providers.{scheme}.model)")
+    base_url = cfg.base_url or None
+    api_key = cfg.api_key or None
+    headers = cfg.extra_headers or None
+    if scheme == "nim":
+        return NIMProvider(model=chosen_model, api_key=api_key, base_url=base_url, extra_headers=headers)
+    return OpenAICompatProvider(model=chosen_model, api_key=api_key, base_url=base_url, extra_headers=headers)
 
 
 def _is_qwen(spec: str) -> bool:
@@ -132,7 +173,7 @@ class LLMRouter:
 
     def _provider(self, spec: str) -> Provider:
         if spec not in self._provider_cache:
-            self._provider_cache[spec] = _build_provider(spec)
+            self._provider_cache[spec] = _build_provider(spec, self.profile.llm.providers)
         return self._provider_cache[spec]
 
     # ---- main entry ----

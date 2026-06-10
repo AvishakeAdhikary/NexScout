@@ -70,6 +70,25 @@ services:
     ports:
       - "8765:8765"
 
+  # MCP server — exposes the pipeline as agent-callable tools over Streamable
+  # HTTP on :8770, so the OpenClaw gateway can autonomously fetch the résumé,
+  # discover/score/tailor/apply, and answer NexScout's clarifying questions.
+  # The OpenClaw container reaches it at http://nexscout-mcp:8770/mcp on the
+  # shared nexscout-net network (see ~/.openclaw/openclaw.json mcpServers).
+  nexscout-mcp:
+    <<: *nexscout-base
+    container_name: nexscout-mcp
+    # `nexscout-mcp` is the console_scripts entry point bound to
+    # nexscout.mcp.server:main. It binds host 0.0.0.0 and port 8770 by default
+    # (overridable via NEXSCOUT_MCP_HOST / NEXSCOUT_MCP_PORT). All shared env
+    # (NEXSCOUT_DIR, LMSTUDIO_URL, API keys, …) and volumes come from the
+    # *nexscout-base anchor — we intentionally do NOT redefine `environment`
+    # here, because YAML merge replaces (does not deep-merge) the env list.
+    entrypoint: ["nexscout-mcp"]
+    command: []
+    ports:
+      - "8770:8770"
+
   ollama:
     container_name: nexscout-ollama
     image: ollama/ollama:latest
@@ -119,6 +138,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    # Start the NexScout MCP server alongside the gateway so the agent's
+    # mcpServers entry (http://nexscout-mcp:8770/mcp) resolves on first boot.
+    depends_on:
+      nexscout-mcp:
+        condition: service_started
     networks:
       - nexscout-net
     profiles: ["openclaw"]

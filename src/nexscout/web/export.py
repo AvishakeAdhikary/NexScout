@@ -21,28 +21,43 @@ from typing import Any
 from .routes.dashboard import _score_distribution_svg
 
 _CSS = """
+:root {
+  --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --text: #1e293b;
+  --muted: #64748b; --accent: #f59e0b; --accent-text: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #e2e8f0;
+    --muted: #94a3b8; --accent: #f59e0b; --accent-text: #1e293b;
+  }
+}
 * { box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
-       margin: 0; padding: 24px; color: #222; background: #fff; }
-h1 { margin: 0 0 8px; }
-.muted { color: #888; font-size: 12px; }
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif;
+       margin: 0; padding: 24px; color: var(--text); background: var(--bg);
+       max-width: 1100px; margin-left: auto; margin-right: auto; }
+h1 { margin: 0 0 4px; font-size: 1.75rem; }
+h2 { margin: 28px 0 8px; font-size: 1.15rem; }
+.muted { color: var(--muted); font-size: 12px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
          gap: 12px; margin: 16px 0; }
-.card { border: 1px solid #ddd; border-radius: 6px; padding: 12px 16px; background: #fafafa; }
-.card h3 { margin: 0 0 4px; font-size: 13px; color: #555; font-weight: 600; }
-.card p { margin: 0; font-size: 22px; font-weight: 600; color: #111; }
-table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid #eee; }
-th { background: #f2f2f2; font-weight: 600; }
-.jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+.card { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: var(--surface);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.card h3 { margin: 0 0 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.card p { margin: 0; font-size: 24px; font-weight: 700; color: var(--text); }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; background: var(--surface);
+        border-radius: 12px; overflow: hidden; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--bg); font-weight: 600; font-size: 13px; color: var(--muted); }
+.jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 12px; }
-.job { border: 1px solid #ddd; border-radius: 6px; padding: 12px; background: #fff; }
-.job .score { display: inline-block; padding: 2px 8px; border-radius: 999px;
-              background: #3a72ff; color: white; font-weight: 600; font-size: 12px; }
-.job .meta { font-size: 12px; color: #666; margin: 4px 0; }
-.job a { color: #2050cc; text-decoration: none; word-break: break-all; }
-.search { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
-          font-size: 14px; margin-bottom: 16px; }
+.job { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--surface); }
+.job .score { display: inline-block; padding: 2px 10px; border-radius: 999px;
+              background: var(--accent); color: var(--accent-text); font-weight: 700; font-size: 12px; }
+.job strong { display: block; margin: 6px 0 2px; }
+.job .meta { font-size: 12px; color: var(--muted); margin: 4px 0; }
+.job a { color: var(--accent); text-decoration: none; word-break: break-all; }
+.search { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+          font-size: 14px; margin-bottom: 16px; background: var(--surface); color: var(--text); }
 .score-dist { max-width: 480px; display: block; }
 """
 
@@ -125,6 +140,8 @@ def render_static_dashboard(stats: dict[str, Any], jobs: list[dict[str, Any]]) -
         f"<style>{_CSS}</style>"
         "</head><body>"
         "<h1>NexScout — Static Dashboard</h1>"
+        "<p>NexScout finds jobs that match you, writes a tailored résumé for each, "
+        "and applies for you automatically. This is a snapshot you can save or share.</p>"
         f'<p class="muted">Generated {escape(now)}. Self-contained — no external assets.</p>'
         f'<section class="stats">{counters}</section>'
         "<h2>Score distribution</h2>"

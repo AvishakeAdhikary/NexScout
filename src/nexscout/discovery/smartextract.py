@@ -392,7 +392,7 @@ def _coerce_display(val: Any) -> str | None:
         return None
     if isinstance(val, str):
         return val.strip() or None
-    if isinstance(val, (int, float)):
+    if isinstance(val, int | float):
         return str(val)
     if isinstance(val, list):
         out = ", ".join(str(_coerce_display(v) or "") for v in val if v is not None)

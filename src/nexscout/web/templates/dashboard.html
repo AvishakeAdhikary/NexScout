@@ -1,83 +1,308 @@
 {% extends "base.html" %}
+{% from "_macros.html" import help, stat %}
+{% set active_nav = '/' %}
 {% block title %}Dashboard{% endblock %}
 {% block body %}
-<h2>Dashboard</h2>
 
-<section class="stats">
-  <div class="card"><h3>Total</h3><p>{{ stats.total }}</p></div>
-  <div class="card"><h3>Pending detail</h3><p>{{ stats.pending_detail }}</p></div>
-  <div class="card"><h3>With description</h3><p>{{ stats.with_description }}</p></div>
-  <div class="card"><h3>Detail errors</h3><p>{{ stats.detail_errors }}</p></div>
-  <div class="card"><h3>Scored</h3><p>{{ stats.scored }}</p></div>
-  <div class="card"><h3>Unscored</h3><p>{{ stats.unscored }}</p></div>
-  <div class="card"><h3>Tailored</h3><p>{{ stats.tailored }}</p></div>
-  <div class="card"><h3>Untailored eligible</h3><p>{{ stats.untailored_eligible }}</p></div>
-  <div class="card"><h3>Tailor exhausted</h3><p>{{ stats.tailor_exhausted }}</p></div>
-  <div class="card"><h3>With cover letter</h3><p>{{ stats.with_cover_letter }}</p></div>
-  <div class="card"><h3>Cover exhausted</h3><p>{{ stats.cover_exhausted }}</p></div>
-  <div class="card"><h3>Applied</h3><p>{{ stats.applied }}</p></div>
-  <div class="card"><h3>Apply errors</h3><p>{{ stats.apply_errors }}</p></div>
-  <div class="card"><h3>Ready to apply</h3><p>{{ stats.ready_to_apply }}</p></div>
+<!-- Friendly intro: what is this thing? -->
+<section class="mb-6 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 p-6 text-slate-900 shadow">
+  <h1 class="text-2xl font-bold">Welcome to NexScout</h1>
+  <p class="mt-1 max-w-3xl text-sm sm:text-base">
+    NexScout finds jobs that match you, writes a tailored résumé for each, and applies for you automatically.
+    You don't have to do anything — just check in here to see how it's going.
+  </p>
 </section>
 
-<section class="by-site">
-  <h3>By source</h3>
-  <table class="rows">
-    <thead><tr><th>Site</th><th>Count</th></tr></thead>
+<!-- Run controls: "Check for new jobs now" (the thing we used to call a tick). -->
+<section class="mb-6 grid gap-4 lg:grid-cols-3">
+  <div class="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <h2 class="text-base font-semibold">
+        Auto-run
+        {{ help("Auto-run", "NexScout automatically checks for new jobs and applies on a schedule. Click 'Check for new jobs now' to run a check right now.") }}
+      </h2>
+      <span class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium
+                   {% if paused %}bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-200{% else %}bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200{% endif %}">
+        <span class="h-2 w-2 rounded-full {% if paused %}bg-slate-400{% else %}bg-green-500{% endif %}"></span>
+        {% if paused %}Paused{% else %}Running on schedule{% endif %}
+      </span>
+    </div>
+    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      NexScout keeps working in the background. Use the buttons below to run a check right now, or to pause everything.
+    </p>
+
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button hx-post="/controls/run"
+              hx-target="#run-status" hx-swap="outerHTML"
+              hx-indicator="#run-spinner"
+              class="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-60">
+        <svg id="run-spinner" class="htmx-indicator h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        Check for new jobs now
+      </button>
+      {{ help("Check for new jobs now", "Runs one full pass right away: looks for new jobs, scores them, writes résumés, and applies. This can take a few minutes — you can leave this page and come back.") }}
+
+      <button hx-post="/controls/pause"
+              hx-swap="none" hx-on::after-request="window.location.reload()"
+              class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
+        Pause auto-run
+      </button>
+      <button hx-post="/controls/resume"
+              hx-swap="none" hx-on::after-request="window.location.reload()"
+              class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
+        Resume auto-run
+      </button>
+    </div>
+
+    <div class="mt-4">
+      {% include "_run_status.html" %}
+    </div>
+  </div>
+
+  <!-- OpenClaw status in plain terms. -->
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <h2 class="text-base font-semibold">OpenClaw status
+      {{ help("OpenClaw", "OpenClaw is the helper that notifies you (for example on Telegram) when NexScout needs an answer, and records when it last ran.") }}
+    </h2>
+    <dl class="mt-3 space-y-2 text-sm">
+      <div class="flex justify-between gap-3">
+        <dt class="text-slate-500 dark:text-slate-400">Last auto-run</dt>
+        <dd class="font-medium text-right">{{ openclaw.last_tick or "Not yet" }}</dd>
+      </div>
+      <div class="flex justify-between gap-3">
+        <dt class="text-slate-500 dark:text-slate-400">Notifies you via</dt>
+        <dd class="font-medium text-right">{{ openclaw.channel or "this page only" }}</dd>
+      </div>
+      <div class="flex justify-between gap-3">
+        <dt class="text-slate-500 dark:text-slate-400">Pending Telegram deliveries</dt>
+        <dd class="font-medium text-right"><strong id="pending-telegram-count">{{ pending_telegram }}</strong></dd>
+      </div>
+    </dl>
+    <p class="mt-3 text-xs text-slate-400">
+      Pending Telegram deliveries are questions waiting to be sent to your phone.
+    </p>
+  </div>
+</section>
+
+<!-- Headline numbers, in plain language. -->
+<h2 class="mb-3 text-lg font-semibold">How it's going</h2>
+<section class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+  {{ stat("Jobs found", stats.total, "Total job openings NexScout has discovered for you.", "slate") }}
+  {{ stat("Applied", stats.applied, "Applications we've submitted for you.", "green") }}
+  {{ stat("Ready to apply", stats.ready_to_apply, "Have a tailored résumé and are queued to apply.", "amber") }}
+  {{ stat("Scored", stats.scored, "Jobs we've rated for how well they match you.", "blue") }}
+</section>
+
+<!-- Apply outcomes, only showing keys that are present. -->
+{% set outcome_map = [
+  ('applied', 'Applied', "Jobs we've submitted for you.", 'green'),
+  ('parked', 'Waiting on you', 'Stuck on a question or captcha — your input is needed.', 'amber'),
+  ('skipped', 'Not a match', "Skipped because they weren't a good fit.", 'slate'),
+  ('apply_errors', 'Problems', 'Something went wrong while applying.', 'red'),
+] %}
+{% set outcomes_ns = namespace(any=false) %}
+{% for key, label, helper, accent in outcome_map %}{% if key in stats %}{% set outcomes_ns.any = true %}{% endif %}{% endfor %}
+{% if outcomes_ns.any %}
+<h2 class="mt-8 mb-3 text-lg font-semibold">What happened to each application
+  {{ help("fit score", "A fit score (0-10) is how well a job matches your profile. Higher is a better match.") }}
+</h2>
+<section class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+  {% for key, label, helper, accent in outcome_map %}
+    {% if key in stats %}
+      {{ stat(label, stats[key], helper, accent) }}
+    {% endif %}
+  {% endfor %}
+</section>
+{% endif %}
+
+<!-- Interactive graphs. -->
+<section class="mt-8 grid gap-4 lg:grid-cols-2">
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <h3 class="text-base font-semibold">Score distribution
+      {{ help("fit score", "How well each job matches you, from 0 (poor) to 10 (great). Taller bars mean more jobs at that score.") }}
+    </h3>
+    <p class="text-xs text-slate-400">Hover a bar to see how many jobs scored that high.</p>
+    <div class="relative mt-3 h-64">
+      <canvas id="scoreChart"></canvas>
+      <p id="scoreChartEmpty" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-400">
+        no scored jobs yet — NexScout is still working
+      </p>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+    <h3 class="text-base font-semibold">Your pipeline</h3>
+    <p class="text-xs text-slate-400">Jobs flow from discovered → scored → tailored → applied.</p>
+    <div class="relative mt-3 h-64">
+      <canvas id="pipelineChart"></canvas>
+      <p id="pipelineChartEmpty" class="hidden absolute inset-0 flex items-center justify-center text-sm text-slate-400">
+        No data yet — NexScout is still working
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Where the jobs came from. -->
+<section class="mt-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+  <h3 class="text-base font-semibold">Where jobs came from</h3>
+  <div class="mt-3 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="text-left text-slate-500 dark:text-slate-400">
+        <tr><th class="py-1 pr-4 font-medium">Job site
+          {{ help("Job site", "The website the job was found on, like Greenhouse or Lever.") }}
+        </th><th class="py-1 font-medium">Jobs found</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+      {% for site, count in stats.by_site.items() %}
+        <tr><td class="py-1.5 pr-4">{{ site or '(unknown)' }}</td><td class="py-1.5">{{ count }}</td></tr>
+      {% else %}
+        <tr><td colspan="2" class="py-2 text-slate-400">No jobs yet — NexScout is still working.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Detailed pipeline counters (kept for power users; plain labels retained for tests). -->
+<details class="mt-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+  <summary class="cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-300">
+    Show all the details (advanced)
+  </summary>
+  <div class="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 lg:grid-cols-4">
+    {% set detail_items = [
+      ('Pending detail', stats.pending_detail, "Jobs we still need to read in full."),
+      ('With description', stats.with_description, "Jobs whose full text we've fetched."),
+      ('Detail errors', stats.detail_errors, "Jobs we couldn't read."),
+      ('Scored', stats.scored, "Jobs we've rated for fit."),
+      ('Unscored', stats.unscored, "Jobs not yet rated."),
+      ('Tailored', stats.tailored, "Jobs with a custom résumé written."),
+      ('Untailored eligible', stats.untailored_eligible, "Good matches still awaiting a résumé."),
+      ('Tailor exhausted', stats.tailor_exhausted, "Gave up writing a résumé after retries."),
+      ('With cover letter', stats.with_cover_letter, "Jobs with a cover letter."),
+      ('Cover exhausted', stats.cover_exhausted, "Gave up on a cover letter after retries."),
+      ('Applied', stats.applied, "Applications submitted."),
+      ('Apply errors', stats.apply_errors, "Applications that failed."),
+      ('Ready to apply', stats.ready_to_apply, "Queued and ready to submit."),
+    ] %}
+    {% for label, value, helper in detail_items %}
+    <div class="rounded-lg bg-slate-50 dark:bg-slate-800 p-3">
+      <p class="text-xs text-slate-500 dark:text-slate-400">{{ label }}</p>
+      <p class="text-xl font-semibold">{{ value }}</p>
+      <p class="text-[11px] text-slate-400">{{ helper }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Static text fallback so "no scored jobs yet" is always present even without JS. -->
+  <h4 class="mt-4 text-sm font-medium">Score distribution</h4>
+  <table class="mt-1 text-sm">
     <tbody>
-    {% for site, count in stats.by_site.items() %}
-      <tr><td>{{ site or '(unknown)' }}</td><td>{{ count }}</td></tr>
+    {% for score, count in stats.score_distribution.items() %}
+      <tr><td class="pr-3">Score {{ score }}</td><td>{{ count }}</td></tr>
     {% else %}
-      <tr><td colspan="2">no jobs yet</td></tr>
+      <tr><td class="text-slate-400">no scored jobs yet</td></tr>
     {% endfor %}
     </tbody>
   </table>
+</details>
+
+<!-- Activity log. -->
+<section class="mt-8">
+  <h3 class="text-base font-semibold">Recent Events
+    {{ help("Events", "A running log of what NexScout has done recently, newest first.") }}
+  </h3>
+  <ul class="mt-3 space-y-1 text-sm">
+    {% for e in events %}
+    <li class="flex gap-3 rounded-md bg-white dark:bg-slate-900 px-3 py-1.5 font-mono text-xs">
+      <span class="text-slate-400">{{ e.ts }}</span>
+      <span class="font-semibold text-amber-600 dark:text-amber-400">{{ e.kind }}</span>
+      <span class="truncate text-slate-500">{{ e.payload_json }}</span>
+    </li>
+    {% else %}
+    <li class="text-sm text-slate-400">No activity yet — NexScout is still warming up.</li>
+    {% endfor %}
+  </ul>
 </section>
 
-<h3>Score distribution</h3>
-<div class="score-chart">
-  {{ score_distribution_svg | safe }}
-</div>
-<table class="dist">
-  <thead><tr><th>Score</th><th>Count</th></tr></thead>
-  <tbody>
-  {% for score, count in stats.score_distribution.items() %}
-    <tr><td>{{ score }}</td><td><div class="bar" style="width: {{ count * 10 }}px"></div> {{ count }}</td></tr>
-  {% else %}
-    <tr><td colspan="2">no scored jobs yet</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
+<p class="mt-6 text-xs text-slate-400">Last updated {{ now }}.</p>
+{% endblock %}
 
-<section class="openclaw">
-  <h3>OpenClaw status</h3>
-  <p>
-    Last tick: <strong>{{ openclaw.last_tick or "never" }}</strong> &middot;
-    Channel: <strong>{{ openclaw.channel or "cli" }}</strong>
-  </p>
-  <p class="pending-telegram">
-    Pending Telegram deliveries:
-    <strong id="pending-telegram-count">{{ pending_telegram }}</strong>
-  </p>
-  <form method="post" action="/controls/tick">
-    <button>Run tick now</button>
-  </form>
-  <form method="post" action="/controls/pause" style="display:inline">
-    <button>Pause</button>
-  </form>
-  <form method="post" action="/controls/resume" style="display:inline">
-    <button>Resume</button>
-  </form>
-</section>
+{% block scripts %}
+<script>
+  (function () {
+    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const gridColor = isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.15)';
+    const tickColor = isDark ? '#cbd5e1' : '#475569';
 
-<h3>Recent Events</h3>
-<ul class="events">
-  {% for e in events %}
-  <li>[{{ e.ts }}] <strong>{{ e.kind }}</strong> {{ e.payload_json }}</li>
-  {% else %}
-  <li>(no events yet)</li>
-  {% endfor %}
-</ul>
+    fetch('/api/charts')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        // --- Score distribution bar chart ---
+        const sd = data.score_distribution || { labels: [], counts: [] };
+        const scoreCanvas = document.getElementById('scoreChart');
+        if (!sd.labels.length) {
+          scoreCanvas.classList.add('hidden');
+          document.getElementById('scoreChartEmpty').classList.remove('hidden');
+        } else {
+          new Chart(scoreCanvas, {
+            type: 'bar',
+            data: {
+              labels: sd.labels,
+              datasets: [{
+                label: 'Jobs at this score',
+                data: sd.counts,
+                backgroundColor: '#f59e0b',
+                borderRadius: 6,
+              }],
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { title: function (i) { return 'Fit score ' + i[0].label; } } },
+              },
+              scales: {
+                x: { title: { display: true, text: 'Fit score (0 = poor, 10 = great)', color: tickColor },
+                     grid: { display: false }, ticks: { color: tickColor } },
+                y: { beginAtZero: true, ticks: { precision: 0, color: tickColor }, grid: { color: gridColor } },
+              },
+            },
+          });
+        }
 
-<p class="muted">As of {{ now }}.</p>
+        // --- Pipeline doughnut chart ---
+        const pl = data.pipeline || { labels: [], values: [] };
+        const pipeCanvas = document.getElementById('pipelineChart');
+        const pipeTotal = (pl.values || []).reduce(function (a, b) { return a + b; }, 0);
+        if (!data.has_data || pipeTotal === 0) {
+          pipeCanvas.classList.add('hidden');
+          document.getElementById('pipelineChartEmpty').classList.remove('hidden');
+        } else {
+          new Chart(pipeCanvas, {
+            type: 'doughnut',
+            data: {
+              labels: pl.labels,
+              datasets: [{
+                data: pl.values,
+                backgroundColor: ['#94a3b8', '#3b82f6', '#f59e0b', '#22c55e'],
+                borderWidth: 0,
+              }],
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { position: 'bottom', labels: { color: tickColor } } },
+            },
+          });
+        }
+      })
+      .catch(function () {
+        document.getElementById('scoreChartEmpty').classList.remove('hidden');
+        document.getElementById('pipelineChartEmpty').classList.remove('hidden');
+        document.getElementById('scoreChart').classList.add('hidden');
+        document.getElementById('pipelineChart').classList.add('hidden');
+      });
+  }());
+</script>
 {% endblock %}

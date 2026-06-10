@@ -201,11 +201,43 @@ class LLMBudgets(BaseModel):
     daily_calls: int = 5000
 
 
+class LLMProviderEndpoint(BaseModel):
+    """Per-provider endpoint config for OpenAI-compatible backends.
+
+    Used by the ``openai_compat`` and ``nim`` schemes (and any future
+    OpenAI-compatible vendor). Keyed by scheme name under ``llm.providers``::
+
+        llm:
+          primary: "nim:meta/llama-3.1-70b-instruct"
+          providers:
+            nim:           {base_url: "https://integrate.api.nvidia.com/v1", api_key: "${env:NVIDIA_API_KEY}"}
+            openai_compat: {base_url: "https://my-endpoint/v1", api_key: "${env:OPENAI_COMPAT_API_KEY}"}
+
+    All fields are optional — when an entry (or the whole ``providers`` block) is
+    omitted the router falls back to env-based defaults for that scheme.
+    """
+
+    #: OpenAI-compatible base URL ending in ``/v1`` (no trailing ``/chat/...``).
+    base_url: str = ""
+    #: Bearer API key. Prefer ``${env:NAME}`` so the secret stays out of YAML.
+    api_key: str = ""
+    #: Optional default model id. When set, a bare spec (e.g. ``"nim:"`` or
+    #: ``"openai_compat:"``) uses this model; an explicit spec model still wins.
+    model: str = ""
+    #: Optional extra HTTP headers merged into every request (e.g. routing tags).
+    extra_headers: dict[str, str] = Field(default_factory=dict)
+
+
 class LLMConfig(BaseModel):
     primary: str = "gemini-2.0-flash"
     fallback: str = "ollama:llama3.1:70b"
     judge: str = "anthropic:claude-haiku-4-5-20251001"
     budgets: LLMBudgets = Field(default_factory=LLMBudgets)
+    #: Per-scheme endpoint config for OpenAI-compatible providers
+    #: (``openai_compat``, ``nim``, ...). Optional and backward-compatible —
+    #: existing gemini/openai/anthropic/lmstudio/ollama/vllm/llamacpp specs need
+    #: no entry here.
+    providers: dict[str, LLMProviderEndpoint] = Field(default_factory=dict)
 
 
 class ApplyConfig(BaseModel):

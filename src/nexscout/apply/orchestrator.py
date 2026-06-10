@@ -32,6 +32,7 @@ from .result_codes import (
     RESULT_CAPTCHA_MANUAL,
     RESULT_EXPIRED,
     RESULT_LOGIN_ISSUE,
+    classify_outcome,
 )
 
 if TYPE_CHECKING:
@@ -139,10 +140,14 @@ def mark_result(
     application by hand.
     """
     code = (result_code or "").upper()
-    status = _status_for_code(code)
+    status = _status_for_code(code, reason)
     permanent = code.startswith("FAILED") and is_permanent_failure(reason)
     if code in {RESULT_CAPTCHA, RESULT_CAPTCHA_MANUAL, RESULT_EXPIRED, RESULT_LOGIN_ISSUE}:
         permanent = True
+    # A parked-for-question job must remain re-acquirable: the user answers
+    # the question and the next tick retries it. Never freeze it at 99.
+    if status == "paused_for_question":
+        permanent = False
 
     attempts_bump = 99 if permanent else 1
     applied_now = code == RESULT_APPLIED
@@ -187,6 +192,20 @@ def mark_result(
         # next tick. Failures are swallowed so the apply pipeline keeps
         # moving.
         _emit_captcha_alert(job_url, conn)
+    elif status == "paused_for_question":
+        # The agent hit a form question it can't answer from the profile. Park
+        # the job (NOT an error) and surface the question so the user can
+        # answer it; the next tick retries once they do.
+        question = reason or f"This application needs more info: {job_url}"
+        existing = conn.execute(
+            "SELECT id FROM pending_questions WHERE job_url=? AND question=? AND answered_at IS NULL",
+            (job_url, question),
+        ).fetchone()
+        if existing is None:
+            conn.execute(
+                "INSERT INTO pending_questions (job_url, question, asked_at, channel) VALUES (?, ?, ?, 'cli')",
+                (job_url, question, now),
+            )
 
 
 def _emit_captcha_alert(job_url: str, conn: sqlite3.Connection) -> None:
@@ -233,17 +252,41 @@ def _emit_captcha_alert(job_url: str, conn: sqlite3.Connection) -> None:
         )
 
 
-def _status_for_code(code: str) -> str:
+#: Genuine-fault apply_status values. ``get_stats`` counts ONLY these under
+#: "Problems"; everything else (applied / parked / skipped) is benign.
+ERROR_STATUSES: frozenset[str] = frozenset({"failed"})
+
+
+def _status_for_code(code: str, reason: str | None = None) -> str:
+    """Map a ``(code, reason)`` pair to the persisted ``apply_status`` string.
+
+    The returned status is what :func:`core.database.get_stats` buckets on, so
+    benign outcomes get a benign status that never counts as a "Problem":
+
+    * applied → ``'applied'``
+    * parked (needs the user) → ``'captcha_manual'`` / ``'paused_for_question'``
+    * skipped (not a fit / not accessible) → ``'skipped'`` (or the specific
+      benign code: ``'expired'`` / ``'login_issue'``)
+    * genuine fault → ``'failed'`` (the ONLY value in :data:`ERROR_STATUSES`)
+    """
     if code == RESULT_APPLIED:
         return "applied"
+    if code in {RESULT_CAPTCHA, RESULT_CAPTCHA_MANUAL}:
+        return "captcha_manual"
     if code == RESULT_EXPIRED:
         return "expired"
-    if code == RESULT_CAPTCHA:
-        return "captcha"
-    if code == RESULT_CAPTCHA_MANUAL:
-        return "captcha_manual"
     if code == RESULT_LOGIN_ISSUE:
         return "login_issue"
+
+    outcome = classify_outcome(code, reason)
+    if outcome == "applied":
+        return "applied"
+    if outcome == "parked":
+        # question_required (and any future parked reason) waits on the user.
+        return "paused_for_question"
+    if outcome == "skipped":
+        return "skipped"
+    # outcome == "error": the only genuinely scary bucket.
     return "failed"
 
 
@@ -297,68 +340,179 @@ def worker_loop(
     while True:
         if 0 < limit <= applied:
             break
-        job = acquire_job(profile, db_conn, agent_id=agent_id)
+        # Acquiring a job hits the DB; a transient lock error must not crash
+        # the worker. Treat it like "nothing to do" and back off.
+        try:
+            job = acquire_job(profile, db_conn, agent_id=agent_id)
+        except Exception:
+            log.exception("worker %d: acquire failed", worker_id)
+            if not continuous:
+                break
+            time.sleep(poll_interval)
+            continue
         if job is None:
             if not continuous:
                 break
             time.sleep(poll_interval)
             continue
 
-        bundle_dir = bundle_dir_for(int(job["id"]))
-        start = time.monotonic()
-        driver: Any = None
-        if dashboard:
-            dashboard.start_job(worker_id, job)
-        try:
-            if pool is not None:
-                driver = pool.acquire(worker_id)
-            code, reason, cost, solved = runner(
-                job=job,
-                profile=profile,
-                bundle_dir=bundle_dir,
-                driver=driver,
-                solver=solver,
-                router=llm_router,
-                dry_run=dry_run,
-                dashboard=dashboard,
-                worker_id=worker_id,
-            )
-        except Exception as e:
-            log.exception("worker %d crashed on %s", worker_id, job.get("url"))
-            release_lock(job["url"], db_conn, agent_id=agent_id)
-            if dashboard:
-                dashboard.finish_job(worker_id, "FAILED", reason=str(e))
+        # Process the job inside a fully-guarded helper so NO exception ever
+        # escapes the loop: every job is marked terminal (success, parked,
+        # skipped, or — rarely — a genuine fault) and the loop continues.
+        # A return of ``False`` signals an environment-level infra failure
+        # (e.g. the browser won't launch) — the job's lock was released and
+        # NOT counted as an error; the worker backs off instead of churning
+        # through every job marking them all failed.
+        ok = _process_one(
+            job,
+            worker_id=worker_id,
+            agent_id=agent_id,
+            profile=profile,
+            db_conn=db_conn,
+            solver=solver,
+            llm_router=llm_router,
+            pool=pool,
+            runner=runner,
+            dashboard=dashboard,
+            dry_run=dry_run,
+            backend=backend,
+        )
+        if not ok:
             if not continuous:
                 break
+            time.sleep(poll_interval)
             continue
-        finally:
-            if pool is not None and driver is not None:
-                with _suppress():
-                    pool.release(worker_id, driver)
-
-        duration_ms = int((time.monotonic() - start) * 1000)
-        mark_result(
-            job["url"],
-            code,
-            reason,
-            db_conn,
-            duration_ms=duration_ms,
-            cost_usd=cost,
-            captcha_solved=solved,
-            bundle_dir=str(bundle_dir),
-        )
-        if dashboard:
-            dashboard.finish_job(worker_id, code, reason=reason)
-        # Persist final result.json into bundle.
-        try:
-            (bundle_dir / "result.json").write_text(
-                _result_json(code, reason, duration_ms, cost, solved, agent_id, backend),
-                encoding="utf-8",
-            )
-        except OSError as e:
-            log.warning("could not write result.json: %s", e)
         applied += 1
     return applied
+
+
+def _process_one(
+    job: dict[str, Any],
+    *,
+    worker_id: int,
+    agent_id: str,
+    profile: Profile,
+    db_conn: sqlite3.Connection,
+    solver: CaptchaSolver | None,
+    llm_router: LLMRouter,
+    pool: Any | None,
+    runner: ApplyRunner,
+    dashboard: LiveDashboard | None,
+    dry_run: bool,
+    backend: str,
+) -> bool:
+    """Run + mark a single job. Catches EVERYTHING — never raises.
+
+    Returns ``True`` when the job reached a terminal result (success, parked,
+    skipped, or a genuine fault), and ``False`` for an environment-level infra
+    failure (the browser/driver won't launch) — in which case the job's lock
+    is released (so it stays eligible, NOT marked an error) and the caller
+    backs off instead of marking every job failed.
+
+    The agent itself already returns a terminal ``(code, reason)`` for benign
+    outcomes (login wall, captcha, location, question). This wrapper exists to
+    convert the *rare* uncaught exception in the runner into a clean, bounded
+    error code so the worker keeps moving instead of crashing.
+    """
+    try:
+        bundle_dir = bundle_dir_for(int(job["id"]))
+    except Exception:
+        log.exception("worker %d: cannot build bundle dir for %s", worker_id, job.get("url"))
+        with _suppress():
+            _safe_mark(job["url"], "FAILED", "page_error", db_conn)
+        return True
+
+    start = time.monotonic()
+    driver: Any = None
+    code = "FAILED"
+    reason: str | None = "page_error"
+    cost = 0.0
+    solved = False
+
+    if dashboard:
+        with _suppress():
+            dashboard.start_job(worker_id, job)
+    try:
+        if pool is not None:
+            try:
+                driver = pool.acquire(worker_id)
+            except Exception as e:
+                # Environment-level infra failure (browser/driver won't
+                # launch). This is NOT a posting problem and NOT the user's
+                # fault — do NOT mark the job as an error (that would paint
+                # every job "failed" on a broken box). Release the lock so the
+                # job stays eligible and signal the worker to back off.
+                log.exception("worker %d: driver acquire failed", worker_id)
+                with _suppress():
+                    release_lock(job["url"], db_conn, agent_id=agent_id)
+                if dashboard:
+                    with _suppress():
+                        dashboard.finish_job(worker_id, "FAILED", reason=str(e))
+                return False
+        code, reason, cost, solved = runner(
+            job=job,
+            profile=profile,
+            bundle_dir=bundle_dir,
+            driver=driver,
+            solver=solver,
+            router=llm_router,
+            dry_run=dry_run,
+            dashboard=dashboard,
+            worker_id=worker_id,
+        )
+    except Exception:
+        # The runner is expected to handle its own benign outcomes; reaching
+        # here means a genuine, unexpected fault. Mark it a real error (bounded
+        # retry) and keep going — never bubble a traceback out of the worker.
+        log.exception("worker %d crashed on %s", worker_id, job.get("url"))
+        code, reason = "FAILED", "worker_crashed"
+    finally:
+        if pool is not None and driver is not None:
+            with _suppress():
+                pool.release(worker_id, driver)
+
+    duration_ms = int((time.monotonic() - start) * 1000)
+    _safe_mark(
+        job["url"],
+        code,
+        reason,
+        db_conn,
+        duration_ms=duration_ms,
+        cost_usd=cost,
+        captcha_solved=solved,
+        bundle_dir=str(bundle_dir),
+    )
+    if dashboard:
+        with _suppress():
+            dashboard.finish_job(worker_id, code, reason=reason)
+    # Persist final result.json into bundle (best-effort).
+    try:
+        (bundle_dir / "result.json").write_text(
+            _result_json(code, reason, duration_ms, cost, solved, agent_id, backend),
+            encoding="utf-8",
+        )
+    except OSError as e:
+        log.warning("could not write result.json: %s", e)
+    return True
+
+
+def _safe_mark(
+    job_url: str,
+    code: str,
+    reason: str | None,
+    conn: sqlite3.Connection,
+    **kwargs: Any,
+) -> None:
+    """Call :func:`mark_result`, swallowing (and logging) any DB error.
+
+    Persisting the result must never crash the worker. If the write itself
+    fails (e.g. transient lock), we log and move on — the row keeps its
+    ``in_progress`` status and is retried on a later tick.
+    """
+    try:
+        mark_result(job_url, code, reason, conn, **kwargs)
+    except Exception:
+        log.exception("could not persist apply result for %s", job_url)
 
 
 def _result_json(

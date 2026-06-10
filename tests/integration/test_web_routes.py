@@ -348,7 +348,35 @@ def test_controls_pause_then_resume(client: TestClient) -> None:
 def test_controls_tick(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("nexscout.openclaw.tick.run", lambda **kw: {"applied": 0})
     resp = client.post("/controls/tick")
+    # The tick now runs in a background thread and returns immediately (202).
+    assert resp.status_code == 202
+    assert resp.json()["status"] == "started"
+
+
+def test_controls_run_alias(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`/controls/run` is the friendly alias the dashboard button posts to."""
+    monkeypatch.setattr("nexscout.openclaw.tick.run", lambda **kw: {"applied": 0})
+    resp = client.post("/controls/run")
+    assert resp.status_code == 202
+
+
+def test_controls_status(client: TestClient) -> None:
+    """`/controls/status` returns the background-run snapshot for polling."""
+    resp = client.get("/controls/status")
     assert resp.status_code == 200
+    body = resp.json()
+    assert "running" in body
+    assert "message" in body
+    assert "paused" in body
+
+
+def test_controls_status_html_partial(client: TestClient) -> None:
+    """The HTMX-polled status partial renders a `#run-status` fragment."""
+    resp = client.get("/controls/status/html")
+    assert resp.status_code == 200
+    assert 'id="run-status"' in resp.text
+    # It's a fragment, not a full page.
+    assert "<header" not in resp.text
 
 
 # ---------------------------------------------------------------------------
@@ -372,6 +400,26 @@ def test_api_metrics(client: TestClient) -> None:
     resp = client.get("/api/metrics")
     assert resp.status_code == 200
     assert "nexscout_jobs_total" in resp.text
+
+
+def test_top_level_metrics(client: TestClient) -> None:
+    """The Prometheus-conventional top-level `/metrics` is also mounted."""
+    resp = client.get("/metrics")
+    assert resp.status_code == 200
+    assert "nexscout_jobs_total" in resp.text
+
+
+def test_api_charts(client: TestClient) -> None:
+    """`/api/charts` feeds the dashboard graphs (score distribution + pipeline)."""
+    resp = client.get("/api/charts")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "score_distribution" in data
+    assert "labels" in data["score_distribution"]
+    assert "counts" in data["score_distribution"]
+    assert "pipeline" in data
+    assert data["pipeline"]["labels"] == ["Discovered", "Scored", "Tailored", "Applied"]
+    assert "has_data" in data
 
 
 def test_api_applications(client: TestClient) -> None:

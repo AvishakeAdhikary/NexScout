@@ -45,6 +45,9 @@ def test_provider_parsing() -> None:
     assert _parse_provider("gemini-2.0-flash")[0] == "gemini"
     assert _parse_provider("ollama:llama3.1:70b") == ("ollama", "llama3.1:70b")
     assert _parse_provider("gpt-4o")[0] == "openai"
+    # OpenAI-compatible schemes (model ids may themselves contain "/").
+    assert _parse_provider("openai_compat:vendor/model-x") == ("openai_compat", "vendor/model-x")
+    assert _parse_provider("nim:meta/llama-3.1-70b-instruct") == ("nim", "meta/llama-3.1-70b-instruct")
 
 
 def test_router_uses_judge_for_judge_task(example_profile: Profile, monkeypatch: pytest.MonkeyPatch) -> None:
