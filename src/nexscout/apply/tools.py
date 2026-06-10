@@ -30,6 +30,9 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
+#: Loose email validator for the send_email recipient guardrail.
+_EMAIL_RE = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
+
 
 # ---------------------------------------------------------------------------
 # Tool result
@@ -365,6 +368,15 @@ def send_email(
     attachments = list(args.get("attachments") or [])
     if not to or not subject:
         return ToolResult(ok=False, error="missing to/subject")
+    # Guardrail: weak local models hallucinate placeholder recipients such as
+    # "[Hiring Manager Email - assumed from context]". Refuse anything that is
+    # not a real-looking address so the agent finds the actual Apply form (or
+    # parks the job) instead of "sending" into the void.
+    if not _EMAIL_RE.fullmatch(to):
+        return ToolResult(
+            ok=False,
+            error=f"invalid recipient {to!r} — only email a real address that is visibly shown on the page",
+        )
 
     # Validate attachment files up front — fail fast.
     for path in attachments:

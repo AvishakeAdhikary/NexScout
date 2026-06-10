@@ -33,11 +33,10 @@ class MockProvider:
 
 
 @pytest.fixture
-def example_profile(tmp_path: Path) -> Iterator[Profile]:
-    src = Path(__file__).resolve().parents[2] / "examples" / "profile.example.yaml"
-    dest = tmp_path / "profile.yaml"
-    dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
-    yield Profile.from_path(dest)
+def example_profile() -> Iterator[Profile]:
+    # The 3-file split example; from_path auto-merges sibling settings/credentials.
+    src = Path(__file__).resolve().parents[2] / "examples" / "split" / "profile.yaml"
+    yield Profile.from_path(src)
 
 
 def test_provider_parsing() -> None:

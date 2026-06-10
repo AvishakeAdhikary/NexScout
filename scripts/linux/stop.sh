@@ -2,9 +2,12 @@
 #
 # stop.sh — stop NexScout, either the local processes (direct / uv) or Docker.
 #
-# Default: kills the background web UI (via .nexscout-web.pid) plus lingering
-# `nexscout` processes. With --docker: `docker compose down` (add --volumes to
-# also drop named volumes; the SQLite DB lives on the host mount and survives).
+# Default (host run methods): kills the background web UI (via .nexscout-web.pid)
+# plus lingering `nexscout` processes — including the `nexscout autopilot`
+# resilient loop. With --docker: `docker compose --profile openclaw
+# --profile local-llm down`, stopping all four services (nexscout autopilot,
+# nexscout-web, openclaw gateway, ollama). Add --volumes to also drop named
+# volumes; the SQLite DB lives on the host mount and survives regardless.
 #
 # Usage:
 #   ./stop.sh              # stop local direct/uv processes
@@ -34,11 +37,14 @@ done
 if [[ "$DOCKER" == "1" ]]; then
     # --- Docker teardown --------------------------------------------------- #
     COMPOSE="$REPO/docker-compose.yml"
-    down_args=(-f "$COMPOSE" --profile openclaw down)
+    # Include both optional profiles so `down` tears down every service any
+    # start method may have created (openclaw gateway + ollama), not just the
+    # always-on nexscout / nexscout-web pair.
+    down_args=(-f "$COMPOSE" --profile openclaw --profile local-llm down)
     [[ "$VOLUMES" == "1" ]] && down_args+=(-v)
     echo "[docker] docker compose ${down_args[*]} ..."
     docker compose "${down_args[@]}"
-    echo "[docker] Stack stopped."
+    echo "[docker] Stack stopped (nexscout autopilot, nexscout-web, openclaw, ollama)."
     exit 0
 fi
 
@@ -57,7 +63,8 @@ else
     echo "[stop] No .nexscout-web.pid found."
 fi
 
-# Best-effort: kill lingering nexscout processes (e.g. `nexscout run`).
+# Best-effort: kill lingering nexscout processes (e.g. the `nexscout autopilot`
+# loop, or `nexscout run`).
 if command -v pkill >/dev/null 2>&1; then
     if pkill -f '\bnexscout\b' 2>/dev/null; then
         echo "[stop] Killed lingering nexscout processes."

@@ -334,7 +334,7 @@ NexScout/
 │   └── wizard.py                 # interactive init
 │
 ├── tests/{unit,integration,e2e}/
-├── examples/profile.example.yaml
+├── examples/split/{profile,settings,credentials}.yaml
 └── docs/{architecture,openclaw,latex-templates,developer-guide}.md
 ```
 
@@ -2133,7 +2133,7 @@ Each milestone is independently demonstrable. The agent picks up at the lowest-n
 
 ### M11 — Hardening (Day 27–28)
 - [ ] Ruff/mypy clean; pytest coverage targets met.
-- [ ] CHANGELOG, README, `examples/profile.example.yaml`.
+- [ ] CHANGELOG, README, `examples/split/*.yaml`.
 - [ ] Tag `v0.1.0`.
 
 ---

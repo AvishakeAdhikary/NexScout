@@ -3,9 +3,11 @@
 # start-docker.sh — start the full NexScout + OpenClaw stack via Docker Compose.
 #
 # No docker.exe PATH quirk on Linux; HOME is already set. Brings up
-# `docker compose --profile openclaw up -d` (nexscout + the openclaw gateway
-# on :18789), starts the web UI inside the container on :8765, waits for
-# health, and opens BOTH dashboards.
+# `docker compose --profile openclaw up -d`, which starts FOUR things: the
+# `nexscout` container (the crash-resilient `autopilot` loop), `nexscout-web`
+# (the web UI on :8765, its own service — no exec step), and the `openclaw`
+# gateway (Control UI on :18789). Waits for health, then opens BOTH dashboards
+# (the OpenClaw one tokenized via dashboard-link.sh).
 #
 # Usage: ./start-docker.sh [--setup]
 #   --setup   force the interactive config generator to run first.
@@ -44,26 +46,27 @@ invoke_config_generator "$REPO"
 check_lmstudio
 echo "[lmstudio] Inside Docker, NexScout reaches LM Studio at http://host.docker.internal:1234/v1."
 
-# --- 3. Bring up the stack (nexscout + openclaw gateway) ------------------- #
+# --- 3. Bring up the full stack -------------------------------------------- #
+# `up -d` with the openclaw profile starts FOUR things:
+#   nexscout      — the crash-resilient `autopilot` loop (compose command)
+#   nexscout-web  — the web UI on :8765 (its own service; no exec needed)
+#   openclaw      — the gateway Control UI on :18789
+#   (ollama is only added by the separate local-llm profile)
 echo "[docker] docker compose --profile openclaw up -d ..."
 docker compose -f "$COMPOSE" --profile openclaw up -d
 
-# --- 4. Start the web UI inside the nexscout container --------------------- #
-# The compose `command` is `run` (one-shot pipeline); start the web server
-# explicitly, bound to 0.0.0.0 so the host port mapping works.
-echo "[web] docker compose exec -d nexscout nexscout web --host 0.0.0.0 --port 8765 ..."
-if ! docker compose -f "$COMPOSE" exec -d nexscout nexscout web --host 0.0.0.0 --port 8765; then
-    echo "[web] WARNING: could not start the web UI yet; container may still be initializing. Retrying in 5s." >&2
-    sleep 5
-    docker compose -f "$COMPOSE" exec -d nexscout nexscout web --host 0.0.0.0 --port 8765 || true
-fi
-
-# --- 5. Wait for health + open dashboards ---------------------------------- #
+# --- 4. Wait for health + open dashboards ---------------------------------- #
+# nexscout-web serves :8765 directly; just wait for it.
 wait_web_healthy 120 || echo "[web] Opening dashboards anyway."
-open_dashboards
+open_dashboards   # resolves the tokenized OpenClaw link via dashboard-link.sh
 
 echo
 echo "Stack is up via Docker Compose (profile: openclaw)."
+echo "  Autopilot is now RUNNING in the 'nexscout' container: it loops the full"
+echo "  pipeline (discover->enrich->score->tailor->render->apply->questions)"
+echo "  autonomously and keeps applying. restart:unless-stopped + SQLite state"
+echo "  mean it auto-resumes after any container crash, reboot, or model unload."
 echo "  See running containers : docker compose ps"
-echo "  Tail logs              : docker compose logs -f"
+echo "  Tail autopilot logs    : docker compose logs -f nexscout"
+echo "  Re-print dashboard link: ./scripts/linux/dashboard-link.sh"
 echo "  Stop everything        : ./scripts/linux/stop.sh --docker"

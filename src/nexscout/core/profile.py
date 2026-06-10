@@ -218,6 +218,15 @@ class ApplyConfig(BaseModel):
         default_factory=lambda: ["greenhouse", "lever", "ashby", "workday", "taleo", "icims", "smartrecruiters"]
     )
     always_cover_letter: bool = False
+    #: Apply ReAct backend: ``native`` (built-in LLM loop), ``claude_code``
+    #: (delegate to the Claude Code CLI — far stronger at form-filling; requires
+    #: the ``claude`` CLI + Anthropic auth), or ``openai_assistant``.
+    backend: str = "native"
+    #: Per-turn output token cap for the native apply agent. 8192 gives
+    #: reasoning models room to think AND emit a complete tool_call.
+    agent_max_tokens: int = 8192
+    #: Seconds to sleep between autopilot passes (``nexscout autopilot``).
+    autopilot_interval_s: int = 120
 
 
 class CaptchaConfig(BaseModel):

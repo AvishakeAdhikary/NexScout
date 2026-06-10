@@ -4,8 +4,10 @@
 #
 # Ensures `uv` is installed (installs via the official installer if missing),
 # runs `uv sync`, optionally (re)generates config, runs doctor, starts the web
-# UI on :8765 in the background, waits for health, opens BOTH dashboards, then
-# runs `uv run nexscout run`.
+# UI on :8765 in the background, waits for health, opens the NexScout dashboard,
+# then runs the crash-resilient `uv run nexscout autopilot` loop in the
+# foreground (Ctrl+C to stop). The OpenClaw gateway is Docker-only — use
+# start-docker.sh for the OpenClaw Control UI on :18789.
 #
 # Usage: ./start-uv.sh [--setup]
 #   --setup   force the interactive config generator to run first.
@@ -62,14 +64,18 @@ uv run nexscout web --host 0.0.0.0 --port 8765 &
 WEB_PID=$!
 echo "$WEB_PID" > "$REPO/.nexscout-web.pid"
 
-wait_web_healthy 90 || echo "[web] Opening dashboards anyway (they may not respond yet)."
-open_dashboards
+wait_web_healthy 90 || echo "[web] Opening the dashboard anyway (it may not respond yet)."
+open_web_dashboard
 
-# --- 5. Pipeline ----------------------------------------------------------- #
-echo "[run] uv run nexscout run ..."
-echo "      (to submit applications afterwards: uv run nexscout apply --workers 2)"
-uv run nexscout run
+# --- 5. Autopilot (resilient loop, foreground) ----------------------------- #
+echo "[autopilot] Starting the resilient loop: uv run nexscout autopilot"
+echo "            It loops discover->enrich->score->tailor->render->apply->questions"
+echo "            forever, surviving per-pass errors. Ctrl+C to stop."
+echo "            (one-shot single pass instead: uv run nexscout run)"
+echo "            Web UI PID $WEB_PID keeps running in the background."
+echo "            Stop everything with: ./scripts/linux/stop.sh"
+uv run nexscout autopilot
 
 echo
-echo "NexScout is up. Web UI PID $WEB_PID is still running in the background."
+echo "Autopilot exited. Web UI PID $WEB_PID may still be running in the background."
 echo "Stop everything with: ./scripts/linux/stop.sh"

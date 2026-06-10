@@ -45,11 +45,11 @@ See `docs/architecture.md` for the high-level pipeline map. Key directories:
 - `src/nexscout/` — the package itself.
 - `tests/unit/` — fast, hermetic unit tests. Run with `pytest -q`.
 - `tests/integration/` — slower tests that touch real subprocesses / DB.
-- `examples/profile.example.yaml` — monolithic reference; copy to
-  `~/.nexscout/profile.yaml`. (Also loaded as a test fixture — keep it a valid
-  single-file profile.)
 - `examples/split/{profile,settings,credentials}.yaml` — three-file split
-  reference; `cp examples/split/*.yaml ~/.nexscout/`.
+  reference; `cp examples/split/*.yaml ~/.nexscout/`. (Also loaded as a test
+  fixture via `Profile.from_path(examples/split/profile.yaml)`, which
+  deep-merges the sibling `settings.yaml`/`credentials.yaml` — keep the set
+  valid and consistent.)
 - `scripts/` — cross-platform launchers + interactive config generator
   (see `scripts/README.md`).
 - `docs/` — this directory.

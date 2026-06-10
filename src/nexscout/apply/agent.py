@@ -49,11 +49,58 @@ log = logging.getLogger(__name__)
 #: Hard ceiling on tool calls per job (safety cap §13.2).
 MAX_ITERATIONS = 50
 
+#: Output token cap per apply turn. Generous so reasoning models (e.g. LM Studio
+#: gemma/qwen "thinking" variants) have room to reason AND still emit a complete
+#: tool_call — the old 2048 truncated mid-reasoning and produced empty/garbage
+#: turns, which made the agent flail. Pair with a 128k context window in the
+#: model server (LM Studio: set the loaded model's context length to 131072).
+APPLY_MAX_TOKENS = 8192
+
+#: Per-message content cap (chars) — keeps huge ``read_page`` / page_source dumps
+#: from blowing past the model's context window over a long ReAct session.
+_MAX_MSG_CHARS = 12000
+
+#: Sliding window: always keep the first 3 messages (system + guardrail +
+#: kickoff) and the most recent ``_KEEP_LAST`` turns.
+_KEEP_LAST = 24
+
+#: Additive anti-hallucination guardrail, injected as a SECOND system message.
+#: The verbatim §13.4 :data:`apply.prompt.SYSTEM_PROMPT_TEMPLATE` is unchanged;
+#: this only constrains *how* a weak local model behaves turn-to-turn.
+GUARDRAIL_PROMPT = (
+    "OPERATING RULES — follow exactly; they override any ambiguity above:\n"
+    "1. Output EXACTLY ONE compact JSON tool_call per turn and nothing else, e.g. "
+    '{"tool":"read_page","args":{}}. No prose, no markdown fences, no comments, no reasoning text.\n'
+    "2. NEVER invent or guess data. Do not fabricate email addresses, recipient names, URLs, or "
+    "answers. Use only values from the APPLICANT PROFILE or text actually visible on the current page.\n"
+    "3. send_email is ONLY for postings that show a REAL recipient email address on the page. Never "
+    "email a placeholder like '[Hiring Manager Email]'. If there is no visible Apply form and no real "
+    "email address, emit RESULT:FAILED:not_a_job_application.\n"
+    "4. After navigate, call read_page before clicking or filling anything.\n"
+    "5. Do not repeat an action that produced no visible change. If a login/SSO/CAPTCHA wall blocks you "
+    "or you are stuck, emit the matching RESULT line immediately "
+    "(login_issue / sso_required / CAPTCHA_MANUAL / stuck) and STOP. Never loop."
+)
+
 #: ``RESULT:`` line extractor — case-sensitive per §13.3 template.
 _RESULT_RE = re.compile(r"RESULT:[A-Z_:][\w_:\- ]*", re.MULTILINE)
 
 #: ``tool_call`` extractor — JSON object containing a ``tool`` key.
 _TOOL_RE = re.compile(r"\{[^{}]*\"tool\"\s*:\s*\"[^\"]+\"[^{}]*\}", re.DOTALL)
+
+
+def _truncate(s: str, limit: int = _MAX_MSG_CHARS) -> str:
+    """Cap a single message's content so page dumps don't blow the context."""
+    if len(s) <= limit:
+        return s
+    return s[: limit - 400] + f"\n…[truncated {len(s) - limit} chars]…\n" + s[-300:]
+
+
+def _trim_messages(messages: list[Message]) -> list[Message]:
+    """Sliding window: keep system+guardrail+kickoff and the most recent turns."""
+    if len(messages) <= 3 + _KEEP_LAST:
+        return messages
+    return messages[:3] + messages[-_KEEP_LAST:]
 
 
 def _read_text(path: str | Path | None) -> str:
@@ -128,6 +175,7 @@ def run_agent(
     dry_run: bool = False,
     dashboard: LiveDashboard | None = None,
     worker_id: int = 0,
+    max_tokens: int = APPLY_MAX_TOKENS,
     max_iterations: int = MAX_ITERATIONS,
 ) -> tuple[str, str | None, float, bool]:
     """Drive the apply loop. Returns ``(code, reason, cost_usd, captcha_solved)``.
@@ -154,6 +202,7 @@ def run_agent(
     user_kickoff = _kickoff_message(job)
     messages: list[Message] = [
         Message(role="system", content=system_prompt),
+        Message(role="system", content=GUARDRAIL_PROMPT),
         Message(role="user", content=user_kickoff),
     ]
 
@@ -165,7 +214,7 @@ def run_agent(
 
     for step in range(1, max_iterations + 1):
         try:
-            reply = router.ask("apply", messages, temperature=0.1, max_tokens=2048)
+            reply = router.ask("apply", _trim_messages(messages), temperature=0.1, max_tokens=max_tokens)
         except Exception as e:
             append_transcript(bundle_dir, {"step": step, "kind": "llm_error", "error": str(e)})
             code, reason = "FAILED", "page_error"
@@ -224,13 +273,21 @@ def run_agent(
             reason = outcome.data.get("reason")
             break
 
-        # Feed the tool output back to the LLM.
+        # Feed the (length-capped) tool output back to the LLM so a huge
+        # page_source dump can't blow past the model's context window.
         messages.append(
             Message(
                 role="user",
-                content=json.dumps(
-                    {"tool": name, "ok": outcome.ok, "data": outcome.to_jsonable().get("data"), "error": outcome.error},
-                    default=str,
+                content=_truncate(
+                    json.dumps(
+                        {
+                            "tool": name,
+                            "ok": outcome.ok,
+                            "data": outcome.to_jsonable().get("data"),
+                            "error": outcome.error,
+                        },
+                        default=str,
+                    )
                 ),
             )
         )

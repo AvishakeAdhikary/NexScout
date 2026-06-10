@@ -15,6 +15,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.11", "3.12", "3.13"]
+    env:
+      # Pin ruff so lint/format rules are stable across all matrix legs, and so
+      # `uvx ruff@<ver>` provisions an identical tool regardless of the project
+      # dependency resolution on each interpreter.
+      RUFF_VERSION: "0.6.9"
     steps:
       - uses: actions/checkout@v4
 
@@ -29,19 +34,30 @@ jobs:
       - name: Install project + dev deps
         # python-jobspy is intentionally NOT installed in CI — tests don't need
         # it, and it's the over-pinned package handled separately at runtime.
+        #
+        # The lint steps below do NOT depend on this sync succeeding: ruff is run
+        # via `uvx` (provisioned independently). This sync only needs to succeed
+        # for mypy/pytest, which import the project. If it fails on a newer
+        # interpreter due to a heavy/over-pinned transitive dep, the lint gate
+        # still runs and the failure surfaces in the dependent steps instead of
+        # silently dropping the `dev` extra (which previously broke `uv run ruff`
+        # with "failed to spawn: ruff").
         run: uv sync --python ${{ matrix.python-version }} --extra dev --extra web
 
       - name: Ruff lint
-        run: uv run ruff check src/ tests/
+        # `uvx` provisions the pinned ruff in an isolated, ephemeral env that is
+        # independent of `uv sync`, so lint never fails to spawn even if the
+        # project's deps don't resolve on this interpreter.
+        run: uvx ruff@${{ env.RUFF_VERSION }} check src/ tests/
 
       - name: Ruff format check
-        run: uv run ruff format --check src/ tests/
+        run: uvx ruff@${{ env.RUFF_VERSION }} format --check src/ tests/
 
       - name: Mypy
         # Type errors are tolerated (advisory) and must not fail the matrix on
         # any OS, so use continue-on-error rather than a shell-specific `|| true`.
         continue-on-error: true
-        run: uv run mypy src/nexscout/core src/nexscout/llm src/nexscout/scoring
+        run: uv run --python ${{ matrix.python-version }} mypy src/nexscout/core src/nexscout/llm src/nexscout/scoring
 
       - name: Pytest
-        run: uv run pytest -q
+        run: uv run --python ${{ matrix.python-version }} pytest -q

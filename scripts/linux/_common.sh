@@ -74,9 +74,24 @@ wait_web_healthy() {
 }
 
 # Open BOTH dashboards. Never hard-fails: prints the URL if xdg-open is absent.
+# The OpenClaw URL is resolved (tokenized) via dashboard-link.sh's
+# openclaw_dashboard_link when that helper is available; otherwise we fall back
+# to the bare $OPENCLAW_URL.
 open_dashboards() {
+    local claw_url="$OPENCLAW_URL" claw_token="" claw_note=""
+    local helper
+    helper="$(dirname "${BASH_SOURCE[0]}")/dashboard-link.sh"
+    if [[ -f "$helper" ]]; then
+        # shellcheck source=dashboard-link.sh
+        source "$helper"
+        openclaw_dashboard_link || true
+        [[ -n "${OPENCLAW_LINK:-}" ]] && claw_url="$OPENCLAW_LINK"
+        claw_token="${OPENCLAW_TOKEN:-}"
+        claw_note="${OPENCLAW_NOTE:-}"
+    fi
+
     local url
-    for url in "$NEX_WEB_URL" "$OPENCLAW_URL"; do
+    for url in "$NEX_WEB_URL" "$claw_url"; do
         if command -v xdg-open >/dev/null 2>&1; then
             if xdg-open "$url" >/dev/null 2>&1; then
                 echo "[open] Opened $url"
@@ -90,7 +105,21 @@ open_dashboards() {
     echo
     echo "Dashboards:"
     echo "  NexScout web UI:    $NEX_WEB_URL"
-    echo "  OpenClaw dashboard: $OPENCLAW_URL"
+    echo "  OpenClaw dashboard: $claw_url"
+    [[ -n "$claw_token" ]] && echo "  OpenClaw token    : $claw_token"
+    [[ -n "$claw_note"  ]] && echo "  (OpenClaw: $claw_note)"
+}
+
+# Open ONLY the NexScout web UI (host run methods — OpenClaw is Docker-only).
+# Never hard-fails: prints the URL if xdg-open is absent.
+open_web_dashboard() {
+    if command -v xdg-open >/dev/null 2>&1 && xdg-open "$NEX_WEB_URL" >/dev/null 2>&1; then
+        echo "[open] Opened $NEX_WEB_URL"
+    else
+        echo "[open] Could not auto-open a browser. Visit: $NEX_WEB_URL"
+    fi
+    echo "[open] NexScout web UI: $NEX_WEB_URL"
+    echo "[open] OpenClaw gateway dashboard (:18789) is Docker-only — use start-docker.sh for it."
 }
 
 # Fail with a helpful message if a required command is missing.

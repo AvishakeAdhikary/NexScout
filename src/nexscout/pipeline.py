@@ -103,6 +103,19 @@ def run_discover_stage(
         except Exception as e:
             log.warning("websearch engine failed: %s", e)
 
+        # Browser-driven WebSearch (Google + DuckDuckGo) — the no-API-key path
+        # that keeps working when JobSpy is IP-rate-limited. Needs an undetected
+        # Chrome; on hosts without one it returns (0, 0) gracefully.
+        try:
+            from .browser.driver import UndetectedFactory
+
+            new, _dup = _websearch_mod.run_browser_websearch(
+                profile, conn=conn, router=router, limit=limit_per_engine, browser_factory=UndetectedFactory()
+            )
+            total += int(new)
+        except Exception as e:
+            log.warning("browser websearch engine failed: %s", e)
+
     # SmartExtract needs a router + a browser; only run if both are available
     # and the caller passed a router. Otherwise log and continue.
     if router is not None:

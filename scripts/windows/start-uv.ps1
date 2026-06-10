@@ -5,8 +5,10 @@
 .DESCRIPTION
     Ensures `uv` is installed (installs it via the official installer if not),
     runs `uv sync`, optionally (re)generates config, runs doctor, starts the
-    web UI on :8765 in the background, waits for health, opens BOTH dashboards,
-    then runs `uv run nexscout run`.
+    web UI on :8765 in the background, waits for health, opens the NexScout
+    dashboard, then runs the crash-resilient `uv run nexscout autopilot` loop
+    in the foreground (Ctrl+C to stop). The OpenClaw gateway is Docker-only —
+    use start-docker.ps1 for the OpenClaw Control UI on :18789.
 .PARAMETER Setup
     Force the interactive config generator to run first (even if config exists).
 #>
@@ -62,15 +64,27 @@ $webProc = Start-Process -FilePath 'uv' `
 Set-Content -Path (Join-Path $repo '.nexscout-web.pid') -Value $webProc.Id
 
 if (-not (Wait-WebHealthy -TimeoutSeconds 90)) {
-    Write-Warning "[web] Health check failed; opening dashboards anyway (they may not respond yet)."
+    Write-Warning "[web] Health check failed; opening the dashboard anyway (it may not respond yet)."
 }
-Open-Dashboards
+# Host scripts only run the NexScout web UI; the OpenClaw gateway is Docker-only.
+try {
+    Start-Process $script:NexWebUrl -ErrorAction Stop
+    Write-Host "[open] Opened $script:NexWebUrl" -ForegroundColor Green
+} catch {
+    Write-Host "[open] Could not auto-open a browser. Visit: $script:NexWebUrl" -ForegroundColor Yellow
+}
+Write-Host "[open] NexScout web UI: $script:NexWebUrl" -ForegroundColor Cyan
+Write-Host "[open] OpenClaw gateway dashboard (:18789) is Docker-only — use start-docker.ps1 for it." -ForegroundColor DarkGray
 
-# --- 5. Pipeline ------------------------------------------------------------ #
-Write-Host "[run] uv run nexscout run ..." -ForegroundColor Cyan
-Write-Host "      (to submit applications afterwards: uv run nexscout apply --workers 2)" -ForegroundColor DarkGray
-uv run nexscout run
+# --- 5. Autopilot (resilient loop, foreground) ----------------------------- #
+Write-Host "[autopilot] Starting the resilient loop: uv run nexscout autopilot" -ForegroundColor Cyan
+Write-Host "            It loops discover->enrich->score->tailor->render->apply->questions" -ForegroundColor DarkGray
+Write-Host "            forever, surviving per-pass errors. Ctrl+C to stop." -ForegroundColor DarkGray
+Write-Host "            (one-shot single pass instead: uv run nexscout run)" -ForegroundColor DarkGray
+Write-Host "            Web UI PID $($webProc.Id) keeps running in the background." -ForegroundColor DarkGray
+Write-Host "            Stop everything with: powershell -File scripts\windows\stop.ps1" -ForegroundColor DarkGray
+uv run nexscout autopilot
 
 Write-Host ""
-Write-Host "NexScout is up. Web UI PID $($webProc.Id) is still running in the background." -ForegroundColor Green
+Write-Host "Autopilot exited. Web UI PID $($webProc.Id) may still be running in the background." -ForegroundColor Green
 Write-Host "Stop everything with: powershell -File scripts\windows\stop.ps1" -ForegroundColor Green

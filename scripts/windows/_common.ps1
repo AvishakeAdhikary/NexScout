@@ -102,12 +102,29 @@ function Wait-WebHealthy {
 function Open-Dashboards {
     <#
         Open BOTH dashboards in the default browser. Never hard-fails: if a
-        browser can't be launched we just print the URL.
+        browser can't be launched we just print the URL. The OpenClaw URL is
+        resolved (tokenized) via dashboard-link.ps1's Get-OpenClawDashboardLink
+        when that helper is available; otherwise we fall back to the bare URL.
     #>
     param(
         [string] $WebUrl = $script:NexWebUrl,
-        [string] $ClawUrl = $script:OpenClawUrl
+        [string] $ClawUrl  # default resolved below
     )
+
+    # Resolve the tokenized OpenClaw link if the helper is present.
+    $clawHelper = Join-Path (Split-Path -Parent $PSCommandPath) 'dashboard-link.ps1'
+    $clawInfo = $null
+    if (-not $ClawUrl -and (Test-Path $clawHelper)) {
+        try {
+            . $clawHelper                      # dot-source for the functions
+            $clawInfo = Get-OpenClawDashboardLink
+            $ClawUrl  = $clawInfo.Url
+        } catch {
+            # Fall through to the bare URL below.
+        }
+    }
+    if (-not $ClawUrl) { $ClawUrl = $script:OpenClawUrl }
+
     foreach ($url in $WebUrl, $ClawUrl) {
         try {
             Start-Process $url -ErrorAction Stop
@@ -120,6 +137,12 @@ function Open-Dashboards {
     Write-Host "Dashboards:" -ForegroundColor Cyan
     Write-Host "  NexScout web UI:    $WebUrl"
     Write-Host "  OpenClaw dashboard: $ClawUrl"
+    if ($clawInfo -and $clawInfo.Token) {
+        Write-Host "  OpenClaw token    : $($clawInfo.Token)" -ForegroundColor DarkGray
+    }
+    if ($clawInfo -and $clawInfo.Note) {
+        Write-Host "  (OpenClaw: $($clawInfo.Note))" -ForegroundColor DarkGray
+    }
 }
 
 function Assert-Command {

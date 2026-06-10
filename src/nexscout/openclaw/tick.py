@@ -319,6 +319,7 @@ def _stage_apply(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
         return 0
 
     try:
+        from ..agent_backends import get_backend
         from ..apply.orchestrator import worker_loop
         from ..browser.pool import BrowserPool
         from ..captcha.capsolver import CapSolverSolver
@@ -327,6 +328,14 @@ def _stage_apply(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
     except ImportError as e:
         log.info("tick: apply backend unavailable (%s); skipping", e)
         return 0
+
+    # Resolve the configured apply backend (native | claude_code | openai_assistant).
+    backend_name = profile.apply.backend or "native"
+    try:
+        runner = get_backend(backend_name)
+    except Exception as e:
+        log.warning("tick: apply backend %r unavailable (%s); falling back to native", backend_name, e)
+        backend_name, runner = "native", None
 
     solver = CapSolverSolver(api_key=profile.captcha.api_key) if profile.captcha.api_key else None
 
@@ -356,6 +365,8 @@ def _stage_apply(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
             solver,
             router,
             pool=pool,
+            runner=runner,
+            backend=backend_name,
             limit=limit,
             dry_run=profile.apply.dry_run,
             continuous=False,

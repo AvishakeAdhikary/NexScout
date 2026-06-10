@@ -224,18 +224,77 @@ def run(
         list[str] | None,
         typer.Argument(help="Stages: discover|enrich|score|tailor|cover|render|all"),
     ] = None,
+    stream: Annotated[bool, typer.Option("--stream", help="Run stages concurrently (streaming pipeline).")] = False,
+    validation: Annotated[str, typer.Option("--validation", help="strict|normal|lenient")] = "normal",
+    limit: Annotated[int, typer.Option("--limit", help="Per-stage limit (0 = unlimited).")] = 0,
+    min_score: Annotated[int, typer.Option("--min-score", help="Override profile.search.min_score (>=0).")] = -1,
 ) -> None:
-    """Run pipeline stages. Refuses to start without a CAPTCHA api_key."""
+    """Run pipeline stages: discover -> enrich -> score -> tailor -> cover -> render.
+
+    Delegates to :func:`nexscout.pipeline.run`, building the LLM router and (when
+    enrichment is requested) an undetected-Chrome browser factory. The shared
+    SQLite connection is autocommit, so each stage's writes persist immediately.
+    ``apply`` is a separate, browser-heavy command.
+    """
+    from .core.database import init_db
+    from .llm.budget import BudgetLedger
+    from .llm.router import LLMRouter
+    from .pipeline import run as run_pipeline
+
     c = console()
     try:
         profile = _load_profile_with_captcha_warning("run")
     except ConfigError as e:
         c.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1) from None
-    requested = list(stages or ())
-    c.print(f"[green]NexScout run starting[/green] (profile={profile.me.legal!r}, stages={requested or 'all'})")
-    # Full pipeline orchestration lives in pipeline.py and lands fully in M11
-    # (streaming). For M6 we only enforce the gate and exit cleanly.
+
+    if validation not in {"strict", "normal", "lenient"}:
+        c.print(f"[red]unknown validation mode: {validation} (use strict|normal|lenient)[/red]")
+        raise typer.Exit(code=1)
+    if min_score >= 0:
+        profile.search.min_score = min_score
+
+    requested = list(stages or ()) or ["all"]
+    c.print(
+        f"[green]NexScout run starting[/green] "
+        f"(profile={profile.me.legal!r}, stages={requested}, stream={stream}, validation={validation})"
+    )
+
+    router = LLMRouter(
+        profile,
+        budget=BudgetLedger(
+            monthly_usd=profile.llm.budgets.monthly_usd,
+            daily_calls=profile.llm.budgets.daily_calls,
+        ),
+    )
+    conn = init_db()
+
+    browser_factory = None
+    if "all" in requested or "enrich" in requested:
+        try:
+            from .browser.driver import UndetectedFactory
+
+            browser_factory = UndetectedFactory()
+        except Exception as e:  # pragma: no cover - browser optional on some hosts
+            c.print(f"[yellow]enrich browser unavailable ({e}); enrich stage will be limited[/yellow]")
+
+    try:
+        counts = run_pipeline(
+            requested,
+            profile=profile,
+            conn=conn,
+            router=router,
+            mode=validation,  # type: ignore[arg-type]
+            limit=limit,
+            stream=stream,
+            browser_factory=browser_factory,
+        )
+    except Exception as e:
+        c.print(f"[red]pipeline failed: {e}[/red]")
+        raise typer.Exit(code=1) from e
+
+    summary = " ".join(f"{k}={v}" for k, v in counts.items()) or "(no stages run)"
+    c.print(f"[green]NexScout run done.[/green] {summary}")
 
 
 @app.command(context_settings={"allow_extra_args": False})
@@ -330,6 +389,56 @@ def tick(
     profile = Profile.from_path(profile_p)
     summary = tick_run(profile=profile, wall_clock_s=wall_clock_s)
     typer.echo(f"summary: {summary}")
+
+
+@app.command()
+def autopilot(
+    interval: Annotated[int, typer.Option("--interval", help="Seconds between passes (0 = use profile).")] = 0,
+    wall_clock_s: Annotated[float, typer.Option("--wall-clock", help="Soft per-pass time cap (s).")] = 300.0,
+) -> None:
+    """Run the full pipeline forever — one bounded heartbeat pass per loop.
+
+    This is the resilient, crash-tolerant 'leave it running' autonomous mode
+    (the Docker ``command``). Each pass runs discover -> enrich -> score ->
+    tailor -> render -> apply -> surface-questions and persists to SQLite, so a
+    crash / machine reboot / model unload / per-job failure just resumes on the
+    next pass where it left off. Every pass is wrapped so one error never stops
+    the loop. The profile is reloaded each pass so config edits apply live.
+    """
+    import time as _time
+
+    from .openclaw.tick import run as tick_run
+
+    c = console()
+    profile_p = profile_path()
+    if not profile_p.exists():
+        c.print(f"[red]profile not found at {profile_p}[/red]")
+        raise typer.Exit(code=1)
+    try:
+        profile = _load_profile_with_captcha_warning("autopilot")
+    except ConfigError as e:
+        c.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1) from None
+
+    sleep_s = interval if interval > 0 else max(10, profile.apply.autopilot_interval_s)
+    c.print(
+        f"[green]NexScout autopilot started[/green] "
+        f"(profile={profile.me.legal!r}, interval={sleep_s}s, backend={profile.apply.backend})"
+    )
+    while True:
+        try:
+            profile = Profile.from_path(profile_p)  # pick up live config edits
+            tick_run(profile=profile, wall_clock_s=wall_clock_s)
+        except KeyboardInterrupt:
+            c.print("[yellow]autopilot stopped by user[/yellow]")
+            break
+        except Exception as e:  # never let one pass kill the loop
+            c.print(f"[red]autopilot pass failed (continuing): {e}[/red]")
+        try:
+            _time.sleep(sleep_s)
+        except KeyboardInterrupt:
+            c.print("[yellow]autopilot stopped by user[/yellow]")
+            break
 
 
 question_app = typer.Typer(help="Manage pending clarifying questions.")

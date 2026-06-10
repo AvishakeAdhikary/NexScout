@@ -249,8 +249,7 @@ within a soft 5-minute budget:
 8. Print a one-line summary to stdout for OpenClaw to log.
 
 Limits are configurable per `profile.openclaw.tick_budget` — see
-`examples/profile.example.yaml` (monolithic) or
-`examples/split/settings.yaml` (three-file split layout).
+`examples/split/settings.yaml`.
 
 ## Config file layout
 

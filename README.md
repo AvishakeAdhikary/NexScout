@@ -304,10 +304,9 @@ directory (priority `profile.yaml` < `settings.yaml` < `credentials.yaml`):
 | `credentials.yaml` | secrets — `captcha.api_key`, `smtp.password`, `gmail_password`, account `password`, `proxy` |
 
 A commented reference set lives in `examples/split/` — copy it with
-`cp examples/split/*.yaml ~/.nexscout/`. `nexscout init` walks you through a
-monolithic profile; the schema is documented in §3 of `plan.md` and a
-single-file reference copy lives at `examples/profile.example.yaml`. Key
-blocks:
+`cp examples/split/*.yaml ~/.nexscout/`. `nexscout init` walks you through the
+schema and writes the same three-file split; the schema is documented in §3 of
+`plan.md`. Key blocks:
 
 - `me`, `auth`, `pay`, `avail`, `exp` — applicant facts (preserved
   verbatim through tailoring).

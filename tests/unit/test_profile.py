@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import pytest
@@ -9,16 +10,19 @@ import pytest
 from nexscout.core.errors import ConfigError
 from nexscout.core.profile import Profile
 
+#: The 3-file split example (profile.yaml + sibling settings.yaml + credentials.yaml).
+EXAMPLE_SPLIT_DIR = Path(__file__).resolve().parents[2] / "examples" / "split"
 
-def _example_yaml() -> str:
-    example = Path(__file__).resolve().parents[2] / "examples" / "profile.example.yaml"
-    return example.read_text(encoding="utf-8")
+
+def _copy_split(dest_dir: Path) -> Path:
+    """Copy all three split example files into ``dest_dir``; return the profile path."""
+    for name in ("profile.yaml", "settings.yaml", "credentials.yaml"):
+        shutil.copy(EXAMPLE_SPLIT_DIR / name, dest_dir / name)
+    return dest_dir / "profile.yaml"
 
 
 def test_load_example_profile_roundtrip(tmp_path: Path) -> None:
-    p = tmp_path / "profile.yaml"
-    p.write_text(_example_yaml(), encoding="utf-8")
-    profile = Profile.from_path(p)
+    profile = Profile.from_path(EXAMPLE_SPLIT_DIR / "profile.yaml")
     assert profile.me.legal == "Jane Q. Public"
     assert "Python" in profile.skills.lang
     assert profile.search.min_score == 7
@@ -31,8 +35,7 @@ def test_load_example_profile_roundtrip(tmp_path: Path) -> None:
 
 def test_env_resolution(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CAPTCHA_API_KEY", "TEST123")
-    p = tmp_path / "profile.yaml"
-    p.write_text(_example_yaml(), encoding="utf-8")
+    p = _copy_split(tmp_path)
     profile = Profile.from_path(p)
     assert profile.captcha.api_key == "TEST123"
 
@@ -50,8 +53,7 @@ def test_invalid_yaml_raises(tmp_path: Path) -> None:
 
 
 def test_save_roundtrip(tmp_path: Path) -> None:
-    p = tmp_path / "profile.yaml"
-    p.write_text(_example_yaml(), encoding="utf-8")
+    p = _copy_split(tmp_path)
     profile = Profile.from_path(p)
     out = tmp_path / "out.yaml"
     profile.save(out)

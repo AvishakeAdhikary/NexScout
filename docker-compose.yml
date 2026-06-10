@@ -1,44 +1,54 @@
+# Shared base for the NexScout containers (DRY via YAML anchor merge).
+x-nexscout-base: &nexscout-base
+  build: .
+  image: nexscout:latest
+  restart: unless-stopped
+  shm_size: 2g
+  extra_hosts:
+    # Lets the container resolve host.docker.internal on Linux Docker hosts the
+    # same way Docker Desktop already does on Windows/Mac. Used for the default
+    # LMSTUDIO_URL=http://host.docker.internal:1234/v1.
+    - "host.docker.internal:host-gateway"
+  volumes:
+    - "${HOME}/.nexscout:/sandbox/nexscout"
+    # Shared OpenClaw state: NexScout drops pending questions / CAPTCHA alerts
+    # into ~/.openclaw/inbox (Path.home()=/root in this image); the OpenClaw
+    # gateway mounts the same host dir and its heartbeat relays them.
+    - "${HOME}/.openclaw:/root/.openclaw"
+  environment:
+    - NEXSCOUT_DIR=/sandbox/nexscout
+    - LMSTUDIO_URL=${LMSTUDIO_URL:-http://host.docker.internal:1234/v1}
+    # CAPTCHA is OPTIONAL — when unset, jobs requiring a CAPTCHA solve are parked
+    # with apply_status='captcha_manual' and surfaced as a pending question.
+    - CAPTCHA_API_KEY
+    - GEMINI_API_KEY
+    - OPENAI_API_KEY
+    - ANTHROPIC_API_KEY
+    - TAVILY_API_KEY
+    - BRAVE_API_KEY
+    - GOOGLE_CSE_KEY
+    - GOOGLE_CSE_CX
+    # OpenClaw channel (Telegram). Values are read from the host environment;
+    # no secrets are baked into this file.
+    - TELEGRAM_BOT_TOKEN
+    - TELEGRAM_CHAT_ID
+    # Discord notification channel. Same host-env passthrough as Telegram.
+    - DISCORD_WEBHOOK_URL
+    - DISCORD_BOT_TOKEN
+    - DISCORD_CHANNEL_ID
+  networks:
+    - nexscout-net
+
 services:
+  # Autonomous, crash-resilient pipeline loop:
+  #   discover -> enrich -> score -> tailor -> cover -> render -> apply -> questions
+  # one bounded pass per loop. restart:unless-stopped + SQLite state means it
+  # resumes after any container crash, machine reboot, model unload, or per-job
+  # failure — picking up exactly where it left off.
   nexscout:
+    <<: *nexscout-base
     container_name: nexscout
-    build: .
-    image: nexscout:latest
-    restart: unless-stopped
-    shm_size: 2g
-    ports:
-      - "8765:8765"
-    extra_hosts:
-      # Lets the container resolve host.docker.internal on Linux Docker hosts
-      # the same way Docker Desktop already does on Windows/Mac. Used for the
-      # default LMSTUDIO_URL=http://host.docker.internal:1234/v1.
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - "${HOME}/.nexscout:/sandbox/nexscout"
-    environment:
-      - NEXSCOUT_DIR=/sandbox/nexscout
-      - LMSTUDIO_URL=${LMSTUDIO_URL:-http://host.docker.internal:1234/v1}
-      # CAPTCHA is OPTIONAL — when unset, jobs requiring a CAPTCHA solve are
-      # parked with apply_status='captcha_manual' and surfaced as a pending
-      # question for manual review.
-      - CAPTCHA_API_KEY
-      - GEMINI_API_KEY
-      - OPENAI_API_KEY
-      - ANTHROPIC_API_KEY
-      - TAVILY_API_KEY
-      - BRAVE_API_KEY
-      - GOOGLE_CSE_KEY
-      - GOOGLE_CSE_CX
-      # OpenClaw channel (Telegram). Values are read from the host environment;
-      # no secrets are baked into this file.
-      - TELEGRAM_BOT_TOKEN
-      - TELEGRAM_CHAT_ID
-      # Discord notification channel. Same host-env passthrough as Telegram;
-      # no secrets are baked into this file.
-      - DISCORD_WEBHOOK_URL
-      - DISCORD_BOT_TOKEN
-      - DISCORD_CHANNEL_ID
-    networks:
-      - nexscout-net
+    command: ["autopilot"]
     depends_on:
       ollama:
         condition: service_started
@@ -49,7 +59,14 @@ services:
       timeout: 30s
       retries: 3
       start_period: 30s
-    command: ["run"]
+
+  # Web dashboard (FastAPI + HTMX) over the same SQLite state, on :8765.
+  nexscout-web:
+    <<: *nexscout-base
+    container_name: nexscout-web
+    command: ["web", "--host", "0.0.0.0", "--port", "8765"]
+    ports:
+      - "8765:8765"
 
   ollama:
     container_name: nexscout-ollama
@@ -61,42 +78,47 @@ services:
       - nexscout-net
     profiles: ["local-llm"]
 
+  # Real OpenClaw gateway (see docs.openclaw.ai/install/docker). Owns the
+  # Telegram/Discord channels + runs the LM Studio-backed agent loop and serves
+  # the Control UI / dashboard on :18789. Onboard once before first `up`:
+  #   docker compose run --rm --no-deps --entrypoint node openclaw \
+  #     dist/index.js onboard --non-interactive --accept-risk \
+  #     --auth-choice lmstudio \
+  #     --custom-base-url http://host.docker.internal:1234/v1 \
+  #     --custom-model-id google/gemma-4-e2b
   openclaw:
     container_name: nexscout-openclaw
-    image: openclaw/openclaw:latest
+    image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:latest}
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    # Start the OpenClaw gateway on its Control UI / dashboard port. The image's
-    # ENTRYPOINT is the `openclaw` binary, so this is just its subcommand+args.
-    # Dashboard is then reachable at http://localhost:18789/ — an
-    # OPENCLAW_GATEWAY_TOKEN may be needed for auth (read from host env below).
-    command: ["gateway", "--port", "18789"]
+    command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
     ports:
-      - "18789:18789"
+      - "18789:18789"   # Control UI / dashboard + /healthz + /readyz
+      - "18790:18790"   # client WebSocket bridge
     volumes:
-      - "${HOME}/.openclaw:/root/.openclaw"
-      - "${HOME}/.nexscout:/sandbox/nexscout"
+      - "${HOME}/.openclaw:/home/node/.openclaw"
+      - "${HOME}/.openclaw/workspace:/home/node/.openclaw/workspace"
+      - "${HOME}/.openclaw-auth-profile-secrets:/home/node/.config/openclaw"
     environment:
-      - OPENCLAW_MEMORY_DIR=/root/.openclaw/memory
-      - OPENCLAW_SKILLS_DIR=/sandbox/nexscout/skills
-      - OPENCLAW_HEARTBEAT_INTERVAL_MINUTES=30
-      - OPENCLAW_DEFAULT_CHANNEL=${OPENCLAW_DEFAULT_CHANNEL:-telegram}
-      - OPENCLAW_LOG_LEVEL=${OPENCLAW_LOG_LEVEL:-info}
-      # Gateway dashboard auth token (read from host environment).
-      - OPENCLAW_GATEWAY_TOKEN
+      # Telegram channel default account; token read from host env. The OpenClaw
+      # agent converses here. (NexScout also pushes alerts to the same bot.)
       - TELEGRAM_BOT_TOKEN
-      - TELEGRAM_CHAT_ID
-      # Discord notification channel. Same host-env passthrough as Telegram;
-      # no secrets are baked into this file.
-      - DISCORD_WEBHOOK_URL
+      # Optional Discord bot channel.
       - DISCORD_BOT_TOKEN
       - DISCORD_CHANNEL_ID
+      # Optional dashboard/API auth token.
+      - OPENCLAW_GATEWAY_TOKEN
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "node -e \"fetch('http://127.0.0.1:18789/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - nexscout-net
-    depends_on:
-      nexscout:
-        condition: service_healthy
     profiles: ["openclaw"]
 
 networks:

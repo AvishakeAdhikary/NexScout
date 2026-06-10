@@ -129,6 +129,8 @@ def run_wizard(out_path: Path | None = None, force: bool = False) -> Path:
         captcha=CaptchaConfig(provider=captcha_provider, api_key="${env:CAPTCHA_API_KEY}"),
     )
 
-    profile.save(target)
-    c.print(f"[green]Wrote profile to {target}[/green]")
-    return target
+    paths = profile.save_split(target.parent)
+    c.print(f"[green]Wrote profile to {paths['profile']}[/green]")
+    c.print(f"[dim]  + settings    -> {paths['settings']}[/dim]")
+    c.print(f"[dim]  + credentials -> {paths['credentials']}[/dim]")
+    return paths["profile"]

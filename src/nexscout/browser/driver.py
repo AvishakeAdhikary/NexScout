@@ -135,6 +135,25 @@ class WorkerBrowser:
         with suppress(Exception):
             self.driver.quit()
 
+    def __getattr__(self, name: str) -> Any:
+        """Delegate any unwrapped attribute to the underlying Selenium driver.
+
+        The apply tools (``navigate``/``click``/``fill_form``/``switch_tab``/...)
+        call raw driver members directly on the browser handed to them —
+        ``get``, ``find_element(s)``, ``window_handles``, ``switch_to``,
+        ``save_screenshot``, ``current_window_handle``, etc. Rather than
+        re-declare each, proxy unknown attributes to ``self.driver`` so the
+        wrapper behaves like the driver it wraps. Guarded against recursion
+        before ``driver`` is set (dataclass ``__init__``) and against dunder
+        probes (copy/pickle/etc.).
+        """
+        if name.startswith("__") or name == "driver":
+            raise AttributeError(name)
+        driver = self.__dict__.get("driver")
+        if driver is None:
+            raise AttributeError(name)
+        return getattr(driver, name)
+
 
 __all__ = [
     "BrowserFactory",
