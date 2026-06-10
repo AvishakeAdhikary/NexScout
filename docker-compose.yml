@@ -48,7 +48,9 @@ services:
   nexscout:
     <<: *nexscout-base
     container_name: nexscout
-    command: ["autopilot"]
+    # Generous per-pass wall-clock so the slow 2B model can finish tailor+apply
+    # each loop; per-stage work is bounded by openclaw.tick_budget in settings.yaml.
+    command: ["autopilot", "--wall-clock", "1800"]
     depends_on:
       ollama:
         condition: service_started
