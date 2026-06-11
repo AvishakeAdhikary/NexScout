@@ -27,6 +27,7 @@ files are missing or when ``-Setup`` / ``--setup`` is passed.
 
 from __future__ import annotations
 
+import contextlib
 import os
 import sys
 from pathlib import Path
@@ -121,9 +122,7 @@ def _prune(mapping: dict[str, Any]) -> dict[str, Any]:
             pruned = _prune(val)
             if pruned:
                 out[key] = pruned
-        elif val is SKIP or val is None:
-            continue
-        elif isinstance(val, (list, str)) and len(val) == 0:
+        elif val is SKIP or val is None or (isinstance(val, list | str) and len(val) == 0):
             continue
         else:
             out[key] = val
@@ -459,10 +458,8 @@ def main(argv: list[str]) -> int:
         if _write_yaml(target / name, data):
             written.append(name)
 
-    try:
+    with contextlib.suppress(EOFError, KeyboardInterrupt):
         _print_channel_env_help(channel)
-    except (EOFError, KeyboardInterrupt):
-        pass
 
     # --- Summary --------------------------------------------------------- #
     print("\n" + "=" * 60)

@@ -9,9 +9,11 @@
 jobs across the web, scores them against your profile, tailors a
 LaTeX-rendered resume (and cover letter when required) per application, and
 submits the application through an undetected Chrome driver. It runs
-continuously inside an OpenClaw / NemoClaw heartbeat or as a plain
-standalone loop, exposes a FastAPI + HTMX web UI for you, and stores every
-application's full bundle (PDFs, screenshots, transcript) on disk.
+continuously as a crash-resilient `nexscout autopilot` loop or inside an
+OpenClaw / NemoClaw heartbeat, exposes a modern Tailwind web UI for you, and
+stores every application's full bundle (PDFs, screenshots, transcript) on
+disk. It also runs as an **MCP server** so an OpenClaw agent can drive the
+whole pipeline autonomously through tool calls.
 
 CAPTCHA solving is **optional**: when a key is configured (CapSolver /
 2Captcha / Anti-Captcha) it solves them inline; otherwise jobs that hit a
@@ -33,6 +35,7 @@ scream if anyone drifts.
 - [Install](#install)
 - [Run modes](#run-modes)
 - [Quickstart](#quickstart)
+- [MCP server](#mcp-server)
 - [Architecture](#architecture)
 - [Screenshots](#screenshots)
 - [Configuration](#configuration)
@@ -60,10 +63,12 @@ uv sync --extra dev --extra web            # then prefix commands below with `uv
 nexscout init                              # YAML wizard fills ~/.nexscout/profile.yaml
 export CAPTCHA_API_KEY=...                 # optional; manual review path is automatic when unset
 nexscout doctor                            # tiered T1/T2/T3 report; --quiet exits 0 when T2+ healthy
-nexscout run                               # discover -> enrich -> score -> tailor -> cover -> render
+nexscout run                               # one real pipeline pass: discover -> enrich -> score -> tailor -> cover -> render
 nexscout web &                             # http://127.0.0.1:8765
 nexscout apply --workers 2                 # submit applications
-# Optional always-on mode:
+# Always-on autonomous mode (the Docker command):
+nexscout autopilot --wall-clock 1800       # crash-resilient continuous loop
+# Optional OpenClaw heartbeat mode:
 openclaw skill install ./src/nexscout/openclaw/manifest.toml
 ```
 
@@ -71,8 +76,9 @@ openclaw skill install ./src/nexscout/openclaw/manifest.toml
 
 - `ruff check src/` returns 0.
 - `ruff format --check src/ tests/` returns 0.
-- `pytest -q` is green (835 tests).
+- `pytest -q` is green (1014 tests).
 - `pytest --cov=src/nexscout` reports ≥80% per module and 93% project-wide.
+- `nexscout run` executes the real pipeline and reports per-stage counts.
 - The web UI lists applied jobs with their tailored PDFs.
 
 ---
@@ -117,9 +123,11 @@ powershell -File scripts\windows\start-uv.ps1 -Setup       # or start-direct.ps1
 ```
 
 `scripts/common/generate_config.py` is the standalone interactive generator
-(Enter accepts a default, `-` skips a key). See **[scripts/README.md](scripts/README.md)**
-for the full launcher / generator reference. The manual paths below remain
-fully supported.
+(Enter accepts a default, `-` skips a key). Two maintenance helpers also live
+under `scripts/`: a database-wipe script (reset the SQLite state for a fresh
+run) and an AI-model-switch script (repoint `llm.*` at a different provider).
+See **[scripts/README.md](scripts/README.md)** for the full launcher /
+generator / helper reference. The manual paths below remain fully supported.
 
 ### From source
 
@@ -171,30 +179,51 @@ docker run --rm -v "$HOME/.nexscout:/sandbox/nexscout" nexscout doctor
 docker compose --profile local-llm --profile openclaw up -d
 ```
 
-Compose ships three named containers:
+Compose ships five named containers:
 
-| Service    | Container             | Purpose                                  |
-|------------|-----------------------|------------------------------------------|
-| `nexscout` | `nexscout`            | the agent itself (runs `nexscout run`)   |
-| `ollama`   | `nexscout-ollama`     | local LLM endpoint (opt-in profile)      |
-| `openclaw` | `nexscout-openclaw`   | OpenClaw gateway — runs `openclaw gateway --port 18789`, serves its Control UI on :18789 (opt-in profile) |
+| Service        | Container           | Purpose                                                                |
+|----------------|---------------------|------------------------------------------------------------------------|
+| `nexscout`     | `nexscout`          | the autopilot loop — runs `nexscout autopilot --wall-clock 1800`       |
+| `nexscout-web` | `nexscout-web`      | web dashboard (Tailwind + Chart.js) on :8765                           |
+| `nexscout-mcp` | `nexscout-mcp`      | MCP server (streamable-http) on :8770 — `nexscout-mcp` console script  |
+| `ollama`       | `nexscout-ollama`   | local LLM endpoint (opt-in `local-llm` profile)                        |
+| `openclaw`     | `nexscout-openclaw` | OpenClaw gateway — runs `openclaw gateway --port 18789`, serves its Control UI on :18789 (opt-in `openclaw` profile) |
 
-The `nexscout` service has a healthcheck that runs `nexscout doctor --quiet`
-every 60s; the OpenClaw container `depends_on: service_healthy` so a cold
-`docker compose up` waits for NexScout's prereqs before starting the
-gateway. Two dashboards are then reachable: NexScout's own web UI at
+`docker compose --profile openclaw up -d` starts `nexscout` +
+`nexscout-web` + `nexscout-mcp` + `openclaw` together. The `nexscout` service
+has a healthcheck that runs `nexscout doctor --quiet` every 60s; the OpenClaw
+container `depends_on` the MCP server so the agent's MCP endpoint resolves on
+first boot. Two dashboards are then reachable: NexScout's own web UI at
 <http://localhost:8765> (which also surfaces an OpenClaw status panel), and
 OpenClaw's native gateway Control UI at <http://localhost:18789>
 (`openclaw dashboard` opens it with an auth link; an `OPENCLAW_GATEWAY_TOKEN`
-may be required). See `docs/openclaw.md` for the full mount + env contract.
+may be required). See `docs/openclaw.md` for the full mount + env contract and
+the MCP registration steps.
 
 ---
 
 ## Run modes
 
-NexScout supports two run modes; both share the same code paths.
+NexScout supports three run modes; all share the same code paths.
 
-### Hosted-agent mode (recommended)
+### Autopilot mode (standalone, recommended)
+
+A crash-resilient `nexscout autopilot` loop owns its own scheduler — no
+external runtime required. Each pass runs one bounded heartbeat unit of work
+(discover → enrich → score → tailor → render → apply → surface-questions),
+persists to SQLite, then sleeps `--interval` seconds (default from
+`profile.apply.autopilot_interval_s`). Every pass is wrapped so one error
+never stops the loop, and the profile is reloaded each pass so config edits
+apply live. A crash, machine reboot, or model unload just resumes on the next
+pass where it left off. This is the Docker `command`.
+
+```bash
+nexscout autopilot --wall-clock 1800   # soft per-pass time cap (s); --interval N to set the sleep
+nexscout apply --workers 2 &           # optional dedicated apply workers
+nexscout web &                         # http://127.0.0.1:8765
+```
+
+### Hosted-agent mode (OpenClaw)
 
 A `nexscout` skill is registered with OpenClaw via
 `src/nexscout/openclaw/manifest.toml`. OpenClaw's **heartbeat daemon** wakes
@@ -203,22 +232,22 @@ which performs one bounded unit of work (enrich up to N jobs, score up to
 M, apply up to K) and returns. The OpenClaw channel layer (Slack /
 Discord / WhatsApp / Telegram / iMessage / Signal / Matrix / WebChat)
 relays clarifying questions to you and accepts answers via
-`/nexscout answer "<q>" "<a>"`.
+`/nexscout answer "<q>" "<a>"`. OpenClaw can also drive NexScout
+autonomously through the [MCP server](#mcp-server).
 
 ```bash
 openclaw skill install ./src/nexscout/openclaw/manifest.toml
 # done — your heartbeat will start calling nexscout tick.
 ```
 
-### Standalone mode
+### One-shot mode
 
-A plain `nexscout run --continuous` loop. No heartbeat; the process owns
-its own scheduler. Same code paths underneath.
+A single `nexscout run` pass executes the real pipeline once and exits —
+ideal for cron, CI smoke tests, or stepping through stages by hand.
 
 ```bash
-nexscout run --continuous
-nexscout apply --workers 2 &
-nexscout web &
+nexscout run                 # one full pass
+nexscout run discover score  # selected stages only
 ```
 
 ---
@@ -234,8 +263,9 @@ export GEMINI_API_KEY=...    # or OPENAI_API_KEY / ANTHROPIC_API_KEY
 export CAPTCHA_API_KEY=...   # optional — manual review when unset
 export TAVILY_API_KEY=...    # optional — browser fallback when none of Tavily/Brave/CSE are set
 
-nexscout run                 # one tick: discover -> enrich -> score -> tailor -> cover -> render
+nexscout run                 # one real pass: discover -> enrich -> score -> tailor -> cover -> render
 nexscout apply --workers 2   # submit the highest-scoring tailored jobs
+nexscout autopilot           # crash-resilient continuous loop (the always-on mode)
 nexscout web                 # http://127.0.0.1:8765 — review + answer questions
 ```
 
@@ -244,23 +274,55 @@ Common flags:
 ```
 nexscout run [stages...]      stages: discover enrich score tailor cover render all
    --stream                   streaming pipeline (concurrent stages)
-   --workers N
    --validation strict|normal|lenient
-   --dry-run
+   --limit N                  per-stage limit (0 = unlimited)
    --min-score N
+nexscout autopilot                 continuous loop (one bounded pass per iteration)
+   --interval N                    seconds between passes (0 = use profile.apply.autopilot_interval_s)
+   --wall-clock S                  soft per-pass time cap (s)
 nexscout apply
    --workers N --headless --dry-run --continuous
    --url URL                  one-shot
    --backend native|claude_code|openai_assistant
    --limit N
 nexscout dashboard --export FILE   self-contained HTML report
-nexscout chrome reset --worker N
-nexscout budget show|reset
+nexscout status [--format text|json|openclaw]
+nexscout controls pause|resume
 nexscout question list|answer
-nexscout profile validate|migrate
 nexscout doctor [--quiet]          tiered readiness; --quiet exits 0 when T2+ healthy
-nexscout tick                      one bounded unit of work (OpenClaw heartbeat entry)
+nexscout tick [--wall-clock S]     one bounded unit of work (OpenClaw heartbeat entry)
 ```
+
+---
+
+## MCP server
+
+NexScout runs as a **Model Context Protocol (MCP) server** so an OpenClaw
+agent can drive the whole pipeline autonomously through tool calls — fetching
+your résumé, discovering / scoring / tailoring / applying, and answering
+NexScout's own clarifying questions. The server is built on **FastMCP**, serves
+the **Streamable HTTP** transport on `0.0.0.0:8770` at `/mcp`, and ships as the
+`nexscout-mcp` console script (also `python -m nexscout.mcp.server`). The
+implementation lives in `src/nexscout/mcp/server.py`.
+
+It exposes ten tools — `get_profile`, `get_resume_text`, `pipeline_status`,
+`discover_jobs`, `score_jobs`, `tailor_jobs`, `apply_to_job`,
+`list_open_questions`, `answer_question`, and `run_once` — each of which reads
+the same `~/.nexscout` state as the rest of the stack, so the agent's actions
+show up immediately in the web UI and pipeline. Every tool is defensive: it
+catches its own exceptions and returns a structured error envelope rather than
+crashing the long-lived server.
+
+The OpenClaw gateway connects over the shared Docker network and the entry is
+written under the `mcp.servers.nexscout` map in `~/.openclaw/openclaw.json`:
+
+```bash
+openclaw mcp add nexscout --transport streamable-http --url http://nexscout-mcp:8770/mcp
+openclaw mcp probe   # should report: nexscout: 10 tools
+```
+
+See **[docs/openclaw.md](docs/openclaw.md)** for the full tool table,
+registration, and the `mcp.servers` config contract.
 
 ---
 
@@ -269,6 +331,18 @@ nexscout tick                      one bounded unit of work (OpenClaw heartbeat 
 Six pipeline stages: **discover -> enrich -> score -> tailor -> cover ->
 render -> apply.** Each stage reads pending rows from a single shared
 SQLite `jobs` table, writes its results back, and hands off to the next.
+
+Apply outcomes fall into four plain-language buckets:
+
+- **Applied** — submitted successfully.
+- **Waiting on you** (parked) — a CAPTCHA or a clarifying question needs
+  your input. Surfaced as a pending question, not a failure.
+- **Not a match** (skipped) — login / SSO wall, out-of-location, or expired
+  posting. A normal, benign outcome.
+- **Problems** (errors, rare) — genuine faults (page crash, infra failure).
+  Only these count toward `apply_errors`; `get_stats` also returns `parked`
+  and `skipped` so the dashboard's "Problems" card stays near zero on a
+  healthy run.
 
 See `docs/architecture.md` for a Mermaid pipeline diagram and module map.
 See `docs/openclaw.md` for the heartbeat / memory contract.
@@ -282,6 +356,12 @@ See `docs/latex-templates.md` for the Jinja2 / LaTeX template contract.
 > web UI and live dashboard are best demoed against your own data.
 > Replace this section with `docs/screenshots/*.png` once you have real
 > applied jobs to show.
+
+The web UI is a modern, responsive **Tailwind** dashboard with interactive
+**Chart.js** graphs and plain-language controls (the old "tick" is now
+**"Check for new jobs now"** / **"Auto-run"**). Long actions are
+non-blocking: the backend returns `202 Accepted` and the UI polls
+`/controls/status` until the pass finishes.
 
 - `docs/screenshots/dashboard.png` — counters + score chart + recent events.
 - `docs/screenshots/job-detail.png` — inline PDF + transcript + screenshots.
@@ -316,8 +396,26 @@ schema and writes the same three-file split; the schema is documented in §3 of
 - `search` — queries, locations, JobSpy / WebSearch board choices, score
   threshold.
 - `llm` — primary, fallback, judge models + monthly USD + daily-call
-  budgets.
-- `apply` — workers, headless, dry-run, retry budget, permitted ATSs.
+  budgets. Each model is a `scheme:model` spec. Supported schemes:
+  `gemini`, `openai`, `anthropic`, `lmstudio`, `ollama`, plus
+  `openai_compat:<model>` (**any** OpenAI-compatible endpoint — OpenRouter,
+  Together, Groq, vLLM, self-hosted, …) and `nim:<model>` (NVIDIA NIM).
+  OpenAI-compatible schemes read `base_url` / `api_key` / `model` /
+  `extra_headers` from `llm.providers.<scheme>`, with env fallbacks
+  (`NVIDIA_API_KEY`; `OPENAI_COMPAT_API_KEY` / `OPENAI_COMPAT_BASE_URL`;
+  `NIM_BASE_URL`). OpenRouter example:
+
+  ```yaml
+  llm:
+    primary: "openai_compat:google/gemma-4-26b-a4b-it:free"
+    providers:
+      openai_compat:
+        base_url: "https://openrouter.ai/api/v1"
+        api_key: "${env:OPENROUTER_API_KEY}"
+  ```
+- `apply` — workers, headless, dry-run, retry budget, permitted ATSs,
+  ReAct `backend` (`native` / `claude_code` / `openai_assistant`), and
+  `autopilot_interval_s` (default sleep between `nexscout autopilot` passes).
 - `captcha` — **optional** provider + `${env:CAPTCHA_API_KEY}`
   substitution. When unset, CAPTCHA-walled jobs are parked for manual
   review (visible at `/questions` in the web UI).
@@ -358,7 +456,7 @@ the pip path above remains fully supported for local work. Prefix any
 command with `uv run` to use the uv-managed virtualenv.
 
 Coverage targets — every module under `src/nexscout/` reaches **≥80%**;
-total project coverage sits at **93%** as of v0.1.0 (835 tests passing).
+total project coverage sits at **93%** as of v0.1.0 (1014 tests passing).
 The plan.md §23 minimums (`core/ ≥ 90%`, `llm/ ≥ 80%`, `scoring/ ≥ 80%`,
 `captcha/ ≥ 70%`, `apply/orchestrator.py ≥ 80%`) are all exceeded; CI gates
 on the project-wide 80% floor.

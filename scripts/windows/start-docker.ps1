@@ -6,9 +6,10 @@
     Handles the Docker Desktop quirks on Windows:
       * docker.exe is often NOT on PATH — we prepend its install dir.
       * compose mounts use ${HOME} — we set $env:HOME = $env:USERPROFILE.
-    Then: `docker compose --profile openclaw up -d`, which brings up FOUR
-    things: the `nexscout` container (running the crash-resilient `autopilot`
-    loop), `nexscout-web` (the web UI on :8765), and the `openclaw` gateway
+    Then: `docker compose --profile openclaw up -d`, which brings up the full
+    stack: the `nexscout` container (running the crash-resilient `autopilot`
+    loop), `nexscout-web` (the web UI on :8765), `nexscout-mcp` (the agent-tool
+    MCP server on :8770, which the gateway calls), and the `openclaw` gateway
     (Control UI on :18789). The web server runs as its own service now, so
     there is no separate exec step. Waits for health, then opens BOTH
     dashboards (the OpenClaw one tokenized via dashboard-link.ps1).
@@ -62,9 +63,10 @@ Test-LMStudio
 Write-Host "[lmstudio] Inside Docker, NexScout reaches LM Studio at http://host.docker.internal:1234/v1." -ForegroundColor DarkGray
 
 # --- 3. Bring up the full stack -------------------------------------------- #
-# `up -d` with the openclaw profile starts FOUR things:
+# `up -d` with the openclaw profile starts:
 #   nexscout      — the crash-resilient `autopilot` loop (compose command)
 #   nexscout-web  — the web UI on :8765 (its own service; no exec needed)
+#   nexscout-mcp  — the MCP server on :8770 the gateway calls (openclaw depends on it)
 #   openclaw      — the gateway Control UI on :18789
 #   (ollama is only added by the separate local-llm profile)
 Write-Host "[docker] docker compose --profile openclaw up -d ..." -ForegroundColor Cyan

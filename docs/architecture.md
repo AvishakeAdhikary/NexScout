@@ -1,8 +1,11 @@
 # NexScout Architecture
 
-NexScout is a six-stage pipeline that runs on a heartbeat. Each stage writes
-its results to a single shared SQLite `jobs` table; the next stage picks up
-rows whose pending predicate is true.
+NexScout is a six-stage pipeline. Each stage writes its results to a single
+shared SQLite `jobs` table; the next stage picks up rows whose pending
+predicate is true. The pipeline is driven by the standalone
+`nexscout autopilot` loop, an OpenClaw heartbeat (`nexscout tick`), a one-shot
+`nexscout run`, or — autonomously — by an OpenClaw agent through the
+[MCP server layer](#integration-layer-mcp--openclaw).
 
 ## Pipeline overview
 
@@ -90,7 +93,8 @@ flowchart LR
 | `nexscout.apply`            | ReAct agent, orchestrator, tools, dashboard                   |
 | `nexscout.agent_backends`   | Pluggable backends (native, claude_code, openai_assistant)    |
 | `nexscout.openclaw`         | Skill manifest, memory r/w, `tick` entrypoint, notification channels (Telegram / Discord) |
-| `nexscout.web`              | FastAPI + HTMX UI                                             |
+| `nexscout.mcp`              | FastMCP server exposing 10 agent tools over streamable-http (`server.py`) |
+| `nexscout.web`              | FastAPI web UI — Tailwind + Chart.js, non-blocking controls  |
 | `nexscout.pipeline`         | Streaming orchestrator                                        |
 | `nexscout.wizard`           | Interactive `init` wizard                                     |
 
@@ -128,8 +132,23 @@ start; instead it picks a fallback and proceeds.
 | WebSearch    | Tavily / Brave / DDG-HTML / SearXNG / Google CSE | `BrowserSearchProvider` — undetected Chrome scrapes DDG + Google. |
 | CAPTCHA      | CapSolver / 2Captcha / Anti-Captcha  | Mark `apply_status='captcha_manual'`; insert a row into `pending_questions`; the active channel (Telegram / Discord) or the OpenClaw inbox surfaces it to the user. |
 | Email-only postings | `profile.smtp.*` (host/port/user/password) | `apply.email_browser` drives Gmail's compose URL + login form via undetected Chrome. |
-| LLM provider | `profile.llm.primary`                | `profile.llm.fallback` (Ollama by default); budget ledger blocks calls past `monthly_usd` / `daily_calls`. |
+| LLM provider | `profile.llm.primary`                | `profile.llm.fallback` (Ollama by default); budget ledger blocks calls past `monthly_usd` / `daily_calls`. Schemes: `gemini` / `openai` / `anthropic` / `lmstudio` / `ollama` / `openai_compat:<model>` (any OpenAI-compatible endpoint) / `nim:<model>` (NVIDIA NIM). |
 | LaTeX engine | Tectonic                             | `latexmk`, then `pdflatex` (twice for refs).                      |
+
+## Apply-outcome taxonomy
+
+The orchestrator classifies every apply attempt into one of four plain-language
+buckets (see `apply/result_codes.classify_outcome`). `get_stats` returns
+`parked` and `skipped` alongside `applied`; `apply_errors` counts **only**
+genuine faults, so the dashboard's "Problems" card stays near zero on a healthy
+run.
+
+| Bucket            | UI label         | `apply_status` values                              | Meaning                                          |
+|-------------------|------------------|----------------------------------------------------|--------------------------------------------------|
+| Applied           | Applied          | `applied`                                          | Submitted successfully.                          |
+| Waiting on you    | Waiting on you   | `captcha_manual`, `captcha`, `paused_for_question` | CAPTCHA or a clarifying question needs you. Parked, not an error. |
+| Not a match       | Not a match      | `skipped`, `expired`, `login_issue`                | Login / SSO wall, out-of-location, expired. Benign, skipped. |
+| Problems (rare)   | Problems         | `failed`                                           | Genuine fault — page crash, infra failure, no result line. The only bucket counted in `apply_errors`. |
 
 ## Bundle layout
 
@@ -168,21 +187,49 @@ from env at runtime. Both channels share the same retry/backoff (3 attempts,
 (`pending_questions.channel_delivered_at`) semantics; Telegram formats as
 HTML, Discord as markdown.
 
+## Integration layer (MCP + OpenClaw)
+
+NexScout exposes itself to an OpenClaw **agent** as a Model Context Protocol
+server so the agent can drive the pipeline autonomously:
+
+- **MCP server** (`nexscout.mcp.server`, FastMCP). Serves the **streamable-http**
+  transport on `0.0.0.0:8770` at `/mcp`; shipped as the `nexscout-mcp` console
+  script and the `nexscout-mcp` compose service. It exposes ten tools —
+  `get_profile`, `get_resume_text`, `pipeline_status`, `discover_jobs`,
+  `score_jobs`, `tailor_jobs`, `apply_to_job`, `list_open_questions`,
+  `answer_question`, `run_once` — each reading the same `~/.nexscout` state as
+  the rest of the stack. The OpenClaw gateway registers it under
+  `mcp.servers.nexscout` (`openclaw mcp add nexscout --transport streamable-http
+  --url http://nexscout-mcp:8770/mcp`).
+- **OpenClaw skill / heartbeat.** The `manifest.toml` skill + slash commands,
+  with `nexscout tick` called on the heartbeat.
+
+See `docs/openclaw.md` for the full tool table, registration, and the
+heartbeat / memory contract.
+
 ## Two dashboards
 
-- **NexScout web UI** (`nexscout web --host 0.0.0.0 --port 8765`) —
-  FastAPI + HTMX. Its dashboard includes an OpenClaw status panel (last tick,
-  active channel, pending channel deliveries).
+- **NexScout web UI** (`nexscout web --host 0.0.0.0 --port 8765`) — FastAPI,
+  rendered with a modern responsive **Tailwind** layout and interactive
+  **Chart.js** graphs. Controls use plain language ("Check for new jobs now",
+  "Auto-run") and are non-blocking: long actions return `202 Accepted` and the
+  page polls `/controls/status` until the pass completes. The dashboard also
+  includes an OpenClaw status panel (last tick, active channel, pending channel
+  deliveries).
 - **OpenClaw gateway Control UI** (<http://localhost:18789/>) — OpenClaw's own
   native dashboard, served by the `openclaw gateway --port 18789` compose
   service; not a NexScout-built UI. `openclaw dashboard` opens it with an auth
   link.
 
-## Two run modes
+## Run modes
 
+- **Autopilot (standalone).** Crash-resilient `nexscout autopilot` loop — one
+  bounded pass per iteration, persisting to SQLite, wrapped so one error never
+  stops the loop. This is the Docker `command`.
 - **Hosted-agent (OpenClaw).** Heartbeat calls `nexscout tick`, which does the
-  bounded work specified in §18 of the spec and returns.
-- **Standalone.** Plain `nexscout run --continuous` loop. Same code paths
-  underneath.
+  bounded work specified in §18 of the spec and returns. The OpenClaw agent can
+  also drive NexScout autonomously through the MCP server above.
+- **One-shot.** A single `nexscout run` pass executes the real pipeline once
+  and exits. Same code paths underneath.
 
 See `docs/openclaw.md` for the heartbeat / memory contract.

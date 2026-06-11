@@ -11,13 +11,17 @@ dashboards once the stack is healthy.
 scripts/
 ├── README.md                  # this file
 ├── common/
-│   └── generate_config.py     # interactive generator for the 3 YAML config files
+│   ├── generate_config.py     # interactive generator for the 3 YAML config files
+│   ├── clear_db.py            # wipe runtime data (DBs/applications/scratch); keep config
+│   └── set_model.py           # switch the LLM model by rewriting settings/credentials
 ├── windows/                   # PowerShell launchers (Windows host)
 │   ├── _common.ps1            # shared helpers (dot-sourced; not run directly)
 │   ├── dashboard-link.ps1     # print both dashboard URLs; resolve the tokenized OpenClaw link
 │   ├── start-direct.ps1       # run in a local .venv via pip install -e
 │   ├── start-uv.ps1           # run via the `uv` package manager
 │   ├── start-docker.ps1       # run the full stack via Docker Compose
+│   ├── clear-db.ps1           # wrapper for clear_db.py (host, or -Docker to stop+wipe)
+│   ├── set-model.ps1          # wrapper for set_model.py (host, or -Docker to recreate)
 │   └── stop.ps1               # stop local processes, or `-Docker` for compose down
 └── linux/                     # bash launchers (Linux host)
     ├── _common.sh             # shared helpers (sourced; not run directly)
@@ -25,6 +29,8 @@ scripts/
     ├── start-direct.sh        # run in a local .venv via pip install -e
     ├── start-uv.sh            # run via the `uv` package manager
     ├── start-docker.sh        # run the full stack via Docker Compose
+    ├── clear-db.sh            # wrapper for clear_db.py (host, or --docker to stop+wipe)
+    ├── set-model.sh           # wrapper for set_model.py (host, or --docker to recreate)
     └── stop.sh                # stop local processes, or `--docker` for compose down
 ```
 
@@ -160,30 +166,115 @@ Runs `docker compose --profile openclaw up -d`, which brings up the full stack
 in one shot, then waits for `:8765/healthz` and opens both dashboards. There is
 **no separate web-exec step anymore** — the web UI is its own service.
 
-#### The four compose services
+#### The five compose services
 
 | Service        | Container           | Command                              | Ports          | Notes |
 |----------------|---------------------|--------------------------------------|----------------|-------|
 | `nexscout`     | `nexscout`          | `autopilot` (resilient loop)         | —              | `restart: unless-stopped`; auto-resumes after crashes/reboots |
 | `nexscout-web` | `nexscout-web`      | `web --host 0.0.0.0 --port 8765`     | `8765:8765`    | the NexScout dashboard |
-| `openclaw`     | `nexscout-openclaw` | `node dist/index.js gateway … 18789` | `18789, 18790` | profile `openclaw`; serves the tokenized Control UI |
+| `nexscout-mcp` | `nexscout-mcp`      | `nexscout-mcp` (Streamable HTTP)     | `8770:8770`    | the MCP server the OpenClaw gateway calls (`http://nexscout-mcp:8770/mcp`) |
+| `openclaw`     | `nexscout-openclaw` | `node dist/index.js gateway … 18789` | `18789, 18790` | profile `openclaw`; serves the tokenized Control UI; depends on `nexscout-mcp` |
 | `ollama`       | `nexscout-ollama`   | (ollama serve)                       | `11434:11434`  | profile `local-llm`; optional local LLM backend |
 
 So `docker compose --profile openclaw up -d` starts `nexscout` (autopilot) +
-`nexscout-web` + `openclaw`. Because autopilot is the container command and the
-service uses `restart: unless-stopped`, **the stack keeps applying autonomously
-and auto-resumes after any container crash, machine reboot, or model unload.**
+`nexscout-web` + **`nexscout-mcp`** (the agent-tool server) + `openclaw` — the
+`openclaw` service `depends_on` `nexscout-mcp`, so bringing up the gateway pulls
+the MCP server up with it. Because autopilot is the `nexscout` container command
+and the service uses `restart: unless-stopped`, **the stack keeps applying
+autonomously and auto-resumes after any container crash, machine reboot, or
+model unload.**
 
 On **Windows** the Docker launcher handles two Docker Desktop quirks:
 `docker.exe` is usually not on `PATH` (it prepends
 `C:\Program Files\Docker\Docker\resources\bin`), and the compose volume mounts
 use `${HOME}` (it sets `$env:HOME = $env:USERPROFILE`).
 
+## Maintenance helpers
+
+Two small standalone helpers live in `common/` (each with thin per-OS
+wrappers). Both default to the **host** config dir (`$NEXSCOUT_DIR` or
+`~/.nexscout`), which is the *same* directory the containers mount — so there is
+no need to exec inside a container.
+
+### Wipe the runtime data — `clear_db.py` / `clear-db`
+
+Clears the per-run state so you can start fresh, **without** touching your
+config. It deletes (if present): `nexscout.sqlite` (+ `-wal`/`-shm`),
+`budget.sqlite` (+ wal/shm), the `applications/` directory (tailored
+bundles/PDFs/screenshots), `last-tick.json`, `run-status.json`,
+`dashboard.html`, and the `chrome-workers/` + `apply-workers/` browser-profile
+dirs (long-path-safe `rmtree` on Windows). It **never** deletes `profile.yaml`,
+`settings.yaml`, `credentials.yaml`, or the OpenClaw config. It prints exactly
+what it removed and asks for a `y/N` confirmation unless `--yes`/`-y` is given.
+
+```powershell
+powershell -File scripts\windows\clear-db.ps1                 # asks, then wipes ~/.nexscout
+powershell -File scripts\windows\clear-db.ps1 -Yes            # no prompt
+powershell -File scripts\windows\clear-db.ps1 -Docker -Yes    # stop autopilot, wipe, remind to restart
+```
+```bash
+./scripts/linux/clear-db.sh                 # asks, then wipes ~/.nexscout
+./scripts/linux/clear-db.sh --yes           # no prompt
+./scripts/linux/clear-db.sh --docker --yes  # stop autopilot, wipe, remind to restart
+./scripts/linux/clear-db.sh /some/dir -y    # explicit target dir
+```
+
+With `--docker`/`-Docker` the wrapper first stops the `nexscout` autopilot
+service (so nothing writes during the wipe), wipes the **host** dir (mounted
+into the containers), then reminds you to restart with
+`docker compose --profile openclaw up -d`. You can also call the script
+directly: `python scripts/common/clear_db.py [dir] [--yes]`.
+
+### Switch the AI model — `set_model.py` / `set-model`
+
+Rewrites the `llm` block in `settings.yaml`
+(`primary`/`fallback`/`judge` + `llm.providers.<scheme>.{base_url,model}`) and,
+for the OpenAI-compatible schemes, writes the `api_key` into `credentials.yaml`
+under `llm.providers.<scheme>.api_key`. All other YAML keys are preserved. By
+default `primary = fallback = judge` are set to the same spec; pass
+`--judge-model` to give the judge a different model.
+
+Presets (the `--provider` value):
+
+| Preset          | Spec written                       | Endpoint / notes |
+|-----------------|------------------------------------|------------------|
+| `lmstudio`      | `lmstudio:<model>`                 | default model `local-model`; base_url via `LMSTUDIO_URL` env |
+| `openrouter`    | `openai_compat:<model>`            | base_url `https://openrouter.ai/api/v1` |
+| `nim`           | `nim:<model>`                      | base_url `https://integrate.api.nvidia.com/v1` |
+| `openai`        | `openai:<model>`                   | key from `OPENAI_API_KEY` env |
+| `gemini`        | `<model>` (bare, e.g. `gemini-2.0-flash`) | key from `GEMINI_API_KEY` env |
+| `anthropic`     | `anthropic:<model>`                | key from `ANTHROPIC_API_KEY` env |
+| `ollama`        | `ollama:<model>`                   | local Ollama |
+| `openai_compat` | `openai_compat:<model>`            | generic; **requires** `--base-url` |
+
+Model ids may contain `:` (the router splits the scheme on the **first** colon
+only), so `--model google/gemma-4-26b-a4b-it:free` for the `openrouter` preset
+writes `primary: openai_compat:google/gemma-4-26b-a4b-it:free` verbatim.
+
+```powershell
+powershell -File scripts\windows\set-model.ps1 -Provider openrouter `
+    -Model "google/gemma-4-26b-a4b-it:free" -ApiKey "sk-or-..."
+powershell -File scripts\windows\set-model.ps1 -Provider lmstudio -Model local-model
+powershell -File scripts\windows\set-model.ps1 -Provider gemini -Model gemini-2.0-flash -Docker
+```
+```bash
+./scripts/linux/set-model.sh --provider openrouter \
+    --model google/gemma-4-26b-a4b-it:free --api-key sk-or-...
+./scripts/linux/set-model.sh --provider lmstudio --model local-model
+./scripts/linux/set-model.sh --provider gemini --model gemini-2.0-flash --docker
+```
+
+In Docker the autopilot reloads the profile each pass, so the switch applies
+**live** within a pass or two. To make it immediate, pass `--docker`/`-Docker`
+(the wrapper runs `docker compose up -d nexscout nexscout-web nexscout-mcp`) or
+recreate the stack yourself with `docker compose up -d`. Direct invocation:
+`python scripts/common/set_model.py --provider <preset> --model <id> [--api-key …] [--base-url …] [--judge-model …] [--target …]`.
+
 ## Stopping
 
 ```powershell
 powershell -File scripts\windows\stop.ps1            # local direct/uv processes (web + autopilot)
-powershell -File scripts\windows\stop.ps1 -Docker    # docker compose down (all 4 services)
+powershell -File scripts\windows\stop.ps1 -Docker    # docker compose down (all services)
 ```
 ```bash
 ./scripts/linux/stop.sh                # local direct/uv processes (web + autopilot)
@@ -193,9 +284,9 @@ powershell -File scripts\windows\stop.ps1 -Docker    # docker compose down (all 
 The host teardown kills the background web UI (via `.nexscout-web.pid`) plus
 any lingering `nexscout` processes, including the `nexscout autopilot` loop. The
 Docker teardown runs `docker compose --profile openclaw --profile local-llm
-down`, so it stops **all four** services (nexscout autopilot, nexscout-web,
-openclaw gateway, and ollama if it was started) regardless of which profiles
-were used to start.
+down`, so it stops **every** service (nexscout autopilot, nexscout-web,
+nexscout-mcp, openclaw gateway, and ollama if it was started) regardless of
+which profiles were used to start.
 
 ## Dashboards
 
@@ -231,10 +322,10 @@ container or config just prints a helpful message and the bare URL):
    surfaced verbatim.
 2. **Token from config** (fallback): reads `gateway.auth.token` from
    `~/.openclaw/openclaw.json` and builds
-   `http://localhost:18789/?token=<TOKEN>` (the documented query-param form; if
-   your OpenClaw build expects a different param, paste the raw token into the
-   Control UI instead). If the config has no token it falls back to the
-   `OPENCLAW_GATEWAY_TOKEN` environment variable.
+   `http://localhost:18789/#token=<TOKEN>` (the URL **fragment** form the
+   gateway documents — note the `#`, not `?`; if it doesn't auto-auth, paste the
+   raw token into the Control UI instead). If the config has no token it falls
+   back to the `OPENCLAW_GATEWAY_TOKEN` environment variable.
 
 In all cases it also prints the **raw token** and the `OPENCLAW_GATEWAY_TOKEN`
 value so you can paste it manually. The Docker launcher and the shared

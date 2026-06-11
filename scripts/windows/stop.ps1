@@ -7,8 +7,9 @@
     .nexscout-web.pid) plus any lingering `nexscout` processes started
     directly/uv — including the `nexscout autopilot` resilient loop.
     With -Docker: runs `docker compose --profile openclaw down`, which stops
-    all four services (nexscout autopilot, nexscout-web, openclaw gateway, and
-    ollama if it was started), handling the docker.exe PATH + HOME quirks. With
+    every service (nexscout autopilot, nexscout-web, nexscout-mcp, openclaw
+    gateway, and ollama if it was started), handling the docker.exe PATH + HOME
+    quirks. With
     -Docker -Volumes: `docker compose down -v` (also drops named volumes; the
     SQLite DB lives on the host mount and survives anyway).
 .PARAMETER Docker
@@ -46,7 +47,7 @@ if ($Docker) {
     if ($Volumes) { $downArgs += '-v' }
     Write-Host "[docker] docker compose $($downArgs -join ' ') ..." -ForegroundColor Cyan
     docker compose @downArgs
-    Write-Host "[docker] Stack stopped (nexscout autopilot, nexscout-web, openclaw, ollama)." -ForegroundColor Green
+    Write-Host "[docker] Stack stopped (nexscout autopilot, nexscout-web, nexscout-mcp, openclaw, ollama)." -ForegroundColor Green
     return
 }
 

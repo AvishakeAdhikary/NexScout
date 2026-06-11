@@ -29,9 +29,10 @@ nexscout doctor             # T1/T2/T3 readiness report
 
 # Smoke test
 nexscout run discover       # discover only
-nexscout run                # full pipeline
+nexscout run                # one real full pipeline pass
 nexscout web &              # http://127.0.0.1:8765
 nexscout apply --workers 2  # submit applications
+nexscout autopilot          # crash-resilient continuous loop (the always-on mode)
 ```
 
 > The fastest path for a fresh machine is `scripts/` (see
@@ -71,7 +72,7 @@ mypy src/nexscout/core src/nexscout/llm src/nexscout/scoring \
 ## Coverage targets
 
 Every module under `src/nexscout/` reaches **≥80 %** line coverage; the
-project-wide total sits at **93 %** as of v0.1.0 (835 tests). The plan.md
+project-wide total sits at **93 %** as of v0.1.0 (1014 tests). The plan.md
 §23 minimums are floors, not ceilings:
 
 | Subpackage             | §23 floor | Observed |
@@ -167,6 +168,51 @@ YAML next to the engine — `discovery/employers.yaml` (§21) and
 3. Register the provider name in `llm/router.py`'s `_PROVIDER_REGISTRY`.
 4. Add provider-specific fields to `Profile.llm` if you need them.
 5. Add unit tests that mock the HTTP layer (see `tests/unit/test_router.py`).
+
+### Built-in schemes
+
+A model is referenced as a `scheme:model` spec in `profile.llm.{primary,
+fallback,judge}`. The router (`llm/router.py`) understands these schemes:
+
+| Scheme              | Backend                                                        |
+|---------------------|----------------------------------------------------------------|
+| `gemini`            | Google Gemini                                                  |
+| `openai`            | OpenAI                                                         |
+| `anthropic`         | Anthropic                                                      |
+| `lmstudio`          | LM Studio (OpenAI-compatible local server)                     |
+| `ollama`            | Ollama                                                         |
+| `openai_compat:<m>` | **Any** OpenAI-compatible endpoint (OpenRouter, Together, Groq, vLLM, self-hosted, …) |
+| `nim:<m>`           | NVIDIA NIM                                                      |
+
+### OpenAI-compatible endpoints (`openai_compat` / `nim`)
+
+`openai_compat` and `nim` share one code path — `_build_openai_compat` in
+`llm/router.py` constructs `OpenAICompatProvider` /
+`NIMProvider` from the per-scheme config under `llm.providers.<scheme>`
+(`LLMProviderEndpoint` in `core/profile.py`):
+
+```yaml
+llm:
+  primary: "openai_compat:google/gemma-4-26b-a4b-it:free"
+  providers:
+    openai_compat:
+      base_url: "https://openrouter.ai/api/v1"
+      api_key: "${env:OPENROUTER_API_KEY}"
+      # optional: extra_headers: {HTTP-Referer: "https://my-app"}
+```
+
+Each field is optional and falls back to environment variables when omitted:
+
+| Scheme          | `base_url` env fallback   | `api_key` env fallback     |
+|-----------------|---------------------------|----------------------------|
+| `openai_compat` | `OPENAI_COMPAT_BASE_URL`  | `OPENAI_COMPAT_API_KEY`    |
+| `nim`           | `NIM_BASE_URL` (else NVIDIA default) | `NVIDIA_API_KEY` |
+
+`model` in the config sets the default model for a bare spec (e.g. `"nim:"`);
+an explicit `scheme:model` always wins. `extra_headers` are merged into every
+request (handy for routing tags). To target OpenRouter, Together, Groq, or a
+self-hosted vLLM server, point `openai_compat.base_url` at the vendor's
+`/v1` URL — no new provider class is needed.
 
 ## Prompt edits are verbatim-controlled
 

@@ -41,11 +41,20 @@ Container nexscout  Created
 Container nexscout  Started
 ```
 
-The compose `command` is `["run"]`, which executes the full discover →
-enrich → score → tailor → apply pipeline once and then exits. If LM Studio
-isn't reachable the score / tailor / apply calls fail and `nexscout run`
-exits 0 with a warning. Restart policy `unless-stopped` then re-runs it in
-a loop — visible as `Restarting (0) ... ago` in `docker compose ps`.
+The compose `command` is `["autopilot", "--wall-clock", "1800"]`, which runs
+the resilient continuous loop: each pass executes one bounded discover →
+enrich → score → tailor → render → apply → surface-questions unit of work,
+persists to SQLite, then sleeps before the next pass. If LM Studio isn't
+reachable the score / tailor / apply calls fail for that pass and the loop
+logs the error and continues — one bad pass never stops autopilot (and the
+SQLite state means it resumes where it left off after any crash or reboot).
+
+For a single one-shot pass instead of the loop, override the command:
+
+```powershell
+& 'C:\Program Files\Docker\Docker\resources\bin\docker.exe' compose `
+    -f 'c:\Projects\NexScout\docker-compose.yml' run --rm nexscout run
+```
 
 For interactive testing (so you can `docker exec` into a live container),
 temporarily flip the service definition:
@@ -56,7 +65,7 @@ temporarily flip the service definition:
 ```
 
 …then `docker compose up -d --force-recreate nexscout`. Revert to
-`command: ["run"]` before normal operation.
+`command: ["autopilot", "--wall-clock", "1800"]` before normal operation.
 
 ## 2. Health check
 
@@ -71,29 +80,37 @@ unsolved CAPTCHAs as parked, not as errors.
 
 ## 3. Web dashboard
 
+The dashboard now ships as its own compose service, `nexscout-web`, which runs
+`nexscout web --host 0.0.0.0 --port 8765` (the `--host 0.0.0.0` bind is baked
+in — the default `127.0.0.1` is not reachable through the host port mapping).
+Bring it up:
+
 ```powershell
 & 'C:\Program Files\Docker\Docker\resources\bin\docker.exe' compose `
-    -f 'c:\Projects\NexScout\docker-compose.yml' exec -d nexscout `
-    nexscout web --host 0.0.0.0 --port 8765
+    -f 'c:\Projects\NexScout\docker-compose.yml' up -d nexscout-web
 ```
 
-The bind needs `--host 0.0.0.0` (default is `127.0.0.1`, which is not
-reachable from the host port mapping). Then from PowerShell:
+Then from PowerShell:
 
 ```powershell
 Invoke-WebRequest -Uri http://localhost:8765/        -UseBasicParsing
 Invoke-WebRequest -Uri http://localhost:8765/healthz -UseBasicParsing
 ```
 
-Both should return HTTP 200. The dashboard HTML at `/` includes the
-counter labels `total`, `scored`, `applied`, plus an **OpenClaw status
-panel** (last tick, active channel, pending channel deliveries). The `/`
-route is not auth-gated; the protected routes (write actions, the controls
-panel) check the session cookie set by `nexscout web --init-pw`.
+Both should return HTTP 200. The dashboard is a modern responsive **Tailwind**
+UI with interactive **Chart.js** graphs. The `/` HTML includes the counter
+labels `total`, `scored`, `applied` (plus `parked` / `skipped` / `apply_errors`
+from the apply-outcome taxonomy) and an **OpenClaw status panel** (last tick,
+active channel, pending channel deliveries). Controls are plain-language
+("Check for new jobs now", "Auto-run") and non-blocking — triggering a run
+returns `202 Accepted` and the page polls `GET /controls/status` until the pass
+finishes. The `/` route is not auth-gated; the protected routes (write actions,
+the controls panel) check the session cookie set by `nexscout web --init-pw`.
 
 This is NexScout's own web UI on `:8765`. When you bring up the `openclaw`
-profile (§7) a *second*, separate dashboard — OpenClaw's native gateway
-Control UI — is served on <http://localhost:18789/>.
+profile (§7) two more services start: `nexscout-mcp` (the MCP server on
+`:8770`, reached by the gateway at `http://nexscout-mcp:8770/mcp`) and the
+OpenClaw gateway's own native Control UI on <http://localhost:18789/>.
 
 Static export:
 
@@ -165,19 +182,30 @@ tailor stages will only succeed when LM Studio is reachable at
 
 ### Expected apply outcomes
 
-* `RESULT:CAPTCHA_MANUAL` — most ATS-walled jobs (Workday, Greenhouse,
-  Lever) hit a hCaptcha / reCAPTCHA and park to
-  `apply_status='captcha_manual'`. With Telegram configured, OpenClaw
-  forwards the questions to the chat. **This is the expected happy path
-  when no CAPTCHA solver is configured.**
-* `RESULT:APPLIED` — possible for non-CAPTCHA postings that accept a
-  resume PDF without forcing a sign-in (small companies, HN Jobs replies,
-  some `weworkremotely.com` postings).
-* `RESULT:LOGIN_ISSUE` — postings that require an account behind SSO.
-  Treated as permanent failure.
-* `RESULT:CAPTCHA` — the agent saw a CAPTCHA and a solver was configured
-  but the solve failed. Without `captcha.api_key` set, `RESULT:CAPTCHA` is
-  almost never produced (the agent parks to `CAPTCHA_MANUAL` instead).
+Outcomes map onto the four-bucket taxonomy (see
+`docs/architecture.md` → "Apply-outcome taxonomy"). `get_stats` exposes them as
+`applied` / `parked` / `skipped` / `apply_errors`, and the web UI labels them
+**Applied** / **Waiting on you** / **Not a match** / **Problems**.
+
+* **Waiting on you (parked)** — `RESULT:CAPTCHA_MANUAL`. Most ATS-walled jobs
+  (Workday, Greenhouse, Lever) hit an hCaptcha / reCAPTCHA and park to
+  `apply_status='captcha_manual'`. With Telegram/Discord configured, the
+  question is forwarded to the chat. **This is the expected happy path when no
+  CAPTCHA solver is configured** — it is *not* an error.
+* **Applied** — `RESULT:APPLIED` → `apply_status='applied'`. Possible for
+  non-CAPTCHA postings that accept a resume PDF without forcing a sign-in
+  (small companies, HN Jobs replies, some `weworkremotely.com` postings).
+* **Not a match (skipped)** — `RESULT:LOGIN_ISSUE` and other login / SSO /
+  location / expired conditions (`apply_status` in
+  `skipped` / `expired` / `login_issue`). A normal, benign outcome — **not**
+  counted in `apply_errors`.
+* **Problems (rare)** — `apply_status='failed'`: a genuine fault (page crash,
+  infra failure, no result line). This is the only bucket counted by
+  `apply_errors`; on a healthy run it stays near zero.
+* `RESULT:CAPTCHA` — the agent saw a CAPTCHA and a solver was configured but
+  the solve failed (parked, like `CAPTCHA_MANUAL`). Without `captcha.api_key`
+  set this is almost never produced (the agent parks to `CAPTCHA_MANUAL`
+  instead).
 
 ### Verifying the outcomes
 
@@ -222,11 +250,25 @@ $env:OPENCLAW_GATEWAY_TOKEN = '...'
     -f 'c:\Projects\NexScout\docker-compose.yml' --profile openclaw up -d
 ```
 
-The OpenClaw container depends on `nexscout` being healthy (driven by the
-compose healthcheck that runs `nexscout doctor --quiet` every 60 s), so it
-only starts once the nexscout container reports healthy. It runs
+The `--profile openclaw` up brings the full stack online together:
+`nexscout` (autopilot loop), `nexscout-web` (:8765), `nexscout-mcp` (the MCP
+server on :8770), and `openclaw`. The OpenClaw gateway `depends_on` the MCP
+server, so the agent's `mcp.servers.nexscout` endpoint
+(`http://nexscout-mcp:8770/mcp`) resolves on first boot. It runs
 `openclaw gateway --port 18789`, so OpenClaw's own Control UI / dashboard is
 then reachable on the host at <http://localhost:18789/> (this is OpenClaw's
 native dashboard, not the NexScout web UI on `:8765`). The gateway may
 require `OPENCLAW_GATEWAY_TOKEN` for auth; `openclaw dashboard` opens it with
 a pre-authenticated link.
+
+Register NexScout's tools with the gateway (validates + probes the server):
+
+```powershell
+& 'C:\Program Files\Docker\Docker\resources\bin\docker.exe' compose `
+    -f 'c:\Projects\NexScout\docker-compose.yml' exec -T openclaw `
+    node dist/index.js mcp add nexscout --transport streamable-http `
+    --url http://nexscout-mcp:8770/mcp
+```
+
+`openclaw mcp probe` should then report `nexscout: 10 tools`. See
+`docs/openclaw.md` for the full tool table and the `mcp.servers` contract.

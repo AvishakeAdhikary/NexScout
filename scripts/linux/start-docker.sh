@@ -3,11 +3,12 @@
 # start-docker.sh — start the full NexScout + OpenClaw stack via Docker Compose.
 #
 # No docker.exe PATH quirk on Linux; HOME is already set. Brings up
-# `docker compose --profile openclaw up -d`, which starts FOUR things: the
+# `docker compose --profile openclaw up -d`, which starts the full stack: the
 # `nexscout` container (the crash-resilient `autopilot` loop), `nexscout-web`
-# (the web UI on :8765, its own service — no exec step), and the `openclaw`
-# gateway (Control UI on :18789). Waits for health, then opens BOTH dashboards
-# (the OpenClaw one tokenized via dashboard-link.sh).
+# (the web UI on :8765, its own service — no exec step), `nexscout-mcp` (the
+# agent-tool MCP server on :8770 the gateway calls), and the `openclaw` gateway
+# (Control UI on :18789). Waits for health, then opens BOTH dashboards (the
+# OpenClaw one tokenized via dashboard-link.sh).
 #
 # Usage: ./start-docker.sh [--setup]
 #   --setup   force the interactive config generator to run first.
@@ -47,9 +48,10 @@ check_lmstudio
 echo "[lmstudio] Inside Docker, NexScout reaches LM Studio at http://host.docker.internal:1234/v1."
 
 # --- 3. Bring up the full stack -------------------------------------------- #
-# `up -d` with the openclaw profile starts FOUR things:
+# `up -d` with the openclaw profile starts:
 #   nexscout      — the crash-resilient `autopilot` loop (compose command)
 #   nexscout-web  — the web UI on :8765 (its own service; no exec needed)
+#   nexscout-mcp  — the MCP server on :8770 the gateway calls (openclaw depends on it)
 #   openclaw      — the gateway Control UI on :18789
 #   (ollama is only added by the separate local-llm profile)
 echo "[docker] docker compose --profile openclaw up -d ..."
