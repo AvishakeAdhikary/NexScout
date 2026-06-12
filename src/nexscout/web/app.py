@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from . import auth as web_auth
+from .filters import humandate
 from .routes import api as api_routes
 from .routes import applications as application_routes
 from .routes import controls as controls_routes
@@ -43,6 +44,7 @@ def create_app() -> FastAPI:
     templates_dir.mkdir(parents=True, exist_ok=True)
     static_dir.mkdir(parents=True, exist_ok=True)
     templates = Jinja2Templates(directory=str(templates_dir))
+    templates.env.filters["humandate"] = humandate
     app.state.templates = templates
     app.state.auth = web_auth.build_auth()
 

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% from "_macros.html" import pagination %}
 {% set active_nav = '/applications' %}
 {% block title %}Applications{% endblock %}
 {% block body %}
 <div class="mb-4 flex flex-wrap items-center gap-3">
   <h1 class="text-2xl font-bold">Applications</h1>
-  <span class="text-sm text-slate-500 dark:text-slate-400">{{ rows|length }} submitted</span>
+  <span class="text-sm text-slate-500 dark:text-slate-400">{{ total }} submitted</span>
   <a href="/applications/download.zip"
      class="ml-auto inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600">
     Download everything (ZIP)
@@ -29,7 +30,7 @@
     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
       {% for r in rows %}
       <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-        <td class="px-4 py-2.5 text-slate-400">{{ r.applied_at or '' }}</td>
+        <td class="px-4 py-2.5 text-slate-400" title="{{ r.applied_at or '' }}">{{ r.applied_at | humandate }}</td>
         <td class="px-4 py-2.5"><a href="/jobs/{{ r.id }}" class="font-medium text-amber-600 hover:underline dark:text-amber-400">{{ r.title }}</a></td>
         <td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">{{ r.site or '' }}</td>
         <td class="px-4 py-2.5">{% if r.fit_score is not none %}{{ r.fit_score }}/10{% else %}—{% endif %}</td>
@@ -41,4 +42,5 @@
     </tbody>
   </table>
 </div>
+{{ pagination('/applications', page, per_page, total) }}
 {% endblock %}

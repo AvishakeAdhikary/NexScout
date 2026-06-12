@@ -555,3 +555,80 @@ def test_create_app_404_handler() -> None:
     resp = c.get("/this-route-does-not-exist")
     assert resp.status_code == 404
     assert "404" in resp.text
+
+
+# ---------------------------------------------------------------------------
+# Score-a-single-job endpoint + pagination
+# ---------------------------------------------------------------------------
+
+
+def test_score_job_now_htmx_updates_row(
+    client: TestClient, db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The "Score now" button (HTMX) re-scores one job and returns the new row."""
+    from nexscout.scoring import scorer
+
+    monkeypatch.setattr(scorer, "score_job", lambda *a, **k: (8, "python, ml\nStrong match."))
+    jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/3'").fetchone()["rowid"])
+    resp = client.post(f"/jobs/{jid}/score", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    assert "<tr" in resp.text
+    assert "8/10" in resp.text
+    after = db.execute("SELECT fit_score FROM jobs WHERE rowid=?", (jid,)).fetchone()
+    assert int(after["fit_score"]) == 8
+
+
+def test_score_job_now_form_redirects(
+    client: TestClient, db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A plain form POST (job detail page) redirects back to the job."""
+    from nexscout.scoring import scorer
+
+    monkeypatch.setattr(scorer, "score_job", lambda *a, **k: (7, "x\ny"))
+    jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/2'").fetchone()["rowid"])
+    resp = client.post(f"/jobs/{jid}/score", follow_redirects=False)
+    assert resp.status_code == 303
+    assert resp.headers["location"] == f"/jobs/{jid}"
+
+
+def test_score_job_now_not_found(client: TestClient) -> None:
+    resp = client.post("/jobs/999999/score", headers={"HX-Request": "true"})
+    assert resp.status_code == 404
+
+
+def test_score_job_now_failure_keeps_existing_score(
+    client: TestClient, db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A failed scoring (0) must not clobber a previously good score."""
+    from nexscout.scoring import scorer
+
+    monkeypatch.setattr(scorer, "score_job", lambda *a, **k: (0, "error: boom"))
+    row = db.execute("SELECT rowid, fit_score FROM jobs WHERE url='https://x.com/1'").fetchone()
+    jid, before = int(row["rowid"]), int(row["fit_score"])
+    resp = client.post(f"/jobs/{jid}/score", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    after = db.execute("SELECT fit_score FROM jobs WHERE rowid=?", (jid,)).fetchone()
+    assert int(after["fit_score"]) == before
+
+
+def test_jobs_list_shows_pagination(client: TestClient) -> None:
+    resp = client.get("/jobs")
+    assert resp.status_code == 200
+    assert "Showing" in resp.text
+    assert "of 4" in resp.text  # 4 seed jobs
+
+
+def test_applications_shows_pagination(client: TestClient) -> None:
+    resp = client.get("/applications")
+    assert resp.status_code == 200
+    assert "Showing" in resp.text
+
+
+def test_questions_shows_pagination(client: TestClient, db: sqlite3.Connection) -> None:
+    db.execute(
+        "INSERT INTO pending_questions (job_url, question, asked_at) VALUES (?, ?, ?)",
+        ("https://x.com/qp", "Visa?", "2025-01-01"),
+    )
+    resp = client.get("/questions")
+    assert resp.status_code == 200
+    assert "Showing" in resp.text

@@ -16,18 +16,24 @@ router = APIRouter()
 
 
 @router.get("/applications", response_class=HTMLResponse)
-async def list_applications(request: Request) -> HTMLResponse:
+async def list_applications(request: Request, page: int = 1) -> HTMLResponse:
+    per_page = 25
     conn = init_db()
+    total = int(conn.execute("SELECT COUNT(*) AS n FROM jobs WHERE apply_status='applied'").fetchone()["n"])
+    offset = max(0, (page - 1) * per_page)
     rows: list[dict[str, Any]] = [
         dict(r)
         for r in conn.execute(
             "SELECT rowid AS id, url, title, site, location, fit_score, applied_at, "
             "cost_usd, tailored_resume_path, cover_letter_path "
-            "FROM jobs WHERE apply_status='applied' ORDER BY applied_at DESC"
+            "FROM jobs WHERE apply_status='applied' ORDER BY applied_at DESC LIMIT ? OFFSET ?",
+            (per_page, offset),
         ).fetchall()
     ]
     templates = request.app.state.templates
-    return templates.TemplateResponse(request, "applications.html", {"rows": rows})
+    return templates.TemplateResponse(
+        request, "applications.html", {"rows": rows, "total": total, "page": page, "per_page": per_page}
+    )
 
 
 @router.get("/applications/download.zip")

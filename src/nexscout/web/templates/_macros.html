@@ -1,19 +1,49 @@
 {# Reusable UI bits used across pages. #}
 
-{# A small ℹ️ help icon that reveals a plain-language explanation on hover/tap.
+{# A small ℹ️ help icon that reveals a plain-language explanation on hover/focus.
+   Pure CSS (Tailwind group-hover / group-focus-within) so it works even if the
+   Alpine CDN fails to load — the previous Alpine version stayed invisible then.
    Usage: {{ help("ATS", "An ATS is the software a company uses to collect job applications.") }} #}
 {% macro help(term, explanation) %}
-<span x-data="{ show: false }" class="relative inline-block align-middle">
-  <button type="button"
-          @mouseenter="show = true" @mouseleave="show = false"
-          @click="show = !show" @focus="show = true" @blur="show = false"
-          class="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-200 cursor-help"
-          aria-label="What is {{ term }}?">i</button>
-  <span x-show="show" x-cloak
-        class="absolute left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-normal leading-snug text-white shadow-lg dark:bg-slate-700">
+<span class="group relative inline-block align-middle">
+  <button type="button" tabindex="0"
+          class="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-200 cursor-help focus:outline-none focus:ring-2 focus:ring-amber-400"
+          aria-label="{{ term }}: {{ explanation }}">i</button>
+  <span role="tooltip"
+        class="pointer-events-none invisible absolute left-1/2 top-full z-50 mt-2 w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-normal leading-snug text-white opacity-0 shadow-lg transition duration-100 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 dark:bg-slate-700">
     <strong class="block text-amber-300">{{ term }}</strong>{{ explanation }}
   </span>
 </span>
+{% endmacro %}
+
+{# Pagination bar. ``qs`` is the extra query string (filters, no leading '?').
+   When ``hx_target`` is set the links drive an HTMX swap of that element;
+   otherwise they're plain full-page links. #}
+{% macro pagination(base_url, page, per_page, total, qs='', hx_target='') %}
+{% set total_pages = ((total - 1) // per_page + 1) if total > 0 else 1 %}
+{% set start = ((page - 1) * per_page + 1) if total > 0 else 0 %}
+{% set end = (page * per_page) if (page * per_page) < total else total %}
+{% set sep = '&' if qs else '' %}
+<nav class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm" aria-label="Pagination">
+  <span class="text-slate-500 dark:text-slate-400">Showing {{ start }}–{{ end }} of {{ total }}</span>
+  <div class="flex items-center gap-1">
+    {% if page <= 1 %}
+    <span class="cursor-not-allowed rounded-md border border-slate-200 px-3 py-1.5 text-slate-300 dark:border-slate-800 dark:text-slate-600">‹ Prev</span>
+    {% else %}
+    {% set prev_href = base_url ~ '?' ~ qs ~ sep ~ 'page=' ~ (page - 1) %}
+    <a href="{{ prev_href }}"{% if hx_target %} hx-get="{{ prev_href }}" hx-target="{{ hx_target }}" hx-swap="outerHTML"{% endif %}
+       class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">‹ Prev</a>
+    {% endif %}
+    <span class="px-2 text-slate-500 dark:text-slate-400">Page {{ page }} of {{ total_pages }}</span>
+    {% if page >= total_pages %}
+    <span class="cursor-not-allowed rounded-md border border-slate-200 px-3 py-1.5 text-slate-300 dark:border-slate-800 dark:text-slate-600">Next ›</span>
+    {% else %}
+    {% set next_href = base_url ~ '?' ~ qs ~ sep ~ 'page=' ~ (page + 1) %}
+    <a href="{{ next_href }}"{% if hx_target %} hx-get="{{ next_href }}" hx-target="{{ hx_target }}" hx-swap="outerHTML"{% endif %}
+       class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">Next ›</a>
+    {% endif %}
+  </div>
+</nav>
 {% endmacro %}
 
 {# A stat card: big number + plain label + one-line helper underneath. #}

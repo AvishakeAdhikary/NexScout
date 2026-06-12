@@ -5,11 +5,27 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>NexScout — {% block title %}Dashboard{% endblock %}</title>
 
+  <!-- JetBrains Mono (SIL Open Font License — royalty free) for the whole UI. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS (Play CDN — no build step). -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Respect the OS light/dark preference automatically.
-    tailwind.config = { darkMode: 'media' };
+    // Respect the OS light/dark preference automatically, and use JetBrains
+    // Mono as the default typeface across the dashboard.
+    tailwind.config = {
+      darkMode: 'media',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+          },
+        },
+      },
+    };
   </script>
 
   <!-- HTMX for partial updates + polling. -->
@@ -25,6 +41,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
   <style>
+    /* Fallback in case the Tailwind config hasn't applied yet. */
+    html, body { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
     /* HTMX indicator: hidden by default, shown while a request is in flight. */
     .htmx-indicator { opacity: 0; transition: opacity 150ms ease-in; }
     .htmx-request .htmx-indicator,

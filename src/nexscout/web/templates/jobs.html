@@ -13,7 +13,7 @@
 </p>
 
 <form id="jobs-filter"
-      hx-get="/jobs" hx-target="#jobs-table" hx-swap="outerHTML"
+      hx-get="/jobs" hx-target="#jobs-results" hx-swap="outerHTML"
       hx-trigger="change, submit" hx-indicator="#jobs-spinner"
       class="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:grid-cols-4">
   <label class="block text-sm">
@@ -54,7 +54,5 @@
   </div>
 </form>
 
-<div class="overflow-x-auto">
-  {% include "_jobs_table.html" %}
-</div>
+{% include "_jobs_table.html" %}
 {% endblock %}

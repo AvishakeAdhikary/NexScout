@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
@@ -69,12 +70,24 @@ async def list_jobs(
     conn = init_db()
     rows = [dict(r) for r in conn.execute(list_sql, params).fetchall()]
     total = int(conn.execute(count_sql, count_params).fetchone()["n"])
+    # Query string carrying the active filters (no `page`) so pagination links
+    # preserve the current filter/sort selection.
+    filt: dict[str, Any] = {}
+    if min_score is not None:
+        filt["min_score"] = min_score
+    if site:
+        filt["site"] = site
+    if status:
+        filt["status"] = status
+    if sort:
+        filt["sort"] = sort
     templates = request.app.state.templates
     context = {
         "rows": rows,
         "total": total,
         "page": page,
         "per_page": per_page,
+        "filter_qs": urlencode(filt),
         "filters": {"min_score": min_score, "site": site, "status": status, "sort": sort},
     }
     # htmx swaps the `#jobs-table` element — return just the partial.
@@ -114,6 +127,58 @@ async def job_detail(request: Request, job_id: int) -> HTMLResponse:
             "has_cover_pdf": (bundle / "cover_letter.pdf").exists(),
         },
     )
+
+
+@router.post("/jobs/{job_id}/score", response_class=HTMLResponse)
+def score_job_now(request: Request, job_id: int) -> Any:
+    """Score (or re-score) a single job on demand via the LLM.
+
+    Declared as a sync handler so FastAPI runs it in a worker thread — the
+    LLM call blocks for a few seconds and must not stall the event loop. The
+    SQLite layer uses per-thread autocommit connections, so this is safe.
+
+    HTMX requests (the "Score now" button on the jobs table) get the refreshed
+    row back to swap in place; a plain form POST (e.g. from the job page) gets
+    a redirect to the job detail.
+    """
+    from ...core.profile import Profile
+    from ...llm.budget import BudgetLedger
+    from ...llm.router import LLMRouter
+    from ...scoring.scorer import persist_score, score_job
+
+    conn = init_db()
+    row = conn.execute(
+        "SELECT rowid AS id, url, title, site, location, full_description FROM jobs WHERE rowid = ?",
+        (job_id,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="job not found")
+    job = dict(row)
+
+    profile = Profile.from_path()
+    llm = LLMRouter(
+        profile,
+        budget=BudgetLedger(
+            monthly_usd=profile.llm.budgets.monthly_usd,
+            daily_calls=profile.llm.budgets.daily_calls,
+        ),
+    )
+    score, reasoning = score_job(llm, profile, job)
+    # score == 0 means the model errored or returned no parseable score — don't
+    # clobber an existing good score with a failure.
+    if score >= 1:
+        persist_score(conn, job["url"], score, reasoning)
+
+    if request.headers.get("HX-Request"):
+        updated = dict(
+            conn.execute(
+                "SELECT rowid AS id, url, title, site, location, fit_score, apply_status, discovered_at "
+                "FROM jobs WHERE rowid = ?",
+                (job_id,),
+            ).fetchone()
+        )
+        return request.app.state.templates.TemplateResponse(request, "_job_row.html", {"row": updated})
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @router.post("/api/reapply")

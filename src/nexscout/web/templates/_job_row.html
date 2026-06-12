@@ -1,0 +1,40 @@
+{# One jobs-table row. Rendered both inside _jobs_table.html and standalone by
+   the POST /jobs/{id}/score endpoint (HTMX swaps `closest tr`). Self-contained
+   so the standalone render has the status labels it needs. #}
+{% set status_labels = {
+  'applied': ('Applied', 'green'),
+  'failed': ('Problem', 'red'),
+  'captcha': ('Waiting on you', 'amber'),
+  'login_issue': ('Problem', 'red'),
+  'expired': ('Expired', 'slate'),
+  'paused_for_question': ('Waiting on you', 'amber'),
+  'in_progress': ('Applying…', 'blue'),
+} %}
+{% set lbl = status_labels.get(row.apply_status, ('Not applied yet', 'slate')) %}
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+  <td class="px-4 py-2.5">
+    {% if row.fit_score is not none %}
+    <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700 dark:bg-amber-900/50 dark:text-amber-300">{{ row.fit_score }}/10</span>
+    {% else %}<span class="text-slate-400">—</span>{% endif %}
+  </td>
+  <td class="px-4 py-2.5">
+    <a href="/jobs/{{ row.id }}" class="font-medium text-amber-600 hover:underline dark:text-amber-400">{{ row.title or row.url }}</a>
+  </td>
+  <td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">{{ row.site or '' }}</td>
+  <td class="px-4 py-2.5">
+    <span class="inline-flex rounded-full bg-{{ lbl[1] }}-100 px-2 py-0.5 text-xs font-medium text-{{ lbl[1] }}-700 dark:bg-{{ lbl[1] }}-900/50 dark:text-{{ lbl[1] }}-300">{{ lbl[0] }}</span>
+  </td>
+  <td class="px-4 py-2.5 text-slate-400" title="{{ row.discovered_at or '' }}">{{ row.discovered_at | humandate }}</td>
+  <td class="px-4 py-2.5 text-right">
+    <button hx-post="/jobs/{{ row.id }}/score" hx-target="closest tr" hx-swap="outerHTML"
+            hx-disabled-elt="this"
+            class="inline-flex items-center gap-1 rounded-md border border-slate-300 px-2 py-1 text-xs font-medium hover:border-amber-300 hover:bg-amber-50 disabled:opacity-50 dark:border-slate-700 dark:hover:bg-amber-900/30"
+            title="Rate how well this job matches you, using the AI, right now.">
+      <svg class="htmx-indicator h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      {% if row.fit_score is not none %}Re-score{% else %}Score now{% endif %}
+    </button>
+  </td>
+</tr>

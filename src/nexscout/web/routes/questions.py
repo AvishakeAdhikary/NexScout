@@ -15,13 +15,22 @@ router = APIRouter()
 
 
 @router.get("/questions", response_class=HTMLResponse)
-async def list_questions(request: Request) -> HTMLResponse:
+async def list_questions(request: Request, page: int = 1) -> HTMLResponse:
+    per_page = 25
     conn = init_db()
+    total = int(conn.execute("SELECT COUNT(*) AS n FROM pending_questions").fetchone()["n"])
+    offset = max(0, (page - 1) * per_page)
     rows = conn.execute(
-        "SELECT id, job_url, question, asked_at, channel, answered_at, answer FROM pending_questions ORDER BY id DESC"
+        "SELECT id, job_url, question, asked_at, channel, answered_at, answer "
+        "FROM pending_questions ORDER BY id DESC LIMIT ? OFFSET ?",
+        (per_page, offset),
     ).fetchall()
     templates = request.app.state.templates
-    return templates.TemplateResponse(request, "questions.html", {"rows": [dict(r) for r in rows]})
+    return templates.TemplateResponse(
+        request,
+        "questions.html",
+        {"rows": [dict(r) for r in rows], "total": total, "page": page, "per_page": per_page},
+    )
 
 
 @router.post("/api/answer")
