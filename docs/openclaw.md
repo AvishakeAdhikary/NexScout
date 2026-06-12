@@ -121,6 +121,45 @@ when an optional dependency is missing on the host. All tools read the same
 agent's actions show up immediately in the web UI and the pipeline. The tool
 implementations live in `src/nexscout/mcp/server.py`.
 
+### Agent model (shares NexScout's LLM)
+
+The MCP server gives the agent **tools**; the agent still needs its own **LLM**
+to decide *when* to call them. OpenClaw's agent model lives in
+`~/.openclaw/openclaw.json` under `models.providers.<name>` (an
+`openai-completions` endpoint) with `agents.defaults.model.primary` selecting
+`<provider>/<model>`.
+
+To keep one brain across the stack, point the agent at the **same LLM NexScout
+uses**. `scripts/common/set_model.py` (and the `set-model` wrappers) do this
+automatically: they manage a single OpenClaw provider named **`nexscout`** and
+set `agents.defaults.model.primary` to `nexscout/<model>`, so one switch updates
+both NexScout and OpenClaw. Pass `--no-openclaw` to skip it. Only the
+OpenAI-compatible presets sync; `anthropic` / `gemini` need OpenClaw's native
+provider (`openclaw onboard`).
+
+```jsonc
+{
+  "agents": { "defaults": { "model": { "primary": "nexscout/gemma3:12b" } } },
+  "models": {
+    "providers": {
+      "nexscout": {
+        "api": "openai-completions",
+        "baseUrl": "https://ollama.com/v1",
+        "apiKey": "<key>",
+        "models": [{ "id": "gemma3:12b", "name": "gemma3:12b (shared with NexScout)" }]
+      }
+    }
+  }
+}
+```
+
+Pick a **tool-capable** model: it must emit structured `tool_calls` for the MCP
+tools to fire. On Ollama Cloud, `gemma3:12b` does; some larger models return
+tool calls as plain text instead, which the gateway can't dispatch — verify with
+`openclaw infer model run --model nexscout/<model> --prompt …` plus `openclaw
+mcp probe`. The gateway reads its model **at startup**, so restart it after a
+change: `docker restart nexscout-openclaw`.
+
 ## Sandbox mount
 
 When running under NemoClaw / OpenShell, NexScout's working directory is

@@ -31,6 +31,12 @@ Presets:
 By default primary = fallback = judge = the chosen spec; pass --judge-model to
 give the judge a different model (same scheme).
 
+OpenClaw sync: if an OpenClaw config exists (~/.openclaw/openclaw.json, or
+$OPENCLAW_DIR / --openclaw-dir), the gateway agent is repointed at the SAME
+model (managed provider ``nexscout``) so OpenClaw and NexScout share one LLM.
+Disable with --no-openclaw. Only OpenAI-compatible presets sync; anthropic and
+gemini need OpenClaw's native provider (`openclaw onboard`).
+
 Usage:
     python set_model.py --provider openrouter \
         --model google/gemma-4-26b-a4b-it:free --api-key sk-or-...
@@ -43,6 +49,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -61,6 +68,28 @@ except ModuleNotFoundError:  # pragma: no cover - guidance only
 
 # Schemes that use an llm.providers.<scheme> endpoint block (base_url/api_key).
 _OPENAI_COMPAT_SCHEMES = {"openai_compat", "nim"}
+
+# ---------------------------------------------------------------------------- #
+# OpenClaw sync. The OpenClaw gateway agent should use the SAME LLM as NexScout
+# (so it can drive the NexScout MCP tools). OpenClaw speaks the OpenAI-completions
+# API, so any OpenAI-compatible preset maps cleanly. We manage a SINGLE provider
+# entry (``nexscout``) and repoint the agent's primary model at it, so repeated
+# switches overwrite in place and never leave orphan provider entries behind.
+# ---------------------------------------------------------------------------- #
+_OPENCLAW_PROVIDER = "nexscout"
+
+# NexScout preset -> (default OpenClaw baseUrl, default apiKey). A ``None`` base
+# means "require --base-url"; a ``None`` key means "require --api-key".
+_OPENCLAW_OPENAI_COMPAT: dict[str, tuple[str | None, str | None]] = {
+    "openai_compat": (None, None),
+    "openrouter": ("https://openrouter.ai/api/v1", None),
+    "nim": ("https://integrate.api.nvidia.com/v1", None),
+    "openai": ("https://api.openai.com/v1", None),
+    "lmstudio": ("http://host.docker.internal:1234/v1", "lmstudio-local"),
+    "ollama": ("http://host.docker.internal:11434/v1", "ollama-local"),
+}
+# anthropic / gemini are NOT OpenAI-completions; OpenClaw needs its native
+# provider for those, which we don't autogenerate (we skip with a note).
 
 
 def _spec(scheme: str, model: str) -> str:
@@ -167,6 +196,16 @@ def build_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--base-url", default=None, help="OpenAI-compatible base URL ending in /v1.")
     parser.add_argument("--judge-model", default=None, help="Override the judge model (same scheme).")
     parser.add_argument("--target", default=None, help="Config dir (default: $NEXSCOUT_DIR or ~/.nexscout).")
+    parser.add_argument(
+        "--openclaw-dir",
+        default=None,
+        help="OpenClaw config dir (default: $OPENCLAW_DIR or ~/.openclaw); its agent is synced to the same model.",
+    )
+    parser.add_argument(
+        "--no-openclaw",
+        action="store_true",
+        help="Do NOT sync the OpenClaw gateway config (update NexScout only).",
+    )
     return parser.parse_args(argv)
 
 
@@ -266,6 +305,90 @@ def apply_model(
     return llm
 
 
+def _dict_at(parent: dict[str, Any], key: str) -> dict[str, Any]:
+    """Return ``parent[key]`` as a dict, creating (or replacing a non-dict) it."""
+    val = parent.get(key)
+    if not isinstance(val, dict):
+        val = {}
+        parent[key] = val
+    return val
+
+
+def _openclaw_config_path(arg: str | None) -> Path:
+    if arg:
+        base = Path(arg).expanduser().resolve()
+    elif os.environ.get("OPENCLAW_DIR"):
+        base = Path(os.environ["OPENCLAW_DIR"]).expanduser().resolve()
+    else:
+        base = (Path.home() / ".openclaw").resolve()
+    return base / "openclaw.json"
+
+
+def sync_openclaw(
+    *,
+    provider: str,
+    model: str,
+    base_url: str | None,
+    api_key: str | None,
+    openclaw_path: Path,
+) -> str | None:
+    """Point the OpenClaw agent at the same model NexScout uses.
+
+    Returns a human-readable status line, or None when there is no OpenClaw
+    config to update (NexScout-only install).
+    """
+    if not openclaw_path.exists():
+        return None
+
+    if provider not in _OPENCLAW_OPENAI_COMPAT:
+        return (
+            f"[set-model] OpenClaw NOT synced: '{provider}' isn't an OpenAI-compatible endpoint. "
+            "Run `openclaw onboard` to point its agent at the native provider."
+        )
+
+    default_base, default_key = _OPENCLAW_OPENAI_COMPAT[provider]
+    eff_base = base_url or default_base
+    if not eff_base:
+        return f"[set-model] OpenClaw NOT synced: '{provider}' needs --base-url."
+    eff_key = api_key or default_key
+
+    raw = openclaw_path.read_text(encoding="utf-8").strip()
+    doc = json.loads(raw) if raw else {}
+    if not isinstance(doc, dict):
+        return f"[set-model] OpenClaw NOT synced: {openclaw_path} is not a JSON object."
+
+    name = _OPENCLAW_PROVIDER
+    entry: dict[str, Any] = {
+        "baseUrl": eff_base,
+        "api": "openai-completions",
+        "models": [
+            {
+                "id": model,
+                "name": f"{model} (shared with NexScout)",
+                "reasoning": False,
+                "input": ["text"],
+                "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0},
+                "contextWindow": 131072,
+                "contextTokens": 131072,
+                "maxTokens": 8192,
+            }
+        ],
+    }
+    if eff_key:
+        entry["apiKey"] = eff_key
+
+    models = _dict_at(doc, "models")
+    models.setdefault("mode", "merge")
+    _dict_at(models, "providers")[name] = entry
+    defaults = _dict_at(_dict_at(doc, "agents"), "defaults")
+    _dict_at(defaults, "model")["primary"] = f"{name}/{model}"
+    _dict_at(_dict_at(doc, "auth"), "profiles")[f"{name}:default"] = {"provider": name, "mode": "api_key"}
+
+    openclaw_path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    suffix = "" if eff_key else " (no API key set — pass --api-key)"
+    return f"[set-model] OpenClaw synced -> agent model {name}/{model} @ {eff_base}{suffix}. Restart the gateway."
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_args(argv)
     target = _config_dir(args.target)
@@ -292,10 +415,26 @@ def main(argv: list[str] | None = None) -> int:
     if args.api_key is not None and args.provider in {"openrouter", "nim", "openai_compat"}:
         print(f"[set-model] Wrote llm.providers.{PRESETS[args.provider].scheme}.api_key to credentials.yaml.")
 
+    if not args.no_openclaw:
+        oc_path = _openclaw_config_path(args.openclaw_dir)
+        try:
+            status = sync_openclaw(
+                provider=args.provider,
+                model=args.model,
+                base_url=args.base_url,
+                api_key=args.api_key,
+                openclaw_path=oc_path,
+            )
+        except (OSError, ValueError) as e:
+            status = f"[set-model] OpenClaw sync FAILED ({type(e).__name__}: {e}); NexScout config was still written."
+        print("\n" + status if status else f"\n[set-model] (No OpenClaw config at {oc_path}; nothing to sync.)")
+
     print(
         "\n[set-model] Done. In Docker the autopilot reloads the profile each pass, so the\n"
-        "            switch applies live within a minute or two. To apply it immediately,\n"
-        "            recreate the services:  docker compose up -d nexscout nexscout-web nexscout-mcp"
+        "            NexScout switch applies live within a minute or two. To apply it now,\n"
+        "            recreate the services:  docker compose up -d nexscout nexscout-web nexscout-mcp\n"
+        "            The OpenClaw gateway reads its model at startup, so restart it to pick\n"
+        "            up the change:          docker restart nexscout-openclaw"
     )
     return 0
 

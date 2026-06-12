@@ -270,6 +270,18 @@ In Docker the autopilot reloads the profile each pass, so the switch applies
 recreate the stack yourself with `docker compose up -d`. Direct invocation:
 `python scripts/common/set_model.py --provider <preset> --model <id> [--api-key …] [--base-url …] [--judge-model …] [--target …]`.
 
+**OpenClaw shares NexScout's LLM.** If an OpenClaw config is present
+(`~/.openclaw/openclaw.json`, or `$OPENCLAW_DIR` / `--openclaw-dir`), the same
+switch also repoints the OpenClaw gateway agent at the **same model** so it can
+drive the NexScout MCP tools. The script manages a single OpenClaw provider
+named `nexscout` (so repeated switches overwrite in place — no orphan entries)
+and sets `agents.defaults.model.primary` to `nexscout/<model>`. Only the
+OpenAI-compatible presets sync (`openai_compat`, `openrouter`, `nim`, `openai`,
+`lmstudio`, `ollama`); `anthropic` and `gemini` need OpenClaw's native provider
+(`openclaw onboard`) and are skipped with a note. Pass `--no-openclaw` to update
+NexScout only. The gateway reads its model **at startup**, so restart it to pick
+up the change: `docker restart nexscout-openclaw`.
+
 ## Stopping
 
 ```powershell

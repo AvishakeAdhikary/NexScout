@@ -15,12 +15,19 @@
       -BaseUrl <url>       OpenAI-compatible base URL (required for openai_compat)
       -JudgeModel <id>     give the judge a different model (same scheme)
       -Target <dir>        config dir (default: $env:NEXSCOUT_DIR or ~/.nexscout)
+      -OpenclawDir <dir>   OpenClaw config dir (default: $env:OPENCLAW_DIR or ~/.openclaw)
+      -NoOpenclaw          update NexScout only; do NOT sync the OpenClaw agent
+
+    If an OpenClaw config is present, the OpenClaw gateway agent is repointed at
+    the SAME model (managed provider `nexscout`) so it shares NexScout's LLM.
 
     With -Docker (and Docker up) it also recreates the NexScout services so the
-    new config takes effect immediately:
+    new config takes effect immediately, and restarts the OpenClaw gateway (it
+    reads its model at startup) unless -NoOpenclaw:
       docker compose up -d nexscout nexscout-web nexscout-mcp
-    (The autopilot also reloads the profile each pass, so the switch applies
-    live even without a restart.)
+      docker restart nexscout-openclaw
+    (The autopilot also reloads the profile each pass, so the NexScout switch
+    applies live even without a restart.)
 .EXAMPLE
     powershell -File scripts\windows\set-model.ps1 -Provider openrouter `
         -Model "google/gemma-4-26b-a4b-it:free" -ApiKey "sk-or-..."
@@ -34,6 +41,8 @@ param(
     [string] $BaseUrl,
     [string] $JudgeModel,
     [string] $Target,
+    [string] $OpenclawDir,
+    [switch] $NoOpenclaw,
     [switch] $Docker
 )
 
@@ -51,10 +60,12 @@ Write-Host "=== NexScout : set model ===" -ForegroundColor Magenta
 
 # --- Build the pass-through args ------------------------------------------- #
 $pyArgs = @($script, '--provider', $Provider, '--model', $Model)
-if ($ApiKey)     { $pyArgs += @('--api-key', $ApiKey) }
-if ($BaseUrl)    { $pyArgs += @('--base-url', $BaseUrl) }
-if ($JudgeModel) { $pyArgs += @('--judge-model', $JudgeModel) }
-if ($Target)     { $pyArgs += @('--target', $Target) }
+if ($ApiKey)      { $pyArgs += @('--api-key', $ApiKey) }
+if ($BaseUrl)     { $pyArgs += @('--base-url', $BaseUrl) }
+if ($JudgeModel)  { $pyArgs += @('--judge-model', $JudgeModel) }
+if ($Target)      { $pyArgs += @('--target', $Target) }
+if ($OpenclawDir) { $pyArgs += @('--openclaw-dir', $OpenclawDir) }
+if ($NoOpenclaw)  { $pyArgs += @('--no-openclaw') }
 
 # --- Resolve the python runner: prefer uv, fall back to python -------------- #
 $uv = Join-Path $env:USERPROFILE '.local\bin\uv.exe'
@@ -82,6 +93,13 @@ if ($Docker) {
     if (Get-Command 'docker' -ErrorAction SilentlyContinue) {
         Write-Host "[docker] Recreating services with the new model config..." -ForegroundColor Cyan
         docker compose -f $compose up -d nexscout nexscout-web nexscout-mcp 2>&1 | Out-Host
+        if (-not $NoOpenclaw) {
+            $oc = docker ps --filter 'name=nexscout-openclaw' --format '{{.Names}}' 2>$null
+            if ($oc) {
+                Write-Host "[docker] Restarting the OpenClaw gateway to pick up the shared model..." -ForegroundColor Cyan
+                docker restart nexscout-openclaw 2>&1 | Out-Host
+            }
+        }
         Write-Host "[docker] Done — the new model is live." -ForegroundColor Green
     } else {
         Write-Warning "[docker] docker not found — skipped the recreate. The autopilot will pick up the new config on its next pass."
