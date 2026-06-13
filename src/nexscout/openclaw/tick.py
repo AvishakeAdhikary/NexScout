@@ -102,6 +102,10 @@ def _run_stage(
 #: Soft wall-clock cap per §18 (≈5 min). Stages still respect their own caps.
 DEFAULT_WALL_CLOCK_S = 300.0
 
+#: Floor on a single stage's per-pass time slice, so even with every stage
+#: enabled each one still gets a little time and none waits indefinitely.
+_MIN_STAGE_BUDGET_S = 15.0
+
 
 def run(
     *,
@@ -128,13 +132,17 @@ def run(
     conn = db if db is not None else init_db(database_path())
     budget = profile.openclaw.tick_budget
 
-    requested = set(stages) if stages else set(ps.ALL_STEPS)
-    disabled = set(ps.read_control()["disabled_stages"])
+    requested = [s for s in ps.ALL_STEPS if (not stages or s in set(stages))]
+    disabled0 = set(ps.read_control()["disabled_stages"])
     ps.clear_stop()  # a fresh pass starts clean — a stop only aborts THIS pass
-    ps.begin_pass(source, disabled=sorted(disabled))
+    ps.begin_pass(source, disabled=sorted(disabled0))
 
-    def _abort() -> bool:
-        return ps.stop_requested()
+    # Stages that will actually run this pass, used to divide the pass wall-clock
+    # FAIRLY so no single stage (notably discover) can starve the rest. Each
+    # stage gets ``remaining_time / remaining_active`` seconds (with a floor),
+    # and an early-finishing stage rolls its unused time over to later ones.
+    active = [s for s in requested if s not in disabled0]
+    ran: list[str] = []
 
     def _progress(stage: str) -> Any:
         def _cb(done: int, total: int) -> None:
@@ -142,56 +150,74 @@ def run(
 
         return _cb
 
-    def _do(stage: str, fn: Any) -> int:
-        """Run one stage, honouring requested/disabled/stop/deadline + status."""
+    def _do(stage: str, runner: Any) -> int:
+        """Run one stage via ``runner(on_progress, should_abort)``, honouring a
+        LIVE disable toggle, a stop request, the global pass deadline, and a
+        per-stage time slice."""
         if stage not in requested:
             return 0
-        if stage in disabled:
+        # Re-read the disable flag LIVE so turning a stage off takes effect on
+        # the very next stage (not only next pass).
+        if not ps.stage_enabled(stage):
             ps.stage_state(stage, "disabled")
+            ran.append(stage)
             return 0
         if ps.stop_requested():
             ps.stage_state(stage, "stopped")
             return 0
-        if time.monotonic() >= deadline:
+        now = time.monotonic()
+        if now >= deadline:
             ps.stage_state(stage, "skipped")
-            log.info("tick: skipping %s (out of budget)", stage)
+            log.info("tick: skipping %s (pass out of time)", stage)
             return 0
+        remaining_active = max(1, len([s for s in active if s not in ran]))
+        slice_s = max(_MIN_STAGE_BUDGET_S, (deadline - now) / remaining_active)
+        stage_deadline = min(deadline, now + slice_s)
+
+        def _should_abort() -> bool:
+            return ps.stop_requested() or (not ps.stage_enabled(stage)) or time.monotonic() >= stage_deadline
+
         ps.stage_state(stage, "running")
-        log.info("tick: stage '%s' started", stage)
+        log.info("tick: stage '%s' started (budget %.0fs)", stage, stage_deadline - now)
         try:
-            count = int(fn() or 0)
+            count = int(runner(_progress(stage), _should_abort) or 0)
         except Exception as e:
             log.exception("tick stage %s failed", stage)
             summary.errors.append(f"{stage}: {e}")
             ps.stage_state(stage, "error")
+            ran.append(stage)
             return 0
         ps.stage_state(stage, "done", done=count, total=count)
         log.info("tick: stage '%s' done — %d", stage, count)
+        ran.append(stage)
         return count
 
-    summary.discovered = _do("discover", lambda: _stage_discover(profile, conn, budget.discover_per_engine))
+    summary.discovered = _do(
+        "discover",
+        lambda op, sa: _stage_discover(profile, conn, budget.discover_per_engine, should_abort=sa),
+    )
     summary.enriched = _do(
         "enrich",
-        lambda: _stage_enrich(profile, conn, budget.enrich, on_progress=_progress("enrich"), should_abort=_abort),
+        lambda op, sa: _stage_enrich(profile, conn, budget.enrich, on_progress=op, should_abort=sa),
     )
     summary.scored = _do(
         "score",
-        lambda: _stage_score(profile, conn, budget.score, on_progress=_progress("score"), should_abort=_abort),
+        lambda op, sa: _stage_score(profile, conn, budget.score, on_progress=op, should_abort=sa),
     )
     summary.tailored = _do(
         "tailor",
-        lambda: _stage_tailor(profile, conn, budget.tailor, on_progress=_progress("tailor"), should_abort=_abort),
+        lambda op, sa: _stage_tailor(profile, conn, budget.tailor, on_progress=op, should_abort=sa),
     )
     summary.covered = _do(
         "cover",
-        lambda: _stage_cover(profile, conn, budget.tailor, on_progress=_progress("cover"), should_abort=_abort),
+        lambda op, sa: _stage_cover(profile, conn, budget.tailor, on_progress=op, should_abort=sa),
     )
     summary.rendered = _do(
         "render",
-        lambda: _stage_render(profile, conn, on_progress=_progress("render"), should_abort=_abort),
+        lambda op, sa: _stage_render(profile, conn, on_progress=op, should_abort=sa),
     )
-    summary.applied = _do("apply", lambda: _stage_apply(profile, conn, budget.apply))
-    summary.questions_surfaced = _do("questions", lambda: _stage_surface_questions(profile, conn))
+    summary.applied = _do("apply", lambda op, sa: _stage_apply(profile, conn, budget.apply))
+    summary.questions_surfaced = _do("questions", lambda op, sa: _stage_surface_questions(profile, conn))
 
     aborted = ps.stop_requested()
     summary.finished_at = _ts()
@@ -207,7 +233,13 @@ def run(
 # ---------------------------------------------------------------------------
 
 
-def _stage_discover(profile: Profile, conn: sqlite3.Connection, per_engine_limit: int) -> int:
+def _stage_discover(
+    profile: Profile,
+    conn: sqlite3.Connection,
+    per_engine_limit: int,
+    *,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
     """Pull at most ``per_engine_limit`` jobs per discovery engine."""
     from ..llm.budget import BudgetLedger
     from ..llm.router import LLMRouter
@@ -230,6 +262,7 @@ def _stage_discover(profile: Profile, conn: sqlite3.Connection, per_engine_limit
         profile=profile,
         router=router,
         limit_per_engine=per_engine_limit,
+        should_abort=should_abort,
     )
 
 

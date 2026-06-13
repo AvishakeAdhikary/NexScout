@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
@@ -15,6 +16,7 @@ from ...core.database import init_db
 from ...core.pipeline_status import PER_JOB_STAGES, eligible_stage
 from ...core.profile import Profile
 
+log = logging.getLogger(__name__)
 router = APIRouter()
 
 #: Columns needed to compute a row's eligible stage (the stage-lock).
@@ -30,6 +32,65 @@ _STAGE_ACTION_LABEL = {
     "tailor": "Tailor résumé",
     "apply": "Queue to apply",
 }
+
+
+def _opt_int(value: str | None) -> int | None:
+    """Coerce a query-string value to int, treating empty/blank/garbage as None.
+
+    The jobs filter form submits ``min_score=`` (empty) whenever any *other*
+    field changes; a bare ``int`` param would 422 on that empty value and the
+    whole filter would silently fail. This makes it tolerant.
+    """
+    if value is None:
+        return None
+    s = value.strip()
+    if not s:
+        return None
+    try:
+        return int(s)
+    except ValueError:
+        return None
+
+
+#: Ordered (stage-key, short label) pairs for the per-job progress timeline.
+_TIMELINE = [
+    ("discover", "Found"),
+    ("enrich", "Read"),
+    ("score", "Scored"),
+    ("tailor", "Résumé"),
+    ("cover", "Cover"),
+    ("render", "PDF"),
+    ("apply", "Applied"),
+]
+
+
+def _job_stage_timeline(
+    job: dict[str, Any], *, eligible: str | None, min_score: int, has_resume_pdf: bool
+) -> list[dict[str, str]]:
+    """Per-job stage timeline: each stage is done / current / skipped / todo."""
+    fit = job.get("fit_score")
+    below = fit is not None and int(fit) < int(min_score)
+    done = {
+        "discover": True,
+        "enrich": job.get("detail_scraped_at") is not None or job.get("full_description") is not None,
+        "score": fit is not None,
+        "tailor": bool(job.get("tailored_resume_path")),
+        "cover": bool(job.get("cover_letter_path")),
+        "render": bool(has_resume_pdf),
+        "apply": job.get("apply_status") == "applied",
+    }
+    out: list[dict[str, str]] = []
+    for key, label in _TIMELINE:
+        if done.get(key):
+            state = "done"
+        elif eligible == key:
+            state = "current"
+        elif below and key in ("tailor", "cover", "render", "apply"):
+            state = "skipped"
+        else:
+            state = "todo"
+        out.append({"key": key, "label": label, "state": state})
+    return out
 
 
 def _attach_eligibility(rows: list[dict[str, Any]], min_score: int) -> None:
@@ -82,15 +143,21 @@ def _build_jobs_query(
 @router.get("/jobs", response_class=HTMLResponse)
 async def list_jobs(
     request: Request,
-    min_score: int | None = None,
+    min_score: str | None = None,
     site: str | None = None,
     status: str | None = None,
     sort: str = "score",
-    page: int = 1,
+    page: str | None = None,
 ) -> HTMLResponse:
     per_page = 50
+    # Coerce tolerantly — the filter form sends empty values for unset fields.
+    ms = _opt_int(min_score)
+    pg = max(_opt_int(page) or 1, 1)
+    site = (site or "").strip() or None
+    status = (status or "").strip() or None
+    sort = sort or "score"
     list_sql, params, count_sql, count_params = _build_jobs_query(
-        min_score=min_score, site=site, status=status, sort=sort, page=page, per_page=per_page
+        min_score=ms, site=site, status=status, sort=sort, page=pg, per_page=per_page
     )
     conn = init_db()
     rows = [dict(r) for r in conn.execute(list_sql, params).fetchall()]
@@ -99,8 +166,8 @@ async def list_jobs(
     # Query string carrying the active filters (no `page`) so pagination links
     # preserve the current filter/sort selection.
     filt: dict[str, Any] = {}
-    if min_score is not None:
-        filt["min_score"] = min_score
+    if ms is not None:
+        filt["min_score"] = ms
     if site:
         filt["site"] = site
     if status:
@@ -111,10 +178,10 @@ async def list_jobs(
     context = {
         "rows": rows,
         "total": total,
-        "page": page,
+        "page": pg,
         "per_page": per_page,
         "filter_qs": urlencode(filt),
-        "filters": {"min_score": min_score, "site": site, "status": status, "sort": sort},
+        "filters": {"min_score": ms, "site": site, "status": status, "sort": sort},
     }
     # htmx swaps the `#jobs-table` element — return just the partial.
     template_name = "_jobs_table.html" if request.headers.get("HX-Request") else "jobs.html"
@@ -144,15 +211,20 @@ async def job_detail(request: Request, job_id: int) -> HTMLResponse:
     min_score = Profile.from_path().search.min_score
     job["eligible_stage"] = eligible_stage(job, min_score=min_score)
     job["stage_action_label"] = _STAGE_ACTION_LABEL.get(job["eligible_stage"] or "", "")
+    has_resume_pdf = (bundle / "resume.pdf").exists()
+    stage_timeline = _job_stage_timeline(
+        job, eligible=job["eligible_stage"], min_score=min_score, has_resume_pdf=has_resume_pdf
+    )
     templates = request.app.state.templates
     return templates.TemplateResponse(
         request,
         "job_detail.html",
         {
             "job": job,
+            "stage_timeline": stage_timeline,
             "transcript": transcript,
             "screenshots": [s.name for s in screenshots],
-            "has_resume_pdf": (bundle / "resume.pdf").exists(),
+            "has_resume_pdf": has_resume_pdf,
             "has_cover_pdf": (bundle / "cover_letter.pdf").exists(),
         },
     )
@@ -212,6 +284,15 @@ def _run_one_stage(profile: Profile, conn: Any, job: dict[str, Any], stage: str)
                 "tailor_attempts=COALESCE(tailor_attempts,0)+? WHERE url=?",
                 (str(txt), datetime.now(UTC).isoformat(), result.attempts, url),
             )
+            # Render the PDF right away so the tailored résumé is actually
+            # viewable — otherwise the PDF only appears after the separate
+            # render stage runs, which makes the button look like it did nothing.
+            try:
+                from ...pipeline import run_render_stage
+
+                run_render_stage(conn=conn, profile=profile)
+            except Exception:
+                log.warning("per-job render after tailor failed for %s", url, exc_info=True)
         else:
             conn.execute(
                 "UPDATE jobs SET tailor_attempts=COALESCE(tailor_attempts,0)+? WHERE url=?",

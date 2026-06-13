@@ -721,3 +721,35 @@ def test_logs_page_renders(client: TestClient) -> None:
 def test_logs_unknown_role_falls_back(client: TestClient) -> None:
     resp = client.get("/logs?role=bogus")
     assert resp.status_code == 200
+
+
+def test_jobs_filter_empty_min_score_does_not_422(client: TestClient) -> None:
+    """The UI submits min_score= (empty) alongside other filters — must not 422."""
+    resp = client.get("/jobs?min_score=&site=&status=applied&sort=score", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+
+
+def test_jobs_filter_actually_filters(client: TestClient) -> None:
+    all_jobs = client.get("/jobs", headers={"HX-Request": "true"}).text
+    applied = client.get("/jobs?status=applied", headers={"HX-Request": "true"}).text
+    assert "of 4" in all_jobs  # 4 seed jobs
+    assert "of 1" in applied  # exactly one is 'applied'
+
+
+def test_logs_tail_incremental(client: TestClient) -> None:
+    resp = client.get("/logs/tail?role=web&offset=0")
+    assert resp.status_code == 200
+    assert 'id="log-offset"' in resp.text  # OOB offset update is present
+
+
+def test_logs_clear_resets_view(client: TestClient) -> None:
+    resp = client.post("/logs/clear?role=web")
+    assert resp.status_code == 200
+    assert 'id="log-offset"' in resp.text
+
+
+def test_job_detail_has_progress_timeline(client: TestClient, db: sqlite3.Connection) -> None:
+    jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/1'").fetchone()["rowid"])
+    resp = client.get(f"/jobs/{jid}")
+    assert resp.status_code == 200
+    assert "Progress" in resp.text  # the per-job stage timeline section

@@ -68,7 +68,7 @@ def test_run_stage_success() -> None:
 
 def test_run_full_with_mocked_stages(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """Drive every stage with a no-op so the orchestration loop is fully covered."""
-    monkeypatch.setattr(tick, "_stage_discover", lambda p, c, n: 3)
+    monkeypatch.setattr(tick, "_stage_discover", lambda p, c, n, **kw: 3)
     monkeypatch.setattr(tick, "_stage_enrich", lambda p, c, n, **kw: 2)
     monkeypatch.setattr(tick, "_stage_score", lambda p, c, n, **kw: 10)
     monkeypatch.setattr(tick, "_stage_tailor", lambda p, c, n, **kw: 4)
@@ -104,6 +104,33 @@ def test_run_subset_of_stages(db: sqlite3.Connection, monkeypatch: pytest.Monkey
 
     tick.run(profile=_profile(), db=db, wall_clock_s=10.0, stages={"discover", "score"})
     assert called == ["discover", "score"]
+
+
+def test_run_honors_live_disabled_stage(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A stage turned off via the control file is skipped by the pass."""
+    from nexscout.core import pipeline_status as ps
+
+    called: list[str] = []
+
+    def rec(name: str) -> Any:
+        def fn(*a: Any, **kw: Any) -> int:
+            called.append(name)
+            return 0
+
+        return fn
+
+    for stage in ("discover", "enrich", "score", "tailor", "cover", "render", "apply"):
+        monkeypatch.setattr(tick, f"_stage_{stage}", rec(stage))
+    monkeypatch.setattr(tick, "_stage_surface_questions", rec("questions"))
+
+    ps.set_stage_enabled("discover", False)
+    try:
+        tick.run(profile=_profile(), db=db, wall_clock_s=10.0)
+    finally:
+        ps.set_stage_enabled("discover", True)
+
+    assert "discover" not in called  # turned off -> skipped
+    assert "score" in called and "apply" in called  # the rest still run
 
 
 def test_stage_discover_router_failure(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:

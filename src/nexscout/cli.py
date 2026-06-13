@@ -413,6 +413,7 @@ def autopilot(
     from .openclaw.tick import run as tick_run
 
     setup_file_logging("autopilot")
+    pipeline_status.clear_stop()  # clear any stale stop flag left from a prior run
     _logging.getLogger("nexscout").info("autopilot starting")
     c = console()
     profile_p = profile_path()

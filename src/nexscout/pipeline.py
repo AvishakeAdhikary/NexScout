@@ -60,15 +60,28 @@ def run_discover_stage(
     profile: Profile,
     router: LLMRouter | None = None,
     limit_per_engine: int = 0,
+    should_abort: Callable[[], bool] | None = None,
 ) -> int:
     """Run each available discovery engine and return the new-row count.
 
     Engines that aren't installed (e.g. ``python-jobspy`` is optional) are
     skipped. Each engine writes to ``jobs`` via the standard ``insert_jobs``
     helper so duplicates are silently dropped.
+
+    ``should_abort`` is checked **between** engines so discover honours its
+    per-stage time budget — the cheap API engines (jobspy/workday/websearch)
+    run first, and the slow browser+LLM engines (browser-websearch,
+    smartextract) are skipped once the budget is spent, so discover can never
+    starve the downstream stages.
     """
     total = 0
-    _ = router, limit_per_engine  # reserved for engines that don't yet honour per-engine caps
+    _ = limit_per_engine  # reserved for engines that don't yet honour per-engine caps
+
+    def _stop() -> bool:
+        if should_abort is not None and should_abort():
+            log.info("discover: time budget reached — skipping remaining engines")
+            return True
+        return False
 
     try:
         from .discovery import jobspy as _jobspy_mod
@@ -81,44 +94,48 @@ def run_discover_stage(
         except Exception as e:
             log.warning("jobspy engine failed: %s", e)
 
-    try:
-        from .discovery import workday as _workday_mod
-    except ImportError:
-        log.info("discovery.workday unavailable; skipping")
-    else:
+    if not _stop():
         try:
-            new, _dup = _workday_mod.run_workday(profile, conn=conn)
-            total += int(new)
-        except Exception as e:
-            log.warning("workday engine failed: %s", e)
+            from .discovery import workday as _workday_mod
+        except ImportError:
+            log.info("discovery.workday unavailable; skipping")
+        else:
+            try:
+                new, _dup = _workday_mod.run_workday(profile, conn=conn)
+                total += int(new)
+            except Exception as e:
+                log.warning("workday engine failed: %s", e)
 
-    try:
-        from .discovery import websearch as _websearch_mod
-    except ImportError:
-        log.info("discovery.websearch unavailable; skipping")
-    else:
+    if not _stop():
         try:
-            new, _dup = _websearch_mod.run_websearch(profile, conn=conn)
-            total += int(new)
-        except Exception as e:
-            log.warning("websearch engine failed: %s", e)
+            from .discovery import websearch as _websearch_mod
+        except ImportError:
+            log.info("discovery.websearch unavailable; skipping")
+        else:
+            try:
+                new, _dup = _websearch_mod.run_websearch(profile, conn=conn)
+                total += int(new)
+            except Exception as e:
+                log.warning("websearch engine failed: %s", e)
 
-        # Browser-driven WebSearch (Google + DuckDuckGo) — the no-API-key path
-        # that keeps working when JobSpy is IP-rate-limited. Needs an undetected
-        # Chrome; on hosts without one it returns (0, 0) gracefully.
-        try:
-            from .browser.driver import UndetectedFactory
+            # Browser-driven WebSearch (Google + DuckDuckGo) — the no-API-key
+            # path that keeps working when JobSpy is IP-rate-limited. Needs an
+            # undetected Chrome; on hosts without one it returns (0, 0).
+            if not _stop():
+                try:
+                    from .browser.driver import UndetectedFactory
 
-            new, _dup = _websearch_mod.run_browser_websearch(
-                profile, conn=conn, router=router, limit=limit_per_engine, browser_factory=UndetectedFactory()
-            )
-            total += int(new)
-        except Exception as e:
-            log.warning("browser websearch engine failed: %s", e)
+                    new, _dup = _websearch_mod.run_browser_websearch(
+                        profile, conn=conn, router=router, limit=limit_per_engine, browser_factory=UndetectedFactory()
+                    )
+                    total += int(new)
+                except Exception as e:
+                    log.warning("browser websearch engine failed: %s", e)
 
-    # SmartExtract needs a router + a browser; only run if both are available
-    # and the caller passed a router. Otherwise log and continue.
-    if router is not None:
+    # SmartExtract needs a router + a browser; it's the slowest engine (a
+    # browser + LLM session per employer), so it runs last and only if the
+    # discover time budget hasn't been spent.
+    if router is not None and not _stop():
         try:
             from .discovery import smartextract as _smart_mod
         except ImportError:

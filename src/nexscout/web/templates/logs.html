@@ -5,16 +5,17 @@
 {% block body %}
 <div class="mb-2 flex flex-wrap items-baseline gap-2">
   <h1 class="text-2xl font-bold">Live logs</h1>
-  {{ help("Live logs", "A live feed of exactly what NexScout is doing behind the scenes, straight from each backend process. Newest lines are at the bottom; the view refreshes every 3 seconds.") }}
+  {{ help("Live logs", "A live feed of exactly what NexScout is doing behind the scenes. It streams only new lines as they arrive (it doesn't reload everything). Newest is at the bottom.") }}
 </div>
 <p class="mb-4 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-  Pick which part of the backend to watch. <strong>Autopilot</strong> is the always-on engine that runs the
-  pipeline; <strong>Web</strong> is this dashboard; <strong>MCP</strong> is the tool server the OpenClaw agent calls.
+  <strong>Autopilot</strong> is the always-on engine; <strong>Web</strong> is this dashboard;
+  <strong>MCP</strong> is the tool server the OpenClaw agent calls.
 </p>
 
-<div class="mb-3 flex flex-wrap gap-1">
+<!-- Which backend process to watch (full reload keeps it simple). -->
+<div class="mb-2 flex flex-wrap gap-1">
   {% for r in roles %}
-  <a href="/logs?role={{ r }}"
+  <a href="/logs?role={{ r }}&level={{ level }}"
      class="rounded-md border px-3 py-1.5 text-sm font-medium
             {% if r == role %}border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300{% else %}border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800{% endif %}">
     {{ r|capitalize }}
@@ -22,19 +23,43 @@
   {% endfor %}
 </div>
 
-<div id="logs-view" hx-get="/logs?role={{ role }}" hx-trigger="load, every 3s" hx-swap="innerHTML">
-  {% include "_logs_view.html" %}
+<!-- Level filter + Clear. -->
+<div class="mb-3 flex flex-wrap items-center gap-1">
+  <span class="mr-1 text-xs text-slate-400">Level:</span>
+  {% for lv in levels %}
+  <a href="/logs?role={{ role }}&level={{ lv }}"
+     class="rounded-md border px-2.5 py-1 text-xs font-medium
+            {% if lv == level %}border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300{% else %}border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800{% endif %}">
+    {{ lv }}
+  </a>
+  {% endfor %}
+  <button hx-post="/logs/clear?role={{ role }}&level={{ level }}" hx-target="#logs-pre" hx-swap="innerHTML"
+          class="ml-auto rounded-md border border-slate-300 px-3 py-1 text-xs font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">
+    Clear
+  </button>
 </div>
+
+<pre id="logs-pre" class="max-h-[60vh] overflow-auto rounded-lg bg-slate-950 p-3 text-xs leading-relaxed text-slate-200">{% for line in lines %}{{ line }}
+{% endfor %}</pre>
+
+<!-- Poller: streams only the bytes appended since the stored offset. -->
+<div hx-get="/logs/tail?role={{ role }}&level={{ level }}" hx-trigger="load delay:3s, every 3s"
+     hx-target="#logs-pre" hx-swap="beforeend" hx-include="#log-offset"></div>
+<input type="hidden" id="log-offset" name="offset" value="{{ offset }}">
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Keep the log view pinned to the newest lines after each refresh.
+  // Keep the pane pinned to the newest lines after each append.
   document.body.addEventListener('htmx:afterSwap', function (e) {
-    if (e.target && e.target.id === 'logs-view') {
-      var pre = document.getElementById('logs-pre');
-      if (pre) { pre.scrollTop = pre.scrollHeight; }
+    if (e.target && e.target.id === 'logs-pre') {
+      e.target.scrollTop = e.target.scrollHeight;
     }
+  });
+  // Start scrolled to the bottom on first load.
+  window.addEventListener('DOMContentLoaded', function () {
+    var pre = document.getElementById('logs-pre');
+    if (pre) { pre.scrollTop = pre.scrollHeight; }
   });
 </script>
 {% endblock %}

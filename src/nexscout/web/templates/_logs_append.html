@@ -1,0 +1,6 @@
+{# Incremental log fragment. The poller appends the new lines to #logs-pre
+   (hx-swap=beforeend) and the OOB input advances the stored byte offset, so each
+   poll streams only what was appended since last time. The Clear button reuses
+   this with hx-swap=innerHTML + an empty `lines` to blank the pane. #}
+{% for line in lines %}{{ line }}
+{% endfor %}<input type="hidden" id="log-offset" name="offset" value="{{ offset }}" hx-swap-oob="true">
