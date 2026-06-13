@@ -708,11 +708,67 @@ def test_dispatch_routes_each_tool(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
         assert isinstance(r, ToolResult), f"{name} did not return ToolResult"
 
 
-def test_get_tool_specs_has_twelve_tools() -> None:
+def test_get_tool_specs_has_thirteen_tools() -> None:
     specs = get_tool_specs()
-    assert len(specs) == 12
+    assert len(specs) == 13  # 12 originals + autofill
     names = {s["name"] for s in specs}
     assert names == set(tools.TOOL_NAMES)
+    assert "autofill" in names
+
+
+def test_match_profile_value() -> None:
+    from types import SimpleNamespace
+
+    from nexscout.apply.tools import match_profile_value
+
+    prof = SimpleNamespace(
+        me=SimpleNamespace(
+            legal="Jane Doe",
+            pref="Jane",
+            email="jane@x.com",
+            phone="123",
+            links=SimpleNamespace(li="linkedin.com/in/jane", gh="github.com/jane"),
+        )
+    )
+    assert match_profile_value({"type": "email", "name": "email"}, prof) == "jane@x.com"
+    assert match_profile_value({"name": "phone"}, prof) == "123"
+    assert match_profile_value({"label": "First Name"}, prof) == "Jane"
+    assert match_profile_value({"label": "Last Name"}, prof) == "Doe"
+    assert match_profile_value({"label": "Full name"}, prof) == "Jane Doe"
+    assert match_profile_value({"name": "linkedin_url"}, prof) == "linkedin.com/in/jane"
+    # NOT a person-name field — must stay None.
+    assert match_profile_value({"label": "Company name"}, prof) is None
+    assert match_profile_value({"name": "favourite_color"}, prof) is None
+
+
+def test_autofill_fills_standard_fields(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+
+    from nexscout.apply.tools import autofill
+
+    prof = SimpleNamespace(
+        me=SimpleNamespace(
+            legal="Jane Doe", pref="Jane", email="jane@x.com", phone="123",
+            links=SimpleNamespace(li="li", gh="gh"),
+        )
+    )
+    fields = [
+        {"type": "email", "name": "email", "label": "Email"},
+        {"type": "text", "id": "phone", "label": "Phone"},
+        {"type": "file", "name": "resume", "label": "Resume"},
+        {"type": "text", "name": "company", "label": "Company"},
+    ]
+    drv = MagicMock()
+    drv.execute_script.return_value = fields
+    filled: dict[str, Any] = {}
+    monkeypatch.setattr("nexscout.apply.form_filler.fill_input", lambda d, r, v: bool(filled.__setitem__(r, v)) or True)
+    monkeypatch.setattr("nexscout.apply.form_filler.upload", lambda d, r, p: bool(filled.__setitem__(r, p)) or True)
+    (tmp_path / "resume.pdf").write_bytes(b"x")
+
+    r = autofill(drv, {}, tmp_path, prof)
+    assert r.ok
+    assert r.data["count"] == 3  # email + phone + resume (company is skipped)
+    assert "jane@x.com" in filled.values()
 
 
 # ---------------------------------------------------------------------------

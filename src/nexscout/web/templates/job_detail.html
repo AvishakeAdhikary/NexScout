@@ -22,12 +22,27 @@
       View the original job posting ↗
     </a>
   </p>
-  {% if job.eligible_stage %}
+  {% if job.eligible_stage == 'apply' %}
+  <div class="mt-4 flex flex-wrap items-center gap-2">
+    <form method="post" action="/jobs/{{ job.id }}/apply-now"
+          onsubmit="return confirm('Apply to this job now? This opens the application and submits it. It can take a minute or two.');">
+      <button class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600">
+        Apply now
+      </button>
+    </form>
+    <form method="post" action="/jobs/{{ job.id }}/stage/apply">
+      <button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">
+        Queue to apply
+      </button>
+    </form>
+    {{ help("Apply now vs Queue", "Apply now opens the application and submits it immediately (takes a minute or two). Queue marks it ready so the engine submits it on its next pass.") }}
+  </div>
+  {% elif job.eligible_stage %}
   <form method="post" action="/jobs/{{ job.id }}/stage/{{ job.eligible_stage }}" class="mt-4 flex items-center gap-1">
     <button class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600">
       {{ job.stage_action_label }}
     </button>
-    {{ help("Next step", "Runs the one stage this job is currently eligible for, following the stage order — you can't skip ahead. (Apply is queued for the engine to submit.)") }}
+    {{ help("Next step", "Runs the one stage this job is currently eligible for, following the stage order — you can't skip ahead.") }}
   </form>
   {% endif %}
 </div>

@@ -206,6 +206,127 @@ def fill_form(driver: Any, args: dict[str, Any], bundle_dir: Path) -> ToolResult
     return ToolResult(ok=ok, data=outcome, error=None if ok else "one or more fields failed")
 
 
+#: JS that enumerates visible, fillable form fields with their identifying text.
+_DISCOVER_FIELDS_JS = """
+const out = [];
+for (const el of document.querySelectorAll('input, textarea, select')) {
+  const t = (el.type || '').toLowerCase();
+  if (t === 'hidden' || t === 'submit' || t === 'button' || t === 'image' || t === 'reset') continue;
+  const r = el.getBoundingClientRect();
+  if (r.width === 0 && r.height === 0) continue;
+  let label = '';
+  try { if (el.labels && el.labels.length) label = el.labels[0].textContent || ''; } catch (e) {}
+  out.push({
+    tag: (el.tagName || '').toLowerCase(), type: t,
+    name: el.name || '', id: el.id || '',
+    placeholder: el.placeholder || '', aria: el.getAttribute('aria-label') || '', label: label,
+  });
+}
+return out;
+"""
+
+
+def _field_haystack(field: dict[str, Any]) -> str:
+    return " ".join(str(field.get(k, "")) for k in ("name", "id", "placeholder", "aria", "label")).lower()
+
+
+def _field_selector(field: dict[str, Any]) -> str | None:
+    if field.get("id"):
+        return f"#{field['id']}"
+    if field.get("name"):
+        return f'[name="{field["name"]}"]'
+    return None
+
+
+def match_profile_value(field: dict[str, Any], profile: Any) -> str | None:
+    """Map a discovered form field to the profile value it should hold.
+
+    Conservative on purpose: only fills fields it's confident about (email,
+    phone, name, LinkedIn/GitHub), and never a company/user/file field. Returns
+    None when unsure so the AI agent fills the rest. Unit-tested.
+    """
+    hay = _field_haystack(field)
+    ftype = (field.get("type") or "").lower()
+    me = getattr(profile, "me", None)
+    if me is None:
+        return None
+    full = (getattr(me, "legal", "") or getattr(me, "pref", "") or "").strip()
+    parts = full.split()
+    first = parts[0] if parts else ""
+    last = parts[-1] if len(parts) > 1 else ""
+
+    if ftype == "email" or "email" in hay or "e-mail" in hay:
+        return getattr(me, "email", "") or None
+    if ftype == "tel" or "phone" in hay or "mobile" in hay or "telephone" in hay:
+        return getattr(me, "phone", "") or None
+    links = getattr(me, "links", None)
+    if "linkedin" in hay and links is not None:
+        return getattr(links, "li", "") or None
+    if "github" in hay and links is not None:
+        return getattr(links, "gh", "") or None
+    # Name fields — skip anything that's clearly NOT a person's name.
+    if any(bad in hay for bad in ("company", "employer", "organization", "organisation", "user", "file", "school")):
+        return None
+    if "first name" in hay or "given name" in hay or "fname" in hay:
+        return first or None
+    if "last name" in hay or "surname" in hay or "family name" in hay or "lname" in hay:
+        return last or None
+    if (
+        "full name" in hay
+        or "legal name" in hay
+        or "your name" in hay
+        or hay.strip() in ("name", "applicant name", "candidate name")
+    ):
+        return full or None
+    return None
+
+
+def autofill(driver: Any, args: dict[str, Any], bundle_dir: Path, profile: Any) -> ToolResult:
+    """``autofill()`` — deterministically fill the standard fields (name, email,
+    phone, LinkedIn/GitHub, and the résumé/cover-letter file inputs) in one shot.
+
+    This does NOT submit anything — it just removes the busy-work so the agent
+    (especially a small model) only has to handle the non-standard questions.
+    Returns the map of what it filled.
+    """
+    if profile is None:
+        return ToolResult(ok=False, error="no profile available")
+    try:
+        fields = driver.execute_script(_DISCOVER_FIELDS_JS) or []
+    except Exception as e:
+        return ToolResult(ok=False, error=f"field discovery failed: {e}")
+
+    filled: dict[str, Any] = {}
+    for fld in fields:
+        if not isinstance(fld, dict):
+            continue
+        sel = _field_selector(fld)
+        if not sel:
+            continue
+        if (fld.get("type") or "").lower() == "file":
+            hay = _field_haystack(fld)
+            path: str | None = None
+            if any(k in hay for k in ("resume", "résumé", "cv")):
+                p = bundle_dir / "resume.pdf"
+                path = str(p) if p.exists() else None
+            elif "cover" in hay:
+                p = bundle_dir / "cover_letter.pdf"
+                path = str(p) if p.exists() else None
+            if path and form_filler.upload(driver, sel, path):
+                filled[sel] = f"<file:{Path(path).name}>"
+            continue
+        value = match_profile_value(fld, profile)
+        if value and form_filler.fill_input(driver, sel, value):
+            filled[sel] = value
+
+    _ = args
+    return ToolResult(
+        ok=bool(filled),
+        data={"filled": filled, "count": len(filled)},
+        error=None if filled else "no standard fields matched (fill the form manually)",
+    )
+
+
 def select(driver: Any, args: dict[str, Any], bundle_dir: Path) -> ToolResult:
     """``select(ref, value)`` — pick an option."""
     _ = bundle_dir
@@ -476,6 +597,7 @@ TOOL_NAMES: tuple[str, ...] = (
     "read_page",
     "screenshot",
     "click",
+    "autofill",
     "fill_form",
     "select",
     "upload",
@@ -509,6 +631,15 @@ def get_tool_specs() -> list[dict[str, Any]]:
             "name": "click",
             "description": "Click the element matching ref (CSS/XPath/data-testid).",
             "parameters": {"type": "object", "properties": {"ref": {"type": "string"}}, "required": ["ref"]},
+        },
+        {
+            "name": "autofill",
+            "description": (
+                "Deterministically fill the STANDARD fields (name, email, phone, LinkedIn/GitHub, and the "
+                "résumé/cover-letter file inputs) from the applicant profile in one shot. Does NOT submit. "
+                "Call this first on any application form, then handle the remaining custom questions."
+            ),
+            "parameters": {"type": "object", "properties": {}},
         },
         {
             "name": "fill_form",
@@ -599,6 +730,8 @@ def dispatch_tool(
         return screenshot(driver, args, bundle_dir, idx=screenshot_idx)
     if name == "click":
         return click(driver, args, bundle_dir)
+    if name == "autofill":
+        return autofill(driver, args, bundle_dir, profile)
     if name == "fill_form":
         return fill_form(driver, args, bundle_dir)
     if name == "select":
@@ -643,10 +776,12 @@ __all__ = [
     "TOOL_NAMES",
     "ToolResult",
     "append_transcript",
+    "autofill",
     "click",
     "dispatch_tool",
     "done",
     "fill_form",
+    "match_profile_value",
     "get_tool_specs",
     "navigate",
     "read_page",

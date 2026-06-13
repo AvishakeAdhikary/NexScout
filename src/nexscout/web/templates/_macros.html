@@ -43,6 +43,15 @@
        class="rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">Next ›</a>
     {% endif %}
   </div>
+  {% if total_pages > 1 %}
+  <form class="flex items-center gap-1"
+        {% if hx_target %}hx-get="{{ base_url }}{% if qs %}?{{ qs }}{% endif %}" hx-target="{{ hx_target }}" hx-swap="outerHTML"{% else %}action="{{ base_url }}" method="get"{% endif %}>
+    <span class="text-slate-400">Go to page</span>
+    <input type="number" name="page" min="1" max="{{ total_pages }}" value="{{ page }}" aria-label="Go to page"
+           class="w-16 rounded-md border border-slate-300 px-2 py-1 dark:border-slate-700 dark:bg-slate-950">
+    <button class="rounded-md border border-slate-300 px-2.5 py-1 font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">Go</button>
+  </form>
+  {% endif %}
 </nav>
 {% endmacro %}
 

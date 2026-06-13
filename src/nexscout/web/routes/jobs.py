@@ -94,12 +94,17 @@ def _job_stage_timeline(
 
 
 def _attach_eligibility(rows: list[dict[str, Any]], min_score: int) -> None:
-    """Tag each row with the single stage it's eligible for (the stage-lock)."""
+    """Tag each row with its eligible stage (stage-lock) + a compact per-job
+    stage timeline, so the list mirrors the dashboard's per-stage view."""
     for r in rows:
         probe = dict(r)
         probe["full_description"] = True if r.get("has_desc") else None
         r["eligible_stage"] = eligible_stage(probe, min_score=min_score)
         r["stage_action_label"] = _STAGE_ACTION_LABEL.get(r["eligible_stage"] or "", "")
+        has_resume_pdf = (bundle_dir_for(int(r["id"])) / "resume.pdf").exists()
+        r["timeline"] = _job_stage_timeline(
+            probe, eligible=r["eligible_stage"], min_score=min_score, has_resume_pdf=has_resume_pdf
+        )
 
 
 def _build_jobs_query(
@@ -344,6 +349,73 @@ def run_job_stage(request: Request, job_id: int, stage: str) -> Any:
 def score_job_now(request: Request, job_id: int) -> Any:
     """Back-compat alias for running the score stage on one job."""
     return run_job_stage(request, job_id, "score")
+
+
+def _apply_one_now(profile: Profile, conn: Any, job: dict[str, Any]) -> None:
+    """Apply to exactly this job, right now, via the AI apply agent (same
+    orchestrator the autopilot uses). Heavy: launches a headless browser and
+    runs the ReAct loop, so the caller must be a threadpool (sync) handler."""
+    from datetime import UTC, datetime
+
+    from ...apply.orchestrator import _process_one
+
+    url = job["url"]
+    # Claim this specific job so a concurrent autopilot pass won't grab it.
+    conn.execute(
+        "UPDATE jobs SET apply_status='in_progress', agent_id='web-applynow', last_attempted_at=? WHERE url=?",
+        (datetime.now(UTC).isoformat(), url),
+    )
+    try:
+        from ...apply.agent import run_agent
+        from ...browser.pool import BrowserPool
+        from ...captcha.capsolver import CapSolverSolver
+    except ImportError as e:
+        log.warning("apply-now: apply backend unavailable (%s)", e)
+        conn.execute("UPDATE jobs SET apply_status=NULL WHERE url=? AND apply_status='in_progress'", (url,))
+        return
+
+    solver = CapSolverSolver(api_key=profile.captcha.api_key) if profile.captcha.api_key else None
+    try:
+        pool = BrowserPool(workers=1, headless=True)
+    except Exception as e:
+        log.warning("apply-now: no browser available (%s)", e)
+        conn.execute("UPDATE jobs SET apply_status=NULL WHERE url=? AND apply_status='in_progress'", (url,))
+        return
+
+    _process_one(
+        job,
+        worker_id=0,
+        agent_id="web-applynow",
+        profile=profile,
+        db_conn=conn,
+        solver=solver,
+        llm_router=_build_router(profile),
+        pool=pool,
+        runner=run_agent,
+        dashboard=None,
+        dry_run=bool(profile.apply.dry_run),
+        backend=profile.apply.backend or "native",
+    )
+
+
+@router.post("/jobs/{job_id}/apply-now", response_class=HTMLResponse)
+def apply_now(request: Request, job_id: int) -> Any:
+    """Apply to one specific job immediately (the "Apply now" button), if it's
+    apply-eligible. Sync handler so the browser/AI work runs in the threadpool."""
+    conn = init_db()
+    row = conn.execute("SELECT rowid AS id, * FROM jobs WHERE rowid = ?", (job_id,)).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="job not found")
+    job = dict(row)
+    profile = Profile.from_path()
+    if eligible_stage(job, min_score=profile.search.min_score) == "apply":
+        try:
+            _apply_one_now(profile, conn, job)
+        except Exception:
+            log.warning("apply-now failed for %s", job.get("url"), exc_info=True)
+    if request.headers.get("HX-Request"):
+        return _job_row_response(request, conn, job_id, profile.search.min_score)
+    return RedirectResponse(url=f"/jobs/{job_id}", status_code=303)
 
 
 @router.post("/api/reapply")

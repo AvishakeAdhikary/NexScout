@@ -8,6 +8,7 @@
           <th class="px-4 py-2 font-medium">Job title</th>
           <th class="px-4 py-2 font-medium">Job site</th>
           <th class="px-4 py-2 font-medium">Status</th>
+          <th class="px-4 py-2 font-medium">Stage</th>
           <th class="px-4 py-2 font-medium">Found</th>
           <th class="px-4 py-2 text-right font-medium">Next step</th>
         </tr>
@@ -16,7 +17,7 @@
         {% for row in rows %}
         {% include "_job_row.html" %}
         {% else %}
-        <tr><td colspan="6" class="px-4 py-6 text-center text-slate-400">No jobs match these filters yet.</td></tr>
+        <tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">No jobs match these filters yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>
