@@ -43,8 +43,8 @@ Container nexscout  Started
 
 The compose `command` is `["autopilot", "--wall-clock", "1800"]`, which runs
 the resilient continuous loop: each pass executes one bounded discover →
-enrich → score → tailor → render → apply → surface-questions unit of work,
-persists to SQLite, then sleeps before the next pass. If LM Studio isn't
+enrich → score → tailor → cover → render → apply → surface-questions unit of
+work, persists to SQLite, then sleeps before the next pass. If LM Studio isn't
 reachable the score / tailor / apply calls fail for that pass and the loop
 logs the error and continues — one bad pass never stops autopilot (and the
 SQLite state means it resumes where it left off after any crash or reboot).
@@ -101,11 +101,16 @@ Both should return HTTP 200. The dashboard is a modern responsive **Tailwind**
 UI with interactive **Chart.js** graphs. The `/` HTML includes the counter
 labels `total`, `scored`, `applied` (plus `parked` / `skipped` / `apply_errors`
 from the apply-outcome taxonomy) and an **OpenClaw status panel** (last tick,
-active channel, pending channel deliveries). Controls are plain-language
-("Check for new jobs now", "Auto-run") and non-blocking — triggering a run
-returns `202 Accepted` and the page polls `GET /controls/status` until the pass
-finishes. The `/` route is not auth-gated; the protected routes (write actions,
-the controls panel) check the session cookie set by `nexscout web --init-pw`.
+active channel, pending channel deliveries). The centrepiece is the interactive
+**"Automation pipeline"** panel: each stage shows its live state, a progress
+bar, and its backlog ("N waiting"), with per-stage **Turn on/off** toggles and
+**Run one full pass now** / **Pause** / **Resume** / **Stop the current run**
+controls (polled from `/controls/pipeline`). Long actions are non-blocking —
+triggering a run returns `202 Accepted` and the page polls `GET /controls/status`
+until the pass finishes. A **Logs** tab (`/logs`) tails the per-role backend log
+files (`~/.nexscout/logs/nexscout-{autopilot,web,mcp}.log`) and refreshes every
+3s. The `/` route is not auth-gated; the protected routes (write actions, the
+controls panel) check the session cookie set by `nexscout web --init-pw`.
 
 This is NexScout's own web UI on `:8765`. When you bring up the `openclaw`
 profile (§7) two more services start: `nexscout-mcp` (the MCP server on
@@ -270,5 +275,5 @@ Register NexScout's tools with the gateway (validates + probes the server):
     --url http://nexscout-mcp:8770/mcp
 ```
 
-`openclaw mcp probe` should then report `nexscout: 10 tools`. See
+`openclaw mcp probe` should then report `nexscout: 15 tools`. See
 `docs/openclaw.md` for the full tool table and the `mcp.servers` contract.

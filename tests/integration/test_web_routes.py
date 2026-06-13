@@ -570,6 +570,10 @@ def test_score_job_now_htmx_updates_row(
 
     monkeypatch.setattr(scorer, "score_job", lambda *a, **k: (8, "python, ml\nStrong match."))
     jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/3'").fetchone()["rowid"])
+    # Make it eligible for the score stage: enriched (has a description) but unscored.
+    db.execute(
+        "UPDATE jobs SET fit_score=NULL, full_description='desc', detail_scraped_at='2025' WHERE rowid=?", (jid,)
+    )
     resp = client.post(f"/jobs/{jid}/score", headers={"HX-Request": "true"})
     assert resp.status_code == 200
     assert "<tr" in resp.text
@@ -603,12 +607,14 @@ def test_score_job_now_failure_keeps_existing_score(
     from nexscout.scoring import scorer
 
     monkeypatch.setattr(scorer, "score_job", lambda *a, **k: (0, "error: boom"))
-    row = db.execute("SELECT rowid, fit_score FROM jobs WHERE url='https://x.com/1'").fetchone()
-    jid, before = int(row["rowid"]), int(row["fit_score"])
+    jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/3'").fetchone()["rowid"])
+    db.execute(
+        "UPDATE jobs SET fit_score=NULL, full_description='desc', detail_scraped_at='2025' WHERE rowid=?", (jid,)
+    )
     resp = client.post(f"/jobs/{jid}/score", headers={"HX-Request": "true"})
     assert resp.status_code == 200
     after = db.execute("SELECT fit_score FROM jobs WHERE rowid=?", (jid,)).fetchone()
-    assert int(after["fit_score"]) == before
+    assert after["fit_score"] is None  # a 0/failed score must not be persisted
 
 
 def test_jobs_list_shows_pagination(client: TestClient) -> None:
@@ -632,3 +638,86 @@ def test_questions_shows_pagination(client: TestClient, db: sqlite3.Connection) 
     resp = client.get("/questions")
     assert resp.status_code == 200
     assert "Showing" in resp.text
+
+
+# ---------------------------------------------------------------------------
+# Pipeline panel + control + stage-lock + logs
+# ---------------------------------------------------------------------------
+
+
+def test_pipeline_panel_renders(client: TestClient) -> None:
+    resp = client.get("/controls/pipeline")
+    assert resp.status_code == 200
+    assert "Run one full pass now" in resp.text
+    assert "Discover" in resp.text and "Apply" in resp.text
+
+
+def test_pipeline_pause_resume_is_real(client: TestClient) -> None:
+    from nexscout.core import pipeline_status as ps
+
+    assert client.post("/controls/pipeline/pause").status_code == 200
+    assert ps.is_paused() is True
+    assert client.post("/controls/pipeline/resume").status_code == 200
+    assert ps.is_paused() is False
+
+
+def test_pipeline_stop_sets_flag(client: TestClient) -> None:
+    from nexscout.core import pipeline_status as ps
+
+    ps.clear_stop()
+    assert client.post("/controls/pipeline/stop").status_code == 200
+    assert ps.stop_requested() is True
+    ps.clear_stop()
+
+
+def test_pipeline_stage_toggle(client: TestClient) -> None:
+    from nexscout.core import pipeline_status as ps
+
+    assert ps.set_stage_enabled("apply", True) is not None  # start enabled
+    client.post("/controls/pipeline/stage/apply/toggle")
+    assert ps.stage_enabled("apply") is False
+    client.post("/controls/pipeline/stage/apply/toggle")
+    assert ps.stage_enabled("apply") is True
+
+
+def test_stage_lock_blocks_ineligible(client: TestClient, db: sqlite3.Connection) -> None:
+    """Requesting a stage a job isn't eligible for is a no-op (the stage-lock)."""
+    # Job 2 has no description/tailored résumé → eligible for 'enrich', not 'apply'.
+    jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/2'").fetchone()["rowid"])
+    before = db.execute("SELECT apply_status FROM jobs WHERE rowid=?", (jid,)).fetchone()["apply_status"]
+    resp = client.post(f"/jobs/{jid}/stage/apply", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    after = db.execute("SELECT apply_status FROM jobs WHERE rowid=?", (jid,)).fetchone()["apply_status"]
+    assert after == before  # apply did not run
+
+
+def test_per_job_apply_queues_when_eligible(client: TestClient, db: sqlite3.Connection) -> None:
+    jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/3'").fetchone()["rowid"])
+    # Make it apply-eligible: read + scored high + tailored + a prior failure.
+    db.execute(
+        "UPDATE jobs SET detail_scraped_at='2025', full_description='desc', fit_score=8, "
+        "tailored_resume_path='/tmp/r.txt', apply_status='failed', apply_attempts=1 WHERE rowid=?",
+        (jid,),
+    )
+    resp = client.post(f"/jobs/{jid}/stage/apply", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    row = db.execute("SELECT apply_status, apply_attempts FROM jobs WHERE rowid=?", (jid,)).fetchone()
+    assert row["apply_status"] is None
+    assert int(row["apply_attempts"]) == 0
+
+
+def test_run_job_stage_unknown(client: TestClient, db: sqlite3.Connection) -> None:
+    jid = int(db.execute("SELECT rowid FROM jobs WHERE url='https://x.com/2'").fetchone()["rowid"])
+    resp = client.post(f"/jobs/{jid}/stage/bogus", headers={"HX-Request": "true"})
+    assert resp.status_code == 422
+
+
+def test_logs_page_renders(client: TestClient) -> None:
+    resp = client.get("/logs")
+    assert resp.status_code == 200
+    assert "Live logs" in resp.text
+
+
+def test_logs_unknown_role_falls_back(client: TestClient) -> None:
+    resp = client.get("/logs?role=bogus")
+    assert resp.status_code == 200

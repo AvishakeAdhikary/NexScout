@@ -73,7 +73,7 @@ schema and **probes the server** (lists its tools) before saving:
 
 ```bash
 openclaw mcp add nexscout --url http://nexscout-mcp:8770/mcp --transport streamable-http
-openclaw mcp probe          # should report: nexscout: 10 tools
+openclaw mcp probe          # should report: nexscout: 15 tools
 ```
 
 The OpenClaw container resolves `nexscout-mcp` on `nexscout-net`. The CLI writes
@@ -100,18 +100,30 @@ mcp add` + `openclaw mcp reload` avoid the manual edit entirely.
 
 ### Exposed tools
 
-| Tool                              | What it does                                             |
-|-----------------------------------|----------------------------------------------------------|
-| `get_profile()`                   | Structured candidate profile (name, titles, skills, …)   |
-| `get_resume_text()`               | Plain-text résumé NexScout tailors per application       |
-| `pipeline_status()`               | Pipeline counts (total/scored/tailored/applied/…)        |
-| `discover_jobs(limit_per_engine)` | Run discovery; returns new-job count                     |
-| `score_jobs(limit)`               | Score enriched jobs for fit (0-10)                       |
-| `tailor_jobs(limit)`              | Tailor the résumé for high-fit jobs                      |
-| `apply_to_job(url)`               | One-shot apply to a specific job URL                     |
-| `list_open_questions()`           | List unanswered clarifying questions                     |
-| `answer_question(id, answer)`     | Answer a question; persists to learned-answers memory    |
-| `run_once(wall_clock_s)`          | One bounded end-to-end pipeline pass (the heartbeat tick)|
+| Tool                                | What it does                                             |
+|-------------------------------------|----------------------------------------------------------|
+| `get_profile()`                     | Structured candidate profile (name, titles, skills, …)   |
+| `get_resume_text()`                 | Plain-text résumé NexScout tailors per application       |
+| `pipeline_status()`                 | Pipeline counts (total/scored/tailored/applied/…)        |
+| `stage_status()`                    | Live per-stage status + control state + per-stage backlog (what's running right now) |
+| `pause_automation(paused=True)`     | Pause or resume the autopilot; while paused it runs no new passes |
+| `stop_current_run()`                | Ask the pass running right now to stop after its current job |
+| `set_stage_enabled(stage, enabled)` | Turn one pipeline stage on/off; disabled stages are skipped every pass |
+| `run_stage(stage)`                  | Run a single stage once (discover/enrich/score/tailor/cover/render/apply), honouring the stage-lock |
+| `discover_jobs(limit_per_engine)`   | Run discovery; returns new-job count                     |
+| `score_jobs(limit)`                 | Score enriched jobs for fit (0-10)                       |
+| `tailor_jobs(limit)`                | Tailor the résumé for high-fit jobs                      |
+| `apply_to_job(url)`                 | One-shot apply to a specific job URL                     |
+| `list_open_questions()`             | List unanswered clarifying questions                     |
+| `answer_question(id, answer)`       | Answer a question; persists to learned-answers memory    |
+| `run_once(wall_clock_s)`            | One bounded end-to-end pipeline pass (the heartbeat tick)|
+
+The five live-control tools (`stage_status`, `pause_automation`,
+`stop_current_run`, `set_stage_enabled`, `run_stage`) read/write the same
+cross-process status/control channel (`~/.nexscout/pipeline-status.json` and
+`pipeline-control.json`) that the web dashboard's pipeline panel uses, so the
+agent can watch and steer the autopilot and its changes show up there
+immediately. See `docs/architecture.md` → "Live pipeline status & control".
 
 Each tool is defensive: it catches its own exceptions and returns a clear
 `{"ok": false, "error": …}` envelope instead of crashing the long-lived server,
@@ -375,10 +387,12 @@ within a soft 5-minute budget:
 2. Enrich up to 20 pending jobs.
 3. Score up to 50 pending jobs.
 4. Tailor up to 5 high-fit jobs (LLM cost heavy).
-5. Render any missing PDFs.
-6. Apply to up to 3 jobs (browser cost heavy).
-7. Surface pending questions to OpenClaw channels.
-8. Print a one-line summary to stdout for OpenClaw to log.
+5. Write cover letters for tailored jobs that need one
+   (`cover_required = 1` or `apply.always_cover_letter`).
+6. Render any missing PDFs.
+7. Apply to up to 3 jobs (browser cost heavy).
+8. Surface pending questions to OpenClaw channels.
+9. Print a one-line summary to stdout for OpenClaw to log.
 
 Limits are configurable per `profile.openclaw.tick_budget` — see
 `examples/split/settings.yaml`.
@@ -417,4 +431,8 @@ Separately, NexScout's own web UI (<http://localhost:8765/>) shows an
 **OpenClaw status panel** on its dashboard — last tick timestamp, the active
 channel, and the count of pending channel deliveries — sourced from the
 `pending_questions` table and the last-tick marker, independent of the
-OpenClaw gateway.
+OpenClaw gateway. The same web UI also carries the interactive **Automation
+pipeline** panel (live per-stage status + Pause/Resume/Stop + per-stage
+toggles) and a **Logs** tab (`/logs`) that tails the per-role backend log
+files — the MCP control tools above drive the very same status/control
+channel. See `docs/architecture.md` → "Live pipeline status & control".

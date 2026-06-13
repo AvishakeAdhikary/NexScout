@@ -21,7 +21,7 @@ from __future__ import annotations
 import logging
 import sqlite3
 import time
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextlib import suppress
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
@@ -43,6 +43,7 @@ class TickSummary:
     enriched: int = 0
     scored: int = 0
     tailored: int = 0
+    covered: int = 0
     rendered: int = 0
     applied: int = 0
     questions_surfaced: int = 0
@@ -54,8 +55,8 @@ class TickSummary:
     def to_one_liner(self) -> str:
         return (
             f"tick: discovered={self.discovered} enriched={self.enriched} "
-            f"scored={self.scored} tailored={self.tailored} rendered={self.rendered} "
-            f"applied={self.applied} questions={self.questions_surfaced} "
+            f"scored={self.scored} tailored={self.tailored} covered={self.covered} "
+            f"rendered={self.rendered} applied={self.applied} questions={self.questions_surfaced} "
             f"errors={len(self.errors)} ({self.duration_s:.1f}s)"
         )
 
@@ -108,91 +109,95 @@ def run(
     db: sqlite3.Connection | None = None,
     wall_clock_s: float = DEFAULT_WALL_CLOCK_S,
     stages: Iterable[str] | None = None,
+    source: str = "tick",
 ) -> dict[str, Any]:
-    """Run a single tick. Returns the summary dict."""
+    """Run a single tick. Returns the summary dict.
+
+    Honours the cross-process control file — stages the user disabled are
+    skipped, and a ``stop_requested`` aborts the remainder of the pass — and
+    publishes live per-stage progress to ``pipeline-status.json`` so the web UI
+    and MCP can show exactly what is running and how far along it is.
+    """
+    from ..core import pipeline_status as ps
+
     summary = TickSummary(started_at=_ts())
     started = time.monotonic()
     # No ``max(0.0, ...)`` clamp: a negative wall-clock budget should produce a
-    # deadline in the past so every stage short-circuits via ``_run_stage``.
+    # deadline in the past so every stage short-circuits.
     deadline = started + float(wall_clock_s)
     conn = db if db is not None else init_db(database_path())
     budget = profile.openclaw.tick_budget
 
-    stage_set = set(stages) if stages else {"discover", "enrich", "score", "tailor", "render", "apply", "questions"}
+    requested = set(stages) if stages else set(ps.ALL_STEPS)
+    disabled = set(ps.read_control()["disabled_stages"])
+    ps.clear_stop()  # a fresh pass starts clean — a stop only aborts THIS pass
+    ps.begin_pass(source, disabled=sorted(disabled))
 
-    if "discover" in stage_set:
-        summary.discovered = (
-            _run_stage(
-                "discover",
-                lambda: _stage_discover(profile, conn, budget.discover_per_engine),
-                summary=summary,
-                deadline=deadline,
-            )
-            or 0
-        )
-    if "enrich" in stage_set:
-        summary.enriched = (
-            _run_stage(
-                "enrich",
-                lambda: _stage_enrich(profile, conn, budget.enrich),
-                summary=summary,
-                deadline=deadline,
-            )
-            or 0
-        )
-    if "score" in stage_set:
-        summary.scored = (
-            _run_stage(
-                "score",
-                lambda: _stage_score(profile, conn, budget.score),
-                summary=summary,
-                deadline=deadline,
-            )
-            or 0
-        )
-    if "tailor" in stage_set:
-        summary.tailored = (
-            _run_stage(
-                "tailor",
-                lambda: _stage_tailor(profile, conn, budget.tailor),
-                summary=summary,
-                deadline=deadline,
-            )
-            or 0
-        )
-    if "render" in stage_set:
-        summary.rendered = (
-            _run_stage(
-                "render",
-                lambda: _stage_render(profile, conn),
-                summary=summary,
-                deadline=deadline,
-            )
-            or 0
-        )
-    if "apply" in stage_set:
-        summary.applied = (
-            _run_stage(
-                "apply",
-                lambda: _stage_apply(profile, conn, budget.apply),
-                summary=summary,
-                deadline=deadline,
-            )
-            or 0
-        )
-    if "questions" in stage_set:
-        summary.questions_surfaced = (
-            _run_stage(
-                "questions",
-                lambda: _stage_surface_questions(profile, conn),
-                summary=summary,
-                deadline=deadline,
-            )
-            or 0
-        )
+    def _abort() -> bool:
+        return ps.stop_requested()
 
+    def _progress(stage: str) -> Any:
+        def _cb(done: int, total: int) -> None:
+            ps.stage_progress(stage, done, total)
+
+        return _cb
+
+    def _do(stage: str, fn: Any) -> int:
+        """Run one stage, honouring requested/disabled/stop/deadline + status."""
+        if stage not in requested:
+            return 0
+        if stage in disabled:
+            ps.stage_state(stage, "disabled")
+            return 0
+        if ps.stop_requested():
+            ps.stage_state(stage, "stopped")
+            return 0
+        if time.monotonic() >= deadline:
+            ps.stage_state(stage, "skipped")
+            log.info("tick: skipping %s (out of budget)", stage)
+            return 0
+        ps.stage_state(stage, "running")
+        log.info("tick: stage '%s' started", stage)
+        try:
+            count = int(fn() or 0)
+        except Exception as e:
+            log.exception("tick stage %s failed", stage)
+            summary.errors.append(f"{stage}: {e}")
+            ps.stage_state(stage, "error")
+            return 0
+        ps.stage_state(stage, "done", done=count, total=count)
+        log.info("tick: stage '%s' done — %d", stage, count)
+        return count
+
+    summary.discovered = _do("discover", lambda: _stage_discover(profile, conn, budget.discover_per_engine))
+    summary.enriched = _do(
+        "enrich",
+        lambda: _stage_enrich(profile, conn, budget.enrich, on_progress=_progress("enrich"), should_abort=_abort),
+    )
+    summary.scored = _do(
+        "score",
+        lambda: _stage_score(profile, conn, budget.score, on_progress=_progress("score"), should_abort=_abort),
+    )
+    summary.tailored = _do(
+        "tailor",
+        lambda: _stage_tailor(profile, conn, budget.tailor, on_progress=_progress("tailor"), should_abort=_abort),
+    )
+    summary.covered = _do(
+        "cover",
+        lambda: _stage_cover(profile, conn, budget.tailor, on_progress=_progress("cover"), should_abort=_abort),
+    )
+    summary.rendered = _do(
+        "render",
+        lambda: _stage_render(profile, conn, on_progress=_progress("render"), should_abort=_abort),
+    )
+    summary.applied = _do("apply", lambda: _stage_apply(profile, conn, budget.apply))
+    summary.questions_surfaced = _do("questions", lambda: _stage_surface_questions(profile, conn))
+
+    aborted = ps.stop_requested()
     summary.finished_at = _ts()
     summary.duration_s = time.monotonic() - started
+    ps.end_pass(asdict(summary), aborted=aborted)
+    ps.clear_stop()
     print(summary.to_one_liner())
     return asdict(summary)
 
@@ -228,7 +233,14 @@ def _stage_discover(profile: Profile, conn: sqlite3.Connection, per_engine_limit
     )
 
 
-def _stage_enrich(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
+def _stage_enrich(
+    profile: Profile,
+    conn: sqlite3.Connection,
+    limit: int,
+    *,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
     """Enrich up to ``limit`` pending rows.
 
     Returns the number of jobs that got a ``full_description`` written.
@@ -263,10 +275,19 @@ def _stage_enrich(profile: Profile, conn: sqlite3.Connection, limit: int) -> int
         router=router,
         browser_factory=factory,
         limit=limit,
+        on_progress=on_progress,
+        should_abort=should_abort,
     )
 
 
-def _stage_score(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
+def _stage_score(
+    profile: Profile,
+    conn: sqlite3.Connection,
+    limit: int,
+    *,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
     """Score up to ``limit`` pending rows via the LLM router."""
     from ..llm.budget import BudgetLedger
     from ..llm.router import LLMRouter
@@ -279,10 +300,19 @@ def _stage_score(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
             daily_calls=profile.llm.budgets.daily_calls,
         ),
     )
-    return run_score_stage(conn=conn, router=router, profile=profile, limit=limit)
+    return run_score_stage(
+        conn=conn, router=router, profile=profile, limit=limit, on_progress=on_progress, should_abort=should_abort
+    )
 
 
-def _stage_tailor(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:
+def _stage_tailor(
+    profile: Profile,
+    conn: sqlite3.Connection,
+    limit: int,
+    *,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
     from ..llm.budget import BudgetLedger
     from ..llm.router import LLMRouter
     from ..pipeline import run_tailor_stage
@@ -294,13 +324,46 @@ def _stage_tailor(profile: Profile, conn: sqlite3.Connection, limit: int) -> int
             daily_calls=profile.llm.budgets.daily_calls,
         ),
     )
-    return run_tailor_stage(conn=conn, router=router, profile=profile, limit=limit)
+    return run_tailor_stage(
+        conn=conn, router=router, profile=profile, limit=limit, on_progress=on_progress, should_abort=should_abort
+    )
 
 
-def _stage_render(profile: Profile, conn: sqlite3.Connection) -> int:
+def _stage_cover(
+    profile: Profile,
+    conn: sqlite3.Connection,
+    limit: int,
+    *,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
+    """Write cover letters for tailored rows that need one (cover_required / always)."""
+    from ..llm.budget import BudgetLedger
+    from ..llm.router import LLMRouter
+    from ..pipeline import run_cover_stage
+
+    router = LLMRouter(
+        profile,
+        budget=BudgetLedger(
+            monthly_usd=profile.llm.budgets.monthly_usd,
+            daily_calls=profile.llm.budgets.daily_calls,
+        ),
+    )
+    return run_cover_stage(
+        conn=conn, router=router, profile=profile, limit=limit, on_progress=on_progress, should_abort=should_abort
+    )
+
+
+def _stage_render(
+    profile: Profile,
+    conn: sqlite3.Connection,
+    *,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
     from ..pipeline import run_render_stage
 
-    return run_render_stage(conn=conn, profile=profile)
+    return run_render_stage(conn=conn, profile=profile, on_progress=on_progress, should_abort=should_abort)
 
 
 def _stage_apply(profile: Profile, conn: sqlite3.Connection, limit: int) -> int:

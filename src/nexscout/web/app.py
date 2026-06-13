@@ -24,6 +24,7 @@ from .routes import applications as application_routes
 from .routes import controls as controls_routes
 from .routes import dashboard as dashboard_routes
 from .routes import jobs as jobs_routes
+from .routes import logs as logs_routes
 from .routes import profile as profile_routes
 from .routes import questions as questions_routes
 
@@ -39,6 +40,9 @@ def _static_dir() -> Path:
 def create_app() -> FastAPI:
     """Build and return the FastAPI app."""
     app = FastAPI(title="NexScout", docs_url=None, redoc_url=None)
+    from ..core.logsetup import setup_file_logging
+
+    setup_file_logging("web")
     templates_dir = _templates_dir()
     static_dir = _static_dir()
     templates_dir.mkdir(parents=True, exist_ok=True)
@@ -60,6 +64,7 @@ def create_app() -> FastAPI:
     app.include_router(application_routes.router)
     app.include_router(profile_routes.router)
     app.include_router(questions_routes.router)
+    app.include_router(logs_routes.router)
     app.include_router(controls_routes.router)
     app.include_router(api_routes.router)
     # Top-level /metrics alias (Prometheus convention) in addition to /api/metrics.

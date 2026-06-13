@@ -193,6 +193,91 @@ def _register_tools(mcp: Any) -> None:
             return _err("pipeline_status", e)
 
     @mcp.tool()
+    def stage_status() -> dict[str, Any]:
+        """Live per-stage pipeline status + control state + per-stage backlog.
+
+        Returns what's running right now, how far each stage has progressed,
+        which stages are paused/disabled, and how many jobs are waiting at each
+        stage. Use this to report exactly what NexScout is doing this moment.
+        """
+        try:
+            from ..core import pipeline_status as ps
+
+            profile = _load_profile()
+            conn = _open_db()
+            return {
+                "ok": True,
+                "status": ps.read_status(),
+                "control": ps.read_control(),
+                "backlog": ps.backlog_counts(
+                    conn, min_score=profile.search.min_score, always_cover=profile.apply.always_cover_letter
+                ),
+            }
+        except Exception as e:
+            return _err("stage_status", e)
+
+    @mcp.tool()
+    def pause_automation(paused: bool = True) -> dict[str, Any]:
+        """Pause or resume the autopilot. While paused it runs no new passes."""
+        try:
+            from ..core import pipeline_status as ps
+
+            ps.set_paused(bool(paused))
+            return {"ok": True, "paused": ps.is_paused()}
+        except Exception as e:
+            return _err("pause_automation", e)
+
+    @mcp.tool()
+    def stop_current_run() -> dict[str, Any]:
+        """Ask the pass running right now to stop after its current job."""
+        try:
+            from ..core import pipeline_status as ps
+
+            ps.request_stop()
+            return {"ok": True, "stopping": True}
+        except Exception as e:
+            return _err("stop_current_run", e)
+
+    @mcp.tool()
+    def set_stage_enabled(stage: str, enabled: bool) -> dict[str, Any]:
+        """Turn one pipeline stage on/off. Disabled stages are skipped every pass."""
+        try:
+            from ..core import pipeline_status as ps
+
+            if stage not in ps.ALL_STEPS:
+                return {"ok": False, "error": f"unknown stage: {stage}"}
+            ps.set_stage_enabled(stage, bool(enabled))
+            return {
+                "ok": True,
+                "stage": stage,
+                "enabled": ps.stage_enabled(stage),
+                "disabled_stages": ps.read_control()["disabled_stages"],
+            }
+        except Exception as e:
+            return _err("set_stage_enabled", e)
+
+    @mcp.tool()
+    def run_stage(stage: str) -> dict[str, Any]:
+        """Run a single pipeline stage once and return its summary.
+
+        ``stage`` is one of discover/enrich/score/tailor/cover/render/apply. This
+        mirrors the dashboard's per-stage control — it runs only that stage
+        through the same engine (publishing live status), honouring the
+        stage-lock (each stage only touches jobs the previous one finished).
+        """
+        try:
+            from ..core import pipeline_status as ps
+            from ..openclaw.tick import run as tick_run
+
+            if stage not in ps.ALL_STEPS:
+                return {"ok": False, "error": f"unknown stage: {stage}"}
+            profile = _load_profile()
+            summary = tick_run(profile=profile, stages=[stage], source="mcp")
+            return {"ok": True, "stage": stage, "summary": summary}
+        except Exception as e:
+            return _err("run_stage", e)
+
+    @mcp.tool()
     def discover_jobs(limit_per_engine: int = 10) -> dict[str, Any]:
         """Run job discovery across the configured search engines/boards.
 
@@ -429,6 +514,9 @@ def main() -> None:
         level=os.environ.get("NEXSCOUT_LOG_LEVEL", "INFO"),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    from ..core.logsetup import setup_file_logging
+
+    setup_file_logging("mcp")
     server = build_server()
     log.info(
         "starting nexscout-mcp (streamable-http) on %s:%s%s",

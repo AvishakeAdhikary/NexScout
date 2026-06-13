@@ -210,12 +210,19 @@ NexScout supports three run modes; all share the same code paths.
 
 A crash-resilient `nexscout autopilot` loop owns its own scheduler — no
 external runtime required. Each pass runs one bounded heartbeat unit of work
-(discover → enrich → score → tailor → render → apply → surface-questions),
-persists to SQLite, then sleeps `--interval` seconds (default from
-`profile.apply.autopilot_interval_s`). Every pass is wrapped so one error
-never stops the loop, and the profile is reloaded each pass so config edits
-apply live. A crash, machine reboot, or model unload just resumes on the next
-pass where it left off. This is the Docker `command`.
+(discover → enrich → score → tailor → cover → render → apply →
+surface-questions), persists to SQLite, then sleeps `--interval` seconds
+(default from `profile.apply.autopilot_interval_s`). Every pass is wrapped so
+one error never stops the loop, and the profile is reloaded each pass so
+config edits apply live. A crash, machine reboot, or model unload just resumes
+on the next pass where it left off. This is the Docker `command`.
+
+The loop honours the dashboard/MCP controls between and within passes: while
+**paused** it skips passes entirely (it checks the flag each loop), a **stop**
+aborts only the pass running right now (after the current job; the next
+scheduled pass still runs), and any **disabled stage** is skipped each pass.
+These flow through the shared `~/.nexscout/pipeline-control.json`, and the
+loop publishes live per-stage progress to `~/.nexscout/pipeline-status.json`.
 
 ```bash
 nexscout autopilot --wall-clock 1800   # soft per-pass time cap (s); --interval N to set the sleep
@@ -305,20 +312,24 @@ the **Streamable HTTP** transport on `0.0.0.0:8770` at `/mcp`, and ships as the
 `nexscout-mcp` console script (also `python -m nexscout.mcp.server`). The
 implementation lives in `src/nexscout/mcp/server.py`.
 
-It exposes ten tools — `get_profile`, `get_resume_text`, `pipeline_status`,
-`discover_jobs`, `score_jobs`, `tailor_jobs`, `apply_to_job`,
+It exposes fifteen tools — `get_profile`, `get_resume_text`, `pipeline_status`,
+`stage_status`, `pause_automation`, `stop_current_run`, `set_stage_enabled`,
+`run_stage`, `discover_jobs`, `score_jobs`, `tailor_jobs`, `apply_to_job`,
 `list_open_questions`, `answer_question`, and `run_once` — each of which reads
 the same `~/.nexscout` state as the rest of the stack, so the agent's actions
-show up immediately in the web UI and pipeline. Every tool is defensive: it
-catches its own exceptions and returns a structured error envelope rather than
-crashing the long-lived server.
+show up immediately in the web UI and pipeline. The five live-control tools
+(`stage_status`, `pause_automation`, `stop_current_run`, `set_stage_enabled`,
+`run_stage`) let the agent watch and steer the autopilot through the same
+cross-process status/control channel the dashboard uses. Every tool is
+defensive: it catches its own exceptions and returns a structured error
+envelope rather than crashing the long-lived server.
 
 The OpenClaw gateway connects over the shared Docker network and the entry is
 written under the `mcp.servers.nexscout` map in `~/.openclaw/openclaw.json`:
 
 ```bash
 openclaw mcp add nexscout --transport streamable-http --url http://nexscout-mcp:8770/mcp
-openclaw mcp probe   # should report: nexscout: 10 tools
+openclaw mcp probe   # should report: nexscout: 15 tools
 ```
 
 See **[docs/openclaw.md](docs/openclaw.md)** for the full tool table,
@@ -328,9 +339,13 @@ registration, and the `mcp.servers` config contract.
 
 ## Architecture
 
-Six pipeline stages: **discover -> enrich -> score -> tailor -> cover ->
-render -> apply.** Each stage reads pending rows from a single shared
-SQLite `jobs` table, writes its results back, and hands off to the next.
+Seven per-job pipeline stages, in order: **discover -> enrich -> score ->
+tailor -> cover -> render -> apply** (plus a "surface questions" housekeeping
+step). Each stage reads pending rows from a single shared SQLite `jobs` table,
+writes its results back, and hands off to the next. Every stage is
+**stage-locked**: a stage's SQL predicate only selects jobs the previous stage
+finished, so jobs can never skip ahead. The engine is **sequential and
+single-threaded per pass** by design — there is no concurrency between stages.
 
 Apply outcomes fall into four plain-language buckets:
 
@@ -358,10 +373,16 @@ See `docs/latex-templates.md` for the Jinja2 / LaTeX template contract.
 > applied jobs to show.
 
 The web UI is a modern, responsive **Tailwind** dashboard with interactive
-**Chart.js** graphs and plain-language controls (the old "tick" is now
-**"Check for new jobs now"** / **"Auto-run"**). Long actions are
-non-blocking: the backend returns `202 Accepted` and the UI polls
-`/controls/status` until the pass finishes.
+**Chart.js** graphs and an interactive **"Automation pipeline"** panel that
+shows every stage's live state, progress bar, and backlog ("N waiting"), with
+per-stage **Turn on/off** toggles and **Run one full pass now** / **Pause** /
+**Resume** / **Stop the current run** controls. (This replaced the older,
+misleading "Check for new jobs now / Pause auto-run / Resume auto-run"
+buttons, where Pause did nothing.) Long actions are non-blocking: the backend
+returns `202 Accepted` and the UI polls `/controls/status` until the pass
+finishes. A **Logs** tab tails the backend's per-role log files. See
+[docs/architecture.md](docs/architecture.md) for the full control/status
+model.
 
 - `docs/screenshots/dashboard.png` — counters + score chart + recent events.
 - `docs/screenshots/job-detail.png` — inline PDF + transcript + screenshots.

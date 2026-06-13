@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import help %}
+{% set active_nav = '/logs' %}
+{% block title %}Logs{% endblock %}
+{% block body %}
+<div class="mb-2 flex flex-wrap items-baseline gap-2">
+  <h1 class="text-2xl font-bold">Live logs</h1>
+  {{ help("Live logs", "A live feed of exactly what NexScout is doing behind the scenes, straight from each backend process. Newest lines are at the bottom; the view refreshes every 3 seconds.") }}
+</div>
+<p class="mb-4 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
+  Pick which part of the backend to watch. <strong>Autopilot</strong> is the always-on engine that runs the
+  pipeline; <strong>Web</strong> is this dashboard; <strong>MCP</strong> is the tool server the OpenClaw agent calls.
+</p>
+
+<div class="mb-3 flex flex-wrap gap-1">
+  {% for r in roles %}
+  <a href="/logs?role={{ r }}"
+     class="rounded-md border px-3 py-1.5 text-sm font-medium
+            {% if r == role %}border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300{% else %}border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800{% endif %}">
+    {{ r|capitalize }}
+  </a>
+  {% endfor %}
+</div>
+
+<div id="logs-view" hx-get="/logs?role={{ role }}" hx-trigger="load, every 3s" hx-swap="innerHTML">
+  {% include "_logs_view.html" %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Keep the log view pinned to the newest lines after each refresh.
+  document.body.addEventListener('htmx:afterSwap', function (e) {
+    if (e.target && e.target.id === 'logs-view') {
+      var pre = document.getElementById('logs-pre');
+      if (pre) { pre.scrollTop = pre.scrollHeight; }
+    }
+  });
+</script>
+{% endblock %}

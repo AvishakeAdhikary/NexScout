@@ -1,0 +1,2 @@
+<pre id="logs-pre" class="max-h-[60vh] overflow-auto rounded-lg bg-slate-950 p-3 text-xs leading-relaxed text-slate-200">{% for line in lines %}{{ line }}
+{% endfor %}{% if not lines %}No logs yet for "{{ role }}". As soon as the backend logs something it will show up here.{% endif %}</pre>

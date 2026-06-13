@@ -69,16 +69,18 @@ def test_run_stage_success() -> None:
 def test_run_full_with_mocked_stages(db: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch) -> None:
     """Drive every stage with a no-op so the orchestration loop is fully covered."""
     monkeypatch.setattr(tick, "_stage_discover", lambda p, c, n: 3)
-    monkeypatch.setattr(tick, "_stage_enrich", lambda p, c, n: 2)
-    monkeypatch.setattr(tick, "_stage_score", lambda p, c, n: 10)
-    monkeypatch.setattr(tick, "_stage_tailor", lambda p, c, n: 4)
-    monkeypatch.setattr(tick, "_stage_render", lambda p, c: 1)
+    monkeypatch.setattr(tick, "_stage_enrich", lambda p, c, n, **kw: 2)
+    monkeypatch.setattr(tick, "_stage_score", lambda p, c, n, **kw: 10)
+    monkeypatch.setattr(tick, "_stage_tailor", lambda p, c, n, **kw: 4)
+    monkeypatch.setattr(tick, "_stage_cover", lambda p, c, n, **kw: 0)
+    monkeypatch.setattr(tick, "_stage_render", lambda p, c, **kw: 1)
     monkeypatch.setattr(tick, "_stage_apply", lambda p, c, n: 0)
     monkeypatch.setattr(tick, "_stage_surface_questions", lambda p, c: 0)
 
     out = tick.run(profile=_profile(), db=db, wall_clock_s=10.0)
     assert out["discovered"] == 3
     assert out["scored"] == 10
+    assert out["covered"] == 0
     assert out["errors"] == []
 
 

@@ -16,49 +16,12 @@
 <!-- Run controls: "Check for new jobs now" (the thing we used to call a tick). -->
 <section class="mb-6 grid gap-4 lg:grid-cols-3">
   <div class="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-    <div class="flex flex-wrap items-center gap-3">
-      <h2 class="text-base font-semibold">
-        Auto-run
-        {{ help("Auto-run", "NexScout automatically checks for new jobs and applies on a schedule. Click 'Check for new jobs now' to run a check right now.") }}
-      </h2>
-      <span class="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium
-                   {% if paused %}bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-200{% else %}bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200{% endif %}">
-        <span class="h-2 w-2 rounded-full {% if paused %}bg-slate-400{% else %}bg-green-500{% endif %}"></span>
-        {% if paused %}Paused{% else %}Running on schedule{% endif %}
-      </span>
-    </div>
-    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-      NexScout keeps working in the background. Use the buttons below to run a check right now, or to pause everything.
-    </p>
-
-    <div class="mt-4 flex flex-wrap gap-2">
-      <button hx-post="/controls/run"
-              hx-target="#run-status" hx-swap="outerHTML"
-              hx-indicator="#run-spinner"
-              class="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-60">
-        <svg id="run-spinner" class="htmx-indicator h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-        </svg>
-        Check for new jobs now
-      </button>
-      {{ help("Check for new jobs now", "Runs one full pass right away: looks for new jobs, scores them, writes résumés, and applies. This can take a few minutes — you can leave this page and come back.") }}
-
-      <button hx-post="/controls/pause"
-              hx-swap="none" hx-on::after-request="window.location.reload()"
-              class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
-        Pause auto-run
-      </button>
-      <button hx-post="/controls/resume"
-              hx-swap="none" hx-on::after-request="window.location.reload()"
-              class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
-        Resume auto-run
-      </button>
-    </div>
-
-    <div class="mt-4">
-      {% include "_run_status.html" %}
-    </div>
+    <!-- Live, interactive pipeline panel. The outer div polls every 2s; the
+         control buttons inside POST to /controls/pipeline/* and swap it. -->
+    <section id="pipeline-panel"
+             hx-get="/controls/pipeline" hx-trigger="load, every 2s" hx-swap="innerHTML">
+      <p class="text-sm text-slate-400">Loading pipeline status…</p>
+    </section>
   </div>
 
   <!-- OpenClaw status in plain terms. -->

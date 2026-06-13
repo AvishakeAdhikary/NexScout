@@ -147,6 +147,8 @@ def run_enrich_stage(
     router: LLMRouter | None = None,
     browser_factory: BrowserFactory | None = None,
     limit: int = 0,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
 ) -> int:
     """Enrich pending rows; returns the number of rows that got a description."""
     from .enrichment import detail as _detail_mod
@@ -167,20 +169,26 @@ def run_enrich_stage(
     )
     if limit > 0:
         sql += f" LIMIT {int(limit)}"
+    rows = conn.execute(sql).fetchall()
+    total = len(rows)
     n = 0
-    for row in conn.execute(sql).fetchall():
+    for i, row in enumerate(rows):
+        if should_abort is not None and should_abort():
+            break
         job = dict(row)
         try:
             result = _detail_mod.enrich_row(row=job, factory=factory, router=router, headless=profile.apply.headless)
         except Exception as e:
             log.warning("enrich row failed for %s: %s", job.get("url"), e)
             _detail_mod.persist_enrichment_error(conn, job["url"], str(e)[:400])
-            continue
-        if result is None:
-            _detail_mod.persist_enrichment_error(conn, job["url"], "no_extractor_succeeded")
-            continue
-        _detail_mod.persist_enrichment(conn, job["url"], result)
-        n += 1
+        else:
+            if result is None:
+                _detail_mod.persist_enrichment_error(conn, job["url"], "no_extractor_succeeded")
+            else:
+                _detail_mod.persist_enrichment(conn, job["url"], result)
+                n += 1
+        if on_progress is not None:
+            on_progress(i + 1, total)
     return n
 
 
@@ -189,20 +197,39 @@ def run_enrich_stage(
 # ---------------------------------------------------------------------------
 
 
-def run_score_stage(*, conn: sqlite3.Connection, router: LLMRouter, profile: Profile, limit: int = 0) -> int:
-    """Score every row with ``full_description IS NOT NULL AND fit_score IS NULL``."""
+def run_score_stage(
+    *,
+    conn: sqlite3.Connection,
+    router: LLMRouter,
+    profile: Profile,
+    limit: int = 0,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
+    """Score every row with ``full_description IS NOT NULL AND fit_score IS NULL``.
+
+    ``on_progress(done, total)`` is called after each row and ``should_abort()``
+    is checked before each row, so a caller (the tick) can report live progress
+    and honour a stop request without changing the sequential execution model.
+    """
     sql = (
         "SELECT rowid AS id, url, title, site, location, full_description "
         "FROM jobs WHERE full_description IS NOT NULL AND fit_score IS NULL"
     )
     if limit > 0:
         sql += f" LIMIT {int(limit)}"
+    rows = conn.execute(sql).fetchall()
+    total = len(rows)
     n = 0
-    for row in conn.execute(sql).fetchall():
+    for i, row in enumerate(rows):
+        if should_abort is not None and should_abort():
+            break
         job = dict(row)
         score, reasoning = score_job(router, profile, job)
         persist_score(conn, job["url"], score, reasoning)
         n += 1
+        if on_progress is not None:
+            on_progress(i + 1, total)
     return n
 
 
@@ -213,6 +240,8 @@ def run_tailor_stage(
     profile: Profile,
     mode: Mode = "normal",
     limit: int = 0,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
 ) -> int:
     """Tailor every eligible row; persist text + JSON + path; bump attempts."""
     sql = (
@@ -224,8 +253,12 @@ def run_tailor_stage(
     )
     if limit > 0:
         sql += f" LIMIT {int(limit)}"
+    rows = conn.execute(sql, (profile.search.min_score,)).fetchall()
+    total = len(rows)
     n = 0
-    for row in conn.execute(sql, (profile.search.min_score,)).fetchall():
+    for i, row in enumerate(rows):
+        if should_abort is not None and should_abort():
+            break
         job = dict(row)
         result = tailor_resume(router=router, profile=profile, job=job, mode=mode)
         if result.status == "approved" and result.text:
@@ -261,6 +294,8 @@ def run_tailor_stage(
                 "UPDATE jobs SET tailor_attempts=COALESCE(tailor_attempts,0)+? WHERE url=?",
                 (max(1, result.attempts), job["url"]),
             )
+        if on_progress is not None:
+            on_progress(i + 1, total)
     return n
 
 
@@ -271,6 +306,8 @@ def run_cover_stage(
     profile: Profile,
     mode: Mode = "normal",
     limit: int = 0,
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
 ) -> int:
     """Generate cover letters for rows that flagged cover_required (or always-cover)."""
     sql = (
@@ -284,8 +321,12 @@ def run_cover_stage(
     if limit > 0:
         sql += f" LIMIT {int(limit)}"
     always = 1 if profile.apply.always_cover_letter else 0
+    rows = conn.execute(sql, (always,)).fetchall()
+    total = len(rows)
     n = 0
-    for row in conn.execute(sql, (always,)).fetchall():
+    for i, row in enumerate(rows):
+        if should_abort is not None and should_abort():
+            break
         job = dict(row)
         result = write_cover_letter(router=router, profile=profile, job=job, mode=mode)
         if result.status == "approved" and result.text:
@@ -301,6 +342,8 @@ def run_cover_stage(
                 "UPDATE jobs SET cover_attempts=COALESCE(cover_attempts,0)+? WHERE url=?",
                 (max(1, result.attempts), job["url"]),
             )
+        if on_progress is not None:
+            on_progress(i + 1, total)
     return n
 
 
@@ -407,14 +450,25 @@ def parse_resume_txt(text: str) -> dict[str, Any]:
     return data
 
 
-def run_render_stage(*, conn: sqlite3.Connection, profile: Profile, template: str = "resume_classic.tex.j2") -> int:
+def run_render_stage(
+    *,
+    conn: sqlite3.Connection,
+    profile: Profile,
+    template: str = "resume_classic.tex.j2",
+    on_progress: Callable[[int, int], None] | None = None,
+    should_abort: Callable[[], bool] | None = None,
+) -> int:
     """Render any tailored .txt resume + cover letter that lacks a PDF sibling."""
     n = 0
     sql = (
         "SELECT rowid AS id, url, title, site, tailored_resume_path, cover_letter_path "
         "FROM jobs WHERE tailored_resume_path IS NOT NULL"
     )
-    for row in conn.execute(sql).fetchall():
+    rows = conn.execute(sql).fetchall()
+    total = len(rows)
+    for i, row in enumerate(rows):
+        if should_abort is not None and should_abort():
+            break
         job = dict(row)
         bundle = bundle_dir_for(int(job["id"]))
         resume_pdf = bundle / "resume.pdf"
@@ -437,21 +491,24 @@ def run_render_stage(*, conn: sqlite3.Connection, profile: Profile, template: st
 
         cover_letter_path = job.get("cover_letter_path")
         if cover_letter_path and not (bundle / "cover_letter.pdf").exists():
+            letter_text: str | None = None
             try:
                 with open(cover_letter_path, encoding="utf-8") as f:
                     letter_text = f.read()
             except OSError as e:
                 log.warning("cover letter file unreadable for %s: %s", job["url"], e)
-                continue
-            try:
-                render_cover_letter_pdf(
-                    bundle_dir=bundle,
-                    profile=profile,
-                    letter_text=letter_text,
-                    job=job,
-                )
-            except LatexEngineError as e:
-                log.warning("cover render failed for %s: %s", job["url"], e)
+            if letter_text is not None:
+                try:
+                    render_cover_letter_pdf(
+                        bundle_dir=bundle,
+                        profile=profile,
+                        letter_text=letter_text,
+                        job=job,
+                    )
+                except LatexEngineError as e:
+                    log.warning("cover render failed for %s: %s", job["url"], e)
+        if on_progress is not None:
+            on_progress(i + 1, total)
     return n
 
 

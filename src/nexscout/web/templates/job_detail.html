@@ -22,6 +22,14 @@
       View the original job posting ↗
     </a>
   </p>
+  {% if job.eligible_stage %}
+  <form method="post" action="/jobs/{{ job.id }}/stage/{{ job.eligible_stage }}" class="mt-4 flex items-center gap-1">
+    <button class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600">
+      {{ job.stage_action_label }}
+    </button>
+    {{ help("Next step", "Runs the one stage this job is currently eligible for, following the stage order — you can't skip ahead. (Apply is queued for the engine to submit.)") }}
+  </form>
+  {% endif %}
 </div>
 
 {% if job.score_reasoning %}

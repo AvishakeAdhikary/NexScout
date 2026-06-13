@@ -1,11 +1,20 @@
 # NexScout Architecture
 
-NexScout is a six-stage pipeline. Each stage writes its results to a single
-shared SQLite `jobs` table; the next stage picks up rows whose pending
-predicate is true. The pipeline is driven by the standalone
-`nexscout autopilot` loop, an OpenClaw heartbeat (`nexscout tick`), a one-shot
-`nexscout run`, or — autonomously — by an OpenClaw agent through the
-[MCP server layer](#integration-layer-mcp--openclaw).
+NexScout is a seven-stage per-job pipeline — **discover → enrich → score →
+tailor → cover → render → apply** (plus a "surface questions" housekeeping
+step). Each stage writes its results to a single shared SQLite `jobs` table;
+the next stage picks up rows whose pending predicate is true. The pipeline is
+driven by the standalone `nexscout autopilot` loop, an OpenClaw heartbeat
+(`nexscout tick`), a one-shot `nexscout run`, or — autonomously — by an
+OpenClaw agent through the [MCP server layer](#integration-layer-mcp--openclaw).
+
+Every stage is **stage-locked**: a stage's SQL predicate only selects jobs the
+previous stage finished, so a job can never skip ahead (you can't apply before
+scoring, etc.). The engine is **sequential and single-threaded per pass** by
+design — there is no concurrency between stages. Live progress and user
+controls flow between the separate autopilot / web / MCP processes through two
+JSON files in the config dir — see
+[Live pipeline status & control](#live-pipeline-status--control).
 
 ## Pipeline overview
 
@@ -83,7 +92,7 @@ flowchart LR
 
 | Package                     | Responsibility                                                |
 |-----------------------------|---------------------------------------------------------------|
-| `nexscout.core`             | Config, profile loader, SQLite schema, logging, errors        |
+| `nexscout.core`             | Config, profile loader, SQLite schema, logging, errors, cross-process pipeline status/control (`pipeline_status.py`) + shared per-role file logging (`logsetup.py`) |
 | `nexscout.llm`              | Provider router + budget ledger                               |
 | `nexscout.discovery`        | JobSpy, Workday, SmartExtract, WebSearch engines              |
 | `nexscout.enrichment`       | 3-tier detail cascade (JSON-LD -> CSS -> LLM)                 |
@@ -93,7 +102,7 @@ flowchart LR
 | `nexscout.apply`            | ReAct agent, orchestrator, tools, dashboard                   |
 | `nexscout.agent_backends`   | Pluggable backends (native, claude_code, openai_assistant)    |
 | `nexscout.openclaw`         | Skill manifest, memory r/w, `tick` entrypoint, notification channels (Telegram / Discord) |
-| `nexscout.mcp`              | FastMCP server exposing 10 agent tools over streamable-http (`server.py`) |
+| `nexscout.mcp`              | FastMCP server exposing 15 agent tools over streamable-http (`server.py`) |
 | `nexscout.web`              | FastAPI web UI — Tailwind + Chart.js, non-blocking controls  |
 | `nexscout.pipeline`         | Streaming orchestrator                                        |
 | `nexscout.wizard`           | Interactive `init` wizard                                     |
@@ -121,6 +130,67 @@ flowchart LR
    (`navigate`, `read_page`, `click`, `fill_form`, `upload`,
    `solve_captcha`, ...). Every step is logged to
    `applications/<job_id>/transcript.jsonl`.
+
+## Live pipeline status & control
+
+The autopilot, the web UI, and the MCP server run as **separate processes**
+(separate Docker containers) that share only the filesystem and the SQLite
+database — there is no in-process coordination. Live status and user controls
+flow between them through two atomic JSON files in the config dir
+(`$NEXSCOUT_DIR`, default `~/.nexscout`), managed by
+`core/pipeline_status.py`:
+
+| File                    | Written by                              | Read by        | Holds |
+|-------------------------|-----------------------------------------|----------------|-------|
+| `pipeline-status.json`  | whatever runs a pass (autopilot tick, or a manual web/MCP run) | web UI, MCP | live per-stage state (`running`/`done`/`skipped`/`disabled`/`stopped`/`error`), `done`/`total` progress counters, the current stage, and the last summary |
+| `pipeline-control.json` | the web UI / MCP                        | the autopilot  | `paused` flag, a one-shot `stop_requested`, and the per-stage on/off list (`disabled_stages`) |
+
+Writes are atomic (temp file + `os.replace`, temp name carries the PID) so a
+reader never sees a partial file and two writers can't clobber each other. The
+autopilot reads the control file between and within passes, so the user's
+intent actually takes effect:
+
+- **Pause** genuinely halts the autopilot — it checks the flag each loop and
+  skips the pass entirely while paused. (Previously the old "Pause auto-run"
+  button was cosmetic; the loop ignored it.)
+- **Stop** aborts only the pass running right now: the current job finishes,
+  then the remaining stages are marked `stopped`. The next scheduled pass still
+  runs. (A fresh pass clears the one-shot stop flag at the start.)
+- **Per-stage toggles** add/remove a stage from `disabled_stages`; a disabled
+  stage is skipped on every pass and shown as "Off".
+
+### Stage-lock (eligibility)
+
+The seven per-job stages run in a fixed order and are **stage-locked**: each
+stage's SQL predicate only selects jobs the previous stage finished, so a job
+can never skip ahead. `pipeline_status.eligible_stage(job, min_score=…)`
+mirrors those exact predicates to compute the single stage one job row is
+currently eligible for (or `None` when it's terminal, below the score cutoff,
+or waiting on the user). `backlog_counts(...)` runs the same predicates as
+`COUNT(*)` queries to produce the "N waiting" figures the dashboard shows per
+stage. Because the UI/MCP reuse these helpers, manual and automatic runs honour
+identical gating. `render` is folded into `apply` (it runs automatically right
+before apply), so the per-job actions a user can trigger are
+`enrich`/`score`/`tailor`/`apply`.
+
+### Per-job control
+
+The Jobs table (`/jobs`) carries a **"Next step"** column and the job-detail
+page (`/jobs/{id}`) a matching button, both driven by `eligible_stage`. Posting
+to `/jobs/{id}/stage/{stage}` runs the one stage that job is eligible for,
+enforcing the same stage-lock (the stage runs only if the job genuinely matches
+its predicate). `enrich`/`score`/`tailor` run immediately in a worker thread;
+`apply` is *queued* (it resets the row's apply state) and left to the engine's
+apply stage to submit on the next pass.
+
+### Backend logs (Logs tab)
+
+`core/logsetup.py` attaches a rotating file handler per role so each process
+writes to its own `~/.nexscout/logs/nexscout-{autopilot,web,mcp}.log`
+(2 MB × 2 backups, one writer per file so rotation never races). The web UI's
+**Logs** tab (`/logs`) tails the selected role's file (default `autopilot`,
+last ~400 lines) and refreshes every 3s via an HTMX poll, so the user can watch
+exactly what the backend is doing.
 
 ## Optional fallback paths
 
@@ -194,13 +264,17 @@ server so the agent can drive the pipeline autonomously:
 
 - **MCP server** (`nexscout.mcp.server`, FastMCP). Serves the **streamable-http**
   transport on `0.0.0.0:8770` at `/mcp`; shipped as the `nexscout-mcp` console
-  script and the `nexscout-mcp` compose service. It exposes ten tools —
-  `get_profile`, `get_resume_text`, `pipeline_status`, `discover_jobs`,
-  `score_jobs`, `tailor_jobs`, `apply_to_job`, `list_open_questions`,
-  `answer_question`, `run_once` — each reading the same `~/.nexscout` state as
-  the rest of the stack. The OpenClaw gateway registers it under
-  `mcp.servers.nexscout` (`openclaw mcp add nexscout --transport streamable-http
-  --url http://nexscout-mcp:8770/mcp`).
+  script and the `nexscout-mcp` compose service. It exposes fifteen tools —
+  `get_profile`, `get_resume_text`, `pipeline_status`, `stage_status`,
+  `pause_automation`, `stop_current_run`, `set_stage_enabled`, `run_stage`,
+  `discover_jobs`, `score_jobs`, `tailor_jobs`, `apply_to_job`,
+  `list_open_questions`, `answer_question`, `run_once` — each reading the same
+  `~/.nexscout` state as the rest of the stack. The five live-control tools
+  (`stage_status`, `pause_automation`, `stop_current_run`, `set_stage_enabled`,
+  `run_stage`) read/write the same status/control channel the dashboard uses,
+  so the agent can watch and steer the autopilot. The OpenClaw gateway
+  registers it under `mcp.servers.nexscout` (`openclaw mcp add nexscout
+  --transport streamable-http --url http://nexscout-mcp:8770/mcp`).
 - **OpenClaw skill / heartbeat.** The `manifest.toml` skill + slash commands,
   with `nexscout tick` called on the heartbeat.
 
@@ -211,11 +285,18 @@ heartbeat / memory contract.
 
 - **NexScout web UI** (`nexscout web --host 0.0.0.0 --port 8765`) — FastAPI,
   rendered with a modern responsive **Tailwind** layout and interactive
-  **Chart.js** graphs. Controls use plain language ("Check for new jobs now",
-  "Auto-run") and are non-blocking: long actions return `202 Accepted` and the
-  page polls `/controls/status` until the pass completes. The dashboard also
-  includes an OpenClaw status panel (last tick, active channel, pending channel
-  deliveries).
+  **Chart.js** graphs. Its centrepiece is the interactive **"Automation
+  pipeline"** panel (`_pipeline_panel.html`, polled from `/controls/pipeline`
+  every 2s): each stage shows its live state, a progress bar, and its backlog
+  ("N waiting"), with a per-stage **Turn on/off** toggle and **Run one full
+  pass now** / **Pause** / **Resume** / **Stop the current run** buttons. (It
+  replaced the older, misleading "Check for new jobs now / Pause auto-run /
+  Resume auto-run" buttons, where Pause was cosmetic.) Long actions are
+  non-blocking: they return `202 Accepted` and the page polls
+  `/controls/status` until the pass completes. The dashboard also includes an
+  OpenClaw status panel (last tick, active channel, pending channel
+  deliveries), and a **Logs** tab (`/logs`) tails the backend's per-role log
+  files. See [Live pipeline status & control](#live-pipeline-status--control).
 - **OpenClaw gateway Control UI** (<http://localhost:18789/>) — OpenClaw's own
   native dashboard, served by the `openclaw gateway --port 18789` compose
   service; not a NexScout-built UI. `openclaw dashboard` opens it with an auth
@@ -224,8 +305,13 @@ heartbeat / memory contract.
 ## Run modes
 
 - **Autopilot (standalone).** Crash-resilient `nexscout autopilot` loop — one
-  bounded pass per iteration, persisting to SQLite, wrapped so one error never
-  stops the loop. This is the Docker `command`.
+  bounded pass per iteration (discover → enrich → score → tailor → cover →
+  render → apply → surface-questions), persisting to SQLite, wrapped so one
+  error never stops the loop. It honours the dashboard/MCP controls — pause
+  skips passes, stop aborts the current pass after its current job, disabled
+  stages are skipped — and publishes live progress (see
+  [Live pipeline status & control](#live-pipeline-status--control)). This is the
+  Docker `command`.
 - **Hosted-agent (OpenClaw).** Heartbeat calls `nexscout tick`, which does the
   bounded work specified in §18 of the spec and returns. The OpenClaw agent can
   also drive NexScout autonomously through the MCP server above.

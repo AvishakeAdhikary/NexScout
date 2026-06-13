@@ -405,10 +405,15 @@ def autopilot(
     next pass where it left off. Every pass is wrapped so one error never stops
     the loop. The profile is reloaded each pass so config edits apply live.
     """
+    import logging as _logging
     import time as _time
 
+    from .core import pipeline_status
+    from .core.logsetup import setup_file_logging
     from .openclaw.tick import run as tick_run
 
+    setup_file_logging("autopilot")
+    _logging.getLogger("nexscout").info("autopilot starting")
     c = console()
     profile_p = profile_path()
     if not profile_p.exists():
@@ -427,8 +432,13 @@ def autopilot(
     )
     while True:
         try:
-            profile = Profile.from_path(profile_p)  # pick up live config edits
-            tick_run(profile=profile, wall_clock_s=wall_clock_s)
+            if pipeline_status.is_paused():
+                # The user paused the automation from the dashboard/MCP. Honour
+                # it: skip the pass entirely (this is what makes Pause real).
+                c.print("[yellow]autopilot is paused — skipping this pass[/yellow]")
+            else:
+                profile = Profile.from_path(profile_p)  # pick up live config edits
+                tick_run(profile=profile, wall_clock_s=wall_clock_s, source="autopilot")
         except KeyboardInterrupt:
             c.print("[yellow]autopilot stopped by user[/yellow]")
             break

@@ -40,7 +40,7 @@ scripts/
 mode. It loops the full pipeline forever — one bounded pass per iteration:
 
 ```
-discover -> enrich -> score -> tailor -> render -> apply -> questions
+discover -> enrich -> score -> tailor -> cover -> render -> apply -> questions
 ```
 
 Each pass persists to SQLite and is wrapped so a single failure (a per-job

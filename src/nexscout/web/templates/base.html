@@ -65,7 +65,7 @@
         <!-- Desktop links. -->
         <div class="hidden md:flex items-center gap-1">
           {% set nav_active = active_nav | default('') %}
-          {% for href, label in [('/', 'Home'), ('/jobs', 'Jobs'), ('/applications', 'Applications'), ('/questions', 'Questions'), ('/profile', 'Settings')] %}
+          {% for href, label in [('/', 'Home'), ('/jobs', 'Jobs'), ('/applications', 'Applications'), ('/questions', 'Questions'), ('/logs', 'Logs'), ('/profile', 'Settings')] %}
           <a href="{{ href }}"
              class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800
                     {% if nav_active == href %}text-amber-600 dark:text-amber-400{% else %}text-slate-600 dark:text-slate-300{% endif %}">
@@ -85,7 +85,7 @@
 
       <!-- Mobile menu panel. -->
       <div x-show="open" x-cloak class="md:hidden pb-3 space-y-1">
-        {% for href, label in [('/', 'Home'), ('/jobs', 'Jobs'), ('/applications', 'Applications'), ('/questions', 'Questions'), ('/profile', 'Settings')] %}
+        {% for href, label in [('/', 'Home'), ('/jobs', 'Jobs'), ('/applications', 'Applications'), ('/questions', 'Questions'), ('/logs', 'Logs'), ('/profile', 'Settings')] %}
         <a href="{{ href }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">{{ label }}</a>
         {% endfor %}
       </div>
