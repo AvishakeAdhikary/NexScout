@@ -748,7 +748,10 @@ def test_autofill_fills_standard_fields(tmp_path: Path, monkeypatch: pytest.Monk
 
     prof = SimpleNamespace(
         me=SimpleNamespace(
-            legal="Jane Doe", pref="Jane", email="jane@x.com", phone="123",
+            legal="Jane Doe",
+            pref="Jane",
+            email="jane@x.com",
+            phone="123",
             links=SimpleNamespace(li="li", gh="gh"),
         )
     )
