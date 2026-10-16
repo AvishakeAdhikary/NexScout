@@ -27,11 +27,15 @@ running → succeeded
 Task lifecycle: `queued → running → (succeeded | failed | retry_wait → queued | cancelled | blocked)`.
 Transitions live in `domain/state_machines.py`. Illegal transitions raise.
 
-**Pause semantics:** a pause request sets `control_request='pause'`. The worker finishes or aborts the
-current *idempotent* step at the next safe point, persists the checkpoint, then marks the run `paused`. In-flight
-LLM calls are cancelled (they are safe to repeat). In-flight side effects (submit, send) are never
-interrupted mid-call. They complete or are reconciled.
-**Cancel semantics:** same as pause, but terminal. The UI shows `cancelling` until the worker confirms `cancelled`.
+**Pause semantics (as built, ADR-0008):** a pause request on a running run sets
+`control_request='pause'` and the run shows `pausing`. The worker lets the current step finish
+(including any LLM call inside it), checkpoints, and stops at the next step boundary. The run
+becomes `paused` without repeating or half-doing a step. A queued run, or one waiting for approval,
+pauses immediately. Resume continues from the checkpoint.
+**Cancel semantics:** terminal. A running run shows `cancelling`. The worker drains at the next
+boundary or hard-cancels the in-flight step's asyncio task. This is safe because steps are
+at-least-once and side effects go through the ledger. Pending approvals of a cancelled run become
+`cancelled`.
 
 ## 3. Task contract
 ```python
@@ -48,7 +52,10 @@ class TaskSpec(BaseModel):
 ```
 
 ## 4. Leases and recovery
-- Lease 60 s, heartbeat every 20 s. The reaper runs every 30 s and re-queues expired leases.
+- The lease is `worker_lease_s` (60 s). The heartbeat runs every lease/3, and the reaper runs
+  every lease/2 and re-queues expired leases (the first recovery immediately, later ones with
+  backoff). A recovered `start` task resumes from the checkpoint if one exists. It never restarts
+  the graph.
 - At-least-once execution, made effectively-once for side effects by `idempotency_key` + a
   `tool_executions` row written *before* the external call (`status=started`) and updated after.
   On recovery, a `started` row with no result → reconcile → `uncertain` if it can't be determined.
@@ -59,13 +66,19 @@ class TaskSpec(BaseModel):
 `ContextBuilder.build(task, budget)` assembles, in priority order: system/policy → task objective
 and output schema → required facts (by ID) → evidence excerpts → prior step summaries → optional
 extras, until the token budget (model context − reserved output − safety margin) is reached.
-- Token counting: tiktoken (`o200k_base`/`cl100k_base`) when the model family is known, otherwise
-  chars/3.5 heuristic, with a 10% safety margin.
+- As built (`agent_runtime/context_builder.py`): `build_context(sections, budget)`. Required
+  sections must fit, or it raises `ContextOverflow`. Optional sections are trimmed item by item,
+  by priority. `input_budget(context_window, max_output)` sets the budget. The workflow notes when
+  the model's context was too small to include everything.
+- Token counting: a provider-neutral chars/3.5 estimate plus a 10% safety margin. Per-family
+  tiktoken counting isn't used yet. The estimate deliberately over-counts.
 - **Compaction:** when the accumulated working memory exceeds 70% of the budget, summarize older step
   results into a `CompactSummary` model. Required fields: decisions, fact_ids, evidence_ids,
   pending_actions, open_questions. A validator rejects summaries that drop IDs present in the input.
-- **Overflow / malformed output:** retry with reduced context (drop optional sections), then split the
-  task into smaller subtasks (e.g. per section), then fail with a typed error.
+- **Malformed output (as built):** `structured()` validates with Pydantic and makes one repair
+  attempt that shows the model its errors. If that fails, it raises a typed error. Native
+  JSON-schema mode is used where the provider supports it. Reduced-context retry and task
+  splitting are **not built yet** (planned with the M5 drafting workflows).
 
 ## 6. Memory layers
 working (in-graph state) · workflow (Postgres runs/tasks/checkpoints) · profile (accepted facts) ·
@@ -75,3 +88,19 @@ research (sources + excerpts + freshness) · project (prompt templates in repo) 
 ## 7. Budgets and quotas (defaults, configurable)
 Global worker concurrency 4 · per-user running tasks 2 · per-run step budget 200 · per-run token
 budget 2M · LLM call timeout 120 s · fetch timeout 20 s / 5 MB.
+
+## 8. As built in M4
+| Piece | Where |
+|---|---|
+| Queue, leases, reaper, per-user limit | `agent_runtime/queue.py`, `agent_runtime/worker.py` (`uv run nexscout worker`) |
+| Checkpoints | LangGraph `AsyncPostgresSaver`, `durability="sync"`, `thread_id = run_id`, system DB role. Created by `nexscout migrate`; the worker refuses to start without them |
+| Run context for nodes | `agent_runtime/context.py` (`tenant()` sessions with RLS, `note`, `require_approval`, `side_effect`, budgets) |
+| Workflows | `agents/`: `document_ingestion` (system, started by uploads), `opportunity_discovery`, `profile_summary` (LLM, cited, verified), `system_check` (diagnostic) |
+| Approvals | `interrupt()` in the node. The decision is read from `approval_requests` and never trusted from the resume payload |
+| Events | `workflow_events` rows + `LISTEN/NOTIFY`, SSE at `GET /cases/{id}/events` (replays from `Last-Event-ID`; `Cache-Control: no-transform` so proxies don't gzip-buffer it) |
+| Providers | `infrastructure/llm/` (ADR-0004). Default = the user's default provider, else the labelled mock |
+| UI | Agent Activity (runs, steps with notes, approvals, pause/resume/cancel/retry/rerun/skip, start a workflow), Settings → AI models, Profile → "Draft a summary with AI" |
+
+LLM output is always a proposal. `profile_summary` drops sentences that lack valid citations, and
+sentences whose numbers the cited entries don't contain. It stores the draft as a **pending,
+inferred** entry and records `is_mock`, so mock text is labelled in the UI.

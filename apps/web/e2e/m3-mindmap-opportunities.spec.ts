@@ -90,5 +90,5 @@ test("job discovery: demo label, merged duplicates, explained estimates, strict 
 
   // Running the search again creates no duplicates.
   await page.getByRole("button", { name: "Find opportunities" }).click();
-  await expect(page.getByText(/demo_jobs_board_a: checked 7; 0 new for you/)).toBeVisible();
+  await expect(page.getByText(/demo_jobs_board_a: checked 7; 0 new for you/)).toBeVisible({ timeout: 30_000 });
 });

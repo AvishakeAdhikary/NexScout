@@ -41,7 +41,13 @@ export function FactCard({ fact, caseId }: { fact: FactOut; caseId: string }) {
     },
   });
   const remove = useMutation({ mutationFn: () => factsApi.remove(fact.id), onSuccess: invalidate });
-  const meta = fact.meta as { warnings?: string[]; edited_by_user?: boolean };
+  const meta = fact.meta as {
+    warnings?: string[];
+    edited_by_user?: boolean;
+    generated?: boolean;
+    model?: string | null;
+    is_mock?: boolean;
+  };
   const description = (fact.data as Record<string, unknown>).description;
   const pending = fact.review_state === "pending";
 
@@ -57,6 +63,12 @@ export function FactCard({ fact, caseId }: { fact: FactOut; caseId: string }) {
         <div className="flex flex-wrap gap-1">
           <Badge variant="outline">{STATUS_LABELS[fact.status] ?? fact.status}</Badge>
           {meta.edited_by_user && <Badge variant="outline">Edited by you</Badge>}
+          {meta.generated &&
+            (meta.is_mock ? (
+              <Badge variant="destructive">Mock text, not written by AI</Badge>
+            ) : (
+              <Badge variant="outline">Drafted by {meta.model ?? "an AI model"}</Badge>
+            ))}
           {fact.is_private && <Badge variant="secondary">Private</Badge>}
         </div>
       </div>

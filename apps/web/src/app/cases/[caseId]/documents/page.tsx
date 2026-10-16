@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { documentsApi, type DocumentOut } from "@/lib/api/client";
+import { useCaseEvents, useRun } from "@/lib/live";
 
 const PURPOSES: [string, string][] = [
   ["cv", "CV / résumé (entries will be imported for review)"],
@@ -36,11 +37,46 @@ function size(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+function ReadingStatus({ runId, caseId }: { runId: string; caseId: string }) {
+  const run = useRun(runId);
+  const status = run.data?.run.status;
+  const result = run.data?.run.result as
+    | { parse_status?: string; facts_created?: number; error?: string | null }
+    | null
+    | undefined;
+  if (!status || !result) {
+    return (
+      <p role="status" className="text-sm">
+        {status === "failed" ? `Reading failed: ${run.data?.run.error ?? ""}` : "Saved. Reading your document…"}
+      </p>
+    );
+  }
+  if (result.parse_status === "failed") {
+    return (
+      <p role="status" className="text-sm">
+        Saved, but the text couldn&apos;t be read: {result.error}
+      </p>
+    );
+  }
+  const n = result.facts_created ?? 0;
+  return (
+    <p role="status" className="text-sm">
+      {n > 0 ? `Found ${n} possible entries. ` : "Saved. No profile entries were imported from this file."}
+      {n > 0 && (
+        <Link className="underline" href={`/cases/${caseId}/profile#review`}>
+          Review them now
+        </Link>
+      )}
+    </p>
+  );
+}
+
 export default function DocumentsPage() {
   const { caseId } = useParams<{ caseId: string }>();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [purpose, setPurpose] = useState("cv");
+  useCaseEvents(caseId);
   const docs = useQuery({ queryKey: ["documents", caseId], queryFn: () => documentsApi.list(caseId) });
 
   const uploadDoc = useMutation({
@@ -115,23 +151,10 @@ export default function DocumentsPage() {
           />
         </div>
         <Button type="submit" disabled={uploadDoc.isPending} className="self-start">
-          {uploadDoc.isPending ? "Uploading and reading…" : "Upload"}
+          {uploadDoc.isPending ? "Uploading…" : "Upload"}
         </Button>
         <div aria-live="polite">
-          {uploadDoc.data && (
-            <p role="status" className="text-sm">
-              {uploadDoc.data.document.parse_status === "failed"
-                ? `Saved, but the text couldn't be read: ${uploadDoc.data.document.parse_error}`
-                : uploadDoc.data.facts_created > 0
-                  ? `Found ${uploadDoc.data.facts_created} possible entries. `
-                  : "Saved. No profile entries were imported from this file."}
-              {uploadDoc.data.facts_created > 0 && (
-                <Link className="underline" href={`/cases/${caseId}/profile#review`}>
-                  Review them now
-                </Link>
-              )}
-            </p>
-          )}
+          {uploadDoc.data && <ReadingStatus runId={uploadDoc.data.run_id} caseId={caseId} />}
         </div>
         <ErrorAlert error={uploadDoc.error} title="Upload failed" />
       </form>
@@ -165,7 +188,9 @@ export default function DocumentsPage() {
                     <td className="py-2 pr-3 font-medium break-all">{d.filename}</td>
                     <td className="py-2 pr-3">{PURPOSE_LABEL[d.purpose] ?? d.purpose}</td>
                     <td className="py-2 pr-3">
-                      {d.parse_status === "parsed" ? (
+                      {d.parse_status === "pending" ? (
+                        <Badge variant="outline">Reading…</Badge>
+                      ) : d.parse_status === "parsed" ? (
                         <Badge variant="secondary">
                           Read{d.page_count ? `, ${d.page_count} pages` : ""}
                           {d.facts_extracted ? `, ${d.facts_extracted} entries` : ""}

@@ -50,13 +50,11 @@ export const SECTIONS: readonly Section[] = [
     slug: "activity",
     label: "Agent Activity",
     description: "Live view of running workflows. Pause, resume, approve, or cancel.",
-    milestone: 4,
   },
   {
     slug: "settings",
     label: "Settings",
     description: "AI providers (bring your own key), sources, and integrations.",
-    milestone: 9,
   },
 ] as const;
 

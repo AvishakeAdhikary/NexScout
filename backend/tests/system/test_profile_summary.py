@@ -57,6 +57,8 @@ async def test_mock_summary_is_grounded_pending_and_labelled(
     assert summary[0]["status"] == "inferred"
     assert summary[0]["review_state"] == "pending"  # the user decides
     assert summary[0]["meta"]["generated"] is True
+    assert summary[0]["meta"]["is_mock"] is True  # mock output is labelled as such
+    assert result["model"]["is_mock"] is True
     with clean_db.connect() as conn:
         row = conn.execute(
             text("SELECT provider_kind, is_mock, input_tokens > 0 FROM usage_records")

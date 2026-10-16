@@ -43,6 +43,7 @@ cd backend && uv sync && uv run nexscout migrate
 uv run ruff check . && uv run ruff format --check . && uv run mypy
 uv run pytest                                 # DB tests skip (with reason) if Postgres is down
 uv run nexscout serve --reload                # API :8000 (uses Selector loop on Windows)
+uv run nexscout worker                        # background worker: uploads, searches, AI runs (needed!)
 cd apps/web && npm run dev | lint | typecheck | test | build     # web :3000
 bash scripts/gen-contracts.sh                 # after changing API schemas
 cd apps/web && npm run e2e                    # Playwright: starts API :8100 + web :3200 against dev DB

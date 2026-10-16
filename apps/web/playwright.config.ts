@@ -8,6 +8,7 @@ const WEB_PORT = 3200;
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
+  workers: 1, // one shared dev server and database; journeys are sequential by design
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
@@ -24,6 +25,14 @@ export default defineConfig({
       cwd: "../../backend",
       url: `http://127.0.0.1:${API_PORT}/readyz`,
       reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      // Uploads and searches run in the background worker. Extra workers on the same database
+      // are safe (tasks are claimed with SKIP LOCKED), so a separately running dev worker is fine.
+      command: "uv run nexscout worker",
+      cwd: "../../backend",
+      wait: { stdout: /worker_started/ },
       timeout: 120_000,
     },
     {

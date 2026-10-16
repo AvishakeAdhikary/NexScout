@@ -20,10 +20,18 @@ cd ../apps/web && npm install
 ## Run (three terminals)
 ```bash
 cd backend && uv run nexscout serve --reload        # API  http://127.0.0.1:8000  (docs at /api/docs)
+cd backend && uv run nexscout worker                # background worker (uploads, searches, AI drafts)
 cd apps/web && npm run dev                          # Web  http://localhost:3000
 ```
 The web app proxies `/api/*` to `NEXSCOUT_API_ORIGIN` (default `http://127.0.0.1:8000`), so the browser
-only ever talks to one origin. The worker process arrives in M4.
+only ever talks to one origin. **Without the worker, uploads stay "Reading…" and searches never
+finish**: the API only queues work. Several workers on one database are safe (SKIP LOCKED claims).
+
+After pulling changes, always run `uv run nexscout migrate`. It applies Alembic migrations *and*
+creates/upgrades the LangGraph checkpoint tables. The worker refuses to start without them.
+
+Everything in containers: `docker compose --profile full up -d --build` (postgres, api, worker,
+web on :3000). The api container runs migrations before it reports healthy; the worker waits for it.
 
 Health: `curl localhost:8000/healthz` (liveness), `curl localhost:8000/readyz` (DB + migrations;
 returns 503 within 3 s when the DB is down).
@@ -31,7 +39,8 @@ returns 503 within 3 s when the DB is down).
 ## End-to-end tests
 ```bash
 cd apps/web && npx playwright install chromium   # once
-npm run e2e        # starts `nexscout serve --port 8100` and `next dev -p 3200` itself (reuses if running)
+npm run e2e        # starts `nexscout serve --port 8100`, `nexscout worker` and `next dev -p 3200`
+                   # (reuses a running api/web). One Playwright worker: journeys share the dev DB.
 ```
 
 ## Checks
@@ -64,7 +73,7 @@ Owned tables must call `enable_owner_rls()` and `grant_app()` from `nexscout.inf
 ```
 backend/src/nexscout/   api/ application/ domain/ infrastructure/ (+ agent_runtime/ etc. as milestones land)
 backend/alembic/        migrations
-backend/tests/          unit/ integration/ security/ (system/ arrives in M4)
+backend/tests/          unit/ integration/ security/ system/ (runtime, crash recovery, workflows)
 apps/web/src/           app/ (routes) components/ lib/ (api client, hooks)
 docker/                 Dockerfiles, Postgres init SQL
 scripts/                dev scripts
@@ -81,6 +90,10 @@ scripts/                dev scripts
   `useSearchParams` or `usePathname` must sit inside a `<Suspense>` boundary (Cache Components).
 - **Docker installed but `docker` not found:** Docker Desktop adds
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin` to the *user* PATH. Restart the terminal or IDE.
-esourcesin` to the *user* PATH. Restart the terminal or IDE.
+- **Worker crashes with `relation "checkpoints" does not exist` / refuses to start:** run
+  `uv run nexscout migrate` (it also sets up the checkpoint tables).
+- **Agent Activity says "reconnecting" or live updates lag behind a proxy:** the event stream
+  is sent with `Cache-Control: no-transform`. A proxy that compresses `text/event-stream` anyway
+  buffers it. Turn compression off for `/api/v1/cases/*/events`.
 - **Slow DB connections on Windows:** use `127.0.0.1` rather than `localhost` in URLs (see TESTING.md).
 - **Port 5432 in use:** set `NEXSCOUT_PG_PORT` and update the URLs in `.env`.

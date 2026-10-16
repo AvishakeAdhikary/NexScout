@@ -328,6 +328,8 @@ async def test_event_stream_replays_backlog(client: httpx.AsyncClient, worker: A
     resp = await client.get(f"/api/v1/cases/{case_id}/events", params={"once": "true"})
     assert resp.status_code == 200
     assert resp.headers["content-type"].startswith("text/event-stream")
+    # Without no-transform the Next.js proxy gzips (and so buffers) the stream: no live events.
+    assert "no-transform" in resp.headers["cache-control"]
     body = resp.text
     assert "event: run_created" in body
     assert "event: run_succeeded" in body

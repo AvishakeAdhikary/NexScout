@@ -223,5 +223,7 @@ async def event_stream(
     return StreamingResponse(
         gen(),
         media_type="text/event-stream",
-        headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
+        # no-transform: stops proxies (including the Next.js dev server) from compressing,
+        # and so buffering, the stream.
+        headers={"Cache-Control": "no-store, no-transform", "X-Accel-Buffering": "no"},
     )

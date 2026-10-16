@@ -234,7 +234,18 @@ export type MindNodeOut = S["MindNodeOut"];
 export type MindEdgeOut = S["MindEdgeOut"];
 export type SnapshotDiffOut = S["SnapshotDiffOut"];
 export type SourceOut = S["SourceOut"];
-export type SyncSummaryOut = S["SyncSummaryOut"];
+// Per-source summary inside an opportunity_discovery run result (untyped JSON in the API).
+export interface SyncSummaryOut {
+  source_key: string;
+  fetched: number;
+  new_opportunities: number;
+  merged_duplicates: number;
+  updated: number;
+  unchanged: number;
+  invalid: number;
+  new_for_case: number;
+  skipped_reason: string | null;
+}
 export type OpportunityOut = S["OpportunityOut"];
 
 export const mindmapApi = {
@@ -257,7 +268,7 @@ export const opportunitiesApi = {
   configureSource: (key: string, enabled: boolean, settings: Record<string, unknown>) =>
     api<SourceOut>(`/sources/${e(key)}`, { method: "PUT", body: { enabled, settings } }),
   sync: (caseId: string) =>
-    api<SyncSummaryOut[]>(`${c(caseId)}/opportunities/sync`, { method: "POST", body: {} }),
+    api<{ run_id: string }>(`${c(caseId)}/opportunities/sync`, { method: "POST", body: {} }),
   rescore: (caseId: string) =>
     api<{ rescored: number }>(`${c(caseId)}/opportunities/rescore`, { method: "POST" }),
   list: (caseId: string, academic: boolean) =>
@@ -272,4 +283,44 @@ export const opportunitiesApi = {
       method: "POST",
       body: { kind: "wrong_merge", note },
     }),
+};
+
+// ------------------------------------------------------------------ M4: runs, approvals, providers
+export type RunOut = S["RunOut"];
+export type StepOut = S["StepOut"];
+export type ApprovalOut = S["ApprovalOut"];
+export type EventOut = S["EventOut"];
+export type RunDetailOut = S["RunDetailOut"];
+export type WorkflowOut = S["WorkflowOut"];
+export type ProviderOut = S["ProviderOut"];
+export type ProviderIn = S["ProviderIn"];
+export type RunAction = "pause" | "resume" | "cancel" | "retry" | "rerun" | "skip";
+
+export const TERMINAL_RUN_STATES = new Set(["succeeded", "failed", "cancelled", "paused"]);
+
+export const runsApi = {
+  workflows: () => api<WorkflowOut[]>("/workflows"),
+  start: (caseId: string, kind: string, params: Record<string, unknown> = {}) =>
+    api<RunOut>(`${c(caseId)}/runs`, { method: "POST", body: { kind, params } }),
+  list: (caseId: string) => api<RunOut[]>(`${c(caseId)}/runs`),
+  get: (runId: string) => api<RunDetailOut>(`/runs/${e(runId)}`),
+  control: (runId: string, action: RunAction, node?: string) =>
+    api<RunOut>(`/runs/${e(runId)}/control`, { method: "POST", body: { action, node: node ?? null } }),
+  approvals: (caseId: string) => api<ApprovalOut[]>(`${c(caseId)}/approvals`),
+  decide: (approvalId: string, approve: boolean, note?: string) =>
+    api<ApprovalOut>(`/approvals/${e(approvalId)}/decision`, {
+      method: "POST",
+      body: { approve, note: note || null },
+    }),
+  eventsUrl: (caseId: string) => `/api/v1${c(caseId)}/events`,
+};
+
+export const providersApi = {
+  list: () => api<ProviderOut[]>("/providers"),
+  create: (body: ProviderIn) => api<ProviderOut>("/providers", { method: "POST", body }),
+  remove: (id: string) => api<void>(`/providers/${e(id)}`, { method: "DELETE" }),
+  verify: (id: string) =>
+    api<Record<string, unknown>>(`/providers/${e(id)}/verify`, { method: "POST" }),
+  setDefault: (id: string | null) =>
+    api<void>("/providers/default", { method: "PUT", body: { provider_id: id } }),
 };

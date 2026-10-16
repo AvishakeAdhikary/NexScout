@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { factsApi, type FactOut, type Section } from "@/lib/api/client";
 import { SECTION_LABELS, SECTION_ORDER } from "@/lib/profile-schema";
 
+import { DraftSummary } from "./draft-summary";
 import { FactCard } from "./fact-card";
 import { LinksPanel } from "./links-panel";
 import { PreferencesPanel } from "./preferences-panel";
@@ -69,6 +70,8 @@ export default function ProfilePage() {
 
       {facts.isPending && <p>Loading your profile…</p>}
       <ErrorAlert error={facts.error} title="Couldn't load your profile" />
+
+      <DraftSummary caseId={caseId} />
 
       {gaps.data && gaps.data.length > 0 && (
         <section aria-labelledby="gaps-heading" className="rounded-lg border p-4">

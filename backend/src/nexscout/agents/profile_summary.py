@@ -66,6 +66,7 @@ class State(TypedDict, total=False):
     draft: list[dict[str, Any]]
     kept: list[dict[str, Any]]
     dropped: list[dict[str, Any]]
+    model: dict[str, Any]
     result: dict[str, Any]
 
 
@@ -159,7 +160,10 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         for call in res.calls:
             await record_usage(s, ctx.owner_user_id, ctx.run_id, call, PURPOSE, caps)
     await ctx.add_tokens(sum(c.usage.input_tokens + c.usage.output_tokens for c in res.calls))
-    return {"draft": [x.model_dump() for x in res.value.sentences]}
+    return {
+        "draft": [x.model_dump() for x in res.value.sentences],
+        "model": {"name": resolved.name, "is_mock": any(c.is_mock for c in res.calls)},
+    }
 
 
 _NUMBER = re.compile(r"\b\d+(?:[.,]\d+)?\b")
@@ -232,6 +236,8 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                 meta={
                     "generated": True,
                     "run_id": str(ctx.run_id),
+                    "model": state.get("model", {}).get("name"),
+                    "is_mock": bool(state.get("model", {}).get("is_mock")),
                     "method": PURPOSE,
                     "cited_fact_ids": sorted({i for x in kept for i in x["fact_ids"]}),
                     "sentences": kept,
@@ -247,6 +253,7 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         "result": {
             "status": "drafted",
             "fact_id": str(existing),
+            "model": state.get("model", {}),
             "summary": text,
             "sentences": kept,
             "dropped": state.get("dropped", []),

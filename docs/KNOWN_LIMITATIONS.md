@@ -13,25 +13,36 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
 | macOS desktop builds | Not producible on the Windows dev host | Needs macOS for build and signing |
 
 ## Provider capability matrix
-| Provider | Adapter | Live-verified |
-|---|---|---|
-| Mock | ⬜ | n/a (deterministic, labelled mock) |
-| OpenAI-compatible (OpenAI/Ollama/LM Studio) | ⬜ | no |
-| Anthropic | ⬜ | no |
-| Gemini | ⬜ | no |
+"Adapter" means the adapter is implemented and unit-tested against a mocked HTTP or SDK transport.
+"Live-verified" means a real call to the real service succeeded. **No real provider has been
+live-verified yet.** No API keys or local model runtime were available on the dev host. Users can
+check their own setup with "Check connection" in Settings, which records the result.
+
+| Provider | Adapter | Structured output | Live-verified |
+|---|---|---|---|
+| Mock | ✅ | ✅ deterministic | n/a (labelled "mock, not AI" everywhere) |
+| OpenAI-compatible: OpenAI | ✅ | json_schema `response_format` when enabled, else instructions + validation | **no** |
+| OpenAI-compatible: Ollama, LM Studio | ✅ (same adapter) | instructions + validation (json_schema if enabled) | **no** |
+| Anthropic | ✅ (SDK) | `output_config.format` json_schema | **no** |
+| Gemini | ✅ (google-genai) | `response_schema` | **no** |
+
+- Token counts for budgets use a chars/3.5 estimate, not each provider's tokenizer.
+- Cost is computed only from the per-million-token prices that the user enters.
 
 ## Profile and documents (M2)
 - **Extraction is rule-based (`heuristic_v1`), not AI.** It recognizes common English CV headings
   and simple entry layouts. Unusual layouts produce fewer entries, or `other` entries with a
-  warning. Nothing is invented, and every entry needs the user's review. LLM extraction arrives in M4.
+  warning. Nothing is invented, and every entry needs the user's review. LLM-assisted extraction
+  is not built yet. The provider layer has existed since M4; extraction is planned alongside M5 drafting.
 - **No OCR:** scanned PDFs (images only) are stored, but their text can't be read.
 - Only CV/résumé uploads are mined for entries. Other documents are stored as supporting files.
 - Upload size is checked from `Content-Length` and while reading. A chunked upload without a
   length is still spooled by the server before rejection. Enforce a body limit at the reverse
   proxy in production.
-- If the DB insert fails after the file is stored, an orphaned file can remain. An orphan sweep
-  job is planned with the M4 worker.
-- Parsing runs inside the upload request (isolated subprocess, 20 s cap) until the M4 worker.
+- If the DB insert fails after the file is stored, an orphaned file can remain. No orphan sweep
+  job exists yet (M10).
+- Reading runs on the background worker (isolated subprocess, 20 s cap). Without a running
+  worker, uploads stay "Reading…".
 
 ## Mind map and opportunities (M3)
 - Only **demo fixture sources** exist. No live job or academic source is connected yet. Every
@@ -41,8 +52,18 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
 - When one catalog listing is seen on several sources, the most recently changed listing's
   content wins.
 - Dedup reports are stored for review but don't yet change results.
-- Sync runs inside the request (per-listing transactions) until the M4 worker.
+- Searches run on the background worker (per-listing transactions, resumable).
 - Dragging nodes is mouse-only. Keyboard users get the full list view instead.
+
+## Agent runtime (M4)
+- Only four workflows exist: reading uploads, opportunity search, the AI summary draft, and a
+  diagnostic system check. PhD and job document generation arrives in M5–M6.
+- Pause takes effect at the next step boundary. A long single step, such as one slow model call,
+  runs to completion first. Cancel can interrupt mid-step.
+- There is no reduced-context retry or task splitting for small models; output validation gets one repair attempt only.
+- Per-user quotas are concurrency limits only. There are no daily token or cost caps yet.
+- The run list relies on live events plus a 30 s fallback poll. Behind a proxy that buffers SSE,
+  updates can lag by up to 30 s.
 
 ## Functional gaps
 Everything after the current milestone in ROADMAP.md is not built yet. UI sections for later
@@ -51,6 +72,5 @@ milestones show an explicit "not available yet" state.
 ## Unverified artifacts (exist but have not been executed)
 | Artifact | Why unverified | Verify by |
 |---|---|---|
-| `docker/backend.Dockerfile`, `docker/web.Dockerfile`, compose `full` profile | No Docker on dev host | `docker compose --profile full up --build` then `/readyz` |
 | `.github/workflows/ci.yml` | Not pushed to GitHub (no remote) | First push/PR |
 | E2E in CI | No CI job for Playwright yet | Add job with Postgres service + `npx playwright install --with-deps chromium` |

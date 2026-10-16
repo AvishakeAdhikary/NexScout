@@ -99,6 +99,14 @@ class Worker:
             open=False,
         )
         await self._pool.open()
+        async with self._pool.connection() as conn:
+            row = await (await conn.execute("SELECT to_regclass('checkpoints') AS t")).fetchone()
+        if not row or row["t"] is None:
+            await self._pool.close()
+            raise RuntimeError(
+                "The database is missing the workflow checkpoint tables. "
+                "Run `uv run nexscout migrate` first."
+            )
         self.saver = AsyncPostgresSaver(self._pool)
         self.store = LocalObjectStore(s.storage_dir)
         await self._heartbeat_row("running")

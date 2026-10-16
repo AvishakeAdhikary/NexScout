@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -65,6 +65,15 @@ class Settings(BaseSettings):
     # Providers: allow base URLs on private/loopback networks (needed for Ollama/LM Studio on
     # this machine). Disable on multi-user servers to prevent SSRF into internal services.
     allow_private_provider_urls: bool = True
+
+    @model_validator(mode="after")
+    def _production_requirements(self) -> Settings:
+        # Fail at startup, not at the first saved API key.
+        if self.env == "production" and not (
+            self.master_key and self.master_key.get_secret_value()
+        ):
+            raise ValueError("NEXSCOUT_MASTER_KEY must be set when NEXSCOUT_ENV=production.")
+        return self
 
     @property
     def is_production(self) -> bool:

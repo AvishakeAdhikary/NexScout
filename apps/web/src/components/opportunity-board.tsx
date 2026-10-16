@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,6 +14,7 @@ import {
   type SyncSummaryOut,
 } from "@/lib/api/client";
 import { useCase } from "@/lib/hooks";
+import { useCaseEvents, useRun } from "@/lib/live";
 
 const SEVERITY_TEXT: Record<string, string> = {
   blocker: "Not a fit",
@@ -171,10 +172,15 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
     queryFn: () => opportunitiesApi.list(caseId, academic),
   });
   const sources = useQuery({ queryKey: ["sources"], queryFn: opportunitiesApi.sources });
-  const sync = useMutation({
-    mutationFn: () => opportunitiesApi.sync(caseId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] }),
-  });
+  useCaseEvents(caseId);
+  const sync = useMutation({ mutationFn: () => opportunitiesApi.sync(caseId) });
+  const syncRun = useRun(sync.data?.run_id);
+  const syncStatus = syncRun.data?.run.status;
+  const syncResult = syncRun.data?.run.result as { sources?: SyncSummaryOut[] } | null | undefined;
+  useEffect(() => {
+    if (syncStatus === "succeeded") queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] });
+  }, [syncStatus, caseId, queryClient]);
+  const searching = sync.isPending || (!!sync.data && syncStatus !== "succeeded" && syncStatus !== "failed" && syncStatus !== "cancelled");
   const rescore = useMutation({
     mutationFn: () => opportunitiesApi.rescore(caseId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] }),
@@ -218,14 +224,25 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={() => sync.mutate()} disabled={sync.isPending || !!pathOff}>
-          {sync.isPending ? "Searching…" : "Find opportunities"}
+        <Button onClick={() => sync.mutate()} disabled={searching || !!pathOff}>
+          {searching ? "Searching…" : "Find opportunities"}
         </Button>
         <Button variant="outline" onClick={() => rescore.mutate()} disabled={rescore.isPending}>
           Update fit estimates
         </Button>
       </div>
-      {sync.data && <SyncResult results={sync.data} />}
+      {searching && sync.data && (
+        <p role="status" className="text-sm">
+          Searching your sources in the background. You can leave this page; progress is in{" "}
+          <Link className="underline" href={`/cases/${caseId}/activity`}>Agent activity</Link>.
+        </p>
+      )}
+      {syncStatus === "succeeded" && syncResult?.sources && <SyncResult results={syncResult.sources} />}
+      {(syncStatus === "failed" || syncStatus === "cancelled") && (
+        <p role="alert" className="text-sm text-destructive">
+          The search {syncStatus === "failed" ? `failed: ${syncRun.data?.run.error ?? "unknown error"}` : "was cancelled"}.
+        </p>
+      )}
       {rescore.data && (
         <p role="status" className="text-sm">
           Updated {rescore.data.rescored} estimates from your latest profile and preferences.
