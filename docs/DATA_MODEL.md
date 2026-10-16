@@ -24,13 +24,13 @@ Status: ✅ implemented and verified against Postgres · 🟨 implemented (migra
 ### M2 Profile and documents
 | Table | Notes |
 |---|---|
-| ⬜ documents | owner, case, kind (cv, transcript, sop, …), filename, mime, size, sha256, storage_key, origin (`uploaded/generated`), parse_status |
-| ⬜ profile_facts | owner, case, section (education, employment, research, publication, project, skill, certification, award, patent, volunteer, leadership, affiliation, reference, summary, other), `data jsonb` validated per section by a Pydantic schema, `status` (user_entered/extracted/inferred/verified/external), `review_state` (pending/accepted/rejected), `is_private`, superseded_by, version |
-| ⬜ fact_evidence | fact_id, document_id?, url?, page, char_start, char_end, excerpt, method (`upload_extraction/user_entry/url_import`) |
-| ⬜ profile_snapshots | case, number, created_at, `facts jsonb` (frozen accepted facts), reason |
-| ⬜ preferences | case (1:1), structured columns for regions, remote, seniority, experience mode, salary, plus `sensitive jsonb` (private, excluded from matching unless the user explicitly marks a field as an eligibility rule) |
-| ⬜ social_profiles | case, kind (linkedin, github, scholar, orcid, researchgate, website, other), url (validated), verified |
-| ⬜ affiliations | case, person_name, organization, relationship_type, role, start/end, status, evidence, notes, may_use_in_applications, may_use_for_referral |
+| ✅ documents | owner, case, kind (cv, transcript, sop, …), filename, mime, size, sha256, storage_key, origin (`uploaded/generated`), parse_status |
+| ✅ profile_facts | owner, case, section (education, employment, research, publication, project, skill, certification, award, patent, volunteer, leadership, affiliation, reference, summary, other), `data jsonb` validated per section by a Pydantic schema, `status` (user_entered/extracted/inferred/verified/external), `review_state` (pending/accepted/rejected), `is_private`, superseded_by, version |
+| ✅ fact_evidence | fact_id, document_id?, url?, page, char_start, char_end, excerpt, method (`upload_extraction/user_entry/url_import`) |
+| ✅ profile_snapshots | case, number, created_at, `facts jsonb` (frozen accepted facts), reason |
+| ✅ case_preferences | case (1:1), structured columns for regions, remote, seniority, experience mode, salary, plus `sensitive jsonb` (private, excluded from matching unless the user explicitly marks a field as an eligibility rule) |
+| ✅ social_profiles | case, kind (linkedin, github, scholar, orcid, researchgate, website, other), url (validated), verified |
+| ✅ affiliations | case, person_name, organization, relationship_type, role, start/end, status, evidence, notes, may_use_in_applications, may_use_for_referral |
 
 ### M3 Mind map and opportunities
 ⬜ mindmap_overrides (case, node_key, position, hidden, label_override) · ⬜ organizations (kind institution/employer, canonical_name, domain, aliases) · ⬜ opportunities (kind phd/job/research/scholarship, organization_id, title, normalized_title, location fields, seniority, experience_min/max, salary, posted_at, closes_at, canonical_url, requisition_id, description, application_method, fingerprint, last_checked_at) · ⬜ opportunity_sources (opportunity_id, source_key, source_url, external_id, raw jsonb, retrieved_at) · ⬜ source_configs (owner, adapter_key, enabled, settings) · ⬜ sync_checkpoints (owner, adapter_key, query_hash, cursor, last_run_at) · ⬜ dedup_decisions (a, b, decision merge/distinct, method, score, decided_by user/system) · ⬜ opportunity_matches (case, opportunity, score, factors jsonb, gaps jsonb, mode)

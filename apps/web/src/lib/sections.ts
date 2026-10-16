@@ -14,7 +14,6 @@ export const SECTIONS: readonly Section[] = [
     slug: "profile",
     label: "My Profile",
     description: "Your achievements, with their sources. Imported facts wait for your review.",
-    milestone: 2,
   },
   {
     slug: "mind-map",
@@ -44,13 +43,11 @@ export const SECTIONS: readonly Section[] = [
     slug: "documents",
     label: "Documents",
     description: "Uploaded documents and generated, versioned application materials.",
-    milestone: 2,
   },
   {
     slug: "relationships",
     label: "Relationships",
     description: "Affiliations, and whether you allow them to be used in applications.",
-    milestone: 2,
   },
   {
     slug: "activity",

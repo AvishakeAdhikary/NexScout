@@ -32,6 +32,9 @@ export function TopBar() {
       </Link>
       <div className="flex items-center gap-3 text-sm">
         {me.data && <span aria-label="Signed in as">{me.data.display_name}</span>}
+        <Link href="/account" className="underline">
+          Account
+        </Link>
         <Button variant="outline" size="sm" onClick={logout} disabled={pending}>
           Sign out
         </Button>

@@ -24,8 +24,10 @@ describe("sections", () => {
   });
 
   it("marks every unbuilt section with a milestone", () => {
-    for (const s of SECTIONS.filter((x) => x.slug)) {
+    const built = new Set(["", "profile", "documents", "relationships"]);
+    for (const s of SECTIONS.filter((x) => !built.has(x.slug))) {
       expect(s.milestone, s.slug).toBeGreaterThan(0);
     }
+    for (const slug of built) expect(findSection(slug)?.milestone, slug).toBeUndefined();
   });
 });

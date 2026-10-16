@@ -50,7 +50,8 @@ export async function api<T>(
 ): Promise<T> {
   const method = (init.method ?? "GET").toUpperCase();
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (init.body !== undefined) headers["Content-Type"] = "application/json";
+  const isForm = typeof FormData !== "undefined" && init.body instanceof FormData;
+  if (init.body !== undefined && !isForm) headers["Content-Type"] = "application/json";
   if (!SAFE_METHODS.has(method)) {
     const csrf = readCookie(CSRF_COOKIE);
     if (csrf) headers["X-CSRF-Token"] = csrf;
@@ -61,7 +62,12 @@ export async function api<T>(
     response = await fetch(`/api/v1${path}`, {
       method,
       headers,
-      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      body:
+        init.body === undefined
+          ? undefined
+          : isForm
+            ? (init.body as FormData)
+            : JSON.stringify(init.body),
       credentials: "same-origin",
       signal: init.signal,
     });
@@ -121,4 +127,103 @@ export const casesApi = {
     api<CaseOut>(`/cases/${encodeURIComponent(id)}`, { method: "PATCH", body }),
   remove: (id: string) =>
     api<void>(`/cases/${encodeURIComponent(id)}`, { method: "DELETE" }),
+};
+
+// ------------------------------------------------------------------ M2: profile & documents
+type S = components["schemas"];
+export type FactOut = S["FactOut"];
+export type Section = FactOut["section"];
+export type ReviewState = FactOut["review_state"];
+export type EvidenceOut = S["EvidenceOut"];
+export type GapOut = S["GapOut"];
+export type SnapshotOut = S["SnapshotOut"];
+export type DocumentOut = S["DocumentOut"];
+export type UploadOut = S["UploadOut"];
+export type DocumentTextOut = S["DocumentTextOut"];
+export type Preferences = S["Preferences"];
+export type PreferencesOut = S["PreferencesOut"];
+export type SocialProfileOut = S["SocialProfileOut"];
+export type AffiliationOut = S["AffiliationOut"];
+export type AffiliationFields = S["AffiliationFields"];
+
+const c = (id: string) => `/cases/${encodeURIComponent(id)}`;
+const e = encodeURIComponent;
+
+export const factsApi = {
+  list: (caseId: string, params: { section?: Section; review_state?: ReviewState } = {}) => {
+    const q = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v) as [string, string][],
+    ).toString();
+    return api<FactOut[]>(`${c(caseId)}/facts${q ? `?${q}` : ""}`);
+  },
+  create: (caseId: string, section: Section, data: Record<string, unknown>, isPrivate?: boolean) =>
+    api<FactOut>(`${c(caseId)}/facts`, {
+      method: "POST",
+      body: { section, data, is_private: isPrivate ?? null },
+    }),
+  update: (
+    id: string,
+    body: {
+      version: number;
+      data?: Record<string, unknown>;
+      is_private?: boolean;
+      review_state?: ReviewState;
+    },
+  ) => api<FactOut>(`/facts/${e(id)}`, { method: "PATCH", body }),
+  review: (caseId: string, accept: string[], reject: string[]) =>
+    api<{ changed: number }>(`${c(caseId)}/facts/review`, {
+      method: "POST",
+      body: { accept, reject },
+    }),
+  merge: (caseId: string, keepId: string, mergeIds: string[]) =>
+    api<FactOut>(`${c(caseId)}/facts/merge`, {
+      method: "POST",
+      body: { keep_id: keepId, merge_ids: mergeIds },
+    }),
+  remove: (id: string) => api<void>(`/facts/${e(id)}`, { method: "DELETE" }),
+  evidence: (id: string) => api<EvidenceOut[]>(`/facts/${e(id)}/evidence`),
+  gaps: (caseId: string) => api<GapOut[]>(`${c(caseId)}/profile/gaps`),
+  snapshots: (caseId: string) => api<SnapshotOut[]>(`${c(caseId)}/snapshots`),
+  snapshot: (caseId: string, reason: string) =>
+    api<SnapshotOut>(`${c(caseId)}/snapshots`, { method: "POST", body: { reason } }),
+};
+
+export const documentsApi = {
+  list: (caseId: string) => api<DocumentOut[]>(`${c(caseId)}/documents`),
+  upload: (caseId: string, file: File, purpose: string) => {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("purpose", purpose);
+    return api<UploadOut>(`${c(caseId)}/documents`, { method: "POST", body: form });
+  },
+  text: (id: string) => api<DocumentTextOut>(`/documents/${e(id)}/text`),
+  contentUrl: (id: string) => `/api/v1/documents/${e(id)}/content`,
+  remove: (id: string, deletePendingFacts: boolean) =>
+    api<void>(`/documents/${e(id)}?delete_pending_facts=${deletePendingFacts}`, {
+      method: "DELETE",
+    }),
+};
+
+export const relationshipsApi = {
+  preferences: (caseId: string) => api<PreferencesOut>(`${c(caseId)}/preferences`),
+  savePreferences: (caseId: string, version: number, data: Preferences) =>
+    api<PreferencesOut>(`${c(caseId)}/preferences`, { method: "PUT", body: { version, data } }),
+  links: (caseId: string) => api<SocialProfileOut[]>(`${c(caseId)}/social-profiles`),
+  addLink: (caseId: string, url: string, label?: string) =>
+    api<SocialProfileOut>(`${c(caseId)}/social-profiles`, {
+      method: "POST",
+      body: { url, label: label || null },
+    }),
+  removeLink: (id: string) => api<void>(`/social-profiles/${e(id)}`, { method: "DELETE" }),
+  affiliations: (caseId: string) => api<AffiliationOut[]>(`${c(caseId)}/affiliations`),
+  createAffiliation: (caseId: string, body: AffiliationFields) =>
+    api<AffiliationOut>(`${c(caseId)}/affiliations`, { method: "POST", body }),
+  updateAffiliation: (id: string, body: AffiliationFields & { version: number }) =>
+    api<AffiliationOut>(`/affiliations/${e(id)}`, { method: "PATCH", body }),
+  removeAffiliation: (id: string) => api<void>(`/affiliations/${e(id)}`, { method: "DELETE" }),
+};
+
+export const accountApi = {
+  exportUrl: "/api/v1/me/export",
+  remove: (password: string) => api<void>("/me/delete", { method: "POST", body: { password } }),
 };

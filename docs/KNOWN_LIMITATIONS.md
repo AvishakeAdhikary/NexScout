@@ -20,6 +20,19 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
 | Anthropic | ⬜ | no |
 | Gemini | ⬜ | no |
 
+## Profile and documents (M2)
+- **Extraction is rule-based (`heuristic_v1`), not AI.** It recognizes common English CV headings
+  and simple entry layouts. Unusual layouts produce fewer entries, or `other` entries with a
+  warning. Nothing is invented, and every entry needs the user's review. LLM extraction arrives in M4.
+- **No OCR:** scanned PDFs (images only) are stored, but their text can't be read.
+- Only CV/résumé uploads are mined for entries. Other documents are stored as supporting files.
+- Upload size is checked from `Content-Length` and while reading. A chunked upload without a
+  length is still spooled by the server before rejection. Enforce a body limit at the reverse
+  proxy in production.
+- If the DB insert fails after the file is stored, an orphaned file can remain. An orphan sweep
+  job is planned with the M4 worker.
+- Parsing runs inside the upload request (isolated subprocess, 20 s cap) until the M4 worker.
+
 ## Functional gaps
 Everything after the current milestone in ROADMAP.md is not built yet. UI sections for later
 milestones show an explicit "not available yet" state.
