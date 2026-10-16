@@ -227,3 +227,49 @@ export const accountApi = {
   exportUrl: "/api/v1/me/export",
   remove: (password: string) => api<void>("/me/delete", { method: "POST", body: { password } }),
 };
+
+// ------------------------------------------------------------------ M3: mind map & opportunities
+export type MindMapOut = S["MindMapOut"];
+export type MindNodeOut = S["MindNodeOut"];
+export type MindEdgeOut = S["MindEdgeOut"];
+export type SnapshotDiffOut = S["SnapshotDiffOut"];
+export type SourceOut = S["SourceOut"];
+export type SyncSummaryOut = S["SyncSummaryOut"];
+export type OpportunityOut = S["OpportunityOut"];
+
+export const mindmapApi = {
+  get: (caseId: string) => api<MindMapOut>(`${c(caseId)}/mindmap`),
+  setNode: (
+    caseId: string,
+    key: string,
+    body: { x?: number | null; y?: number | null; hidden?: boolean; label?: string | null },
+  ) =>
+    api<void>(`${c(caseId)}/mindmap/nodes/${e(key)}`, { method: "PUT", body }),
+  resetNode: (caseId: string, key: string) =>
+    api<void>(`${c(caseId)}/mindmap/nodes/${e(key)}`, { method: "DELETE" }),
+  resetAll: (caseId: string) => api<void>(`${c(caseId)}/mindmap/overrides`, { method: "DELETE" }),
+  compare: (caseId: string, from: number, to: number) =>
+    api<SnapshotDiffOut>(`${c(caseId)}/snapshots/compare?from_number=${from}&to_number=${to}`),
+};
+
+export const opportunitiesApi = {
+  sources: () => api<SourceOut[]>("/sources"),
+  configureSource: (key: string, enabled: boolean, settings: Record<string, unknown>) =>
+    api<SourceOut>(`/sources/${e(key)}`, { method: "PUT", body: { enabled, settings } }),
+  sync: (caseId: string) =>
+    api<SyncSummaryOut[]>(`${c(caseId)}/opportunities/sync`, { method: "POST", body: {} }),
+  rescore: (caseId: string) =>
+    api<{ rescored: number }>(`${c(caseId)}/opportunities/rescore`, { method: "POST" }),
+  list: (caseId: string, academic: boolean) =>
+    api<OpportunityOut[]>(`${c(caseId)}/opportunities?academic=${academic}`),
+  setStatus: (caseId: string, id: string, status: string, version: number) =>
+    api<OpportunityOut>(`${c(caseId)}/opportunities/${e(id)}`, {
+      method: "PATCH",
+      body: { status, version },
+    }),
+  report: (caseId: string, id: string, note: string) =>
+    api<{ id: string }>(`${c(caseId)}/opportunities/${e(id)}/reports`, {
+      method: "POST",
+      body: { kind: "wrong_merge", note },
+    }),
+};

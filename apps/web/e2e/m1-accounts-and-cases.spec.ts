@@ -42,9 +42,9 @@ test("register, create a case, choose a path, and persist across sign-in", async
   await expect(page.getByText("Saving…")).toBeHidden();
 
   // Unbuilt sections say so honestly.
-  await page.getByRole("link", { name: /Mind Map/ }).first().click();
-  await expect(page.getByRole("heading", { level: 1, name: "Mind Map" })).toBeVisible();
-  await expect(page.getByText(/planned for milestone 3/)).toBeVisible();
+  await page.getByRole("link", { name: /Agent Activity/ }).first().click();
+  await expect(page.getByRole("heading", { level: 1, name: "Agent Activity" })).toBeVisible();
+  await expect(page.getByText(/planned for milestone 4/)).toBeVisible();
 
   // Sign out, then back in: the case and the chosen path persist.
   await page.getByRole("button", { name: "Sign out" }).click();

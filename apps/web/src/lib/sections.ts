@@ -19,19 +19,16 @@ export const SECTIONS: readonly Section[] = [
     slug: "mind-map",
     label: "Mind Map",
     description: "Your profile as an interactive map where every node links to evidence.",
-    milestone: 3,
   },
   {
     slug: "phd",
     label: "PhD Opportunities",
     description: "Programs, funded positions, and supervisors, with sources.",
-    milestone: 5,
   },
   {
     slug: "jobs",
     label: "Job Opportunities",
     description: "Deduplicated jobs with explained matches and experience gaps.",
-    milestone: 6,
   },
   {
     slug: "applications",

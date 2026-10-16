@@ -33,6 +33,17 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
   job is planned with the M4 worker.
 - Parsing runs inside the upload request (isolated subprocess, 20 s cap) until the M4 worker.
 
+## Mind map and opportunities (M3)
+- Only **demo fixture sources** exist. No live job or academic source is connected yet. Every
+  demo result is labelled in the UI.
+- Matching is deterministic and simple (keyword skill matching, years computed from dated
+  entries, degree keywords). It doesn't understand synonyms beyond exact or normalized names.
+- When one catalog listing is seen on several sources, the most recently changed listing's
+  content wins.
+- Dedup reports are stored for review but don't yet change results.
+- Sync runs inside the request (per-listing transactions) until the M4 worker.
+- Dragging nodes is mouse-only. Keyboard users get the full list view instead.
+
 ## Functional gaps
 Everything after the current milestone in ROADMAP.md is not built yet. UI sections for later
 milestones show an explicit "not available yet" state.

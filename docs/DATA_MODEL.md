@@ -32,7 +32,9 @@ Status: ✅ implemented and verified against Postgres · 🟨 implemented (migra
 | ✅ social_profiles | case, kind (linkedin, github, scholar, orcid, researchgate, website, other), url (validated), verified |
 | ✅ affiliations | case, person_name, organization, relationship_type, role, start/end, status, evidence, notes, may_use_in_applications, may_use_for_referral |
 
-### M3 Mind map and opportunities
+### M3 Mind map and opportunities (✅ migration 0003)
+Implemented as: `mindmap_overrides`, `organizations`, `opportunities` (normalized payload in `data` JSONB plus indexed identity columns), `opportunity_sources` (per listing: content hash, dedup score and reasons), `source_configs`, `sync_checkpoints` (resumable cursor, last result), `opportunity_matches` (score, eligible, factors, gaps, status, version), `dedup_reports`. System merge decisions live on `opportunity_sources`, and user reports in `dedup_reports`.
+
 ⬜ mindmap_overrides (case, node_key, position, hidden, label_override) · ⬜ organizations (kind institution/employer, canonical_name, domain, aliases) · ⬜ opportunities (kind phd/job/research/scholarship, organization_id, title, normalized_title, location fields, seniority, experience_min/max, salary, posted_at, closes_at, canonical_url, requisition_id, description, application_method, fingerprint, last_checked_at) · ⬜ opportunity_sources (opportunity_id, source_key, source_url, external_id, raw jsonb, retrieved_at) · ⬜ source_configs (owner, adapter_key, enabled, settings) · ⬜ sync_checkpoints (owner, adapter_key, query_hash, cursor, last_run_at) · ⬜ dedup_decisions (a, b, decision merge/distinct, method, score, decided_by user/system) · ⬜ opportunity_matches (case, opportunity, score, factors jsonb, gaps jsonb, mode)
 
 Opportunities discovered from public sources are **shared catalog data** (not owned). Per-user state

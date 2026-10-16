@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-16
-- **Current milestone:** M3 Mind map and opportunity domain (⬜ next). M0 ✅, M1 ✅, M2 ✅.
+- **Current milestone:** M4 Durable agent runtime (⬜ next). M0–M3 ✅.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0007.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -21,6 +21,16 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     edit-then-accept, accept-all per section, confirmed profile, privacy toggle, add entry,
     gaps, profile links, preferences incl. strict/flexible experience mode and private
     eligibility details), Relationships (table + permissions), Account (export, delete).
+  - M3: mind map built only from accepted facts (derived edges flagged with a basis; stable
+    keys; overrides survive regeneration; orphaned overrides reported), React Flow + ELK view
+    with an accessible list alternative, an evidence panel, map-only renames, snapshot history
+    and compare. Opportunity domain: URL/title/employer normalization, guard-first dedup,
+    explainable matching (factors + fact ids + gaps, strict/flexible), shared public catalog vs
+    owned per-case matches, three labelled demo sources, incremental sync (content hash,
+    resumable cursor, per-listing transactions with sorted advisory locks), PhD and Jobs pages
+    (demo banner, explained estimates, shortlist/dismiss, report wrong merge, source toggles).
+  - The IDOR guard test was silently checking nothing (FastAPI 0.143 `_IncludedRouter`). It was
+    rewritten to enumerate routes from OpenAPI with a minimum-count assertion, and now covers 40 routes.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -28,22 +38,23 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 - **Interim decisions still in force:** ingestion runs in the upload request (isolated subprocess,
   20 s cap) until the M4 worker. The extractor is the deterministic `heuristic_v1` (not AI). LLM
   extraction arrives with the provider layer (M4).
-- **Next exact steps (M3):**
-  1. Domain: mind-map graph builder over *accepted* facts (nodes keyed by fact id, typed
-     edges for chronology, shared skills and organizations; node status from fact status);
-     snapshot diff (`domain/snapshots.py`).
-  2. Migration `0003`: `mindmap_overrides`, `organizations`, `opportunities`,
-     `opportunity_sources`, `source_configs`, `sync_checkpoints`, `dedup_decisions`,
-     `opportunity_matches`. Catalog vs owned split (see DATA_MODEL).
-  3. Domain: opportunity normalization, dedup engine (URL canonicalization, requisition id,
-     employer resolution, title normalization, location, similarity threshold, guard against
-     merging distinct requisitions), explainable matching (factors + gaps, strict/flexible).
-  4. `SourceAdapter` protocol + deterministic fixture adapters (jobs + academic). Sync with
-     checkpoints so repeated syncs don't duplicate.
-  5. Web: Mind Map (React Flow + ELK, accessible table view, overrides kept on regenerate,
-     snapshot compare). Opportunities list (fixture sources, labelled as such) with match
-     explanation.
-  6. Tests: dedup property tests, matching tests, IDOR sweep additions, E2E.
+- **Next exact steps (M4):**
+  1. Verify LangGraph 1.2 + `langgraph-checkpoint-postgres` 3.2 APIs against the installed source
+     (AsyncPostgresSaver setup, interrupt/Command resume), and psycopg async on the Windows
+     Selector loop.
+  2. Migration `0004`: workflow_runs, tasks, task_attempts, workflow_events, approval_requests,
+     tool_executions, usage_records, worker_heartbeats. Owned with RLS, plus a narrowly scoped
+     `nexscout_system` role (BYPASSRLS) used only to claim and reap queue rows.
+  3. `agent_runtime/`: queue (claim with SKIP LOCKED, leases, heartbeats, reaper,
+     backoff+jitter), worker process `nexscout worker`, control requests (pause/resume/cancel/
+     retry/rerun/skip), idempotency keys, events + LISTEN/NOTIFY + SSE endpoint.
+  4. LLM provider layer (ADR-0004): mock (labelled), OpenAI-compatible (Ollama/LM Studio/OpenAI),
+     Anthropic, Gemini adapters with capability metadata, structured-output validate/repair,
+     usage records; ContextBuilder with budgets and validated compaction.
+  5. First real workflows: move document ingestion and opportunity sync onto the worker
+     (removes the M2/M3 interim in-request processing); a demo workflow with an approval gate.
+  6. Agent Activity UI (live via SSE, controls, approvals). System tests: kill the worker
+     mid-run, then resume from checkpoint with no duplicate side effects; pause/cancel semantics.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -55,6 +66,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-16 | M2: ruff, ruff format, mypy strict (48 files); web tsc, eslint, vitest 12/12, `next build` | all passed |
 | 2026-10-16 | M2: `npm run e2e` (Chromium, real API + DB) | **4/4 passed** incl. upload → review vs source → accept/edit/reject → add → links/prefs/relationships → fresh session → export → intruder sees nothing |
 | 2026-10-16 | M2: `scripts/check_restart_persistence.py` (hard-kill API process tree, restart) | **PASSED**: 16/16 facts, accepted state, document and original bytes intact |
+| 2026-10-16 | M3: `NEXSCOUT_REQUIRE_DB=1 uv run pytest` | **158 passed** (incl. concurrent two-user sync, IDOR sweep over 40 ID routes) |
+| 2026-10-16 | M3: web tsc, eslint, vitest 12/12, `next build` | passed |
+| 2026-10-16 | M3: `npm run e2e` | **6/6 passed** incl. mind map (list view, evidence panel, rename persists, snapshot compare) and job discovery (demo label, explanations, multi-source listing, strict-mode hiding with reasons, no duplicates on re-run) |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---
@@ -67,7 +81,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M0 | Discovery and architecture | ✅ | Architecture, conventions, data ownership, security boundaries and the first vertical slice are documented |
 | M1 | Runnable foundation | ✅ | Dev can start the app from the docs, log in, create an isolated case, and run the tests. User B gets 404 on A's case. RLS blocks raw cross-tenant SQL |
 | M2 | Profile and ingestion | ✅ | Upload PDF/DOCX/MD → review extracted facts → edit profile → data persists across restart |
-| M3 | Mind map and opportunities | ⬜ | Evidence-linked mind map (graph and table). Normalized, deduplicated opportunities from fixture sources with explained matches |
+| M3 | Mind map and opportunities | ✅ | Evidence-linked mind map (graph and table). Normalized, deduplicated opportunities from fixture sources with explained matches |
 | M4 | Durable agent runtime | ⬜ | Workflow survives worker or app restart, resumes from its checkpoint, and respects pause, cancel and authorization. No duplicate side effects |
 | M5 | PhD research workflow | ⬜ | Fixture workflow discovers opportunities, stores evidence, generates editable documents, and flags missing info without inventing facts |
 | M6 | Job discovery and matching | ⬜ | Repeated searches don't duplicate. Matches and experience gaps are explained |

@@ -39,6 +39,13 @@ application history. Treat it as a **high-sensitivity personal-data system**.
 | Discriminatory matching | Protected attributes excluded from scoring by construction (they never enter the matcher input type) | unit test on the matcher input schema |
 | Stale/incorrect research | Provenance, retrieval time, confidence. Official sources outrank others | research unit tests |
 
+## 3a. Shared opportunity catalog
+`organizations`, `opportunities` and `opportunity_sources` hold public posting data shared by all
+users (no RLS; the app role may SELECT/INSERT/UPDATE but not DELETE). No personal data is written
+there. Search keywords, preferences and match results live in owned tables. Users reach catalog rows
+only through their own `opportunity_matches`. User-configured private or authenticated sources must
+never write to the shared catalog (enforced when such adapters are added; see KNOWN_LIMITATIONS).
+
 ## 4. Data protection
 - TLS in production (terminated at the proxy). Postgres connections use TLS when remote.
 - At rest: disk encryption at the infrastructure level, plus application-level AES-GCM for secrets and
