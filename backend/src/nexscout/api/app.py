@@ -23,6 +23,7 @@ from nexscout.api.routers import (
     profile,
     providers,
     relationships,
+    research,
     runs,
 )
 from nexscout.config import Settings, get_settings
@@ -77,6 +78,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         opportunities,
         runs,
         providers,
+        research,
     ):
         app.include_router(module.router, prefix=API_PREFIX)
     return app

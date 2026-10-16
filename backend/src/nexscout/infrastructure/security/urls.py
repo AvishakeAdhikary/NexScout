@@ -16,7 +16,7 @@ _ALWAYS_BLOCKED = (
 )
 
 
-def _blocked(ip: ipaddress.IPv4Address | ipaddress.IPv6Address, allow_private: bool) -> bool:
+def is_blocked_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address, allow_private: bool) -> bool:
     if any(ip in net for net in _ALWAYS_BLOCKED):
         return True
     if ip.is_multicast or ip.is_unspecified or ip.is_reserved:
@@ -53,7 +53,7 @@ def check_outbound_url(url: str, *, allow_private: bool, resolve: bool = True) -
     except ValueError:
         ips = resolve_ips(host) if resolve else []
     for ip in ips:
-        if _blocked(ip, allow_private):
+        if is_blocked_ip(ip, allow_private):
             raise ValidationFailed("That address points to a restricted network location.")
     return url.strip()
 

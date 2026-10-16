@@ -4,9 +4,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M5 PhD research workflow (⬜ next). M0–M4 ✅.
+- **Current milestone:** M6 Job discovery and matching (⬜ next). M0–M5 ✅.
 - **Done so far:**
-  - M0: all §2.2 docs + ADR-0001…0008.
+  - M0: all §2.2 docs + ADR-0001…0009.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
     locking, audit log, forced RLS + least-privilege grants, health/readiness, CLI, compose,
     Dockerfiles, CI workflow, Next.js shell, E2E.
@@ -42,6 +42,26 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
       worker. Both now mount `appdata:/data`, and a worker service was added.
     - Production now refuses to start without `NEXSCOUT_MASTER_KEY`.
     - Mock-drafted text is labelled "Mock text, not written by AI".
+  - M5 PhD workflow (ADR-0009):
+    - Migration `0005` adds research_sources, research_findings, generated_documents and
+      generated_document_versions (owned, RLS).
+    - `SafeFetcher` (IP pinned at connect, redirects re-checked, robots.txt, caps).
+    - `rules_v1` research extraction with verbatim quotes, conflicts and freshness, plus bundled,
+      labelled demo pages for the demo listings.
+    - `phd_research`, `draft_document` and `render_document` workflows. The drafting contract is
+      typed cited sentences with a deterministic verifier and placeholders. The academic CV is
+      assembled from accepted entries (no AI). There is a consent approval when data leaves the
+      device.
+    - Markdown → PDF (Chromium in a thread) and DOCX, validated.
+    - API: research, document types, generated documents (draft, list, get, version, edit = new
+      version with optimistic concurrency, render, download, delete). The IDOR sweep covers all 9
+      new routes.
+    - Web: "Research and prepare" page (findings grouped with source quotes, conflicts,
+      freshness, supervisors; draft buttons) and a document page (mock and "no AI" badges, "Not
+      ready to send" placeholder warning, fact-check report with removed claims and reasons,
+      files with checks, editor, versions, delete). Documents → Application materials, with
+      "Create academic CV".
+    - The backend image now includes headless Chromium.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -49,23 +69,22 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   Studio (see KNOWN_LIMITATIONS provider matrix: none live-verified).
 - **Observed, not failing:** one `Failed to proxy … ECONNRESET` line from `next dev` during the
   M2 E2E (a request aborted by page navigation; the test passed).
-- **Next exact steps (M5 PhD workflow):**
-  1. Read PRODUCT_REQUIREMENTS §M5 + ARCHITECTURE. Add migration `0005`: research_sources,
-     evidence_excerpts (url, retrieved_at, content hash, freshness), faculty,
-     program_requirements, generated_documents + versions (owned, RLS, IDOR sweep entries).
-  2. SSRF-safe fetcher (`infrastructure/fetch.py`): block private/metadata IPs, re-resolve on
-     every redirect, size/time limits, content-type allowlist, robots respect. Unit tests with a
-     local fixture server.
-  3. Fixture academic sources for requirements/supervisors (labelled demo), plus opt-in live arXiv and
-     ORCID adapters (flag off by default, unverified until run).
-  4. `phd_application` workflow: shortlist → research requirements → research supervisors →
-     draft SOP / research proposal / academic CV / inquiry email (LLM via provider layer, mock
-     handlers) → verifier (each claim → fact ids; missing → `[[PLACEHOLDER: …]]`) → render
-     Markdown → HTML → PDF (Playwright Chromium) and DOCX (python-docx) → validate files.
-     Approval before anything leaves the device.
-  5. Web: opportunity detail → "Prepare application", documents list with versions, editor with
-     placeholders highlighted, download PDF/DOCX.
-  6. Tests (unit/integration/system + E2E journey), docs, roadmap, commit.
+- **Next exact steps (M6 Jobs):**
+  1. Read PRODUCT_REQUIREMENTS R-JOB-1…6. The job source registry, dedup, strict/flexible modes
+     and explained matches already exist (M3). Add what's missing: per-source settings UI
+     (keywords, locations), sync history and checkpoints view, and "repeated searches don't
+     re-surface duplicates" across days (an E2E with the `jobs_board_b_later` fixture).
+  2. Referral suggestions (R-JOB-5): for each job, list affiliations whose organization matches
+     the employer (entity resolution via `organizations`) **and** that have
+     `may_use_for_referral=true`. Explain why. Never suggest without permission. Unit + system
+     tests, including a permission-off case.
+  3. Job documents: add `resume`, `cover_letter` and `referral_request` to `PHD_DOC_TYPES`
+     (rename to `AVAILABLE_DOC_TYPES`) with DocSpecs. The resume is assembled (no AI, like the
+     academic CV, ordered for jobs). The cover letter and referral request are drafted with the
+     verifier. The referral request needs `affiliation_id` (permission checked) and is never sent.
+     Mock handlers. Jobs page: "Prepare application" page mirroring the PhD one (research reuses
+     `phd_research`; rename it to `opportunity_research` with an alias).
+  4. Tests (unit, system, IDOR entries for new routes, E2E journey), docs, roadmap, commit.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -86,6 +105,11 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M4: web `tsc --noEmit`, `eslint .`, `vitest run` (12/12), `next build` | all passed |
 | 2026-10-17 | M4: `npx playwright test` (api :8100 + **worker** + web :3200) | **8/8 passed**, incl. new M4 journeys: system check run → pause → paused → resume → approval with note → done, with the run list updated by live events; mock model added → check connection "Working" → write-only key field → AI summary draft cited and labelled mock |
 | 2026-10-17 | M4: `docker compose --profile full up -d --build` + probe through web :3000 | api healthy; containerized worker read an uploaded CV in ~2 s (16 entries); SSE live through the production web server (no gzip); API key not echoed; one shared `/data/master.key`; `compose stop worker` → `worker_stopped` in 1.6 s |
+| 2026-10-17 | M5: ruff, ruff format, mypy strict (98 files) | passed |
+| 2026-10-17 | M5: `uv run pytest` | **234 passed** in 97 s (new: fetcher SSRF suite 9, research rules 6, drafting verifier 8, render 4 incl. real Chromium PDF, 7 system tests for research/SOP/edit+render/CV/inquiry email/consent/validation, IDOR sweep +9 routes) |
+| 2026-10-17 | M5: web tsc, eslint, vitest 12/12, `next build` | passed |
+| 2026-10-17 | M5: `npx playwright test` | **9/9 passed**, incl. new journey: find demo PhD → research (conflicting deadlines flagged, supervisor quote) → draft SOP (mock labelled, removed claim shown, placeholders) → edit → v2 → create files → PDF download |
+| 2026-10-17 | M5: `docker compose --profile full up -d --build` + probe via web :3000 | containerized worker: research 4 sources / 18 findings / 4 conflicts; SOP drafted, `files_ok`, PDF 200 `%PDF-` (image with Chromium: 2.08 GB) |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---
@@ -100,7 +124,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M2 | Profile and ingestion | ✅ | Upload PDF/DOCX/MD → review extracted facts → edit profile → data persists across restart |
 | M3 | Mind map and opportunities | ✅ | Evidence-linked mind map (graph and table). Normalized, deduplicated opportunities from fixture sources with explained matches |
 | M4 | Durable agent runtime | ✅ | Workflow survives worker or app restart, resumes from its checkpoint, and respects pause, cancel and authorization. No duplicate side effects |
-| M5 | PhD research workflow | ⬜ | Fixture workflow discovers opportunities, stores evidence, generates editable documents, and flags missing info without inventing facts |
+| M5 | PhD research workflow | ✅ | Fixture workflow discovers opportunities, stores evidence, generates editable documents, and flags missing info without inventing facts |
 | M6 | Job discovery and matching | ⬜ | Repeated searches don't duplicate. Matches and experience gaps are explained |
 | M7 | Browser automation and approvals | ⬜ | Fixture application flow completes, stops at approval gates, and distinguishes confirmed from uncertain submission |
 | M8 | Tracking and dashboard | ⬜ | Track applications, inspect agent work, pause workflows, review documents and resolve blocked tasks in the UI |

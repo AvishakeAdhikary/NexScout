@@ -50,6 +50,10 @@ OWNED_TABLES: tuple[str, ...] = (
     "usage_records",
     "secrets",
     "provider_configs",
+    "research_sources",
+    "research_findings",
+    "generated_documents",
+    "generated_document_versions",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
@@ -833,4 +837,138 @@ class ProviderConfig(IdMixin, TimestampMixin, Base):
         CheckConstraint(
             "kind IN ('mock','openai_compatible','anthropic','gemini')", name="kind_valid"
         ),
+    )
+
+
+# --- M5: research and generated application documents -------------------------------------
+
+
+class ResearchSource(IdMixin, Base):
+    """A page or listing read while researching an opportunity for a case.
+
+    Owned per case: what someone researched is personal. `text` is the readable text that
+    findings quote from; a finding's quote must be an exact substring of it.
+    """
+
+    __tablename__ = "research_sources"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="CASCADE"), nullable=False
+    )
+    url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    final_url: Mapped[str | None] = mapped_column(String(2048))
+    title: Mapped[str | None] = mapped_column(String(300))
+    origin: Mapped[str] = mapped_column(String(20), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    http_status: Mapped[int | None] = mapped_column(Integer)
+    content_type: Mapped[str | None] = mapped_column(String(120))
+    content_hash: Mapped[str | None] = mapped_column(String(64))
+    text: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    links: Mapped[list[Any]] = mapped_column(JSONB, nullable=False, default=list)
+    error: Mapped[str | None] = mapped_column(Text)
+    retrieved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        case_fk(),
+        UniqueConstraint("case_id", "opportunity_id", "url", name="uq_research_sources_case_url"),
+        CheckConstraint("origin IN ('listing','demo','web')", name="origin_valid"),
+        CheckConstraint("status IN ('ok','failed','blocked','skipped')", name="status_valid"),
+    )
+
+
+class ResearchFinding(IdMixin, Base):
+    """One requirement, deadline, supervisor, ... found in a source, with its verbatim quote."""
+
+    __tablename__ = "research_findings"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="CASCADE"), nullable=False
+    )
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("research_sources.id", ondelete="CASCADE"), nullable=False
+    )
+    kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    field: Mapped[str] = mapped_column(String(60), nullable=False)
+    summary: Mapped[str] = mapped_column(String(500), nullable=False)
+    quote: Mapped[str] = mapped_column(Text, nullable=False)
+    value: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    confidence: Mapped[str] = mapped_column(String(10), nullable=False)
+    method: Mapped[str] = mapped_column(String(40), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="current")
+    note: Mapped[str | None] = mapped_column(String(500))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        case_fk(),
+        CheckConstraint(
+            "kind IN ('deadline','degree','language_test','document_required','funding',"
+            "'supervisor','other')",
+            name="kind_valid",
+        ),
+        CheckConstraint("confidence IN ('high','medium','low')", name="confidence_valid"),
+        CheckConstraint("status IN ('current','conflict')", name="status_valid"),
+        Index("ix_research_findings_case_opp", "case_id", "opportunity_id"),
+    )
+
+
+class GeneratedDocument(IdMixin, TimestampMixin, Base):
+    """An application document NexScout drafted (or assembled) for a case. Markdown is canonical;
+    each edit or regeneration is a new immutable version."""
+
+    __tablename__ = "generated_documents"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    opportunity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="SET NULL")
+    )
+    doc_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    current_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    created_by_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("workflow_runs.id", ondelete="SET NULL"), unique=True
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        case_fk(),
+        CheckConstraint(
+            "doc_type IN ('sop','research_proposal','academic_cv','inquiry_email',"
+            "'resume','cover_letter','referral_request')",
+            name="doc_type_valid",
+        ),
+        Index("ix_generated_documents_case", "case_id", "created_at"),
+    )
+
+
+class GeneratedDocumentVersion(IdMixin, Base):
+    """One immutable version: markdown, the verifier report, and rendered files (if any)."""
+
+    __tablename__ = "generated_document_versions"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("generated_documents.id", ondelete="CASCADE"), nullable=False
+    )
+    number: Mapped[int] = mapped_column(Integer, nullable=False)
+    markdown: Mapped[str] = mapped_column(Text, nullable=False)
+    origin: Mapped[str] = mapped_column(String(20), nullable=False)
+    report: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    placeholders: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    artifacts: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    model: Mapped[str | None] = mapped_column(String(200))
+    is_mock: Mapped[bool] = mapped_column(nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("document_id", "number", name="uq_generated_document_versions_number"),
+        CheckConstraint("origin IN ('generated','assembled','user_edit')", name="origin_valid"),
     )

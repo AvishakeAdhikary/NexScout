@@ -1,0 +1,25 @@
+{
+  "_comment": "Synthetic demo web pages for the demo academic listings. Not real institutions, people, or positions. Served only for reserved .example hosts (RFC 2606), which are never fetched from the network.",
+  "pages": {
+    "https://tu-exampleton.example/jobs/phd-trustworthy-nlp": {
+      "title": "Doctoral Researcher in Trustworthy NLP | TU Exampleton (demo)",
+      "html": "<html><head><title>Doctoral Researcher in Trustworthy NLP | TU Exampleton (demo)</title></head><body><h1>Doctoral Researcher in Trustworthy Natural Language Processing</h1><p>The Trustworthy Language Technology group at the Technical University of Exampleton offers a fully funded 3-year doctoral position (TV-L E13, 100%).</p><h2>Your profile</h2><p>Candidates must hold a Master's degree in computer science, computational linguistics or a related field by the start date.</p><p>Proficiency in English is required: IELTS overall band 6.5 or TOEFL iBT 90.</p><h2>How to apply</h2><p>Required documents:</p><ul><li>CV including a list of publications, if any</li><li>Transcripts of your Bachelor's and Master's degrees</li><li>Research statement (max. 2 pages) describing your interest in trustworthy NLP</li><li>Two reference letters</li></ul><p>Application deadline: 1 December 2026. Interviews take place in January 2027.</p><h2>Supervision</h2><p>The position is supervised by <a href=\"https://tu-exampleton.example/people/beispiel\">Prof. Dr. Jana Beispiel</a>, whose research interests include model calibration, uncertainty estimation and evaluation of NLP systems.</p><p>For informal questions, contact the group lead Dr. Tomas Muster.</p></body></html>"
+    },
+    "https://academic-portal.example/positions/acad-1": {
+      "title": "Academic Portal (demo): Doctoral Researcher in Trustworthy NLP",
+      "html": "<html><head><title>Academic Portal (demo): Doctoral Researcher in Trustworthy NLP</title></head><body><h1>Doctoral Researcher in Trustworthy Natural Language Processing</h1><p>Technical University of Exampleton, Germany.</p><p>Closing date: 1 December 2026.</p><p>See the university's page for the full call and supervision details.</p></body></html>"
+    },
+    "https://academic-portal.example/scholarships/mirror-77": {
+      "title": "Scholarship Finder (demo): PhD Position Trustworthy NLP",
+      "html": "<html><head><title>Scholarship Finder (demo): PhD Position Trustworthy NLP</title></head><body><h1>PhD Position: Trustworthy NLP</h1><p>TU Exampleton. Fully funded PhD position on calibration and uncertainty in NLP.</p><p>Applications close on 15 November 2026.</p><p>IELTS 6.5 required.</p></body></html>"
+    },
+    "https://academic-portal.example/positions/acad-2": {
+      "title": "Academic Portal (demo): PhD in Computational Biology",
+      "html": "<html><head><title>Academic Portal (demo): PhD in Computational Biology</title></head><body><h1>PhD in Computational Biology</h1><p>University of Sampleford, United Kingdom.</p><p>The studentship covers home fees and a stipend. International applicants should check their eligibility before applying.</p><p>Applicants should hold a Bachelor's degree with first-class honours (or equivalent) in biology, computer science, statistics or a related subject.</p><p>English language requirement: IELTS 7.0 overall.</p><p>Please submit: a CV, transcripts, a personal statement and the contact details of two referees.</p><p>Deadline: 10 January 2027.</p><p>The project is led by Dr. Priya Sample, group leader of the Genome Methods Lab; research interests include single-cell genomics and statistical methods for sequencing data.</p></body></html>"
+    },
+    "https://academic-portal.example/positions/acad-3": {
+      "title": "Academic Portal (demo): Postdoc in Machine Learning Calibration",
+      "html": "<html><head><title>Academic Portal (demo): Postdoc in Machine Learning Calibration</title></head><body><h1>Postdoctoral Researcher in Machine Learning Calibration</h1><p>Example Institute for Intelligent Systems.</p><p>A PhD degree in machine learning, statistics or a related field is required.</p><p>The position is funded for two years with a salary according to the institute's postdoc scale.</p><p>Your application should include:</p><ul><li>Cover letter</li><li>CV</li><li>Two representative publications</li><li>Names of three referees</li></ul><p>Applications are due 20 December 2026.</p><p>Principal investigator: Prof. Dr. Robin Exempel, research interests: probabilistic calibration, conformal prediction and robust evaluation.</p></body></html>"
+    }
+  }
+}

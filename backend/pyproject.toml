@@ -19,6 +19,7 @@ dependencies = [
     "langgraph>=1.2",
     "langgraph-checkpoint-postgres>=3.2",
     "markdown-it-py>=4.2",
+    "playwright>=1.55",
     "psycopg[binary,pool]>=3.3",
     "pydantic>=2.14",
     "pydantic-settings>=2.16",

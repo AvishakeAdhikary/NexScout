@@ -55,6 +55,25 @@ check their own setup with "Check connection" in Settings, which records the res
 - Searches run on the background worker (per-listing transactions, resumable).
 - Dragging nodes is mouse-only. Keyboard users get the full list view instead.
 
+## PhD research and documents (M5)
+- **Research extraction is rule-based (`rules_v1`), not AI.** It finds deadlines, degree and
+  language requirements, required documents, funding sentences and named people when pages state
+  them in common English phrasing. It misses unusual wording rather than guessing. Each finding
+  quotes its source.
+- Only the **demo listings have pages to read** (bundled, labelled demo pages). For real listings
+  the SSRF-safe fetcher reads linked pages (robots.txt respected), but no real academic source is
+  connected yet, so this path has been tested only against a local test server.
+- **No live arXiv or ORCID adapters yet** (planned as opt-in). Supervisor research is limited to
+  what the position's pages say.
+- Drafts made with the mock model are deterministic templates labelled "Mock text, not written by
+  AI". The SOP mock deliberately includes one unsupported claim, to demonstrate that the verifier
+  removes it.
+- The verifier checks citations and numbers, not meaning. A cited sentence can still overstate an
+  entry ("led" vs "contributed"). Users must review every draft; intent sentences are flagged.
+- PDF uses system serif fonts (no bundled font). Markdown tables aren't rendered as tables.
+- The backend container is about 2.1 GB because of headless Chromium.
+- Job documents (resume, cover letter, referral request) arrive in M6.
+
 ## Agent runtime (M4)
 - Only four workflows exist: reading uploads, opportunity search, the AI summary draft, and a
   diagnostic system check. PhD and job document generation arrives in M5–M6.

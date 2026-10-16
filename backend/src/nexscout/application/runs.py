@@ -39,6 +39,9 @@ ALLOWED_PARAMS: dict[str, set[str]] = {
     "profile_summary": {"provider_id"},
     "document_ingestion": {"document_id"},
     "opportunity_discovery": {"sources"},
+    "phd_research": {"opportunity_id"},
+    "draft_document": {"doc_type", "opportunity_id", "supervisor_finding_id", "provider_id"},
+    "render_document": {"document_id", "version"},
 }
 
 

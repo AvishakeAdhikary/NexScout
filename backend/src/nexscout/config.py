@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     # this machine). Disable on multi-user servers to prevent SSRF into internal services.
     allow_private_provider_urls: bool = True
 
+    # Research: read public pages linked from listings (SSRF-safe, robots.txt respected).
+    research_fetch_enabled: bool = True
+
     @model_validator(mode="after")
     def _production_requirements(self) -> Settings:
         # Fail at startup, not at the first saved API key.

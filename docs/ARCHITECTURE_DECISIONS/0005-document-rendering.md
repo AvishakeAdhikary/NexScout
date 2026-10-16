@@ -28,3 +28,15 @@ Pandoc (best fidelity, extra binary to ship), WeasyPrint (GTK on Windows), Libre
 - Rendering runs in the worker, not the API request.
 - Font availability differs per OS. The templates use a bundled open font (to be added) or a safe
   fallback stack.
+
+## As built (M5, 2026-10-17)
+- `infrastructure/render.py`. There is no front-matter and no table support yet; tables render
+  as plain paragraphs in DOCX.
+- Chromium runs with JavaScript disabled, `offline=True` and every request aborted. Playwright's
+  *sync* API runs in a worker thread because the worker's Selector event loop (required by
+  psycopg on Windows) can't spawn subprocesses.
+- Fonts: a serif fallback stack (Georgia / Times New Roman). No bundled font yet.
+- Validation results are stored per version (`artifacts.pdf.checks`, `artifacts.docx.checks`) and
+  shown in the UI. Placeholders are highlighted (yellow) in PDF and DOCX.
+- The backend image installs `chromium-headless-shell` (`--with-deps`), which brings it to about
+  2.1 GB.

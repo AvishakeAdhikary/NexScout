@@ -9,7 +9,7 @@ import { ErrorAlert } from "@/components/error-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { documentsApi, type DocumentOut } from "@/lib/api/client";
+import { documentsApi, generatedApi, type DocumentOut } from "@/lib/api/client";
 import { useCaseEvents, useRun } from "@/lib/live";
 
 const PURPOSES: [string, string][] = [
@@ -225,6 +225,61 @@ export default function DocumentsPage() {
         )}
         <ErrorAlert error={remove.error} />
       </section>
+      <ApplicationMaterials caseId={caseId} />
     </div>
+  );
+}
+
+function ApplicationMaterials({ caseId }: { caseId: string }) {
+  const list = useQuery({
+    queryKey: ["generated", caseId],
+    queryFn: () => generatedApi.list(caseId),
+  });
+  const assemble = useMutation({
+    mutationFn: () => generatedApi.draft(caseId, { doc_type: "academic_cv" }),
+  });
+  const run = useRun(assemble.data?.run_id);
+  const result = run.data?.run.result as { document_id?: string } | null | undefined;
+  const busy =
+    assemble.isPending ||
+    (!!assemble.data && !["succeeded", "failed", "cancelled"].includes(run.data?.run.status ?? ""));
+  return (
+    <section aria-labelledby="materials-heading" className="flex flex-col gap-3">
+      <h2 id="materials-heading" className="text-xl font-semibold">Application materials</h2>
+      <p className="text-sm text-muted-foreground">
+        Documents NexScout prepared for you. Statements of purpose, proposals and emails are
+        drafted from a position&apos;s page (PhD opportunities → Research and prepare).
+      </p>
+      <Button variant="outline" className="self-start" onClick={() => assemble.mutate()} disabled={busy}>
+        {busy ? "Assembling…" : "Create academic CV from my profile"}
+      </Button>
+      <div aria-live="polite">
+        {result?.document_id && (
+          <p role="status" className="text-sm">
+            Academic CV ready.{" "}
+            <Link className="underline" href={`/cases/${caseId}/documents/generated/${result.document_id}`}>
+              Open it
+            </Link>
+          </p>
+        )}
+      </div>
+      <ErrorAlert error={assemble.error ?? list.error} />
+      {list.data && list.data.length === 0 && (
+        <p className="text-sm">No application materials yet.</p>
+      )}
+      <ul className="flex flex-col gap-1 text-sm">
+        {(list.data ?? []).map((d) => (
+          <li key={d.id}>
+            <Link className="underline" href={`/cases/${caseId}/documents/generated/${d.id}`}>
+              {d.title}
+            </Link>{" "}
+            <span className="text-muted-foreground">
+              {d.doc_label} · v{d.current_version} · {d.latest.placeholders.length} placeholder(s)
+            </span>
+            {d.latest.is_mock && <> <Badge variant="destructive">Mock text</Badge></>}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

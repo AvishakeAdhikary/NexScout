@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { ErrorAlert } from "@/components/error-alert";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   opportunitiesApi,
   type OpportunityOut,
@@ -112,6 +112,14 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
         )}
       </details>
       <div className="mt-3 flex flex-wrap gap-2">
+        {opp.kind !== "job" && (
+          <Link
+            href={`/cases/${caseId}/phd/${opp.id}`}
+            className={buttonVariants({ size: "sm", variant: "outline" })}
+          >
+            Research and prepare
+          </Link>
+        )}
         {opp.match_status !== "shortlisted" && (
           <Button size="sm" onClick={() => setStatus.mutate("shortlisted")} disabled={setStatus.isPending}>
             Shortlist

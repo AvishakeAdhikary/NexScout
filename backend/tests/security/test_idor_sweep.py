@@ -62,7 +62,17 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
             json={"name": "Mine", "kind": "mock", "model": "nexscout-mock-1"},
         )
     ).json()
+    await client.post(f"/api/v1/cases/{case_id}/opportunities/{opp['id']}/research")
+    gen = await client.post(
+        f"/api/v1/cases/{case_id}/generated-documents", json={"doc_type": "academic_cv"}
+    )
+    assert gen.status_code == 202, gen.text
+    await worker.run_until_idle()
+    gen_doc = (await client.get(f"/api/v1/cases/{case_id}/generated-documents")).json()[0]
     return {
+        "gen_document_id": gen_doc["id"],
+        "version_number": "1",
+        "fmt": "pdf",
         "provider_id": provider["id"],
         "run_id": run["id"],
         "approval_id": approval["id"],
@@ -90,7 +100,18 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ids["opportunity_id"],
         ids["node_key"],
     )
+    g, vn, fmt = ids["gen_document_id"], ids["version_number"], ids["fmt"]
     return [
+        ("GET", f"/api/v1/cases/{c}/opportunities/{o}/research", None),
+        ("POST", f"/api/v1/cases/{c}/opportunities/{o}/research", None),
+        ("POST", f"/api/v1/cases/{c}/generated-documents", {"doc_type": "academic_cv"}),
+        ("GET", f"/api/v1/cases/{c}/generated-documents", None),
+        ("GET", f"/api/v1/generated-documents/{g}", None),
+        ("GET", f"/api/v1/generated-documents/{g}/versions/{vn}", None),
+        ("POST", f"/api/v1/generated-documents/{g}/versions", {"markdown": "x", "base_version": 1}),
+        ("POST", f"/api/v1/generated-documents/{g}/render", {}),
+        ("GET", f"/api/v1/generated-documents/{g}/versions/{vn}/files/{fmt}", None),
+        ("DELETE", f"/api/v1/generated-documents/{g}", None),
         ("GET", f"/api/v1/cases/{c}", None),
         ("PATCH", f"/api/v1/cases/{c}", {"version": 1, "name": "pwned"}),
         ("DELETE", f"/api/v1/cases/{c}", None),
@@ -178,6 +199,13 @@ async def test_other_user_gets_404_everywhere(
     assert run["run"]["status"] == "waiting_approval"  # intruder could not cancel or approve
     assert run["approvals"][0]["status"] == "pending"
     assert [p["name"] for p in (await client.get("/api/v1/providers")).json()] == ["Mine"]
+    gen = (await client.get(f"/api/v1/generated-documents/{ids['gen_document_id']}")).json()
+    assert gen["current_version"] == 1  # intruder could not edit or delete it
+    pdf = await client.get(
+        f"/api/v1/generated-documents/{ids['gen_document_id']}/versions/1/files/pdf"
+    )
+    assert pdf.status_code == 200
+    assert pdf.content.startswith(b"%PDF")
 
 
 def _template(path: str) -> str:
@@ -199,8 +227,10 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "affiliation_id",
             "opportunity_id",
             "node_key",
+            "gen_document_id",
         )
     }
+    sentinel.update({"version_number": "{number}", "fmt": "{fmt}"})
     sentinel.update({"fact_version": "1", "aff_version": "1", "opp_version": "1"})
     covered = {(m, _template(u)) for m, u, _ in _requests(sentinel)}
     exempt = {(m, _template(p)) for m, p in EXEMPT}

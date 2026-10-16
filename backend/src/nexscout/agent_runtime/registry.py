@@ -81,7 +81,9 @@ def _load_builtin() -> None:
     # Import for registration side effects (kept lazy to avoid import cycles).
     from nexscout.agents import (  # noqa: F401
         document_ingestion,
+        draft_document,
         opportunity_discovery,
+        phd_research,
         profile_summary,
         system_check,
     )

@@ -324,3 +324,56 @@ export const providersApi = {
   setDefault: (id: string | null) =>
     api<void>("/providers/default", { method: "PUT", body: { provider_id: id } }),
 };
+
+// ------------------------------------------------------------------ M5: research, generated documents
+export type ResearchOut = S["ResearchOut"];
+export type FindingOut = S["FindingOut"];
+export type ResearchSourceOut = S["ResearchSourceOut"];
+export type DocTypeOut = S["DocTypeOut"];
+export type GeneratedDocumentOut = S["GeneratedDocumentOut"];
+export type GeneratedDocumentDetailOut = S["GeneratedDocumentDetailOut"];
+export type VersionOut = S["VersionOut"];
+
+export interface DraftRequest {
+  doc_type: string;
+  opportunity_id?: string | null;
+  supervisor_finding_id?: string | null;
+  provider_id?: string | null;
+}
+
+export const researchApi = {
+  get: (caseId: string, opportunityId: string) =>
+    api<ResearchOut>(`${c(caseId)}/opportunities/${e(opportunityId)}/research`),
+  start: (caseId: string, opportunityId: string) =>
+    api<{ run_id: string }>(`${c(caseId)}/opportunities/${e(opportunityId)}/research`, {
+      method: "POST",
+    }),
+  opportunity: (caseId: string, opportunityId: string) =>
+    api<OpportunityOut>(`${c(caseId)}/opportunities/${e(opportunityId)}`),
+};
+
+export const generatedApi = {
+  types: () => api<DocTypeOut[]>("/document-types"),
+  draft: (caseId: string, body: DraftRequest) =>
+    api<{ run_id: string }>(`${c(caseId)}/generated-documents`, { method: "POST", body }),
+  list: (caseId: string, opportunityId?: string) =>
+    api<GeneratedDocumentOut[]>(
+      `${c(caseId)}/generated-documents${opportunityId ? `?opportunity_id=${e(opportunityId)}` : ""}`,
+    ),
+  get: (id: string) => api<GeneratedDocumentDetailOut>(`/generated-documents/${e(id)}`),
+  version: (id: string, n: number) =>
+    api<VersionOut>(`/generated-documents/${e(id)}/versions/${n}`),
+  saveEdit: (id: string, markdown: string, baseVersion: number) =>
+    api<GeneratedDocumentDetailOut>(`/generated-documents/${e(id)}/versions`, {
+      method: "POST",
+      body: { markdown, base_version: baseVersion },
+    }),
+  render: (id: string, version?: number) =>
+    api<{ run_id: string }>(`/generated-documents/${e(id)}/render`, {
+      method: "POST",
+      body: { version: version ?? null },
+    }),
+  fileUrl: (id: string, n: number, fmt: "pdf" | "docx") =>
+    `/api/v1/generated-documents/${e(id)}/versions/${n}/files/${fmt}`,
+  remove: (id: string) => api<void>(`/generated-documents/${e(id)}`, { method: "DELETE" }),
+};
