@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-16
-- **Current milestone:** M4 Durable agent runtime (⬜ next). M0–M3 ✅.
+- **Current milestone:** M4 Durable agent runtime (🟨: runtime core done and verified; providers/context/real workflows/UI next). M0–M3 ✅.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0007.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -38,23 +38,25 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 - **Interim decisions still in force:** ingestion runs in the upload request (isolated subprocess,
   20 s cap) until the M4 worker. The extractor is the deterministic `heuristic_v1` (not AI). LLM
   extraction arrives with the provider layer (M4).
+- **M4 done so far (commit 1f028f1):** queue + leases + reaper, worker process, LangGraph
+  Postgres checkpoints, pause (drain at step boundary) / cancel (incl. mid-step) / retry /
+  rerun / skip, approvals via interrupt (decision read from DB), side-effect ledger with
+  `uncertain` outcomes, runs/approvals API, SSE stream, `system_check` workflow, ADR-0008.
+  Verified by 13 runtime system tests plus a real-process kill-and-recover test.
 - **Next exact steps (M4):**
-  1. Verify LangGraph 1.2 + `langgraph-checkpoint-postgres` 3.2 APIs against the installed source
-     (AsyncPostgresSaver setup, interrupt/Command resume), and psycopg async on the Windows
-     Selector loop.
-  2. Migration `0004`: workflow_runs, tasks, task_attempts, workflow_events, approval_requests,
-     tool_executions, usage_records, worker_heartbeats. Owned with RLS, plus a narrowly scoped
-     `nexscout_system` role (BYPASSRLS) used only to claim and reap queue rows.
-  3. `agent_runtime/`: queue (claim with SKIP LOCKED, leases, heartbeats, reaper,
-     backoff+jitter), worker process `nexscout worker`, control requests (pause/resume/cancel/
-     retry/rerun/skip), idempotency keys, events + LISTEN/NOTIFY + SSE endpoint.
-  4. LLM provider layer (ADR-0004): mock (labelled), OpenAI-compatible (Ollama/LM Studio/OpenAI),
-     Anthropic, Gemini adapters with capability metadata, structured-output validate/repair,
-     usage records; ContextBuilder with budgets and validated compaction.
-  5. First real workflows: move document ingestion and opportunity sync onto the worker
-     (removes the M2/M3 interim in-request processing); a demo workflow with an approval gate.
-  6. Agent Activity UI (live via SSE, controls, approvals). System tests: kill the worker
-     mid-run, then resume from checkpoint with no duplicate side effects; pause/cancel semantics.
+  1. LLM provider layer (ADR-0004): `infrastructure/llm/` base + mock (labelled) +
+     openai_compatible (httpx; Ollama/LM Studio/OpenAI) + anthropic + gemini; capability
+     metadata; `structured()` validate/repair/reduced-context retry; usage_records; secrets
+     (AES-GCM, master key) + provider_configs API (BYOK, key never returned); SSRF guard on
+     base_url (`allow_private_provider_urls`). Use the claude-api skill for the Anthropic adapter.
+  2. ContextBuilder (budgets, tokenizer fallback, compaction that preserves ids) + tests.
+  3. `profile_summary` workflow: draft summary from accepted facts → claim verification
+     (each sentence cites fact ids) → approval when data leaves the device → pending
+     `inferred` fact for user review.
+  4. Move document ingestion and opportunity sync onto the worker (remove interim in-request
+     work); update API tests to drive the worker.
+  5. Agent Activity UI (SSE live list, run detail, controls, approvals) + Settings → AI providers.
+  6. Docs: AGENT_RUNTIME/DEVELOPMENT (worker), OPERATIONS (system role), KNOWN_LIMITATIONS.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -69,6 +71,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-16 | M3: `NEXSCOUT_REQUIRE_DB=1 uv run pytest` | **158 passed** (incl. concurrent two-user sync, IDOR sweep over 40 ID routes) |
 | 2026-10-16 | M3: web tsc, eslint, vitest 12/12, `next build` | passed |
 | 2026-10-16 | M3: `npm run e2e` | **6/6 passed** incl. mind map (list view, evidence panel, rename persists, snapshot compare) and job discovery (demo label, explanations, multi-source listing, strict-mode hiding with reasons, no duplicates on re-run) |
+| 2026-10-16 | M4 core: `NEXSCOUT_REQUIRE_DB=1 uv run pytest` | **172 passed** incl. runtime system tests and real worker-process kill/recover (side effect exactly once) |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---
