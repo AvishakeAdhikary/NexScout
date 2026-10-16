@@ -2773,6 +2773,21 @@
         "title": "RunStart",
         "type": "object"
       },
+      "RunStartedOut": {
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id"
+        ],
+        "title": "RunStartedOut",
+        "type": "object"
+      },
       "Section": {
         "enum": [
           "summary",
@@ -3217,90 +3232,21 @@
         "title": "SyncIn",
         "type": "object"
       },
-      "SyncSummaryOut": {
-        "additionalProperties": false,
-        "properties": {
-          "fetched": {
-            "title": "Fetched",
-            "type": "integer"
-          },
-          "invalid": {
-            "title": "Invalid",
-            "type": "integer"
-          },
-          "merged_duplicates": {
-            "title": "Merged Duplicates",
-            "type": "integer"
-          },
-          "merges": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "title": "Merges",
-            "type": "array"
-          },
-          "new_for_case": {
-            "title": "New For Case",
-            "type": "integer"
-          },
-          "new_opportunities": {
-            "title": "New Opportunities",
-            "type": "integer"
-          },
-          "skipped_reason": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Skipped Reason"
-          },
-          "source_key": {
-            "title": "Source Key",
-            "type": "string"
-          },
-          "unchanged": {
-            "title": "Unchanged",
-            "type": "integer"
-          },
-          "updated": {
-            "title": "Updated",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "source_key",
-          "fetched",
-          "new_opportunities",
-          "merged_duplicates",
-          "updated",
-          "unchanged",
-          "invalid",
-          "new_for_case",
-          "skipped_reason",
-          "merges"
-        ],
-        "title": "SyncSummaryOut",
-        "type": "object"
-      },
       "UploadOut": {
         "additionalProperties": false,
         "properties": {
           "document": {
             "$ref": "#/components/schemas/DocumentOut"
           },
-          "facts_created": {
-            "title": "Facts Created",
-            "type": "integer"
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
           }
         },
         "required": [
           "document",
-          "facts_created"
+          "run_id"
         ],
         "title": "UploadOut",
         "type": "object"
@@ -4762,6 +4708,7 @@
     },
     "/api/v1/cases/{case_id}/opportunities/sync": {
       "post": {
+        "description": "Start a background search. Follow the run for progress and the per-source summary.",
         "operationId": "sync_api_v1_cases__case_id__opportunities_sync_post",
         "parameters": [
           {
@@ -4786,15 +4733,11 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "202": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/SyncSummaryOut"
-                  },
-                  "title": "Response Sync Api V1 Cases  Case Id  Opportunities Sync Post",
-                  "type": "array"
+                  "$ref": "#/components/schemas/RunStartedOut"
                 }
               }
             },

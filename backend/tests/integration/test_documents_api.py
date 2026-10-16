@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from tests.fixtures.documents import ada_cv_text, make_docx, make_pdf
-from tests.helpers import create_case, facts, register, upload
+from tests.helpers import create_case, facts, register, upload, uploaded
 
 pytestmark = pytest.mark.db
 
@@ -18,16 +18,18 @@ async def test_markdown_cv_upload_creates_pending_facts_with_evidence(
     client: httpx.AsyncClient, storage_dir: Path
 ) -> None:
     case_id = await _setup(client)
-    resp = await upload(client, case_id, ada_cv_text().encode(), "ada.md")
-    assert resp.status_code == 201, resp.text
-    body = resp.json()
+    raw = await upload(client, case_id, ada_cv_text().encode(), "ada.md", purpose="cv")
+    assert raw.status_code == 201, raw.text
+    assert raw.json()["document"]["parse_status"] == "pending"  # reading happens in the background
+    assert raw.json()["run_id"]
+    body = await uploaded(client, case_id, ada_cv_text().encode(), "ada.md")
     doc = body["document"]
     assert doc["parse_status"] == "parsed"
     assert doc["file_kind"] == "markdown"
     assert doc["extraction_method"] == "heuristic_v1"
     assert body["facts_created"] == doc["facts_extracted"] > 10
 
-    rows = await facts(client, case_id)
+    rows = [r for r in await facts(client, case_id) if r["meta"]["document_id"] == doc["id"]]
     assert len(rows) == body["facts_created"]
     assert {r["review_state"] for r in rows} == {"pending"}
     assert {r["status"] for r in rows} == {"extracted"}
@@ -54,17 +56,15 @@ async def test_pdf_and_docx_uploads_parse(client: httpx.AsyncClient) -> None:
     pdf = make_pdf(
         [["Skills", "Python, SQL"], ["Education", "BSc in Physics, University of Sampleford"]]
     )
-    resp = await upload(client, case_id, pdf, "cv.pdf")
-    assert resp.status_code == 201, resp.text
-    assert resp.json()["document"]["page_count"] == 2
+    body = await uploaded(client, case_id, pdf, "cv.pdf")
+    assert body["document"]["page_count"] == 2
     edu = await facts(client, case_id, section="education")
     ev = (await client.get(f"/api/v1/facts/{edu[0]['id']}/evidence")).json()
     assert ev[0]["page"] == 2
 
-    resp = await upload(client, case_id, make_docx(ada_cv_text().splitlines()), "cv.docx")
-    assert resp.status_code == 201, resp.text
-    assert resp.json()["document"]["file_kind"] == "docx"
-    assert resp.json()["facts_created"] > 5
+    body = await uploaded(client, case_id, make_docx(ada_cv_text().splitlines()), "cv.docx")
+    assert body["document"]["file_kind"] == "docx"
+    assert body["facts_created"] > 5
 
 
 async def test_unsupported_file_rejected_and_not_stored(
@@ -80,21 +80,19 @@ async def test_unsupported_file_rejected_and_not_stored(
 
 async def test_unreadable_pdf_is_kept_with_failed_status(client: httpx.AsyncClient) -> None:
     case_id = await _setup(client)
-    resp = await upload(client, case_id, b"%PDF-1.4\n not really a pdf", "scan.pdf")
-    assert resp.status_code == 201
-    doc = resp.json()["document"]
+    body = await uploaded(client, case_id, b"%PDF-1.4\n not really a pdf", "scan.pdf")
+    doc = body["document"]
     assert doc["parse_status"] == "failed"
     assert doc["parse_error"]
-    assert resp.json()["facts_created"] == 0
+    assert body["facts_created"] == 0
 
 
 async def test_non_cv_documents_are_not_mined_for_facts(client: httpx.AsyncClient) -> None:
     case_id = await _setup(client)
-    resp = await upload(
+    body = await uploaded(
         client, case_id, ada_cv_text().encode(), "letter.md", purpose="recommendation_letter"
     )
-    assert resp.status_code == 201
-    assert resp.json()["facts_created"] == 0
+    assert body["facts_created"] == 0
     assert await facts(client, case_id) == []
 
 

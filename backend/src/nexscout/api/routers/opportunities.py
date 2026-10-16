@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import asdict
 
 from fastapi import APIRouter, status
 
@@ -16,10 +15,10 @@ from nexscout.api.schemas import (
     OpportunityOut,
     OpportunitySourceOut,
     RescoreOut,
+    RunStartedOut,
     SourceConfigIn,
     SourceOut,
     SyncIn,
-    SyncSummaryOut,
 )
 from nexscout.application import opportunities as opps
 from nexscout.integrations.sources.registry import adapters
@@ -89,12 +88,17 @@ async def configure_source(
     return _source_out(view)
 
 
-@router.post("/cases/{case_id}/opportunities/sync", response_model=list[SyncSummaryOut])
+@router.post(
+    "/cases/{case_id}/opportunities/sync",
+    response_model=RunStartedOut,
+    status_code=status.HTTP_202_ACCEPTED,
+)
 async def sync(
     case_id: uuid.UUID, body: SyncIn, actor: CurrentActor, db: DbSession
-) -> list[SyncSummaryOut]:
-    summaries = await opps.sync_case(db, actor, case_id, source_keys=body.sources)
-    return [SyncSummaryOut(**asdict(s)) for s in summaries]
+) -> RunStartedOut:
+    """Start a background search. Follow the run for progress and the per-source summary."""
+    run = await opps.start_sync(db, actor, case_id, source_keys=body.sources)
+    return RunStartedOut(run_id=run.id)
 
 
 @router.post("/cases/{case_id}/opportunities/rescore", response_model=RescoreOut)

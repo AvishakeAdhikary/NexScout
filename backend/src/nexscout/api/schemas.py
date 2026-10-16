@@ -172,7 +172,7 @@ class DocumentOut(ApiModel):
 
 class UploadOut(ApiModel):
     document: DocumentOut
-    facts_created: int
+    run_id: uuid.UUID  # reading happens in the background; follow this run
 
 
 class DocumentTextOut(ApiModel):
@@ -380,6 +380,10 @@ class DedupReportIn(ApiModel):
     kind: str = Field(pattern="^(wrong_merge|missed_duplicate)$")
     other_opportunity_id: uuid.UUID | None = None
     note: str | None = Field(default=None, max_length=2000)
+
+
+class RunStartedOut(ApiModel):
+    run_id: uuid.UUID
 
 
 class RescoreOut(ApiModel):

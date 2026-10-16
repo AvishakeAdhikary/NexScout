@@ -37,6 +37,8 @@ MAX_PARAMS_BYTES = 10_000
 ALLOWED_PARAMS: dict[str, set[str]] = {
     "system_check": {"wait_s", "require_approval", "marker_file"},
     "profile_summary": {"provider_id"},
+    "document_ingestion": {"document_id"},
+    "opportunity_discovery": {"sources"},
 }
 
 
@@ -128,11 +130,19 @@ def check_params(kind: str, params: dict[str, Any]) -> None:
 
 
 async def start_run(
-    session: AsyncSession, actor: Actor, case_id: uuid.UUID, *, kind: str, params: dict[str, Any]
+    session: AsyncSession,
+    actor: Actor,
+    case_id: uuid.UUID,
+    *,
+    kind: str,
+    params: dict[str, Any],
+    internal: bool = False,
 ) -> WorkflowRun:
+    """Start a workflow. `internal=True` allows system workflows that users can't start
+    directly (e.g. document ingestion, started by an upload)."""
     await get_case(session, actor, case_id)
     spec = get_workflow(kind)
-    if spec is None or not spec.user_startable:
+    if spec is None or not (spec.user_startable or internal):
         raise ValidationFailed("Unknown workflow.")
     check_params(kind, params)
     if params.get("provider_id"):

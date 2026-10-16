@@ -15,7 +15,7 @@ from sqlalchemy.engine import Engine
 
 from nexscout.infrastructure.db.models import OWNED_TABLES
 from tests.fixtures.documents import ada_cv_text
-from tests.helpers import create_case, facts, register, upload
+from tests.helpers import create_case, facts, register, sync, upload
 
 pytestmark = pytest.mark.db
 
@@ -46,7 +46,7 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
     ).json()
     await client.post(f"/api/v1/cases/{case_id}/snapshots", json={})
     await client.post(f"/api/v1/cases/{case_id}/snapshots", json={})
-    await client.post(f"/api/v1/cases/{case_id}/opportunities/sync", json={})
+    await sync(client, case_id)
     opp = (await client.get(f"/api/v1/cases/{case_id}/opportunities")).json()[0]
     run = (
         await client.post(

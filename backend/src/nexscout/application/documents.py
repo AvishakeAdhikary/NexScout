@@ -1,4 +1,4 @@
-"""Document use cases: upload → validate → store → parse (isolated) → extract pending facts.
+"""Document use cases: upload → validate → store → (worker) parse in isolation → extract.
 
 Interim (until the M4 worker): parsing runs during the upload request, in a separate,
 time-limited process. The DB transaction is committed *before* parsing and re-opened after,
@@ -25,7 +25,7 @@ from nexscout.domain.errors import NotFound, ValidationFailed
 from nexscout.domain.profile import FactStatus, ReviewState
 from nexscout.infrastructure.db.engine import bind_tenant
 from nexscout.infrastructure.db.models import Document, FactEvidence, ProfileFact
-from nexscout.infrastructure.ingestion.files import sniff
+from nexscout.infrastructure.ingestion.files import FileKind, sniff
 from nexscout.infrastructure.ingestion.parsers import ParsedText, parse_isolated
 from nexscout.infrastructure.storage import ObjectStore
 
@@ -57,7 +57,7 @@ EXTRACT_FROM: frozenset[DocumentPurpose] = frozenset({DocumentPurpose.CV, Docume
 @dataclass(frozen=True)
 class UploadResult:
     document: Document
-    facts_created: int
+    run_id: uuid.UUID
 
 
 async def upload_document(
@@ -70,23 +70,13 @@ async def upload_document(
     filename: str | None,
     purpose: DocumentPurpose,
     max_bytes: int,
-    parse_timeout_s: float = 20.0,
 ) -> UploadResult:
+    """Validate and store the file, then hand reading/extraction to the durable worker."""
+    from nexscout.application.runs import start_run
+
     await get_case(session, actor, case_id)
     sniffed = sniff(data, filename, max_bytes)  # rejects unsupported types before storing
     key, digest = store.put(actor.user_id, data)
-
-    # Release the request transaction (and the session-row lock) while parsing.
-    await session.commit()
-    parsed: ParsedText | None = None
-    parse_error: str | None = None
-    try:
-        parsed = await asyncio.to_thread(parse_isolated, data, sniffed.kind, parse_timeout_s)
-    except ValidationFailed as exc:
-        parse_error = exc.message[:500]
-    await bind_tenant(session, actor.user_id)
-    await get_case(session, actor, case_id)  # the case may have been deleted meanwhile
-
     doc = Document(
         owner_user_id=actor.user_id,
         case_id=case_id,
@@ -98,21 +88,73 @@ async def upload_document(
         sha256=digest,
         storage_key=key,
         origin="uploaded",
-        parse_status="parsed" if parsed else "failed",
-        parse_error=parse_error,
-        page_count=parsed.page_count if parsed else None,
-        text_content=parsed.text if parsed else None,
-        page_starts=parsed.page_starts if parsed else [],
+        parse_status="pending",
     )
     session.add(doc)
     await session.flush()
+    run = await start_run(
+        session,
+        actor,
+        case_id,
+        kind="document_ingestion",
+        params={"document_id": str(doc.id)},
+        internal=True,
+    )
+    record_audit(
+        session,
+        "document.uploaded",
+        actor_user_id=actor.user_id,
+        target_type="document",
+        target_id=doc.id,
+        ip=actor.ip,
+        request_id=actor.request_id,
+        meta={"purpose": purpose.value, "kind": sniffed.kind.value, "size": len(data)},
+    )
+    await session.refresh(doc)
+    return UploadResult(doc, run.id)
 
-    created = 0
-    if parsed and purpose in EXTRACT_FROM:
+
+async def read_document_text(
+    store: ObjectStore, doc: Document, timeout_s: float = 20.0
+) -> tuple[ParsedText | None, str | None]:
+    """Parse in an isolated, killable subprocess. Call outside any DB transaction."""
+    data = await asyncio.to_thread(store.get, doc.storage_key)
+    try:
+        return await asyncio.to_thread(
+            parse_isolated, data, FileKind(doc.file_kind), timeout_s
+        ), None
+    except ValidationFailed as exc:
+        return None, exc.message[:500]
+
+
+async def save_extraction(
+    session: AsyncSession,
+    owner_id: uuid.UUID,
+    doc: Document,
+    parsed: ParsedText | None,
+    parse_error: str | None,
+) -> int:
+    """Persist parse results and pending facts. Idempotent: re-running after a crash never
+    duplicates entries for the same document."""
+    doc.parse_status = "parsed" if parsed else "failed"
+    doc.parse_error = parse_error
+    doc.page_count = parsed.page_count if parsed else None
+    doc.text_content = parsed.text if parsed else None
+    doc.page_starts = parsed.page_starts if parsed else []
+    already = await session.scalar(
+        select(func.count())
+        .select_from(ProfileFact)
+        .where(
+            ProfileFact.owner_user_id == owner_id,
+            ProfileFact.meta["document_id"].astext == str(doc.id),
+        )
+    )
+    created = int(already or 0)
+    if parsed and DocumentPurpose(doc.purpose) in EXTRACT_FROM and not already:
         for extracted in extract_facts(parsed.text):
             fact = new_fact(
-                actor.user_id,
-                case_id,
+                owner_id,
+                doc.case_id,
                 extracted.section,
                 extracted.data,
                 status=FactStatus.EXTRACTED,
@@ -128,7 +170,7 @@ async def upload_document(
             await session.flush()
             session.add(
                 FactEvidence(
-                    owner_user_id=actor.user_id,
+                    owner_user_id=owner_id,
                     fact_id=fact.id,
                     document_id=doc.id,
                     kind="document",
@@ -140,28 +182,10 @@ async def upload_document(
                 )
             )
             created += 1
+    if parsed and DocumentPurpose(doc.purpose) in EXTRACT_FROM:
         doc.extraction_method = HEURISTIC_METHOD
         doc.facts_extracted = created
-
-    record_audit(
-        session,
-        "document.uploaded",
-        actor_user_id=actor.user_id,
-        target_type="document",
-        target_id=doc.id,
-        ip=actor.ip,
-        request_id=actor.request_id,
-        meta={
-            "purpose": purpose.value,
-            "kind": sniffed.kind.value,
-            "size": len(data),
-            "parsed": parsed is not None,
-            "facts": created,
-        },
-    )
-    await session.flush()
-    await session.refresh(doc)
-    return UploadResult(doc, created)
+    return created
 
 
 async def list_documents(session: AsyncSession, actor: Actor, case_id: uuid.UUID) -> list[Document]:

@@ -400,6 +400,21 @@ async def sync_case(
     return summaries
 
 
+async def start_sync(
+    session: AsyncSession, actor: Actor, case_id: uuid.UUID, *, source_keys: list[str] | None
+) -> Any:
+    """Validate the request now; the search itself runs on the durable worker."""
+    from nexscout.application.runs import start_run
+
+    await get_case(session, actor, case_id)
+    known = adapters()
+    for key in source_keys or []:
+        if key not in known:
+            raise NotFound(f"Source not found: {key}")
+    params: dict[str, Any] = {"sources": source_keys} if source_keys else {}
+    return await start_run(session, actor, case_id, kind="opportunity_discovery", params=params)
+
+
 async def rescore_case(
     session: AsyncSession, actor: Actor, case_id: uuid.UUID, today: date | None = None
 ) -> int:

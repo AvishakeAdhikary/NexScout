@@ -366,7 +366,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Sync */
+        /**
+         * Sync
+         * @description Start a background search. Follow the run for progress and the per-source summary.
+         */
         post: operations["sync_api_v1_cases__case_id__opportunities_sync_post"];
         delete?: never;
         options?: never;
@@ -1733,6 +1736,14 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** RunStartedOut */
+        RunStartedOut: {
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+        };
         /**
          * Section
          * @enum {string}
@@ -1908,36 +1919,14 @@ export interface components {
             /** Sources */
             sources?: string[] | null;
         };
-        /** SyncSummaryOut */
-        SyncSummaryOut: {
-            /** Fetched */
-            fetched: number;
-            /** Invalid */
-            invalid: number;
-            /** Merged Duplicates */
-            merged_duplicates: number;
-            /** Merges */
-            merges: {
-                [key: string]: unknown;
-            }[];
-            /** New For Case */
-            new_for_case: number;
-            /** New Opportunities */
-            new_opportunities: number;
-            /** Skipped Reason */
-            skipped_reason: string | null;
-            /** Source Key */
-            source_key: string;
-            /** Unchanged */
-            unchanged: number;
-            /** Updated */
-            updated: number;
-        };
         /** UploadOut */
         UploadOut: {
             document: components["schemas"]["DocumentOut"];
-            /** Facts Created */
-            facts_created: number;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
         };
         /** UserOut */
         UserOut: {
@@ -2891,12 +2880,12 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncSummaryOut"][];
+                    "application/json": components["schemas"]["RunStartedOut"];
                 };
             };
             /** @description Validation Error */

@@ -45,9 +45,7 @@ async def upload(
         purpose=purpose,
         max_bytes=limit,
     )
-    return UploadOut(
-        document=DocumentOut.model_validate(result.document), facts_created=result.facts_created
-    )
+    return UploadOut(document=DocumentOut.model_validate(result.document), run_id=result.run_id)
 
 
 @router.get("/cases/{case_id}/documents", response_model=list[DocumentOut])

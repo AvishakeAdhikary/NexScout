@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
-from tests.helpers import create_case, register
+from tests.helpers import create_case, register, sync
 
 pytestmark = pytest.mark.db
 
@@ -43,9 +43,7 @@ async def _case(
 
 
 async def _sync(client: httpx.AsyncClient, case_id: str) -> dict[str, Any]:
-    resp = await client.post(f"/api/v1/cases/{case_id}/opportunities/sync", json={})
-    assert resp.status_code == 200, resp.text
-    return {s["source_key"]: s for s in resp.json()}
+    return await sync(client, case_id)
 
 
 async def _opps(client: httpx.AsyncClient, case_id: str, **params: Any) -> list[dict[str, Any]]:
