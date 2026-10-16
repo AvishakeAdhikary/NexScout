@@ -26,11 +26,11 @@ class Settings(BaseSettings):
 
     # Runtime connection uses the non-owner app role so Postgres RLS applies.
     database_url: SecretStr = SecretStr(
-        "postgresql+psycopg://nexscout_app:nexscout_app_dev@localhost:5432/nexscout"
+        "postgresql+psycopg://nexscout_app:nexscout_app_dev@127.0.0.1:5432/nexscout"
     )
     # Migrations run as the schema owner role.
     migration_database_url: SecretStr = SecretStr(
-        "postgresql+psycopg://nexscout_owner:nexscout_owner_dev@localhost:5432/nexscout"
+        "postgresql+psycopg://nexscout_owner:nexscout_owner_dev@127.0.0.1:5432/nexscout"
     )
     db_pool_size: int = 10
     db_max_overflow: int = 5

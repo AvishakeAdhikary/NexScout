@@ -127,6 +127,7 @@ def upgrade() -> None:
     grant_app("login_attempts", "SELECT, INSERT, DELETE")
     grant_app("candidate_cases")
     grant_app("audit_events", "INSERT")  # app can write but never read the audit trail
+    grant_app("alembic_version", "SELECT")  # readiness probe compares DB revision to code
 
 
 def downgrade() -> None:

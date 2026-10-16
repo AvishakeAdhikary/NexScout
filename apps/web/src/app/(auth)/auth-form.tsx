@@ -21,7 +21,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const email = String(form.get("email") ?? "");
     const password = String(form.get("password") ?? "");
     setPending(true);
@@ -32,6 +33,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       } else {
         await authApi.login(email, password);
       }
+      // Next keeps visited routes mounted (hidden) for instant back navigation; don't leave
+      // the password sitting in a hidden input.
+      formElement.reset();
       router.replace(safeNext(params.get("next")));
       router.refresh();
     } catch (err) {

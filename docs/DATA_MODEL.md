@@ -15,11 +15,11 @@ Status: ✅ implemented and verified against Postgres · 🟨 implemented (migra
 ### M1 Identity and cases
 | Table | Key columns | Notes |
 |---|---|---|
-| 🟨 users | email (unique, citext-normalized lowercase), password_hash, display_name, is_active | not RLS (auth lookup), accessed only by auth use cases |
-| 🟨 sessions | user_id, token_hash (unique), csrf_hash, expires_at, idle_expires_at, revoked_at, ip, user_agent | |
-| 🟨 candidate_cases | owner_user_id, name, description, career_path (`undecided/phd/employment/both`), status (`active/paused/archived`), version | unique (owner_user_id, name). Unique (id, owner_user_id) for composite FKs |
-| 🟨 login_attempts | email_hash (sha256), ip, succeeded, created_at | DB-backed login rate limiting (works across API replicas). App role: SELECT, INSERT, DELETE |
-| 🟨 audit_events | actor_user_id, action, target_type, target_id, meta, ip, created_at | append-only |
+| ✅ users | email (unique, citext-normalized lowercase), password_hash, display_name, is_active | not RLS (auth lookup), accessed only by auth use cases |
+| ✅ sessions | user_id, token_hash (unique), csrf_hash, expires_at, idle_expires_at, revoked_at, ip, user_agent | |
+| ✅ candidate_cases | owner_user_id, name, description, career_path (`undecided/phd/employment/both`), status (`active/paused/archived`), version | unique (owner_user_id, name). Unique (id, owner_user_id) for composite FKs |
+| ✅ login_attempts | email_hash (sha256), ip, succeeded, created_at | DB-backed login rate limiting (works across API replicas). App role: SELECT, INSERT, DELETE |
+| ✅ audit_events | actor_user_id, action, target_type, target_id, meta, ip, created_at | append-only |
 
 ### M2 Profile and documents
 | Table | Notes |

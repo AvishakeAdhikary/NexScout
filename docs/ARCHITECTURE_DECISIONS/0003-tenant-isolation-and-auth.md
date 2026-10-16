@@ -20,7 +20,8 @@ so a child row can never point at another user's case.
    with policy `owner_user_id = current_setting('app.user_id', true)::uuid`. The API connects
    as role `nexscout_app` (non-owner, no BYPASSRLS). Each request transaction runs
    `SELECT set_config('app.user_id', :uid, true)` (transaction-local, so it is safe with pooling).
-   Migrations run as the owner role `nexscout_owner`.
+   Migrations run as the owner role `nexscout_owner`, which has `BYPASSRLS`: `FORCE ROW LEVEL
+   SECURITY` otherwise applies to the table owner too (found when the first DB test run failed).
    Workers set `app.user_id` to the run's owner before touching owned rows.
    A narrowly scoped `nexscout_system` role (BYPASSRLS) is used only for queue claiming and lease
    reaping, which read only queue metadata.

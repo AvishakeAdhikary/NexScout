@@ -32,7 +32,7 @@ backend/alembic/       migrations · backend/tests/ unit/ integration/ security/
 apps/web/              Next.js 16 (App Router, Cache Components, TS strict, Tailwind 4, shadcn/ui)
 apps/web/src/lib/api/  typed API client + contracts generated from OpenAPI (scripts/gen-contracts.sh)
 apps/desktop/          Electron shell (Milestone 9)
-tests/e2e/             Playwright Test journeys (from M2)
+apps/web/e2e/          Playwright Test journeys (real stack, mock providers)
 docker/ scripts/ docs/
 ```
 
@@ -45,6 +45,7 @@ uv run pytest                                 # DB tests skip (with reason) if P
 uv run nexscout serve --reload                # API :8000 (uses Selector loop on Windows)
 cd apps/web && npm run dev | lint | typecheck | test | build     # web :3000
 bash scripts/gen-contracts.sh                 # after changing API schemas
+cd apps/web && npm run e2e                    # Playwright: starts API :8100 + web :3200 against dev DB
 ```
 Platform: Windows host. Bash and PowerShell are both available. Use `uv run` (never the host Python 3.14).
 Next.js 16 differs from older versions: read `apps/web/node_modules/next/dist/docs/` before using an API.

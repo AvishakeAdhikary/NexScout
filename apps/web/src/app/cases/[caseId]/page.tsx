@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,18 +19,29 @@ export default function CaseDashboard() {
   const { caseId } = useParams<{ caseId: string }>();
   const kase = useCase(caseId);
   const queryClient = useQueryClient();
+  // The user's pending choice is shown immediately (set synchronously in the change handler);
+  // it is cleared when the save settles, so a rejected save falls back to the server value.
+  const [pendingPath, setPendingPath] = useState<CareerPath | null>(null);
   const setPath = useMutation({
-    mutationFn: (career_path: CareerPath) =>
-      casesApi.update(caseId, { version: kase.data!.version, career_path }),
+    mutationFn: ({ career_path, version }: { career_path: CareerPath; version: number }) =>
+      casesApi.update(caseId, { version, career_path }),
     onSuccess: (updated) => {
       queryClient.setQueryData(["cases", caseId], updated);
       queryClient.invalidateQueries({ queryKey: ["cases"], exact: true });
     },
+    onSettled: () => setPendingPath(null),
   });
 
   if (kase.isPending) return <p>Loading case…</p>;
   if (kase.error) return <ErrorAlert error={kase.error} title="Couldn't open this case" />;
   const c = kase.data;
+  const selected = pendingPath ?? c.career_path;
+
+  function choose(p: CareerPath) {
+    if (p === selected) return;
+    setPendingPath(p);
+    setPath.mutate({ career_path: p, version: c.version });
+  }
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
@@ -49,14 +61,14 @@ export default function CaseDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <fieldset className="grid gap-2 sm:grid-cols-2" disabled={setPath.isPending}>
+          <fieldset className="grid gap-2 sm:grid-cols-2" aria-busy={setPath.isPending}>
             <legend className="sr-only">Career path</legend>
             {PATHS.map((p) => (
               <label
                 key={p}
                 className={cn(
                   "flex cursor-pointer flex-col gap-1 rounded-lg border p-3 hover:bg-muted has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
-                  c.career_path === p && "border-primary bg-muted",
+                  selected === p && "border-primary bg-muted",
                 )}
               >
                 <span className="flex items-center gap-2 font-medium">
@@ -64,8 +76,8 @@ export default function CaseDashboard() {
                     type="radio"
                     name="career_path"
                     value={p}
-                    checked={c.career_path === p}
-                    onChange={() => setPath.mutate(p)}
+                    checked={selected === p}
+                    onChange={() => choose(p)}
                   />
                   {CAREER_PATH_LABELS[p]}
                 </span>

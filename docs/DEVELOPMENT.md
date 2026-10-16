@@ -28,6 +28,12 @@ only ever talks to one origin. The worker process arrives in M4.
 Health: `curl localhost:8000/healthz` (liveness), `curl localhost:8000/readyz` (DB + migrations;
 returns 503 within 3 s when the DB is down).
 
+## End-to-end tests
+```bash
+cd apps/web && npx playwright install chromium   # once
+npm run e2e        # starts `nexscout serve --port 8100` and `next dev -p 3200` itself (reuses if running)
+```
+
 ## Checks
 ```bash
 cd backend
@@ -73,4 +79,8 @@ scripts/                dev scripts
   `docker compose down -v && docker compose up -d postgres` (this **deletes local dev data**).
 - **Next build error "blocking-prerender-client-hook":** client components that read `useParams`,
   `useSearchParams` or `usePathname` must sit inside a `<Suspense>` boundary (Cache Components).
+- **Docker installed but `docker` not found:** Docker Desktop adds
+  `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin` to the *user* PATH. Restart the terminal or IDE.
+esourcesin` to the *user* PATH. Restart the terminal or IDE.
+- **Slow DB connections on Windows:** use `127.0.0.1` rather than `localhost` in URLs (see TESTING.md).
 - **Port 5432 in use:** set `NEXSCOUT_PG_PORT` and update the URLs in `.env`.

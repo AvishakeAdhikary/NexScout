@@ -21,11 +21,11 @@ from nexscout.config import Settings
 
 TEST_DB_URL = os.environ.get(
     "NEXSCOUT_TEST_DATABASE_URL",
-    "postgresql+psycopg://nexscout_app:nexscout_app_dev@localhost:5432/nexscout_test",
+    "postgresql+psycopg://nexscout_app:nexscout_app_dev@127.0.0.1:5432/nexscout_test",
 )
 TEST_MIGRATION_DB_URL = os.environ.get(
     "NEXSCOUT_TEST_MIGRATION_DATABASE_URL",
-    "postgresql+psycopg://nexscout_owner:nexscout_owner_dev@localhost:5432/nexscout_test",
+    "postgresql+psycopg://nexscout_owner:nexscout_owner_dev@127.0.0.1:5432/nexscout_test",
 )
 REQUIRE_DB = os.environ.get("NEXSCOUT_REQUIRE_DB") == "1"
 

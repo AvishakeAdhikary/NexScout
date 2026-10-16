@@ -2,10 +2,6 @@
 
 Kept current. Anything not listed as verified here should be assumed **not** to work.
 
-## Environment
-- Docker was **not installed** on the primary dev host as of 2026-10-16. DB-backed tests (23) can't run
-  until Docker Desktop (or another Postgres 17) is available.
-
 ## Integrations (by design or not yet available)
 | Integration | Status | Reason |
 |---|---|---|
@@ -33,5 +29,4 @@ milestones show an explicit "not available yet" state.
 |---|---|---|
 | `docker/backend.Dockerfile`, `docker/web.Dockerfile`, compose `full` profile | No Docker on dev host | `docker compose --profile full up --build` then `/readyz` |
 | `.github/workflows/ci.yml` | Not pushed to GitHub (no remote) | First push/PR |
-| Alembic `0001` against real Postgres, RLS policies, all API integration tests | No Postgres | `docker compose up -d postgres && cd backend && uv run nexscout migrate && uv run pytest` |
-| Web login/register/case flows end to end | Need API + DB | Manual browser run, then Playwright e2e (M2) |
+| E2E in CI | No CI job for Playwright yet | Add job with Postgres service + `npx playwright install --with-deps chromium` |
