@@ -5,6 +5,7 @@ from __future__ import annotations
 from alembic import op
 
 APP_ROLE = "nexscout_app"
+SYSTEM_ROLE = "nexscout_system"
 CURRENT_USER_EXPR = "NULLIF(current_setting('app.user_id', true), '')::uuid"
 
 
@@ -31,3 +32,19 @@ def grant_app(table: str, privileges: str = "SELECT, INSERT, UPDATE, DELETE") ->
         f"DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{APP_ROLE}') "
         f"THEN EXECUTE 'GRANT {privileges} ON {table} TO {APP_ROLE}'; END IF; END $$"
     )
+
+
+def _grant(role: str, statement: str) -> None:
+    op.execute(
+        f"DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{role}') "
+        f"THEN EXECUTE '{statement} TO {role}'; END IF; END $$"
+    )
+
+
+def grant_system(table: str, privileges: str = "SELECT, INSERT, UPDATE") -> None:
+    """The worker's system role (BYPASSRLS) only gets what queue/run bookkeeping needs."""
+    _grant(SYSTEM_ROLE, f"GRANT {privileges} ON {table}")
+
+
+def grant_sequence(sequence: str, role: str = APP_ROLE) -> None:
+    _grant(role, f"GRANT USAGE, SELECT ON SEQUENCE {sequence}")

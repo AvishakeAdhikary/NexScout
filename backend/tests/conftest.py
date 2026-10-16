@@ -28,6 +28,10 @@ TEST_MIGRATION_DB_URL = os.environ.get(
     "NEXSCOUT_TEST_MIGRATION_DATABASE_URL",
     "postgresql+psycopg://nexscout_owner:nexscout_owner_dev@127.0.0.1:5432/nexscout_test",
 )
+TEST_SYSTEM_DB_URL = os.environ.get(
+    "NEXSCOUT_TEST_SYSTEM_DATABASE_URL",
+    "postgresql+psycopg://nexscout_system:nexscout_system_dev@127.0.0.1:5432/nexscout_test",
+)
 REQUIRE_DB = os.environ.get("NEXSCOUT_REQUIRE_DB") == "1"
 
 # Tables truncated between tests (children first is not needed with CASCADE).
@@ -40,6 +44,10 @@ DATA_TABLES = (
     "opportunity_sources",
     "opportunities",
     "organizations",
+    "worker_heartbeats",
+    "checkpoints",
+    "checkpoint_blobs",
+    "checkpoint_writes",
 )
 
 
@@ -55,6 +63,10 @@ def make_settings(**overrides: Any) -> Settings:
         "env": "test",
         "database_url": TEST_DB_URL,
         "migration_database_url": TEST_MIGRATION_DB_URL,
+        "system_database_url": TEST_SYSTEM_DB_URL,
+        "worker_lease_s": 5,
+        "worker_poll_s": 0.2,
+        "worker_shutdown_grace_s": 10,
         "log_json": False,
         "log_level": "WARNING",
         "db_pool_size": 5,
@@ -108,6 +120,14 @@ def migrated_db(owner_engine: Engine) -> Engine:
     if exists:
         command.downgrade(cfg, "base")
     command.upgrade(cfg, "head")
+    from nexscout.infrastructure.db.migrations import setup_checkpointer
+
+    if sys.platform == "win32":
+        asyncio.run(
+            setup_checkpointer(TEST_MIGRATION_DB_URL), loop_factory=asyncio.SelectorEventLoop
+        )
+    else:
+        asyncio.run(setup_checkpointer(TEST_MIGRATION_DB_URL))
     return owner_engine
 
 
@@ -149,3 +169,14 @@ async def other_client(app: Any) -> AsyncIterator[httpx.AsyncClient]:
         transport=httpx.ASGITransport(app=app), base_url="http://testserver"
     ) as c:
         yield c
+
+
+@pytest.fixture
+async def worker(clean_db: Engine, storage_dir: Path) -> AsyncIterator[Any]:
+    """A real in-process worker (short leases) against the test database."""
+    from nexscout.agent_runtime.worker import Worker
+
+    w = Worker(make_settings(storage_dir=storage_dir), worker_id="test-worker-1")
+    await w.open()
+    yield w
+    await w.close()

@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     migration_database_url: SecretStr = SecretStr(
         "postgresql+psycopg://nexscout_owner:nexscout_owner_dev@127.0.0.1:5432/nexscout"
     )
+    # Worker-only role (BYPASSRLS) for queue claiming, leases, recovery and checkpoints.
+    system_database_url: SecretStr = SecretStr(
+        "postgresql+psycopg://nexscout_system:nexscout_system_dev@127.0.0.1:5432/nexscout"
+    )
     db_pool_size: int = 10
     db_max_overflow: int = 5
     db_connect_timeout_s: int = 5
@@ -49,6 +53,18 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 15 * 1024 * 1024
 
     master_key: SecretStr | None = None
+
+    # Durable worker (ADR-0002, ADR-0008)
+    worker_concurrency: int = Field(default=4, ge=1, le=64)
+    worker_per_user_limit: int = Field(default=2, ge=1, le=64)
+    worker_lease_s: int = Field(default=60, ge=5)
+    worker_poll_s: float = Field(default=2.0, gt=0)
+    worker_shutdown_grace_s: int = Field(default=30, ge=1)
+    task_max_attempts: int = Field(default=3, ge=1, le=20)
+
+    # Providers: allow base URLs on private/loopback networks (needed for Ollama/LM Studio on
+    # this machine). Disable on multi-user servers to prevent SSRF into internal services.
+    allow_private_provider_urls: bool = True
 
     @property
     def is_production(self) -> bool:

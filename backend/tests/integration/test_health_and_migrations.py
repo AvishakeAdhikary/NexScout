@@ -6,6 +6,7 @@ from sqlalchemy.engine import Engine
 
 from nexscout.infrastructure.db import models  # noqa: F401
 from nexscout.infrastructure.db.base import Base
+from nexscout.infrastructure.db.migrations import include_object
 
 pytestmark = pytest.mark.db
 
@@ -27,5 +28,8 @@ async def test_readyz_reports_db_and_migrations(client: httpx.AsyncClient) -> No
 def test_models_match_migrations(migrated_db: Engine) -> None:
     """Fails if an ORM model changed without a matching Alembic revision."""
     with migrated_db.connect() as conn:
-        diff = compare_metadata(MigrationContext.configure(conn), Base.metadata)
+        diff = compare_metadata(
+            MigrationContext.configure(conn, opts={"include_object": include_object}),
+            Base.metadata,
+        )
     assert diff == [], f"Schema drift between models and migrations: {diff}"

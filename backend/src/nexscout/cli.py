@@ -29,10 +29,48 @@ def _serve(args: argparse.Namespace) -> None:
 def _migrate(args: argparse.Namespace) -> None:
     from alembic import command
 
-    from nexscout.infrastructure.db.migrations import alembic_config
+    from nexscout.infrastructure.db.migrations import alembic_config, setup_checkpointer
 
     url = get_settings().migration_database_url.get_secret_value()
     command.upgrade(alembic_config(url), args.revision)
+    _run(setup_checkpointer(url))
+
+
+def _run(coro: object) -> None:
+    import asyncio
+
+    if sys.platform == "win32":
+        asyncio.run(coro, loop_factory=asyncio.SelectorEventLoop)  # type: ignore[arg-type]
+    else:
+        asyncio.run(coro)  # type: ignore[arg-type]
+
+
+def _worker(args: argparse.Namespace) -> None:
+    import signal
+    import threading
+
+    from nexscout.agent_runtime.worker import Worker
+    from nexscout.observability import configure_logging
+
+    settings = get_settings()
+    configure_logging(settings.log_level, settings.log_json)
+    worker = Worker(settings)
+
+    async def main() -> None:
+        import asyncio
+
+        loop = asyncio.get_running_loop()
+
+        def stop(*_: object) -> None:
+            loop.call_soon_threadsafe(worker.request_stop)
+
+        if threading.current_thread() is threading.main_thread():
+            for sig in (signal.SIGINT, signal.SIGTERM, getattr(signal, "SIGBREAK", None)):
+                if sig is not None:
+                    signal.signal(sig, stop)
+        await worker.run_forever()
+
+    _run(main())
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -48,6 +86,9 @@ def main(argv: list[str] | None = None) -> None:
     migrate = sub.add_parser("migrate", help="Apply database migrations (owner role)")
     migrate.add_argument("revision", nargs="?", default="head")
     migrate.set_defaults(func=_migrate)
+
+    worker = sub.add_parser("worker", help="Run the durable background worker")
+    worker.set_defaults(func=_worker)
 
     args = parser.parse_args(argv)
     args.func(args)

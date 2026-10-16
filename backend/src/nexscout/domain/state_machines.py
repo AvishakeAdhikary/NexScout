@@ -126,18 +126,21 @@ RUN_MACHINE: StateMachine[RunStatus] = StateMachine(
     name="workflow_run",
     transitions={
         _R.PENDING: frozenset({_R.RUNNING, _R.PAUSED, _R.CANCELLED}),
+        # RUNNING -> PENDING: requeued after worker shutdown or a lost lease.
         _R.RUNNING: frozenset(
-            {_R.WAITING_APPROVAL, _R.PAUSING, _R.CANCELLING, _R.FAILED, _R.SUCCEEDED}
+            {_R.WAITING_APPROVAL, _R.PAUSING, _R.CANCELLING, _R.FAILED, _R.SUCCEEDED, _R.PENDING}
         ),
         _R.WAITING_APPROVAL: frozenset({_R.RUNNING, _R.PAUSED, _R.CANCELLING}),
-        _R.PAUSING: frozenset({_R.PAUSED, _R.CANCELLING, _R.FAILED, _R.SUCCEEDED}),
+        _R.PAUSING: frozenset(
+            {_R.PAUSED, _R.CANCELLING, _R.FAILED, _R.SUCCEEDED, _R.PENDING, _R.WAITING_APPROVAL}
+        ),
         _R.PAUSED: frozenset({_R.RUNNING, _R.PENDING, _R.CANCELLING, _R.CANCELLED}),
         _R.CANCELLING: frozenset({_R.CANCELLED}),
         _R.FAILED: frozenset({_R.PENDING, _R.CANCELLED}),  # retry re-enqueues
         _R.CANCELLED: frozenset(),
-        _R.SUCCEEDED: frozenset(),
+        _R.SUCCEEDED: frozenset({_R.PENDING}),  # only via an explicit "rerun this step"
     },
-    terminal=frozenset({_R.CANCELLED, _R.SUCCEEDED}),
+    terminal=frozenset({_R.CANCELLED}),
 )
 
 

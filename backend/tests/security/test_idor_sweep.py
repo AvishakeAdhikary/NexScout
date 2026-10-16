@@ -25,7 +25,7 @@ EXEMPT = {
 }
 
 
-async def _seed_owner(client: httpx.AsyncClient) -> dict[str, str]:
+async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
     await register(client, "owner@example.com", "Owner")
     case_id = str((await create_case(client, "Owner case"))["id"])
     await client.patch(f"/api/v1/cases/{case_id}", json={"version": 1, "career_path": "both"})
@@ -48,7 +48,17 @@ async def _seed_owner(client: httpx.AsyncClient) -> dict[str, str]:
     await client.post(f"/api/v1/cases/{case_id}/snapshots", json={})
     await client.post(f"/api/v1/cases/{case_id}/opportunities/sync", json={})
     opp = (await client.get(f"/api/v1/cases/{case_id}/opportunities")).json()[0]
+    run = (
+        await client.post(
+            f"/api/v1/cases/{case_id}/runs",
+            json={"kind": "system_check", "params": {"require_approval": True}},
+        )
+    ).json()
+    await worker.run_until_idle()
+    approval = (await client.get(f"/api/v1/cases/{case_id}/approvals")).json()[0]
     return {
+        "run_id": run["id"],
+        "approval_id": approval["id"],
         "case_id": case_id,
         "document_id": doc["id"],
         "fact_id": fact["id"],
@@ -63,6 +73,7 @@ async def _seed_owner(client: httpx.AsyncClient) -> dict[str, str]:
 
 
 def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None]]:
+    r, ap = ids["run_id"], ids["approval_id"]
     c, d, f, link, a, o, n = (
         ids["case_id"],
         ids["document_id"],
@@ -125,13 +136,20 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
             {"status": "dismissed", "version": int(ids.get("opp_version", "1"))},
         ),
         ("POST", f"/api/v1/cases/{c}/opportunities/{o}/reports", {"kind": "wrong_merge"}),
+        ("POST", f"/api/v1/cases/{c}/runs", {"kind": "system_check"}),
+        ("GET", f"/api/v1/cases/{c}/runs", None),
+        ("GET", f"/api/v1/runs/{r}", None),
+        ("POST", f"/api/v1/runs/{r}/control", {"action": "cancel"}),
+        ("GET", f"/api/v1/cases/{c}/approvals", None),
+        ("POST", f"/api/v1/approvals/{ap}/decision", {"approve": True}),
+        ("GET", f"/api/v1/cases/{c}/events?once=true", None),
     ]
 
 
 async def test_other_user_gets_404_everywhere(
-    client: httpx.AsyncClient, other_client: httpx.AsyncClient
+    client: httpx.AsyncClient, other_client: httpx.AsyncClient, worker: Any
 ) -> None:
-    ids = await _seed_owner(client)
+    ids = await _seed_owner(client, worker)
     await register(other_client, "intruder@example.com", "Intruder")
     for method, url, body in _requests(ids):
         if method == "POST" and url.endswith("/documents"):
@@ -147,6 +165,9 @@ async def test_other_user_gets_404_everywhere(
         await client.get(f"/api/v1/cases/{ids['case_id']}/opportunities/{ids['opportunity_id']}")
     ).json()
     assert opp["match_status"] == "new"
+    run = (await client.get(f"/api/v1/runs/{ids['run_id']}")).json()
+    assert run["run"]["status"] == "waiting_approval"  # intruder could not cancel or approve
+    assert run["approvals"][0]["status"] == "pending"
 
 
 def _template(path: str) -> str:
@@ -158,6 +179,8 @@ def test_every_id_route_is_covered(app: Any) -> None:
     sentinel = {
         k: f"{{{k}}}"
         for k in (
+            "run_id",
+            "approval_id",
             "case_id",
             "document_id",
             "fact_id",

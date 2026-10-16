@@ -14,10 +14,12 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import INET, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -39,7 +41,18 @@ OWNED_TABLES: tuple[str, ...] = (
     "sync_checkpoints",
     "opportunity_matches",
     "dedup_reports",
+    "workflow_runs",
+    "tasks",
+    "run_steps",
+    "workflow_events",
+    "approval_requests",
+    "tool_executions",
+    "usage_records",
+    "secrets",
+    "provider_configs",
 )
+# Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
+SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
 # Shared, non-personal catalog tables (public opportunity data). Not RLS-protected; users reach
 # them only through their own opportunity_matches rows.
 CATALOG_TABLES: tuple[str, ...] = ("organizations", "opportunities", "opportunity_sources")
@@ -525,4 +538,299 @@ class DedupReport(IdMixin, Base):
     __table_args__ = (
         case_fk(),
         CheckConstraint("kind IN ('wrong_merge','missed_duplicate')", name="kind_valid"),
+    )
+
+
+# ------------------------------------------------------------------- M4: durable runtime
+class WorkflowRun(IdMixin, Base):
+    """One execution of a workflow for a case. Its LangGraph thread id is this run's id."""
+
+    __tablename__ = "workflow_runs"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    kind: Mapped[str] = mapped_column(String(60), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    control_request: Mapped[str | None] = mapped_column(String(10))
+    params: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    result: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    error: Mapped[str | None] = mapped_column(String(1000))
+    current_node: Mapped[str | None] = mapped_column(String(100))
+    steps_completed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    step_budget: Mapped[int] = mapped_column(Integer, nullable=False, default=200)
+    tokens_used: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    token_budget: Mapped[int] = mapped_column(Integer, nullable=False, default=2_000_000)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        case_fk(),
+        UniqueConstraint("id", "owner_user_id", name="uq_workflow_runs_id_owner"),
+        CheckConstraint(
+            "status IN ('pending','running','waiting_approval','pausing','paused','cancelling',"
+            "'cancelled','failed','succeeded')",
+            name="status_valid",
+        ),
+        CheckConstraint(
+            "control_request IS NULL OR control_request IN ('pause','cancel')", name="control_valid"
+        ),
+        Index("ix_workflow_runs_case_created", "case_id", "created_at"),
+    )
+
+
+def run_fk() -> ForeignKeyConstraint:
+    return ForeignKeyConstraint(
+        ["run_id", "owner_user_id"],
+        ["workflow_runs.id", "workflow_runs.owner_user_id"],
+        ondelete="CASCADE",
+    )
+
+
+class Task(IdMixin, Base):
+    """A durable queue item that advances one run. Claimed with leases (ADR-0002)."""
+
+    __tablename__ = "tasks"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    run_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    action: Mapped[str] = mapped_column(String(20), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="queued")
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
+    attempt: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    available_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    lease_owner: Mapped[str | None] = mapped_column(String(100))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    idempotency_key: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
+    last_error: Mapped[str | None] = mapped_column(String(1000))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        run_fk(),
+        CheckConstraint(
+            "status IN ('queued','running','retry_wait','succeeded','failed','cancelled')",
+            name="status_valid",
+        ),
+        CheckConstraint("action IN ('start','resume','retry','rerun','skip')", name="action_valid"),
+        Index("ix_tasks_claim", "status", "available_at", "priority"),
+        Index("ix_tasks_run", "run_id"),
+        Index(
+            "uq_tasks_one_active_per_run",
+            "run_id",
+            unique=True,
+            postgresql_where=text("status IN ('queued','running')"),
+        ),
+    )
+
+
+class RunStep(IdMixin, Base):
+    """User-visible record of one node execution attempt."""
+
+    __tablename__ = "run_steps"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    run_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    node: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    summary: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    error: Mapped[str | None] = mapped_column(String(1000))
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        run_fk(),
+        CheckConstraint(
+            "status IN ('running','succeeded','failed','interrupted','skipped','cancelled')",
+            name="status_valid",
+        ),
+        Index("ix_run_steps_run", "run_id", "started_at"),
+    )
+
+
+class WorkflowEvent(Base):
+    """Append-only activity feed. `id` is a global sequence used as the SSE cursor."""
+
+    __tablename__ = "workflow_events"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    run_id: Mapped[uuid.UUID | None] = mapped_column()
+    type: Mapped[str] = mapped_column(String(60), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        case_fk(),
+        Index("ix_workflow_events_case_id", "case_id", "id"),
+        Index("ix_workflow_events_run_id", "run_id", "id"),
+    )
+
+
+class ApprovalRequest(IdMixin, Base):
+    """A consequential action waiting for the user. Decided only via the authenticated API."""
+
+    __tablename__ = "approval_requests"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    run_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    node: Mapped[str] = mapped_column(String(100), nullable=False)
+    action_kind: Mapped[str] = mapped_column(String(60), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    summary: Mapped[str] = mapped_column(String(4000), nullable=False)
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    idempotency_key: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)
+    decision_note: Mapped[str | None] = mapped_column(String(2000))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        run_fk(),
+        CheckConstraint(
+            "status IN ('pending','approved','rejected','cancelled')", name="status_valid"
+        ),
+        Index("ix_approval_requests_case_status", "case_id", "status"),
+    )
+
+
+class ToolExecution(IdMixin, Base):
+    """Idempotency ledger for side effects. `started` without a result after a crash is
+    reported as `uncertain` and is never retried silently (ADR-0008)."""
+
+    __tablename__ = "tool_executions"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    run_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    tool: Mapped[str] = mapped_column(String(100), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    response: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    error: Mapped[str | None] = mapped_column(String(1000))
+    started_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        run_fk(),
+        CheckConstraint(
+            "status IN ('started','succeeded','failed','uncertain')", name="status_valid"
+        ),
+    )
+
+
+class UsageRecord(IdMixin, Base):
+    __tablename__ = "usage_records"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    run_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("workflow_runs.id", ondelete="SET NULL")
+    )
+    provider_kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    model: Mapped[str] = mapped_column(String(200), nullable=False)
+    purpose: Mapped[str] = mapped_column(String(100), nullable=False)
+    input_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    latency_ms: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    estimated_cost_usd: Mapped[float | None] = mapped_column()
+    is_mock: Mapped[bool] = mapped_column(nullable=False, default=False)
+    succeeded: Mapped[bool] = mapped_column(nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (Index("ix_usage_records_owner_created", "owner_user_id", "created_at"),)
+
+
+class WorkerHeartbeat(Base):
+    """Worker liveness (system table, not user data)."""
+
+    __tablename__ = "worker_heartbeats"
+
+    worker_id: Mapped[str] = mapped_column(String(100), primary_key=True)
+    hostname: Mapped[str] = mapped_column(String(200), nullable=False)
+    pid: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    in_flight: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class Secret(IdMixin, Base):
+    """Envelope-encrypted secret (AES-GCM). Plaintext never leaves the provider adapter."""
+
+    __tablename__ = "secrets"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    purpose: Mapped[str] = mapped_column(String(60), nullable=False)
+    ciphertext: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    nonce: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    key_id: Mapped[str] = mapped_column(String(40), nullable=False)
+    hint: Mapped[str | None] = mapped_column(String(12))  # e.g. last 4 chars, for display
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class ProviderConfig(IdMixin, TimestampMixin, Base):
+    """A user's model provider (BYOK). Capabilities are declared, then verified by a live test."""
+
+    __tablename__ = "provider_configs"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    base_url: Mapped[str | None] = mapped_column(String(500))
+    model: Mapped[str] = mapped_column(String(200), nullable=False)
+    secret_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("secrets.id", ondelete="SET NULL")
+    )
+    context_window: Mapped[int] = mapped_column(Integer, nullable=False, default=8192)
+    max_output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=1024)
+    supports_json_schema: Mapped[bool] = mapped_column(nullable=False, default=False)
+    data_leaves_device: Mapped[bool] = mapped_column(nullable=False, default=True)
+    is_default: Mapped[bool] = mapped_column(nullable=False, default=False)
+    input_cost_per_mtok: Mapped[float | None] = mapped_column()
+    output_cost_per_mtok: Mapped[float | None] = mapped_column()
+    last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_verification: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        UniqueConstraint("owner_user_id", "name", name="uq_provider_configs_owner_name"),
+        CheckConstraint(
+            "kind IN ('mock','openai_compatible','anthropic','gemini')", name="kind_valid"
+        ),
     )
