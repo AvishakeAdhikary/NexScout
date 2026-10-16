@@ -10,6 +10,7 @@ import asyncio
 import os
 import sys
 from collections.abc import AsyncIterator, Iterator
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -109,10 +110,17 @@ def clean_db(migrated_db: Engine) -> Iterator[Engine]:
 
 
 @pytest.fixture
-async def app(clean_db: Engine) -> AsyncIterator[Any]:
+def storage_dir(tmp_path: Path) -> Path:
+    path = tmp_path / "storage"
+    path.mkdir()
+    return path
+
+
+@pytest.fixture
+async def app(clean_db: Engine, storage_dir: Path) -> AsyncIterator[Any]:
     from nexscout.api.app import create_app
 
-    application = create_app(make_settings())
+    application = create_app(make_settings(storage_dir=storage_dir))
     async with application.router.lifespan_context(application):
         yield application
 

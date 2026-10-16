@@ -4,6 +4,24 @@
  */
 
 export interface paths {
+    "/api/v1/affiliations/{affiliation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Affiliation */
+        delete: operations["delete_affiliation_api_v1_affiliations__affiliation_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Affiliation */
+        patch: operations["update_affiliation_api_v1_affiliations__affiliation_id__patch"];
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -109,6 +127,304 @@ export interface paths {
         patch: operations["update_case_api_v1_cases__case_id__patch"];
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/affiliations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Affiliations */
+        get: operations["list_affiliations_api_v1_cases__case_id__affiliations_get"];
+        put?: never;
+        /** Create Affiliation */
+        post: operations["create_affiliation_api_v1_cases__case_id__affiliations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Documents */
+        get: operations["list_documents_api_v1_cases__case_id__documents_get"];
+        put?: never;
+        /** Upload */
+        post: operations["upload_api_v1_cases__case_id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/facts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Facts */
+        get: operations["list_facts_api_v1_cases__case_id__facts_get"];
+        put?: never;
+        /** Create Fact */
+        post: operations["create_fact_api_v1_cases__case_id__facts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/facts/merge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Merge Facts */
+        post: operations["merge_facts_api_v1_cases__case_id__facts_merge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/facts/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Review Facts */
+        post: operations["review_facts_api_v1_cases__case_id__facts_review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Preferences */
+        get: operations["get_preferences_api_v1_cases__case_id__preferences_get"];
+        /** Put Preferences */
+        put: operations["put_preferences_api_v1_cases__case_id__preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/profile/gaps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gaps */
+        get: operations["gaps_api_v1_cases__case_id__profile_gaps_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Snapshots */
+        get: operations["list_snapshots_api_v1_cases__case_id__snapshots_get"];
+        put?: never;
+        /** Create Snapshot */
+        post: operations["create_snapshot_api_v1_cases__case_id__snapshots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/social-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Links */
+        get: operations["list_links_api_v1_cases__case_id__social_profiles_get"];
+        put?: never;
+        /** Add Link */
+        post: operations["add_link_api_v1_cases__case_id__social_profiles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Document */
+        get: operations["get_document_api_v1_documents__document_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Document */
+        delete: operations["delete_document_api_v1_documents__document_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{document_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download */
+        get: operations["download_api_v1_documents__document_id__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{document_id}/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Text */
+        get: operations["document_text_api_v1_documents__document_id__text_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/facts/{fact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Fact */
+        get: operations["get_fact_api_v1_facts__fact_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Fact */
+        delete: operations["delete_fact_api_v1_facts__fact_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Fact */
+        patch: operations["update_fact_api_v1_facts__fact_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/facts/{fact_id}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fact Evidence */
+        get: operations["fact_evidence_api_v1_facts__fact_id__evidence_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Account */
+        post: operations["delete_account_api_v1_me_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export */
+        get: operations["export_api_v1_me_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/social-profiles/{link_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Link */
+        delete: operations["delete_link_api_v1_social_profiles__link_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -147,6 +463,117 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccountDelete */
+        AccountDelete: {
+            /** Password */
+            password: string;
+        };
+        /** AffiliationFields */
+        AffiliationFields: {
+            /** End Date */
+            end_date?: string | null;
+            /** Evidence */
+            evidence?: string | null;
+            /** May Use For Referral */
+            may_use_for_referral?: boolean | null;
+            /** May Use In Applications */
+            may_use_in_applications?: boolean | null;
+            /** Notes */
+            notes?: string | null;
+            /** Organization */
+            organization?: string | null;
+            /** Person Name */
+            person_name?: string | null;
+            /** Relationship Type */
+            relationship_type?: string | null;
+            /** Role */
+            role?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** Status */
+            status?: string | null;
+        };
+        /** AffiliationOut */
+        AffiliationOut: {
+            /**
+             * Case Id
+             * Format: uuid
+             */
+            case_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** End Date */
+            end_date: string | null;
+            /** Evidence */
+            evidence: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** May Use For Referral */
+            may_use_for_referral: boolean;
+            /** May Use In Applications */
+            may_use_in_applications: boolean;
+            /** Notes */
+            notes: string | null;
+            /** Organization */
+            organization: string;
+            /** Person Name */
+            person_name: string | null;
+            /** Relationship Type */
+            relationship_type: string;
+            /** Role */
+            role: string | null;
+            /** Start Date */
+            start_date: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** AffiliationUpdate */
+        AffiliationUpdate: {
+            /** End Date */
+            end_date?: string | null;
+            /** Evidence */
+            evidence?: string | null;
+            /** May Use For Referral */
+            may_use_for_referral?: boolean | null;
+            /** May Use In Applications */
+            may_use_in_applications?: boolean | null;
+            /** Notes */
+            notes?: string | null;
+            /** Organization */
+            organization?: string | null;
+            /** Person Name */
+            person_name?: string | null;
+            /** Relationship Type */
+            relationship_type?: string | null;
+            /** Role */
+            role?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Version */
+            version: number;
+        };
+        /** Body_upload_api_v1_cases__case_id__documents_post */
+        Body_upload_api_v1_cases__case_id__documents_post: {
+            /** File */
+            file: string;
+            /** @default cv */
+            purpose: components["schemas"]["DocumentPurpose"];
+        };
         /**
          * CareerPath
          * @enum {string}
@@ -206,6 +633,208 @@ export interface components {
              */
             version: number;
         };
+        /** DocumentOut */
+        DocumentOut: {
+            /**
+             * Case Id
+             * Format: uuid
+             */
+            case_id: string;
+            /** Content Type */
+            content_type: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Extraction Method */
+            extraction_method: string | null;
+            /** Facts Extracted */
+            facts_extracted: number;
+            /** File Kind */
+            file_kind: string;
+            /** Filename */
+            filename: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Origin */
+            origin: string;
+            /** Page Count */
+            page_count: number | null;
+            /** Parse Error */
+            parse_error: string | null;
+            /** Parse Status */
+            parse_status: string;
+            /** Purpose */
+            purpose: string;
+            /** Size Bytes */
+            size_bytes: number;
+        };
+        /**
+         * DocumentPurpose
+         * @enum {string}
+         */
+        DocumentPurpose: "cv" | "resume" | "transcript" | "degree_certificate" | "statement_of_purpose" | "personal_statement" | "research_statement" | "research_proposal" | "cover_letter" | "recommendation_letter" | "writing_sample" | "publication" | "language_test" | "portfolio" | "certificate" | "other";
+        /** DocumentTextOut */
+        DocumentTextOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Page Starts */
+            page_starts: number[];
+            /** Text */
+            text: string | null;
+        };
+        /** EvidenceOut */
+        EvidenceOut: {
+            /** Char End */
+            char_end: number | null;
+            /** Char Start */
+            char_start: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Document Id */
+            document_id: string | null;
+            /** Excerpt */
+            excerpt: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Method */
+            method: string;
+            /** Page */
+            page: number | null;
+            /** Url */
+            url: string | null;
+        };
+        /**
+         * ExperienceMode
+         * @enum {string}
+         */
+        ExperienceMode: "strict" | "flexible";
+        /** FactCreate */
+        FactCreate: {
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /** Is Private */
+            is_private?: boolean | null;
+            section: components["schemas"]["Section"];
+        };
+        /** FactMerge */
+        FactMerge: {
+            /** Data */
+            data?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Keep Id
+             * Format: uuid
+             */
+            keep_id: string;
+            /** Merge Ids */
+            merge_ids: string[];
+        };
+        /** FactOut */
+        FactOut: {
+            /**
+             * Case Id
+             * Format: uuid
+             */
+            case_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Evidence Count
+             * @default 0
+             */
+            evidence_count: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Private */
+            is_private: boolean;
+            /** Label */
+            label: string;
+            /** Meta */
+            meta: {
+                [key: string]: unknown;
+            };
+            review_state: components["schemas"]["ReviewState"];
+            /** Reviewed At */
+            reviewed_at: string | null;
+            section: components["schemas"]["Section"];
+            status: components["schemas"]["FactStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** FactReview */
+        FactReview: {
+            /** Accept */
+            accept?: string[];
+            /** Reject */
+            reject?: string[];
+        };
+        /** FactReviewOut */
+        FactReviewOut: {
+            /** Changed */
+            changed: number;
+        };
+        /**
+         * FactStatus
+         * @description How we know this. Inferred is never treated as a verified personal fact.
+         * @enum {string}
+         */
+        FactStatus: "user_entered" | "extracted" | "inferred" | "verified" | "external";
+        /** FactUpdate */
+        FactUpdate: {
+            /** Data */
+            data?: {
+                [key: string]: unknown;
+            } | null;
+            /** Is Private */
+            is_private?: boolean | null;
+            review_state?: components["schemas"]["ReviewState"] | null;
+            /** Version */
+            version: number;
+        };
+        /** GapOut */
+        GapOut: {
+            /** Code */
+            code: string;
+            /** Fact Id */
+            fact_id?: string | null;
+            /** Message */
+            message: string;
+            section: components["schemas"]["Section"];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -222,6 +851,78 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** Preferences */
+        Preferences: {
+            /** Accessibility Notes */
+            accessibility_notes?: string | null;
+            /** Application Horizon Days */
+            application_horizon_days?: number | null;
+            /** Cities */
+            cities?: string[];
+            /** Countries */
+            countries?: string[];
+            /** Disciplines */
+            disciplines?: string[];
+            /** Earliest Start */
+            earliest_start?: string | null;
+            /** Employment Types */
+            employment_types?: ("full_time" | "part_time" | "contract" | "internship" | "temporary" | "phd_position" | "postdoc" | "research_assistant" | "fellowship")[];
+            /** @default strict */
+            experience_mode: components["schemas"]["ExperienceMode"];
+            /** Funding Required */
+            funding_required?: boolean | null;
+            /** Industries */
+            industries?: string[];
+            /** Job Titles */
+            job_titles?: string[];
+            /** Max Years Experience */
+            max_years_experience?: number | null;
+            /** Min Years Experience */
+            min_years_experience?: number | null;
+            /** Needs Visa Sponsorship */
+            needs_visa_sponsorship?: boolean | null;
+            /** Preferred Employers */
+            preferred_employers?: string[];
+            /** Preferred Institutions */
+            preferred_institutions?: string[];
+            /** Regions */
+            regions?: string[];
+            /**
+             * Remote
+             * @default any
+             * @enum {string}
+             */
+            remote: "any" | "onsite" | "hybrid" | "remote";
+            /** Research Areas */
+            research_areas?: string[];
+            /** Salary Currency */
+            salary_currency?: string | null;
+            /** Salary Min */
+            salary_min?: number | null;
+            /** Seniority */
+            seniority?: components["schemas"]["Seniority"][];
+            sensitive?: components["schemas"]["SensitiveAttributes"];
+            /** Willing To Relocate */
+            willing_to_relocate?: boolean | null;
+        };
+        /** PreferencesOut */
+        PreferencesOut: {
+            data: components["schemas"]["Preferences"];
+            /** Version */
+            version: number;
+        };
+        /** PreferencesPut */
+        PreferencesPut: {
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Version
+             * @description 0 when no preferences have been saved yet.
+             */
+            version: number;
         };
         /** ReadyOut */
         ReadyOut: {
@@ -241,6 +942,40 @@ export interface components {
             /** Password */
             password: string;
         };
+        /**
+         * ReviewState
+         * @enum {string}
+         */
+        ReviewState: "pending" | "accepted" | "rejected";
+        /**
+         * Section
+         * @enum {string}
+         */
+        Section: "summary" | "education" | "employment" | "research" | "publication" | "project" | "skill" | "certification" | "award" | "patent" | "volunteer" | "leadership" | "membership" | "reference" | "other";
+        /**
+         * Seniority
+         * @enum {string}
+         */
+        Seniority: "entry" | "mid" | "senior";
+        /**
+         * SensitiveAttributes
+         * @description Optional and private by default. Never used for scoring.
+         */
+        SensitiveAttributes: {
+            /**
+             * Use For Eligibility
+             * @description Allow these answers to be used for explicit eligibility checks only.
+             * @default false
+             */
+            use_for_eligibility: boolean;
+            /** Veteran Status */
+            veteran_status?: string | null;
+            /**
+             * Work Authorization
+             * @description Countries where you may already work.
+             */
+            work_authorization?: string[];
+        };
         /** SessionOut */
         SessionOut: {
             /** Csrf Token */
@@ -251,6 +986,62 @@ export interface components {
              */
             expires_at: string;
             user: components["schemas"]["UserOut"];
+        };
+        /** SnapshotCreate */
+        SnapshotCreate: {
+            /** Reason */
+            reason?: string | null;
+        };
+        /** SnapshotOut */
+        SnapshotOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Fact Count */
+            fact_count: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: number;
+            /** Reason */
+            reason: string | null;
+        };
+        /** SocialProfileCreate */
+        SocialProfileCreate: {
+            /** Label */
+            label?: string | null;
+            /** Url */
+            url: string;
+        };
+        /** SocialProfileOut */
+        SocialProfileOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string | null;
+            /** Url */
+            url: string;
+        };
+        /** UploadOut */
+        UploadOut: {
+            document: components["schemas"]["DocumentOut"];
+            /** Facts Created */
+            facts_created: number;
         };
         /** UserOut */
         UserOut: {
@@ -286,6 +1077,70 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    delete_affiliation_api_v1_affiliations__affiliation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                affiliation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_affiliation_api_v1_affiliations__affiliation_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                affiliation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AffiliationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AffiliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     login_api_v1_auth_login_post: {
         parameters: {
             query?: never;
@@ -537,6 +1392,836 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CaseOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_affiliations_api_v1_cases__case_id__affiliations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AffiliationOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_affiliation_api_v1_cases__case_id__affiliations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AffiliationFields"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AffiliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_documents_api_v1_cases__case_id__documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_api_v1_cases__case_id__documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_api_v1_cases__case_id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_facts_api_v1_cases__case_id__facts_get: {
+        parameters: {
+            query?: {
+                section?: components["schemas"]["Section"] | null;
+                review_state?: components["schemas"]["ReviewState"] | null;
+            };
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_fact_api_v1_cases__case_id__facts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FactCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    merge_facts_api_v1_cases__case_id__facts_merge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FactMerge"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_facts_api_v1_cases__case_id__facts_review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FactReview"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactReviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_preferences_api_v1_cases__case_id__preferences_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_preferences_api_v1_cases__case_id__preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesPut"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    gaps_api_v1_cases__case_id__profile_gaps_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GapOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_snapshots_api_v1_cases__case_id__snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_snapshot_api_v1_cases__case_id__snapshots_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SnapshotCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_links_api_v1_cases__case_id__social_profiles_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SocialProfileOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_link_api_v1_cases__case_id__social_profiles_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SocialProfileCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SocialProfileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_api_v1_documents__document_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_document_api_v1_documents__document_id__delete: {
+        parameters: {
+            query?: {
+                delete_pending_facts?: boolean;
+            };
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_api_v1_documents__document_id__content_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_text_api_v1_documents__document_id__text_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentTextOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_fact_api_v1_facts__fact_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_fact_api_v1_facts__fact_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_fact_api_v1_facts__fact_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FactUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    fact_evidence_api_v1_facts__fact_id__evidence_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                fact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvidenceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_account_api_v1_me_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_api_v1_me_export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    delete_link_api_v1_social_profiles__link_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

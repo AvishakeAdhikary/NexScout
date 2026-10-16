@@ -22,7 +22,15 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     app role couldn't read `alembic_version` (→ grant); `localhost` cost 10 s per DB connection on
     Windows (→ 127.0.0.1); career-path radio bounced until the server answered (→ instant local
     state); the password lingered in the hidden, still-mounted register form (→ form reset).
-  - M2 started: `domain/profile.py` (section schemas, partial dates, fact status/review, gaps).
+  - M2 backend done: section schemas + gaps (`domain/profile.py`), heuristic CV extractor with
+    verbatim evidence spans (`domain/cv_heuristics.py`), content sniffing + isolated, killable
+    parser subprocess (pypdf/python-docx/markdown), content-addressed per-owner ObjectStore,
+    migration `0002` (7 owned tables, forced RLS, grants), APIs for documents, facts (create,
+    edit with original kept, bulk review, merge, delete, evidence), gaps, snapshots, preferences
+    (sensitive attrs private, never scored), social links (validated, never fetched),
+    affiliations (referral use off by default), account export (zip) and deletion.
+  - Security tests: IDOR sweep over all 28 ID routes (404 for another user), a guard test that fails
+    when a new ID route isn't swept, and forced RLS + policy verified on every owned table.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -32,11 +40,6 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   in M2 is a deterministic **heuristic** (labelled `method=heuristic`, not an LLM). LLM
   extraction arrives with the provider layer in M4.
 - **Next exact steps (M2):**
-  1. Unit tests for `domain/profile.py`; ObjectStore (fs, content-addressed) + upload validation.
-  2. Parsers (pypdf / python-docx / markdown) → text with page and char spans; section splitter;
-     heuristic extractor → pending facts with evidence spans.
-  3. Migration `0002`: documents, profile_facts, fact_evidence, profile_snapshots, preferences,
-     social_profiles, affiliations (RLS + grants), plus API routes and cross-tenant tests.
   4. Web: Documents (upload/list/delete), Profile (review queue: accept/edit/reject/private;
      add/edit facts; gaps), Relationships (affiliations table).
   5. E2E: upload fixture CV → review → accept → restart API → still there; second user can't see it.
@@ -51,6 +54,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-16 | same, after fixes | **60 passed in 5.8 s** (0 skipped) |
 | 2026-10-16 | `npm run e2e` (Playwright, Chromium, real API + DB) | **3 passed**: register→case→path→sign-out/in persists; cross-user 404; wrong password error |
 | 2026-10-16 | `docker compose --profile full build && up`; curl readyz, register+create case via web:3000 | images built; api healthy (uid 10001); readyz ok; 201/201 |
+| 2026-10-16 | M2 backend: `NEXSCOUT_REQUIRE_DB=1 uv run pytest` | **121 passed** (incl. IDOR sweep, RLS structure, upload/parse/extract, export/delete) |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---

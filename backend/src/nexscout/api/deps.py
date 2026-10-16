@@ -13,6 +13,7 @@ from nexscout.application.auth import csrf_valid, resolve_session
 from nexscout.config import Settings
 from nexscout.domain.errors import AuthenticationFailed, PermissionDenied
 from nexscout.infrastructure.db.engine import bind_tenant
+from nexscout.infrastructure.storage import ObjectStore
 
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 
@@ -38,6 +39,14 @@ async def get_db(request: Request) -> AsyncIterator[AsyncSession]:
 
 
 DbSession = Annotated[AsyncSession, Depends(get_db, scope="function")]
+
+
+def get_object_store(request: Request) -> ObjectStore:
+    store: ObjectStore = request.app.state.object_store
+    return store
+
+
+ObjectStoreDep = Annotated[ObjectStore, Depends(get_object_store)]
 SettingsDep = Annotated[Settings, Depends(get_settings_dep)]
 
 

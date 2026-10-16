@@ -10,9 +10,10 @@ from fastapi import FastAPI
 from nexscout import __version__
 from nexscout.api.errors import install_error_handlers
 from nexscout.api.middleware import RequestContextMiddleware
-from nexscout.api.routers import auth, cases, health
+from nexscout.api.routers import account, auth, cases, documents, health, profile, relationships
 from nexscout.config import Settings, get_settings
 from nexscout.infrastructure.db.engine import build_engine, build_sessionmaker
+from nexscout.infrastructure.storage import LocalObjectStore
 from nexscout.observability import configure_logging, get_logger
 
 API_PREFIX = "/api/v1"
@@ -29,6 +30,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.settings = settings
         app.state.engine = engine
         app.state.sessionmaker = build_sessionmaker(engine)
+        app.state.object_store = LocalObjectStore(settings.storage_dir)
         log.info("api_started", env=settings.env, version=__version__)
         try:
             yield
@@ -48,5 +50,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
     app.include_router(health.router)
     app.include_router(auth.router, prefix=API_PREFIX)
-    app.include_router(cases.router, prefix=API_PREFIX)
+    for module in (cases, profile, documents, relationships, account):
+        app.include_router(module.router, prefix=API_PREFIX)
     return app

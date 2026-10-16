@@ -1,6 +1,457 @@
 {
   "components": {
     "schemas": {
+      "AccountDelete": {
+        "additionalProperties": false,
+        "properties": {
+          "password": {
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "title": "AccountDelete",
+        "type": "object"
+      },
+      "AffiliationFields": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "may_use_for_referral": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "May Use For Referral"
+          },
+          "may_use_in_applications": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "May Use In Applications"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "organization": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization"
+          },
+          "person_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Name"
+          },
+          "relationship_type": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relationship Type"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "AffiliationFields",
+        "type": "object"
+      },
+      "AffiliationOut": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "format": "uuid",
+            "title": "Case Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "may_use_for_referral": {
+            "title": "May Use For Referral",
+            "type": "boolean"
+          },
+          "may_use_in_applications": {
+            "title": "May Use In Applications",
+            "type": "boolean"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "organization": {
+            "title": "Organization",
+            "type": "string"
+          },
+          "person_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Name"
+          },
+          "relationship_type": {
+            "title": "Relationship Type",
+            "type": "string"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "person_name",
+          "organization",
+          "relationship_type",
+          "role",
+          "start_date",
+          "end_date",
+          "status",
+          "evidence",
+          "notes",
+          "may_use_in_applications",
+          "may_use_for_referral",
+          "version",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AffiliationOut",
+        "type": "object"
+      },
+      "AffiliationUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "may_use_for_referral": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "May Use For Referral"
+          },
+          "may_use_in_applications": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "May Use In Applications"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "organization": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization"
+          },
+          "person_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Person Name"
+          },
+          "relationship_type": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relationship Type"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "AffiliationUpdate",
+        "type": "object"
+      },
+      "Body_upload_api_v1_cases__case_id__documents_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/DocumentPurpose",
+            "default": "cv"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_api_v1_cases__case_id__documents_post",
+        "type": "object"
+      },
       "CareerPath": {
         "enum": [
           "undecided",
@@ -170,6 +621,569 @@
         "title": "CaseUpdate",
         "type": "object"
       },
+      "DocumentOut": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "format": "uuid",
+            "title": "Case Id",
+            "type": "string"
+          },
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "extraction_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Method"
+          },
+          "facts_extracted": {
+            "title": "Facts Extracted",
+            "type": "integer"
+          },
+          "file_kind": {
+            "title": "File Kind",
+            "type": "string"
+          },
+          "filename": {
+            "title": "Filename",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "origin": {
+            "title": "Origin",
+            "type": "string"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "parse_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Error"
+          },
+          "parse_status": {
+            "title": "Parse Status",
+            "type": "string"
+          },
+          "purpose": {
+            "title": "Purpose",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "purpose",
+          "file_kind",
+          "filename",
+          "content_type",
+          "size_bytes",
+          "origin",
+          "parse_status",
+          "parse_error",
+          "page_count",
+          "extraction_method",
+          "facts_extracted",
+          "created_at"
+        ],
+        "title": "DocumentOut",
+        "type": "object"
+      },
+      "DocumentPurpose": {
+        "enum": [
+          "cv",
+          "resume",
+          "transcript",
+          "degree_certificate",
+          "statement_of_purpose",
+          "personal_statement",
+          "research_statement",
+          "research_proposal",
+          "cover_letter",
+          "recommendation_letter",
+          "writing_sample",
+          "publication",
+          "language_test",
+          "portfolio",
+          "certificate",
+          "other"
+        ],
+        "title": "DocumentPurpose",
+        "type": "string"
+      },
+      "DocumentTextOut": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "page_starts": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Page Starts",
+            "type": "array"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "page_starts"
+        ],
+        "title": "DocumentTextOut",
+        "type": "object"
+      },
+      "EvidenceOut": {
+        "additionalProperties": false,
+        "properties": {
+          "char_end": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Char End"
+          },
+          "char_start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Char Start"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "method",
+          "document_id",
+          "page",
+          "char_start",
+          "char_end",
+          "excerpt",
+          "url",
+          "created_at"
+        ],
+        "title": "EvidenceOut",
+        "type": "object"
+      },
+      "ExperienceMode": {
+        "enum": [
+          "strict",
+          "flexible"
+        ],
+        "title": "ExperienceMode",
+        "type": "string"
+      },
+      "FactCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "is_private": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Private"
+          },
+          "section": {
+            "$ref": "#/components/schemas/Section"
+          }
+        },
+        "required": [
+          "section",
+          "data"
+        ],
+        "title": "FactCreate",
+        "type": "object"
+      },
+      "FactMerge": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "keep_id": {
+            "format": "uuid",
+            "title": "Keep Id",
+            "type": "string"
+          },
+          "merge_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Merge Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "keep_id",
+          "merge_ids"
+        ],
+        "title": "FactMerge",
+        "type": "object"
+      },
+      "FactOut": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "format": "uuid",
+            "title": "Case Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "evidence_count": {
+            "default": 0,
+            "title": "Evidence Count",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_private": {
+            "title": "Is Private",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "title": "Meta",
+            "type": "object"
+          },
+          "review_state": {
+            "$ref": "#/components/schemas/ReviewState"
+          },
+          "reviewed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewed At"
+          },
+          "section": {
+            "$ref": "#/components/schemas/Section"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FactStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "section",
+          "data",
+          "label",
+          "status",
+          "review_state",
+          "is_private",
+          "meta",
+          "version",
+          "created_at",
+          "updated_at",
+          "reviewed_at"
+        ],
+        "title": "FactOut",
+        "type": "object"
+      },
+      "FactReview": {
+        "additionalProperties": false,
+        "properties": {
+          "accept": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "title": "Accept",
+            "type": "array"
+          },
+          "reject": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "title": "Reject",
+            "type": "array"
+          }
+        },
+        "title": "FactReview",
+        "type": "object"
+      },
+      "FactReviewOut": {
+        "additionalProperties": false,
+        "properties": {
+          "changed": {
+            "title": "Changed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "changed"
+        ],
+        "title": "FactReviewOut",
+        "type": "object"
+      },
+      "FactStatus": {
+        "description": "How we know this. Inferred is never treated as a verified personal fact.",
+        "enum": [
+          "user_entered",
+          "extracted",
+          "inferred",
+          "verified",
+          "external"
+        ],
+        "title": "FactStatus",
+        "type": "string"
+      },
+      "FactUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          },
+          "is_private": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Private"
+          },
+          "review_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "FactUpdate",
+        "type": "object"
+      },
+      "GapOut": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "fact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact Id"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "section": {
+            "$ref": "#/components/schemas/Section"
+          }
+        },
+        "required": [
+          "code",
+          "section",
+          "message"
+        ],
+        "title": "GapOut",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -216,6 +1230,307 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "Preferences": {
+        "additionalProperties": false,
+        "properties": {
+          "accessibility_notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accessibility Notes"
+          },
+          "application_horizon_days": {
+            "anyOf": [
+              {
+                "maximum": 730.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Horizon Days"
+          },
+          "cities": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Cities",
+            "type": "array"
+          },
+          "countries": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Countries",
+            "type": "array"
+          },
+          "disciplines": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Disciplines",
+            "type": "array"
+          },
+          "earliest_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Earliest Start"
+          },
+          "employment_types": {
+            "items": {
+              "enum": [
+                "full_time",
+                "part_time",
+                "contract",
+                "internship",
+                "temporary",
+                "phd_position",
+                "postdoc",
+                "research_assistant",
+                "fellowship"
+              ],
+              "type": "string"
+            },
+            "maxItems": 9,
+            "title": "Employment Types",
+            "type": "array"
+          },
+          "experience_mode": {
+            "$ref": "#/components/schemas/ExperienceMode",
+            "default": "strict"
+          },
+          "funding_required": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Funding Required"
+          },
+          "industries": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Industries",
+            "type": "array"
+          },
+          "job_titles": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Job Titles",
+            "type": "array"
+          },
+          "max_years_experience": {
+            "anyOf": [
+              {
+                "maximum": 60.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Years Experience"
+          },
+          "min_years_experience": {
+            "anyOf": [
+              {
+                "maximum": 60.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Years Experience"
+          },
+          "needs_visa_sponsorship": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs Visa Sponsorship"
+          },
+          "preferred_employers": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Preferred Employers",
+            "type": "array"
+          },
+          "preferred_institutions": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Preferred Institutions",
+            "type": "array"
+          },
+          "regions": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Regions",
+            "type": "array"
+          },
+          "remote": {
+            "default": "any",
+            "enum": [
+              "any",
+              "onsite",
+              "hybrid",
+              "remote"
+            ],
+            "title": "Remote",
+            "type": "string"
+          },
+          "research_areas": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Research Areas",
+            "type": "array"
+          },
+          "salary_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Currency"
+          },
+          "salary_min": {
+            "anyOf": [
+              {
+                "maximum": 10000000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Min"
+          },
+          "seniority": {
+            "items": {
+              "$ref": "#/components/schemas/Seniority"
+            },
+            "maxItems": 3,
+            "title": "Seniority",
+            "type": "array"
+          },
+          "sensitive": {
+            "$ref": "#/components/schemas/SensitiveAttributes"
+          },
+          "willing_to_relocate": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Willing To Relocate"
+          }
+        },
+        "title": "Preferences",
+        "type": "object"
+      },
+      "PreferencesOut": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Preferences"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "version"
+        ],
+        "title": "PreferencesOut",
+        "type": "object"
+      },
+      "PreferencesPut": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "version": {
+            "description": "0 when no preferences have been saved yet.",
+            "minimum": 0.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "data"
+        ],
+        "title": "PreferencesPut",
         "type": "object"
       },
       "ReadyOut": {
@@ -269,6 +1584,82 @@
         "title": "RegisterRequest",
         "type": "object"
       },
+      "ReviewState": {
+        "enum": [
+          "pending",
+          "accepted",
+          "rejected"
+        ],
+        "title": "ReviewState",
+        "type": "string"
+      },
+      "Section": {
+        "enum": [
+          "summary",
+          "education",
+          "employment",
+          "research",
+          "publication",
+          "project",
+          "skill",
+          "certification",
+          "award",
+          "patent",
+          "volunteer",
+          "leadership",
+          "membership",
+          "reference",
+          "other"
+        ],
+        "title": "Section",
+        "type": "string"
+      },
+      "Seniority": {
+        "enum": [
+          "entry",
+          "mid",
+          "senior"
+        ],
+        "title": "Seniority",
+        "type": "string"
+      },
+      "SensitiveAttributes": {
+        "additionalProperties": false,
+        "description": "Optional and private by default. Never used for scoring.",
+        "properties": {
+          "use_for_eligibility": {
+            "default": false,
+            "description": "Allow these answers to be used for explicit eligibility checks only.",
+            "title": "Use For Eligibility",
+            "type": "boolean"
+          },
+          "veteran_status": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Veteran Status"
+          },
+          "work_authorization": {
+            "description": "Countries where you may already work.",
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Work Authorization",
+            "type": "array"
+          }
+        },
+        "title": "SensitiveAttributes",
+        "type": "object"
+      },
       "SessionOut": {
         "additionalProperties": false,
         "properties": {
@@ -291,6 +1682,157 @@
           "expires_at"
         ],
         "title": "SessionOut",
+        "type": "object"
+      },
+      "SnapshotCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "title": "SnapshotCreate",
+        "type": "object"
+      },
+      "SnapshotOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "fact_count": {
+            "title": "Fact Count",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "reason",
+          "created_at",
+          "fact_count"
+        ],
+        "title": "SnapshotOut",
+        "type": "object"
+      },
+      "SocialProfileCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "url": {
+            "maxLength": 2048,
+            "minLength": 3,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "SocialProfileCreate",
+        "type": "object"
+      },
+      "SocialProfileOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "url",
+          "label",
+          "created_at"
+        ],
+        "title": "SocialProfileOut",
+        "type": "object"
+      },
+      "UploadOut": {
+        "additionalProperties": false,
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/DocumentOut"
+          },
+          "facts_created": {
+            "title": "Facts Created",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "document",
+          "facts_created"
+        ],
+        "title": "UploadOut",
         "type": "object"
       },
       "UserOut": {
@@ -366,6 +1908,93 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/affiliations/{affiliation_id}": {
+      "delete": {
+        "operationId": "delete_affiliation_api_v1_affiliations__affiliation_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "affiliation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Affiliation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Affiliation",
+        "tags": [
+          "preferences & relationships"
+        ]
+      },
+      "patch": {
+        "operationId": "update_affiliation_api_v1_affiliations__affiliation_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "affiliation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Affiliation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AffiliationUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AffiliationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Affiliation",
+        "tags": [
+          "preferences & relationships"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "login_api_v1_auth_login_post",
@@ -694,6 +2323,1210 @@
         "summary": "Update Case",
         "tags": [
           "cases"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/affiliations": {
+      "get": {
+        "operationId": "list_affiliations_api_v1_cases__case_id__affiliations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AffiliationOut"
+                  },
+                  "title": "Response List Affiliations Api V1 Cases  Case Id  Affiliations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Affiliations",
+        "tags": [
+          "preferences & relationships"
+        ]
+      },
+      "post": {
+        "operationId": "create_affiliation_api_v1_cases__case_id__affiliations_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AffiliationFields"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AffiliationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Affiliation",
+        "tags": [
+          "preferences & relationships"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/documents": {
+      "get": {
+        "operationId": "list_documents_api_v1_cases__case_id__documents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response List Documents Api V1 Cases  Case Id  Documents Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Documents",
+        "tags": [
+          "documents"
+        ]
+      },
+      "post": {
+        "operationId": "upload_api_v1_cases__case_id__documents_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_v1_cases__case_id__documents_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/facts": {
+      "get": {
+        "operationId": "list_facts_api_v1_cases__case_id__facts_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "section",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Section"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Section"
+            }
+          },
+          {
+            "in": "query",
+            "name": "review_state",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReviewState"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Review State"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FactOut"
+                  },
+                  "title": "Response List Facts Api V1 Cases  Case Id  Facts Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Facts",
+        "tags": [
+          "profile"
+        ]
+      },
+      "post": {
+        "operationId": "create_fact_api_v1_cases__case_id__facts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FactCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Fact",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/facts/merge": {
+      "post": {
+        "operationId": "merge_facts_api_v1_cases__case_id__facts_merge_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FactMerge"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Merge Facts",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/facts/review": {
+      "post": {
+        "operationId": "review_facts_api_v1_cases__case_id__facts_review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FactReview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactReviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Facts",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/preferences": {
+      "get": {
+        "operationId": "get_preferences_api_v1_cases__case_id__preferences_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Preferences",
+        "tags": [
+          "preferences & relationships"
+        ]
+      },
+      "put": {
+        "operationId": "put_preferences_api_v1_cases__case_id__preferences_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesPut"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Preferences",
+        "tags": [
+          "preferences & relationships"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/profile/gaps": {
+      "get": {
+        "operationId": "gaps_api_v1_cases__case_id__profile_gaps_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GapOut"
+                  },
+                  "title": "Response Gaps Api V1 Cases  Case Id  Profile Gaps Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gaps",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/snapshots": {
+      "get": {
+        "operationId": "list_snapshots_api_v1_cases__case_id__snapshots_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SnapshotOut"
+                  },
+                  "title": "Response List Snapshots Api V1 Cases  Case Id  Snapshots Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Snapshots",
+        "tags": [
+          "profile"
+        ]
+      },
+      "post": {
+        "operationId": "create_snapshot_api_v1_cases__case_id__snapshots_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SnapshotCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Snapshot",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/social-profiles": {
+      "get": {
+        "operationId": "list_links_api_v1_cases__case_id__social_profiles_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SocialProfileOut"
+                  },
+                  "title": "Response List Links Api V1 Cases  Case Id  Social Profiles Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Links",
+        "tags": [
+          "preferences & relationships"
+        ]
+      },
+      "post": {
+        "operationId": "add_link_api_v1_cases__case_id__social_profiles_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialProfileCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Link",
+        "tags": [
+          "preferences & relationships"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}": {
+      "delete": {
+        "operationId": "delete_document_api_v1_documents__document_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "delete_pending_facts",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Delete Pending Facts",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Document",
+        "tags": [
+          "documents"
+        ]
+      },
+      "get": {
+        "operationId": "get_document_api_v1_documents__document_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Document",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}/content": {
+      "get": {
+        "operationId": "download_api_v1_documents__document_id__content_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}/text": {
+      "get": {
+        "operationId": "document_text_api_v1_documents__document_id__text_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentTextOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Text",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/facts/{fact_id}": {
+      "delete": {
+        "operationId": "delete_fact_api_v1_facts__fact_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Fact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Fact",
+        "tags": [
+          "profile"
+        ]
+      },
+      "get": {
+        "operationId": "get_fact_api_v1_facts__fact_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Fact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Fact",
+        "tags": [
+          "profile"
+        ]
+      },
+      "patch": {
+        "operationId": "update_fact_api_v1_facts__fact_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Fact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FactUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Fact",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/facts/{fact_id}/evidence": {
+      "get": {
+        "operationId": "fact_evidence_api_v1_facts__fact_id__evidence_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "fact_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Fact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EvidenceOut"
+                  },
+                  "title": "Response Fact Evidence Api V1 Facts  Fact Id  Evidence Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fact Evidence",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/me/delete": {
+      "post": {
+        "operationId": "delete_account_api_v1_me_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDelete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Account",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/v1/me/export": {
+      "get": {
+        "operationId": "export_api_v1_me_export_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Export",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/v1/social-profiles/{link_id}": {
+      "delete": {
+        "operationId": "delete_link_api_v1_social_profiles__link_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "link_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Link Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Link",
+        "tags": [
+          "preferences & relationships"
         ]
       }
     },

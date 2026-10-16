@@ -31,3 +31,24 @@ async def create_case(client: httpx.AsyncClient, name: str = "My PhD search") ->
     assert resp.status_code == 201, resp.text
     body: dict[str, Any] = resp.json()
     return body
+
+
+async def upload(
+    client: httpx.AsyncClient,
+    case_id: str,
+    data: bytes,
+    filename: str = "cv.md",
+    purpose: str = "cv",
+) -> httpx.Response:
+    return await client.post(
+        f"/api/v1/cases/{case_id}/documents",
+        files={"file": (filename, data, "application/octet-stream")},
+        data={"purpose": purpose},
+    )
+
+
+async def facts(client: httpx.AsyncClient, case_id: str, **params: str) -> list[dict[str, Any]]:
+    resp = await client.get(f"/api/v1/cases/{case_id}/facts", params=params)
+    assert resp.status_code == 200, resp.text
+    body: list[dict[str, Any]] = resp.json()
+    return body
