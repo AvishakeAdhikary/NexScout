@@ -1,0 +1,79 @@
+[project]
+name = "nexscout"
+version = "0.1.0"
+description = "NexScout backend: evidence-grounded agentic career and academic opportunity platform"
+authors = [
+    { name = "AvishakeAdhikary", email = "avhishe.adhikary11@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.20",
+    "argon2-cffi>=25.1",
+    "cryptography>=50",
+    "email-validator>=2",
+    "fastapi>=0.143",
+    "filetype>=1.2",
+    "httpx>=0.28",
+    "markdown-it-py>=4.2",
+    "psycopg[binary,pool]>=3.3",
+    "pydantic>=2.14",
+    "pydantic-settings>=2.16",
+    "pypdf>=6.20",
+    "python-docx>=1.2",
+    "python-multipart>=0.0.32",
+    "sqlalchemy[asyncio]>=2.1",
+    "structlog>=26.1",
+    "uvicorn[standard]>=0.54",
+]
+
+[project.scripts]
+nexscout = "nexscout.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4",
+    "pytest>=9.1",
+    "pytest-asyncio>=1.4",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "BLE", "C4", "SIM", "RUF", "ASYNC", "PT", "N"]
+ignore = ["S101", "N818"]  # domain errors are named for meaning (NotFound), not suffix
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106", "S311"]
+"alembic/versions/**" = ["S608"]
+"src/nexscout/infrastructure/db/rls.py" = ["S608"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+packages = ["nexscout"]
+
+[[tool.mypy.overrides]]
+module = ["filetype.*", "docx.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+markers = [
+  "db: needs PostgreSQL (NEXSCOUT_TEST_DATABASE_URL)",
+  "live: calls real external services; opt-in only",
+]
+addopts = "-ra -m 'not live'"

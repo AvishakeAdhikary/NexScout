@@ -1,0 +1,19 @@
+-- Executed once by the postgres image on first initialization (dev/test only).
+-- Production provisions these roles with real secrets via its own tooling (see docs/OPERATIONS.md).
+-- nexscout_owner: owns the schema, runs migrations.
+-- nexscout_app:   runtime role used by api/worker. Not the owner and no BYPASSRLS, so RLS applies.
+CREATE ROLE nexscout_owner LOGIN PASSWORD 'nexscout_owner_dev' CREATEDB;
+CREATE ROLE nexscout_app LOGIN PASSWORD 'nexscout_app_dev' NOSUPERUSER NOBYPASSRLS;
+
+CREATE DATABASE nexscout OWNER nexscout_owner;
+CREATE DATABASE nexscout_test OWNER nexscout_owner;
+
+\connect nexscout
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT ALL ON SCHEMA public TO nexscout_owner;
+GRANT USAGE ON SCHEMA public TO nexscout_app;
+
+\connect nexscout_test
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+GRANT ALL ON SCHEMA public TO nexscout_owner;
+GRANT USAGE ON SCHEMA public TO nexscout_app;
