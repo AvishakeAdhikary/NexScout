@@ -34,7 +34,15 @@ OWNED_TABLES: tuple[str, ...] = (
     "case_preferences",
     "social_profiles",
     "affiliations",
+    "mindmap_overrides",
+    "source_configs",
+    "sync_checkpoints",
+    "opportunity_matches",
+    "dedup_reports",
 )
+# Shared, non-personal catalog tables (public opportunity data). Not RLS-protected; users reach
+# them only through their own opportunity_matches rows.
+CATALOG_TABLES: tuple[str, ...] = ("organizations", "opportunities", "opportunity_sources")
 
 
 def case_fk() -> ForeignKeyConstraint:
@@ -328,4 +336,193 @@ class Affiliation(IdMixin, TimestampMixin, Base):
         case_fk(),
         CheckConstraint("status IN ('current','former','unknown')", name="status_valid"),
         Index("ix_affiliations_case", "case_id"),
+    )
+
+
+# ------------------------------------------------------------------ M3: mind map & catalog
+class MindmapOverride(IdMixin, Base):
+    """User layout/visibility changes for one mind-map node; survives regeneration."""
+
+    __tablename__ = "mindmap_overrides"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    node_key: Mapped[str] = mapped_column(String(200), nullable=False)
+    x: Mapped[float | None] = mapped_column()
+    y: Mapped[float | None] = mapped_column()
+    hidden: Mapped[bool] = mapped_column(nullable=False, default=False)
+    label: Mapped[str | None] = mapped_column(String(300))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        case_fk(),
+        UniqueConstraint("case_id", "node_key", name="uq_mindmap_overrides_case_node"),
+    )
+
+
+class Organization(IdMixin, Base):
+    """Shared catalog: employers and institutions resolved by a normalized key (not owned)."""
+
+    __tablename__ = "organizations"
+
+    name: Mapped[str] = mapped_column(String(300), nullable=False)
+    normalized_key: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)
+    aliases: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class Opportunity(IdMixin, Base):
+    """Shared catalog of normalized, deduplicated public opportunities (not owned).
+
+    Users never list the catalog directly. They see only opportunities linked to their own
+    `opportunity_matches` rows.
+    """
+
+    __tablename__ = "opportunities"
+
+    kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("organizations.id"), nullable=False
+    )
+    organization_name: Mapped[str] = mapped_column(String(300), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    normalized_title: Mapped[str] = mapped_column(String(300), nullable=False)
+    canonical_url: Mapped[str | None] = mapped_column(String(2048))
+    requisition_id: Mapped[str | None] = mapped_column(String(300))
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="open")
+    first_seen_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    last_seen_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint("status IN ('open','closed','unknown')", name="status_valid"),
+        Index("ix_opportunities_org_kind", "organization_id", "kind"),
+        Index("ix_opportunities_canonical_url", "canonical_url"),
+    )
+
+
+class OpportunitySource(IdMixin, Base):
+    """Where a catalog opportunity was seen (one row per source listing)."""
+
+    __tablename__ = "opportunity_sources"
+
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="CASCADE"), nullable=False
+    )
+    source_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    external_id: Mapped[str] = mapped_column(String(300), nullable=False)
+    source_url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    raw: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    dedup_score: Mapped[float | None] = mapped_column()
+    dedup_reasons: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    retrieved_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("source_key", "external_id", name="uq_opportunity_sources_listing"),
+        Index("ix_opportunity_sources_opportunity", "opportunity_id"),
+    )
+
+
+class SourceConfig(IdMixin, Base):
+    __tablename__ = "source_configs"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    adapter_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
+    settings: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("owner_user_id", "adapter_key", name="uq_source_configs_owner_key"),
+    )
+
+
+class SyncCheckpoint(IdMixin, Base):
+    __tablename__ = "sync_checkpoints"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    adapter_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    query_hash: Mapped[str] = mapped_column(String(32), nullable=False)
+    cursor: Mapped[str | None] = mapped_column(String(500))
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_result: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+
+    __table_args__ = (
+        case_fk(),
+        UniqueConstraint(
+            "case_id", "adapter_key", "query_hash", name="uq_sync_checkpoints_case_adapter_query"
+        ),
+    )
+
+
+class OpportunityMatch(IdMixin, Base):
+    """This case's view of a catalog opportunity: explained score, gaps, and user status."""
+
+    __tablename__ = "opportunity_matches"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="CASCADE"), nullable=False
+    )
+    score: Mapped[int] = mapped_column(Integer, nullable=False)
+    eligible: Mapped[bool] = mapped_column(nullable=False)
+    mode: Mapped[str] = mapped_column(String(20), nullable=False)
+    factors: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False)
+    gaps: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="new")
+    first_seen_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    computed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        case_fk(),
+        UniqueConstraint("case_id", "opportunity_id", name="uq_opportunity_matches_case_opp"),
+        CheckConstraint("status IN ('new','seen','shortlisted','dismissed')", name="status_valid"),
+        Index("ix_opportunity_matches_case_score", "case_id", "score"),
+    )
+
+
+class DedupReport(IdMixin, Base):
+    """A user's report that a merge or a duplicate is wrong (reviewed out of band)."""
+
+    __tablename__ = "dedup_reports"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="CASCADE"), nullable=False
+    )
+    other_opportunity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="CASCADE")
+    )
+    kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    note: Mapped[str | None] = mapped_column(String(2000))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        case_fk(),
+        CheckConstraint("kind IN ('wrong_merge','missed_duplicate')", name="kind_valid"),
     )

@@ -621,6 +621,45 @@
         "title": "CaseUpdate",
         "type": "object"
       },
+      "DedupReportIn": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "pattern": "^(wrong_merge|missed_duplicate)$",
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "other_opportunity_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Opportunity Id"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "DedupReportIn",
+        "type": "object"
+      },
       "DocumentOut": {
         "additionalProperties": false,
         "properties": {
@@ -1150,6 +1189,43 @@
         "title": "FactUpdate",
         "type": "object"
       },
+      "FactorOut": {
+        "additionalProperties": false,
+        "properties": {
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "fact_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fact Ids",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "points": {
+            "title": "Points",
+            "type": "number"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "weight",
+          "points",
+          "explanation",
+          "fact_ids"
+        ],
+        "title": "FactorOut",
+        "type": "object"
+      },
       "GapOut": {
         "additionalProperties": false,
         "properties": {
@@ -1230,6 +1306,465 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "MatchGapOut": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "message"
+        ],
+        "title": "MatchGapOut",
+        "type": "object"
+      },
+      "MatchStatusIn": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "pattern": "^(new|seen|shortlisted|dismissed)$",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "minimum": 1.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "version"
+        ],
+        "title": "MatchStatusIn",
+        "type": "object"
+      },
+      "MindEdgeOut": {
+        "additionalProperties": false,
+        "properties": {
+          "basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Basis"
+          },
+          "derived": {
+            "title": "Derived",
+            "type": "boolean"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "target",
+          "kind",
+          "derived",
+          "basis"
+        ],
+        "title": "MindEdgeOut",
+        "type": "object"
+      },
+      "MindMapOut": {
+        "additionalProperties": false,
+        "properties": {
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/MindEdgeOut"
+            },
+            "title": "Edges",
+            "type": "array"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/MindNodeOut"
+            },
+            "title": "Nodes",
+            "type": "array"
+          },
+          "orphaned_overrides": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Orphaned Overrides",
+            "type": "array"
+          }
+        },
+        "required": [
+          "nodes",
+          "edges",
+          "orphaned_overrides"
+        ],
+        "title": "MindMapOut",
+        "type": "object"
+      },
+      "MindNodeOut": {
+        "additionalProperties": false,
+        "properties": {
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "evidence_count": {
+            "title": "Evidence Count",
+            "type": "integer"
+          },
+          "fact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact Id"
+          },
+          "hidden": {
+            "default": false,
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "is_private": {
+            "title": "Is Private",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "label_override": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label Override"
+          },
+          "section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "x": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y"
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "label",
+          "section",
+          "fact_id",
+          "status",
+          "is_private",
+          "evidence_count",
+          "start",
+          "end"
+        ],
+        "title": "MindNodeOut",
+        "type": "object"
+      },
+      "NodeOverrideIn": {
+        "additionalProperties": false,
+        "properties": {
+          "hidden": {
+            "default": false,
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "x": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": -1000000.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X"
+          },
+          "y": {
+            "anyOf": [
+              {
+                "maximum": 1000000.0,
+                "minimum": -1000000.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Y"
+          }
+        },
+        "title": "NodeOverrideIn",
+        "type": "object"
+      },
+      "OpportunityOut": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "eligible": {
+            "title": "Eligible",
+            "type": "boolean"
+          },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/FactorOut"
+            },
+            "title": "Factors",
+            "type": "array"
+          },
+          "first_seen_at": {
+            "format": "date-time",
+            "title": "First Seen At",
+            "type": "string"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/MatchGapOut"
+            },
+            "title": "Gaps",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_demo_data": {
+            "title": "Is Demo Data",
+            "type": "boolean"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          },
+          "match_status": {
+            "title": "Match Status",
+            "type": "string"
+          },
+          "match_version": {
+            "title": "Match Version",
+            "type": "integer"
+          },
+          "matched_at": {
+            "format": "date-time",
+            "title": "Matched At",
+            "type": "string"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "organization_name": {
+            "title": "Organization Name",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitySourceOut"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "organization_name",
+          "status",
+          "data",
+          "is_demo_data",
+          "first_seen_at",
+          "last_seen_at",
+          "sources",
+          "score",
+          "eligible",
+          "mode",
+          "factors",
+          "gaps",
+          "match_status",
+          "match_version",
+          "matched_at"
+        ],
+        "title": "OpportunityOut",
+        "type": "object"
+      },
+      "OpportunitySourceOut": {
+        "additionalProperties": false,
+        "properties": {
+          "dedup_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Dedup Reasons",
+            "type": "array"
+          },
+          "dedup_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dedup Score"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "source_key": {
+            "title": "Source Key",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_key",
+          "source_url",
+          "retrieved_at",
+          "dedup_score",
+          "dedup_reasons"
+        ],
+        "title": "OpportunitySourceOut",
         "type": "object"
       },
       "Preferences": {
@@ -1584,6 +2119,20 @@
         "title": "RegisterRequest",
         "type": "object"
       },
+      "RescoreOut": {
+        "additionalProperties": false,
+        "properties": {
+          "rescored": {
+            "title": "Rescored",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rescored"
+        ],
+        "title": "RescoreOut",
+        "type": "object"
+      },
       "ReviewState": {
         "enum": [
           "pending",
@@ -1703,6 +2252,47 @@
         "title": "SnapshotCreate",
         "type": "object"
       },
+      "SnapshotDiffOut": {
+        "additionalProperties": false,
+        "properties": {
+          "added": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Added",
+            "type": "array"
+          },
+          "changed": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Changed",
+            "type": "array"
+          },
+          "removed": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Removed",
+            "type": "array"
+          },
+          "unchanged": {
+            "title": "Unchanged",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "added",
+          "removed",
+          "changed",
+          "unchanged"
+        ],
+        "title": "SnapshotDiffOut",
+        "type": "object"
+      },
       "SnapshotOut": {
         "additionalProperties": false,
         "properties": {
@@ -1815,6 +2405,193 @@
           "created_at"
         ],
         "title": "SocialProfileOut",
+        "type": "object"
+      },
+      "SourceConfigIn": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "title": "Settings",
+            "type": "object"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "SourceConfigIn",
+        "type": "object"
+      },
+      "SourceOut": {
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "title": "Auth",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "incremental": {
+            "title": "Incremental",
+            "type": "string"
+          },
+          "is_demo_data": {
+            "title": "Is Demo Data",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "kinds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Kinds",
+            "type": "array"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "pagination": {
+            "title": "Pagination",
+            "type": "string"
+          },
+          "rate_limit": {
+            "title": "Rate Limit",
+            "type": "string"
+          },
+          "settings": {
+            "additionalProperties": true,
+            "title": "Settings",
+            "type": "object"
+          },
+          "terms": {
+            "title": "Terms",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "kinds",
+          "enabled",
+          "settings",
+          "is_demo_data",
+          "auth",
+          "rate_limit",
+          "terms",
+          "incremental",
+          "pagination",
+          "limitations"
+        ],
+        "title": "SourceOut",
+        "type": "object"
+      },
+      "SyncIn": {
+        "additionalProperties": false,
+        "properties": {
+          "sources": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sources"
+          }
+        },
+        "title": "SyncIn",
+        "type": "object"
+      },
+      "SyncSummaryOut": {
+        "additionalProperties": false,
+        "properties": {
+          "fetched": {
+            "title": "Fetched",
+            "type": "integer"
+          },
+          "invalid": {
+            "title": "Invalid",
+            "type": "integer"
+          },
+          "merged_duplicates": {
+            "title": "Merged Duplicates",
+            "type": "integer"
+          },
+          "merges": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Merges",
+            "type": "array"
+          },
+          "new_for_case": {
+            "title": "New For Case",
+            "type": "integer"
+          },
+          "new_opportunities": {
+            "title": "New Opportunities",
+            "type": "integer"
+          },
+          "skipped_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skipped Reason"
+          },
+          "source_key": {
+            "title": "Source Key",
+            "type": "string"
+          },
+          "unchanged": {
+            "title": "Unchanged",
+            "type": "integer"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "source_key",
+          "fetched",
+          "new_opportunities",
+          "merged_duplicates",
+          "updated",
+          "unchanged",
+          "invalid",
+          "new_for_case",
+          "skipped_reason",
+          "merges"
+        ],
+        "title": "SyncSummaryOut",
         "type": "object"
       },
       "UploadOut": {
@@ -2758,6 +3535,543 @@
         ]
       }
     },
+    "/api/v1/cases/{case_id}/mindmap": {
+      "get": {
+        "operationId": "get_mindmap_api_v1_cases__case_id__mindmap_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MindMapOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Mindmap",
+        "tags": [
+          "mind map"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/mindmap/nodes/{node_key}": {
+      "delete": {
+        "operationId": "clear_override_api_v1_cases__case_id__mindmap_nodes__node_key__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "node_key",
+            "required": true,
+            "schema": {
+              "title": "Node Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Override",
+        "tags": [
+          "mind map"
+        ]
+      },
+      "put": {
+        "operationId": "set_override_api_v1_cases__case_id__mindmap_nodes__node_key__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "node_key",
+            "required": true,
+            "schema": {
+              "title": "Node Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NodeOverrideIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Override",
+        "tags": [
+          "mind map"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/mindmap/overrides": {
+      "delete": {
+        "operationId": "clear_all_api_v1_cases__case_id__mindmap_overrides_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear All",
+        "tags": [
+          "mind map"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/opportunities": {
+      "get": {
+        "operationId": "list_opportunities_api_v1_cases__case_id__opportunities_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "academic",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Academic"
+            }
+          },
+          {
+            "in": "query",
+            "name": "match_status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Match Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OpportunityOut"
+                  },
+                  "title": "Response List Opportunities Api V1 Cases  Case Id  Opportunities Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Opportunities",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/opportunities/rescore": {
+      "post": {
+        "operationId": "rescore_api_v1_cases__case_id__opportunities_rescore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RescoreOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rescore",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/opportunities/sync": {
+      "post": {
+        "operationId": "sync_api_v1_cases__case_id__opportunities_sync_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncSummaryOut"
+                  },
+                  "title": "Response Sync Api V1 Cases  Case Id  Opportunities Sync Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sync",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}": {
+      "get": {
+        "operationId": "get_opportunity_api_v1_cases__case_id__opportunities__opportunity_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "opportunity_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Opportunity Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunityOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Opportunity",
+        "tags": [
+          "opportunities"
+        ]
+      },
+      "patch": {
+        "operationId": "set_status_api_v1_cases__case_id__opportunities__opportunity_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "opportunity_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Opportunity Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchStatusIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunityOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Status",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/reports": {
+      "post": {
+        "operationId": "report_api_v1_cases__case_id__opportunities__opportunity_id__reports_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "opportunity_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Opportunity Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DedupReportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Report Api V1 Cases  Case Id  Opportunities  Opportunity Id  Reports Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/preferences": {
       "get": {
         "operationId": "get_preferences_api_v1_cases__case_id__preferences_get",
@@ -2994,6 +4308,67 @@
         "summary": "Create Snapshot",
         "tags": [
           "profile"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/snapshots/compare": {
+      "get": {
+        "operationId": "compare_api_v1_cases__case_id__snapshots_compare_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_number",
+            "required": true,
+            "schema": {
+              "title": "From Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_number",
+            "required": true,
+            "schema": {
+              "title": "To Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotDiffOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare",
+        "tags": [
+          "mind map"
         ]
       }
     },
@@ -3527,6 +4902,83 @@
         "summary": "Delete Link",
         "tags": [
           "preferences & relationships"
+        ]
+      }
+    },
+    "/api/v1/sources": {
+      "get": {
+        "operationId": "list_sources_api_v1_sources_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SourceOut"
+                  },
+                  "title": "Response List Sources Api V1 Sources Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sources",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/sources/{source_key}": {
+      "put": {
+        "operationId": "configure_source_api_v1_sources__source_key__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_key",
+            "required": true,
+            "schema": {
+              "title": "Source Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceConfigIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Configure Source",
+        "tags": [
+          "opportunities"
         ]
       }
     },

@@ -215,6 +215,144 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/mindmap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Mindmap */
+        get: operations["get_mindmap_api_v1_cases__case_id__mindmap_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/mindmap/nodes/{node_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Override */
+        put: operations["set_override_api_v1_cases__case_id__mindmap_nodes__node_key__put"];
+        post?: never;
+        /** Clear Override */
+        delete: operations["clear_override_api_v1_cases__case_id__mindmap_nodes__node_key__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/mindmap/overrides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Clear All */
+        delete: operations["clear_all_api_v1_cases__case_id__mindmap_overrides_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/opportunities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Opportunities */
+        get: operations["list_opportunities_api_v1_cases__case_id__opportunities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/opportunities/rescore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rescore */
+        post: operations["rescore_api_v1_cases__case_id__opportunities_rescore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/opportunities/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync */
+        post: operations["sync_api_v1_cases__case_id__opportunities_sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Opportunity */
+        get: operations["get_opportunity_api_v1_cases__case_id__opportunities__opportunity_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Set Status */
+        patch: operations["set_status_api_v1_cases__case_id__opportunities__opportunity_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Report */
+        post: operations["report_api_v1_cases__case_id__opportunities__opportunity_id__reports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/preferences": {
         parameters: {
             query?: never;
@@ -262,6 +400,23 @@ export interface paths {
         put?: never;
         /** Create Snapshot */
         post: operations["create_snapshot_api_v1_cases__case_id__snapshots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/snapshots/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Compare */
+        get: operations["compare_api_v1_cases__case_id__snapshots_compare_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -420,6 +575,40 @@ export interface paths {
         post?: never;
         /** Delete Link */
         delete: operations["delete_link_api_v1_social_profiles__link_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sources */
+        get: operations["list_sources_api_v1_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/{source_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Configure Source */
+        put: operations["configure_source_api_v1_sources__source_key__put"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -633,6 +822,15 @@ export interface components {
              */
             version: number;
         };
+        /** DedupReportIn */
+        DedupReportIn: {
+            /** Kind */
+            kind: string;
+            /** Note */
+            note?: string | null;
+            /** Other Opportunity Id */
+            other_opportunity_id?: string | null;
+        };
         /** DocumentOut */
         DocumentOut: {
             /**
@@ -825,6 +1023,19 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** FactorOut */
+        FactorOut: {
+            /** Explanation */
+            explanation: string;
+            /** Fact Ids */
+            fact_ids: string[];
+            /** Name */
+            name: string;
+            /** Points */
+            points: number;
+            /** Weight */
+            weight: number;
+        };
         /** GapOut */
         GapOut: {
             /** Code */
@@ -851,6 +1062,161 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** MatchGapOut */
+        MatchGapOut: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Severity */
+            severity: string;
+        };
+        /** MatchStatusIn */
+        MatchStatusIn: {
+            /** Status */
+            status: string;
+            /** Version */
+            version: number;
+        };
+        /** MindEdgeOut */
+        MindEdgeOut: {
+            /** Basis */
+            basis: string | null;
+            /** Derived */
+            derived: boolean;
+            /** Kind */
+            kind: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+        };
+        /** MindMapOut */
+        MindMapOut: {
+            /** Edges */
+            edges: components["schemas"]["MindEdgeOut"][];
+            /** Nodes */
+            nodes: components["schemas"]["MindNodeOut"][];
+            /** Orphaned Overrides */
+            orphaned_overrides: string[];
+        };
+        /** MindNodeOut */
+        MindNodeOut: {
+            /** End */
+            end: string | null;
+            /** Evidence Count */
+            evidence_count: number;
+            /** Fact Id */
+            fact_id: string | null;
+            /**
+             * Hidden
+             * @default false
+             */
+            hidden: boolean;
+            /** Is Private */
+            is_private: boolean;
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Label Override */
+            label_override?: string | null;
+            /** Section */
+            section: string | null;
+            /** Start */
+            start: string | null;
+            /** Status */
+            status: string | null;
+            /** X */
+            x?: number | null;
+            /** Y */
+            y?: number | null;
+        };
+        /** NodeOverrideIn */
+        NodeOverrideIn: {
+            /**
+             * Hidden
+             * @default false
+             */
+            hidden: boolean;
+            /** Label */
+            label?: string | null;
+            /** X */
+            x?: number | null;
+            /** Y */
+            y?: number | null;
+        };
+        /** OpportunityOut */
+        OpportunityOut: {
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /** Eligible */
+            eligible: boolean;
+            /** Factors */
+            factors: components["schemas"]["FactorOut"][];
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /** Gaps */
+            gaps: components["schemas"]["MatchGapOut"][];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Is Demo Data */
+            is_demo_data: boolean;
+            /** Kind */
+            kind: string;
+            /**
+             * Last Seen At
+             * Format: date-time
+             */
+            last_seen_at: string;
+            /** Match Status */
+            match_status: string;
+            /** Match Version */
+            match_version: number;
+            /**
+             * Matched At
+             * Format: date-time
+             */
+            matched_at: string;
+            /** Mode */
+            mode: string;
+            /** Organization Name */
+            organization_name: string;
+            /** Score */
+            score: number;
+            /** Sources */
+            sources: components["schemas"]["OpportunitySourceOut"][];
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
+        };
+        /** OpportunitySourceOut */
+        OpportunitySourceOut: {
+            /** Dedup Reasons */
+            dedup_reasons: string[];
+            /** Dedup Score */
+            dedup_score: number | null;
+            /**
+             * Retrieved At
+             * Format: date-time
+             */
+            retrieved_at: string;
+            /** Source Key */
+            source_key: string;
+            /** Source Url */
+            source_url: string;
         };
         /** Preferences */
         Preferences: {
@@ -942,6 +1308,11 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** RescoreOut */
+        RescoreOut: {
+            /** Rescored */
+            rescored: number;
+        };
         /**
          * ReviewState
          * @enum {string}
@@ -992,6 +1363,23 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /** SnapshotDiffOut */
+        SnapshotDiffOut: {
+            /** Added */
+            added: {
+                [key: string]: unknown;
+            }[];
+            /** Changed */
+            changed: {
+                [key: string]: unknown;
+            }[];
+            /** Removed */
+            removed: {
+                [key: string]: unknown;
+            }[];
+            /** Unchanged */
+            unchanged: number;
+        };
         /** SnapshotOut */
         SnapshotOut: {
             /**
@@ -1036,6 +1424,74 @@ export interface components {
             label: string | null;
             /** Url */
             url: string;
+        };
+        /** SourceConfigIn */
+        SourceConfigIn: {
+            /** Enabled */
+            enabled: boolean;
+            /** Settings */
+            settings?: {
+                [key: string]: unknown;
+            };
+        };
+        /** SourceOut */
+        SourceOut: {
+            /** Auth */
+            auth: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Incremental */
+            incremental: string;
+            /** Is Demo Data */
+            is_demo_data: boolean;
+            /** Key */
+            key: string;
+            /** Kinds */
+            kinds: string[];
+            /** Limitations */
+            limitations: string[];
+            /** Name */
+            name: string;
+            /** Pagination */
+            pagination: string;
+            /** Rate Limit */
+            rate_limit: string;
+            /** Settings */
+            settings: {
+                [key: string]: unknown;
+            };
+            /** Terms */
+            terms: string;
+        };
+        /** SyncIn */
+        SyncIn: {
+            /** Sources */
+            sources?: string[] | null;
+        };
+        /** SyncSummaryOut */
+        SyncSummaryOut: {
+            /** Fetched */
+            fetched: number;
+            /** Invalid */
+            invalid: number;
+            /** Merged Duplicates */
+            merged_duplicates: number;
+            /** Merges */
+            merges: {
+                [key: string]: unknown;
+            }[];
+            /** New For Case */
+            new_for_case: number;
+            /** New Opportunities */
+            new_opportunities: number;
+            /** Skipped Reason */
+            skipped_reason: string | null;
+            /** Source Key */
+            source_key: string;
+            /** Unchanged */
+            unchanged: number;
+            /** Updated */
+            updated: number;
         };
         /** UploadOut */
         UploadOut: {
@@ -1675,6 +2131,336 @@ export interface operations {
             };
         };
     };
+    get_mindmap_api_v1_cases__case_id__mindmap_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MindMapOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_override_api_v1_cases__case_id__mindmap_nodes__node_key__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                node_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NodeOverrideIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_override_api_v1_cases__case_id__mindmap_nodes__node_key__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                node_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_all_api_v1_cases__case_id__mindmap_overrides_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_opportunities_api_v1_cases__case_id__opportunities_get: {
+        parameters: {
+            query?: {
+                academic?: boolean | null;
+                match_status?: string | null;
+            };
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rescore_api_v1_cases__case_id__opportunities_rescore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RescoreOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_api_v1_cases__case_id__opportunities_sync_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_opportunity_api_v1_cases__case_id__opportunities__opportunity_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                opportunity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_status_api_v1_cases__case_id__opportunities__opportunity_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                opportunity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MatchStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    report_api_v1_cases__case_id__opportunities__opportunity_id__reports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                opportunity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DedupReportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_preferences_api_v1_cases__case_id__preferences_get: {
         parameters: {
             query?: never;
@@ -1825,6 +2611,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SnapshotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_api_v1_cases__case_id__snapshots_compare_get: {
+        parameters: {
+            query: {
+                from_number: number;
+                to_number: number;
+            };
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotDiffOut"];
                 };
             };
             /** @description Validation Error */
@@ -2222,6 +3042,61 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sources_api_v1_sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"][];
+                };
+            };
+        };
+    };
+    configure_source_api_v1_sources__source_key__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceConfigIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"];
+                };
             };
             /** @description Validation Error */
             422: {

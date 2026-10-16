@@ -1,0 +1,40 @@
+[
+  {
+    "_note": "Later: B3 changed (deadline extended) and should be detected as updated, not new",
+    "external_id": "b-79",
+    "source_url": "https://board-b.example/view/b-79",
+    "kind": "job",
+    "title": "Backend Engineer",
+    "organization_name": "Initech",
+    "location_city": "Berlin",
+    "location_country": "Germany",
+    "remote": "hybrid",
+    "employment_type": "full_time",
+    "experience_min_years": 2,
+    "required_skills": ["Go", "PostgreSQL", "Docker"],
+    "sponsorship": "yes",
+    "posted_at": "2026-10-10",
+    "closes_at": "2027-01-15",
+    "description": "Initech is hiring a backend engineer to build APIs in Go on top of PostgreSQL, run services in Docker, and improve reliability of our billing platform.",
+    "application_method": "employer_portal"
+  },
+  {
+    "_note": "Later: a genuinely new posting",
+    "external_id": "b-80",
+    "source_url": "https://board-b.example/view/b-80",
+    "kind": "job",
+    "title": "ML Platform Engineer",
+    "organization_name": "Initech",
+    "location_city": "Berlin",
+    "location_country": "Germany",
+    "remote": "hybrid",
+    "employment_type": "full_time",
+    "experience_min_years": 3,
+    "required_skills": ["Python", "Kubernetes", "Docker"],
+    "sponsorship": "yes",
+    "posted_at": "2026-10-14",
+    "closes_at": "2027-01-31",
+    "description": "Initech's new ML platform team is hiring an engineer to run model training and serving infrastructure on Kubernetes, build internal tooling in Python, and support data scientists.",
+    "application_method": "employer_portal"
+  }
+]

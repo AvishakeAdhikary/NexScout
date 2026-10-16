@@ -10,7 +10,17 @@ from fastapi import FastAPI
 from nexscout import __version__
 from nexscout.api.errors import install_error_handlers
 from nexscout.api.middleware import RequestContextMiddleware
-from nexscout.api.routers import account, auth, cases, documents, health, profile, relationships
+from nexscout.api.routers import (
+    account,
+    auth,
+    cases,
+    documents,
+    health,
+    mindmap,
+    opportunities,
+    profile,
+    relationships,
+)
 from nexscout.config import Settings, get_settings
 from nexscout.infrastructure.db.engine import build_engine, build_sessionmaker
 from nexscout.infrastructure.storage import LocalObjectStore
@@ -50,6 +60,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
     app.include_router(health.router)
     app.include_router(auth.router, prefix=API_PREFIX)
-    for module in (cases, profile, documents, relationships, account):
+    for module in (cases, profile, documents, relationships, account, mindmap, opportunities):
         app.include_router(module.router, prefix=API_PREFIX)
     return app

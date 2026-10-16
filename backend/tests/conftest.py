@@ -31,7 +31,16 @@ TEST_MIGRATION_DB_URL = os.environ.get(
 REQUIRE_DB = os.environ.get("NEXSCOUT_REQUIRE_DB") == "1"
 
 # Tables truncated between tests (children first is not needed with CASCADE).
-DATA_TABLES = ("audit_events", "candidate_cases", "sessions", "login_attempts", "users")
+DATA_TABLES = (
+    "audit_events",
+    "candidate_cases",
+    "sessions",
+    "login_attempts",
+    "users",
+    "opportunity_sources",
+    "opportunities",
+    "organizations",
+)
 
 
 if sys.platform == "win32":

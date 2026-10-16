@@ -1,14 +1,15 @@
 """Cross-tenant sweep: user B must get 404 on every route that names one of user A's resources.
 
 When a route with a path parameter is added, it must be covered here.
-`test_every_id_route_is_covered` fails if a new route isn't.
+`test_every_id_route_is_covered` fails if a new route isn't (routes are enumerated from the
+OpenAPI document, which is stable across FastAPI's internal router representations).
 """
 
+import re
 from typing import Any
 
 import httpx
 import pytest
-from fastapi.routing import APIRoute
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
@@ -18,12 +19,20 @@ from tests.helpers import create_case, facts, register, upload
 
 pytestmark = pytest.mark.db
 
+# Routes with path parameters that don't name a user-owned resource.
+EXEMPT = {
+    ("PUT", "/api/v1/sources/{source_key}"): "Source registry key; config is stored per user.",
+}
+
 
 async def _seed_owner(client: httpx.AsyncClient) -> dict[str, str]:
     await register(client, "owner@example.com", "Owner")
     case_id = str((await create_case(client, "Owner case"))["id"])
+    await client.patch(f"/api/v1/cases/{case_id}", json={"version": 1, "career_path": "both"})
     doc = (await upload(client, case_id, ada_cv_text().encode(), "ada.md")).json()["document"]
     fact = (await facts(client, case_id))[0]
+    await client.post(f"/api/v1/cases/{case_id}/facts/review", json={"accept": [fact["id"]]})
+    fact = (await client.get(f"/api/v1/facts/{fact['id']}")).json()
     link = (
         await client.post(
             f"/api/v1/cases/{case_id}/social-profiles", json={"url": "https://github.com/owner"}
@@ -35,24 +44,33 @@ async def _seed_owner(client: httpx.AsyncClient) -> dict[str, str]:
             json={"organization": "Org", "relationship_type": "alumnus"},
         )
     ).json()
+    await client.post(f"/api/v1/cases/{case_id}/snapshots", json={})
+    await client.post(f"/api/v1/cases/{case_id}/snapshots", json={})
+    await client.post(f"/api/v1/cases/{case_id}/opportunities/sync", json={})
+    opp = (await client.get(f"/api/v1/cases/{case_id}/opportunities")).json()[0]
     return {
         "case_id": case_id,
         "document_id": doc["id"],
         "fact_id": fact["id"],
         "link_id": link["id"],
         "affiliation_id": aff["id"],
+        "opportunity_id": opp["id"],
+        "node_key": f"fact:{fact['id']}",
         "fact_version": str(fact["version"]),
         "aff_version": str(aff["version"]),
+        "opp_version": str(opp["match_version"]),
     }
 
 
 def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None]]:
-    c, d, f, link, a = (
+    c, d, f, link, a, o, n = (
         ids["case_id"],
         ids["document_id"],
         ids["fact_id"],
         ids["link_id"],
         ids["affiliation_id"],
+        ids["opportunity_id"],
+        ids["node_key"],
     )
     return [
         ("GET", f"/api/v1/cases/{c}", None),
@@ -65,11 +83,13 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("GET", f"/api/v1/cases/{c}/profile/gaps", None),
         ("POST", f"/api/v1/cases/{c}/snapshots", {}),
         ("GET", f"/api/v1/cases/{c}/snapshots", None),
+        ("GET", f"/api/v1/cases/{c}/snapshots/compare?from_number=1&to_number=2", None),
         ("GET", f"/api/v1/facts/{f}", None),
         ("PATCH", f"/api/v1/facts/{f}", {"version": int(ids["fact_version"]), "is_private": True}),
         ("DELETE", f"/api/v1/facts/{f}", None),
         ("GET", f"/api/v1/facts/{f}/evidence", None),
         ("GET", f"/api/v1/cases/{c}/documents", None),
+        ("POST", f"/api/v1/cases/{c}/documents", None),  # multipart handled separately
         ("GET", f"/api/v1/documents/{d}", None),
         ("GET", f"/api/v1/documents/{d}/text", None),
         ("GET", f"/api/v1/documents/{d}/content", None),
@@ -91,6 +111,20 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
             {"version": int(ids["aff_version"]), "notes": "pwned"},
         ),
         ("DELETE", f"/api/v1/affiliations/{a}", None),
+        ("GET", f"/api/v1/cases/{c}/mindmap", None),
+        ("PUT", f"/api/v1/cases/{c}/mindmap/nodes/{n}", {"hidden": True}),
+        ("DELETE", f"/api/v1/cases/{c}/mindmap/nodes/{n}", None),
+        ("DELETE", f"/api/v1/cases/{c}/mindmap/overrides", None),
+        ("POST", f"/api/v1/cases/{c}/opportunities/sync", {}),
+        ("POST", f"/api/v1/cases/{c}/opportunities/rescore", None),
+        ("GET", f"/api/v1/cases/{c}/opportunities", None),
+        ("GET", f"/api/v1/cases/{c}/opportunities/{o}", None),
+        (
+            "PATCH",
+            f"/api/v1/cases/{c}/opportunities/{o}",
+            {"status": "dismissed", "version": int(ids.get("opp_version", "1"))},
+        ),
+        ("POST", f"/api/v1/cases/{c}/opportunities/{o}/reports", {"kind": "wrong_merge"}),
     ]
 
 
@@ -100,58 +134,54 @@ async def test_other_user_gets_404_everywhere(
     ids = await _seed_owner(client)
     await register(other_client, "intruder@example.com", "Intruder")
     for method, url, body in _requests(ids):
-        resp = await other_client.request(method, url, json=body)
+        if method == "POST" and url.endswith("/documents"):
+            resp = await upload(other_client, ids["case_id"], b"hello")
+        else:
+            resp = await other_client.request(method, url, json=body)
         assert resp.status_code == 404, f"{method} {url} -> {resp.status_code}: {resp.text}"
     # Owner's data is intact afterwards.
     assert (await client.get(f"/api/v1/cases/{ids['case_id']}")).json()["name"] == "Owner case"
     assert (await client.get(f"/api/v1/documents/{ids['document_id']}/content")).status_code == 200
     assert (await client.get(f"/api/v1/facts/{ids['fact_id']}")).json()["is_private"] is False
+    opp = (
+        await client.get(f"/api/v1/cases/{ids['case_id']}/opportunities/{ids['opportunity_id']}")
+    ).json()
+    assert opp["match_status"] == "new"
 
 
-async def test_upload_into_other_users_case_is_404(
-    client: httpx.AsyncClient, other_client: httpx.AsyncClient
-) -> None:
-    ids = await _seed_owner(client)
-    await register(other_client, "intruder@example.com", "Intruder")
-    resp = await upload(other_client, ids["case_id"], b"hello")
-    assert resp.status_code == 404
+def _template(path: str) -> str:
+    return re.sub(r"\{[^}]+\}", "{}", path.split("?")[0])
 
 
 def test_every_id_route_is_covered(app: Any) -> None:
-    """Guard: a new route with an ID path parameter must be added to the sweep above."""
-    covered = {
-        (
-            m,
-            u.replace("{case_id}", "C")
-            .replace("{fact_id}", "F")
-            .replace("{document_id}", "D")
-            .replace("{link_id}", "L")
-            .replace("{affiliation_id}", "A"),
-        )
-        for m, u, _ in _requests(
-            {
-                "case_id": "C",
-                "document_id": "D",
-                "fact_id": "F",
-                "link_id": "L",
-                "affiliation_id": "A",
-                "fact_version": "1",
-                "aff_version": "1",
-            }
+    """Guard: every route with a path parameter is either swept above or explicitly exempt."""
+    sentinel = {
+        k: f"{{{k}}}"
+        for k in (
+            "case_id",
+            "document_id",
+            "fact_id",
+            "link_id",
+            "affiliation_id",
+            "opportunity_id",
+            "node_key",
         )
     }
+    sentinel.update({"fact_version": "1", "aff_version": "1", "opp_version": "1"})
+    covered = {(m, _template(u)) for m, u, _ in _requests(sentinel)}
+    exempt = {(m, _template(p)) for m, p in EXEMPT}
+    paths = app.openapi()["paths"]
+    checked = 0
     missing = []
-    for route in app.routes:
-        if not isinstance(route, APIRoute) or "{" not in route.path:
+    for path, ops in paths.items():
+        if "{" not in path:
             continue
-        path = (
-            route.path.replace("{case_id}", "C")
-            .replace("{fact_id}", "F")
-            .replace("{document_id}", "D")
-            .replace("{link_id}", "L")
-            .replace("{affiliation_id}", "A")
-        )
-        missing += [f"{m} {route.path}" for m in route.methods if (m, path) not in covered]
+        for method in ops:
+            key = (method.upper(), _template(path))
+            checked += 1
+            if key not in covered and key not in exempt:
+                missing.append(f"{method.upper()} {path}")
+    assert checked >= 20, f"Route enumeration looks broken (only {checked} ID routes found)"
     assert missing == [], f"Add these routes to the IDOR sweep: {missing}"
 
 

@@ -243,3 +243,144 @@ class AffiliationOut(ApiModel):
 
 class AccountDelete(ApiModel):
     password: str = Field(min_length=1, max_length=256)
+
+
+# ---------------------------------------------------------------- M3: mind map & opportunities
+class MindNodeOut(ApiModel):
+    key: str
+    kind: str
+    label: str
+    section: str | None
+    fact_id: str | None
+    status: str | None
+    is_private: bool
+    evidence_count: int
+    start: str | None
+    end: str | None
+    x: float | None = None
+    y: float | None = None
+    hidden: bool = False
+    label_override: str | None = None
+
+
+class MindEdgeOut(ApiModel):
+    source: str
+    target: str
+    kind: str
+    derived: bool
+    basis: str | None
+
+
+class MindMapOut(ApiModel):
+    nodes: list[MindNodeOut]
+    edges: list[MindEdgeOut]
+    orphaned_overrides: list[str]
+
+
+class NodeOverrideIn(ApiModel):
+    x: float | None = Field(default=None, ge=-1e6, le=1e6)
+    y: float | None = Field(default=None, ge=-1e6, le=1e6)
+    hidden: bool = False
+    label: str | None = Field(default=None, max_length=300)
+
+
+class SnapshotDiffOut(ApiModel):
+    added: list[dict[str, Any]]
+    removed: list[dict[str, Any]]
+    changed: list[dict[str, Any]]
+    unchanged: int
+
+
+class SourceOut(ApiModel):
+    key: str
+    name: str
+    kinds: list[str]
+    enabled: bool
+    settings: dict[str, Any]
+    is_demo_data: bool
+    auth: str
+    rate_limit: str
+    terms: str
+    incremental: str
+    pagination: str
+    limitations: list[str]
+
+
+class SourceConfigIn(ApiModel):
+    enabled: bool
+    settings: dict[str, Any] = Field(default_factory=dict)
+
+
+class SyncIn(ApiModel):
+    sources: list[str] | None = Field(default=None, max_length=20)
+
+
+class SyncSummaryOut(ApiModel):
+    source_key: str
+    fetched: int
+    new_opportunities: int
+    merged_duplicates: int
+    updated: int
+    unchanged: int
+    invalid: int
+    new_for_case: int
+    skipped_reason: str | None
+    merges: list[dict[str, Any]]
+
+
+class OpportunitySourceOut(ApiModel):
+    source_key: str
+    source_url: str
+    retrieved_at: datetime
+    dedup_score: float | None
+    dedup_reasons: list[str]
+
+
+class FactorOut(ApiModel):
+    name: str
+    weight: int
+    points: float
+    explanation: str
+    fact_ids: list[str]
+
+
+class MatchGapOut(ApiModel):
+    code: str
+    severity: str
+    message: str
+
+
+class OpportunityOut(ApiModel):
+    id: uuid.UUID
+    kind: str
+    title: str
+    organization_name: str
+    status: str
+    data: dict[str, Any]
+    is_demo_data: bool
+    first_seen_at: datetime
+    last_seen_at: datetime
+    sources: list[OpportunitySourceOut]
+    score: int
+    eligible: bool
+    mode: str
+    factors: list[FactorOut]
+    gaps: list[MatchGapOut]
+    match_status: str
+    match_version: int
+    matched_at: datetime
+
+
+class MatchStatusIn(ApiModel):
+    status: str = Field(pattern="^(new|seen|shortlisted|dismissed)$")
+    version: int = Field(ge=1)
+
+
+class DedupReportIn(ApiModel):
+    kind: str = Field(pattern="^(wrong_merge|missed_duplicate)$")
+    other_opportunity_id: uuid.UUID | None = None
+    note: str | None = Field(default=None, max_length=2000)
+
+
+class RescoreOut(ApiModel):
+    rescored: int
