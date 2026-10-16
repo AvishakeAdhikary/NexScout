@@ -21,6 +21,7 @@ from nexscout.api.routers import (
     mindmap,
     opportunities,
     profile,
+    providers,
     relationships,
     runs,
 )
@@ -66,6 +67,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
     app.include_router(health.router)
     app.include_router(auth.router, prefix=API_PREFIX)
-    for module in (cases, profile, documents, relationships, account, mindmap, opportunities, runs):
+    for module in (
+        cases,
+        profile,
+        documents,
+        relationships,
+        account,
+        mindmap,
+        opportunities,
+        runs,
+        providers,
+    ):
         app.include_router(module.router, prefix=API_PREFIX)
     return app

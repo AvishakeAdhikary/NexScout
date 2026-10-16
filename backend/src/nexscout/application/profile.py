@@ -93,7 +93,7 @@ async def evidence_counts(
 
 
 def new_fact(
-    actor: Actor,
+    owner_user_id: uuid.UUID,
     case_id: uuid.UUID,
     section: Section,
     data: dict[str, Any],
@@ -105,7 +105,7 @@ def new_fact(
 ) -> ProfileFact:
     clean = validate_fact_data(section, data)
     return ProfileFact(
-        owner_user_id=actor.user_id,
+        owner_user_id=owner_user_id,
         case_id=case_id,
         section=section.value,
         data=clean,
@@ -130,7 +130,7 @@ async def create_fact(
     """Manual entry: the user is the source, so it is accepted immediately."""
     await get_case(session, actor, case_id)
     fact = new_fact(
-        actor,
+        actor.user_id,
         case_id,
         section,
         data,

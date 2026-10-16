@@ -56,7 +56,14 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
     ).json()
     await worker.run_until_idle()
     approval = (await client.get(f"/api/v1/cases/{case_id}/approvals")).json()[0]
+    provider = (
+        await client.post(
+            "/api/v1/providers",
+            json={"name": "Mine", "kind": "mock", "model": "nexscout-mock-1"},
+        )
+    ).json()
     return {
+        "provider_id": provider["id"],
         "run_id": run["id"],
         "approval_id": approval["id"],
         "case_id": case_id,
@@ -73,7 +80,7 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
 
 
 def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None]]:
-    r, ap = ids["run_id"], ids["approval_id"]
+    r, ap, pv = ids["run_id"], ids["approval_id"], ids["provider_id"]
     c, d, f, link, a, o, n = (
         ids["case_id"],
         ids["document_id"],
@@ -143,6 +150,8 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("GET", f"/api/v1/cases/{c}/approvals", None),
         ("POST", f"/api/v1/approvals/{ap}/decision", {"approve": True}),
         ("GET", f"/api/v1/cases/{c}/events?once=true", None),
+        ("POST", f"/api/v1/providers/{pv}/verify", None),
+        ("DELETE", f"/api/v1/providers/{pv}", None),
     ]
 
 
@@ -168,6 +177,7 @@ async def test_other_user_gets_404_everywhere(
     run = (await client.get(f"/api/v1/runs/{ids['run_id']}")).json()
     assert run["run"]["status"] == "waiting_approval"  # intruder could not cancel or approve
     assert run["approvals"][0]["status"] == "pending"
+    assert [p["name"] for p in (await client.get("/api/v1/providers")).json()] == ["Mine"]
 
 
 def _template(path: str) -> str:
@@ -181,6 +191,7 @@ def test_every_id_route_is_covered(app: Any) -> None:
         for k in (
             "run_id",
             "approval_id",
+            "provider_id",
             "case_id",
             "document_id",
             "fact_id",

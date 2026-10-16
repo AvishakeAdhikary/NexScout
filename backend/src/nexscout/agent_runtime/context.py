@@ -36,6 +36,10 @@ class ApprovalRejected(Exception):
     pass
 
 
+class TokenBudgetExceeded(Exception):
+    """A run used more model tokens than its budget allows."""
+
+
 @dataclass
 class RunContext:
     run_id: uuid.UUID
@@ -67,6 +71,21 @@ class RunContext:
                 run_id=self.run_id,
                 type=type,
                 payload=payload,
+            )
+
+    async def add_tokens(self, tokens: int) -> None:
+        """Account model tokens to the run and stop it if its token budget is exceeded."""
+        from nexscout.infrastructure.db.models import WorkflowRun
+
+        async with self.system_sessions() as s, s.begin():
+            run = await s.get(WorkflowRun, self.run_id, with_for_update=True)
+            if run is None:
+                return
+            run.tokens_used += max(0, int(tokens))
+            over, budget = run.tokens_used > run.token_budget, run.token_budget
+        if over:
+            raise TokenBudgetExceeded(
+                f"This run used more than its budget of {budget} model tokens and was stopped."
             )
 
     # ------------------------------------------------------------------------ step tracking

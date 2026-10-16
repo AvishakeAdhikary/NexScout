@@ -79,4 +79,4 @@ def workflows() -> dict[str, WorkflowSpec]:
 
 def _load_builtin() -> None:
     # Import for registration side effects (kept lazy to avoid import cycles).
-    from nexscout.agents import system_check  # noqa: F401
+    from nexscout.agents import profile_summary, system_check  # noqa: F401

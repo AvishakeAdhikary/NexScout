@@ -111,7 +111,7 @@ async def upload_document(
     if parsed and purpose in EXTRACT_FROM:
         for extracted in extract_facts(parsed.text):
             fact = new_fact(
-                actor,
+                actor.user_id,
                 case_id,
                 extracted.section,
                 extracted.data,

@@ -30,12 +30,13 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from nexscout.agent_runtime import events, queue
-from nexscout.agent_runtime.context import RunContext, UncertainOutcome
+from nexscout.agent_runtime.context import RunContext, TokenBudgetExceeded, UncertainOutcome
 from nexscout.agent_runtime.registry import WorkflowSpec, get_workflow
 from nexscout.config import Settings
 from nexscout.domain.state_machines import RUN_MACHINE, RunStatus
 from nexscout.infrastructure.db.engine import build_engine, build_sessionmaker
 from nexscout.infrastructure.db.models import WorkerHeartbeat, WorkflowRun
+from nexscout.infrastructure.llm.base import ProviderUnavailable
 from nexscout.infrastructure.storage import LocalObjectStore
 from nexscout.observability import get_logger
 
@@ -44,6 +45,7 @@ TASKS_CHANNEL = "nexscout_tasks"
 TRANSIENT_ERRORS: tuple[type[BaseException], ...] = (
     httpx.TimeoutException,
     httpx.NetworkError,
+    ProviderUnavailable,
     psycopg.OperationalError,
     ConnectionError,
     TimeoutError,
@@ -536,7 +538,7 @@ class Worker:
                     await self._requeue(task, 0, "Worker shut down", refund=True)
             else:
                 raise
-        except StepBudgetExceeded as exc:
+        except (StepBudgetExceeded, TokenBudgetExceeded) as exc:
             await self._set_run(run.id, RunStatus.FAILED, event="run_failed", error=str(exc))
             await self._finish(task, "failed", str(exc))
         except UncertainOutcome as exc:

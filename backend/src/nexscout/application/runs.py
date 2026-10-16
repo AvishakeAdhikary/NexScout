@@ -26,6 +26,7 @@ from nexscout.domain.errors import (
 from nexscout.domain.state_machines import RUN_MACHINE, RunStatus
 from nexscout.infrastructure.db.models import (
     ApprovalRequest,
+    ProviderConfig,
     RunStep,
     Task,
     WorkflowEvent,
@@ -33,6 +34,10 @@ from nexscout.infrastructure.db.models import (
 )
 
 MAX_PARAMS_BYTES = 10_000
+ALLOWED_PARAMS: dict[str, set[str]] = {
+    "system_check": {"wait_s", "require_approval", "marker_file"},
+    "profile_summary": {"provider_id"},
+}
 
 
 @dataclass
@@ -117,10 +122,9 @@ def check_params(kind: str, params: dict[str, Any]) -> None:
 
     if len(json.dumps(params)) > MAX_PARAMS_BYTES:
         raise ValidationFailed("Run parameters are too large.")
-    if kind == "system_check":
-        allowed = {"wait_s", "require_approval", "marker_file"}
-        if set(params) - allowed:
-            raise ValidationFailed(f"Unknown parameters: {sorted(set(params) - allowed)}")
+    allowed = ALLOWED_PARAMS.get(kind, set())
+    if set(params) - allowed:
+        raise ValidationFailed(f"Unknown parameters: {sorted(set(params) - allowed)}")
 
 
 async def start_run(
@@ -131,6 +135,18 @@ async def start_run(
     if spec is None or not spec.user_startable:
         raise ValidationFailed("Unknown workflow.")
     check_params(kind, params)
+    if params.get("provider_id"):
+        try:
+            provider_uuid = uuid.UUID(str(params["provider_id"]))
+        except ValueError as exc:
+            raise ValidationFailed("Invalid provider id.") from exc
+        owned = await session.scalar(
+            select(ProviderConfig.id).where(
+                ProviderConfig.id == provider_uuid, ProviderConfig.owner_user_id == actor.user_id
+            )
+        )
+        if owned is None:
+            raise NotFound("Provider not found.")
     run = WorkflowRun(
         owner_user_id=actor.user_id,
         case_id=case_id,
