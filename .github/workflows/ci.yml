@@ -38,6 +38,8 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
+      # PDF rendering and the browser workflow use headless Chromium.
+      - run: uv run playwright install --with-deps chromium-headless-shell
       - run: uv run pytest --cov=nexscout --cov-report=term-missing
 
   web:
@@ -86,3 +88,50 @@ jobs:
       - run: uv run --project backend python scripts/secret_scan.py --history
       - run: cd backend && uv run pip-audit --progress-spinner off
       - run: cd apps/web && npm ci && npm audit --omit=dev # runtime dependencies only
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_ci_only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 3s --health-retries 20
+    env:
+      PGPASSWORD: postgres_ci_only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.10"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Provision roles and databases
+        run: psql -h localhost -U postgres -f docker/postgres/01-roles.sql
+      - name: Backend (migrate + Chromium for the worker)
+        working-directory: backend
+        run: |
+          uv sync --frozen
+          uv run nexscout migrate
+          uv run playwright install --with-deps chromium-headless-shell
+      - name: Web dependencies and browsers
+        working-directory: apps/web
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Playwright journeys (API + worker + web are started by the config)
+        working-directory: apps/web
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/test-results
+          retention-days: 7

@@ -55,3 +55,7 @@ Everything in containers: `docker compose --profile full up -d --build`.
 - Security model: [docs/SECURITY.md](docs/SECURITY.md)
 - Operations (backup and restore, deploy, desktop): [docs/OPERATIONS.md](docs/OPERATIONS.md)
 - Contributor and agent rules: [AGENTS.md](AGENTS.md)
+
+## License
+[AGPL-3.0-only](LICENSE), carried over from NexScout v1. The previous implementation is preserved
+in this repository's history and under the tag `v1-legacy`.
