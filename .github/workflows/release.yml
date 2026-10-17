@@ -112,7 +112,8 @@ jobs:
       - run: npm ci
       - run: npm run build
       - name: Build the installer (unsigned)
-        run: npx electron-builder --win nsis --publish never -c.extraMetadata.version=${{ needs.version.outputs.version }}
+        shell: bash # PowerShell would split the -c.extraMetadata.version=… argument
+        run: npx electron-builder --win nsis --publish never "-c.extraMetadata.version=${{ needs.version.outputs.version }}"
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
