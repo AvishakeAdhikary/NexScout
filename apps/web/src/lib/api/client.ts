@@ -380,3 +380,34 @@ export const generatedApi = {
     `/api/v1/generated-documents/${e(id)}/versions/${n}/files/${fmt}`,
   remove: (id: string) => api<void>(`/generated-documents/${e(id)}`, { method: "DELETE" }),
 };
+
+// ------------------------------------------------------------------ M7: applications
+export type ApplicationOut = S["ApplicationOut"];
+export type ApplicationDetailOut = S["ApplicationDetailOut"];
+export type ApplicationEventOut = S["ApplicationEventOut"];
+
+export const applicationsApi = {
+  list: (caseId: string) => api<ApplicationOut[]>(`${c(caseId)}/applications`),
+  create: (caseId: string, opportunityId: string, documentIds: string[], applyUrl?: string) =>
+    api<ApplicationOut>(`${c(caseId)}/applications`, {
+      method: "POST",
+      body: { opportunity_id: opportunityId, document_ids: documentIds, apply_url: applyUrl ?? null },
+    }),
+  get: (id: string) => api<ApplicationDetailOut>(`/applications/${e(id)}`),
+  update: (id: string, body: Record<string, unknown> & { version: number }) =>
+    api<ApplicationDetailOut>(`/applications/${e(id)}`, { method: "PATCH", body }),
+  setStatus: (id: string, version: number, status: string, note?: string, reference?: string) =>
+    api<ApplicationDetailOut>(`/applications/${e(id)}/status`, {
+      method: "POST",
+      body: { version, status, note: note || null, reference: reference || null },
+    }),
+  resolve: (id: string, submitted: boolean, reference?: string) =>
+    api<ApplicationDetailOut>(`/applications/${e(id)}/resolve`, {
+      method: "POST",
+      body: { submitted, reference: reference || null },
+    }),
+  fill: (id: string) =>
+    api<{ run_id: string }>(`/applications/${e(id)}/browser`, { method: "POST" }),
+  screenshotUrl: (id: string, eventId: string) =>
+    `/api/v1/applications/${e(id)}/events/${e(eventId)}/screenshot`,
+};

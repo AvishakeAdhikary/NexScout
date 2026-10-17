@@ -23,6 +23,7 @@ export default defineConfig({
     {
       command: `uv run nexscout serve --port ${API_PORT}`,
       cwd: "../../backend",
+      env: { NEXSCOUT_FIXTURE_SITE_ORIGIN: `http://127.0.0.1:${API_PORT}` },
       url: `http://127.0.0.1:${API_PORT}/readyz`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
@@ -32,6 +33,8 @@ export default defineConfig({
       // are safe (tasks are claimed with SKIP LOCKED), so a separately running dev worker is fine.
       command: "uv run nexscout worker",
       cwd: "../../backend",
+      // The demo application site is served by the API; the worker's browser goes there.
+      env: { NEXSCOUT_FIXTURE_SITE_ORIGIN: `http://127.0.0.1:${API_PORT}` },
       wait: { stdout: /worker_started/ },
       timeout: 120_000,
     },

@@ -18,7 +18,7 @@ export function useCaseEvents(caseId: string): { connected: boolean } {
     const source = new EventSource(runsApi.eventsUrl(caseId));
     const refresh = () => {
       for (const key of ["runs", "run", "approvals", "documents", "facts", "gaps", "opportunities", "mindmap",
-        "research", "generated", "generated-doc"]) {
+        "research", "generated", "generated-doc", "applications", "application"]) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
     };

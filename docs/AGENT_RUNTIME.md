@@ -95,7 +95,7 @@ budget 2M · LLM call timeout 120 s · fetch timeout 20 s / 5 MB.
 | Queue, leases, reaper, per-user limit | `agent_runtime/queue.py`, `agent_runtime/worker.py` (`uv run nexscout worker`) |
 | Checkpoints | LangGraph `AsyncPostgresSaver`, `durability="sync"`, `thread_id = run_id`, system DB role. Created by `nexscout migrate`; the worker refuses to start without them |
 | Run context for nodes | `agent_runtime/context.py` (`tenant()` sessions with RLS, `note`, `require_approval`, `side_effect`, budgets) |
-| Workflows | `agents/`: `document_ingestion` (system, started by uploads), `opportunity_discovery`, `profile_summary` (LLM, cited, verified), `system_check` (diagnostic); M5: `phd_research` (read_sources → extract), `draft_document` (gather → assemble or consent → draft → verify → save → render), `render_document` (ADR-0009) |
+| Workflows | `agents/`: `document_ingestion` (system, started by uploads), `opportunity_discovery`, `profile_summary` (LLM, cited, verified), `system_check` (diagnostic); M5: `phd_research` (read_sources → extract), `draft_document` (gather → assemble or consent → draft → verify → save → render), `render_document` (ADR-0009); M7: `browser_apply` (fill → approve → submit, ADR-0010) |
 | Approvals | `interrupt()` in the node. The decision is read from `approval_requests` and never trusted from the resume payload |
 | Events | `workflow_events` rows + `LISTEN/NOTIFY`, SSE at `GET /cases/{id}/events` (replays from `Last-Event-ID`; `Cache-Control: no-transform` so proxies don't gzip-buffer it) |
 | Providers | `infrastructure/llm/` (ADR-0004). Default = the user's default provider, else the labelled mock |

@@ -69,6 +69,12 @@ class Settings(BaseSettings):
     # Research: read public pages linked from listings (SSRF-safe, robots.txt respected).
     research_fetch_enabled: bool = True
 
+    # Browser automation. The demo application site is mounted at /fixture-site unless disabled
+    # (always off in production); the worker reaches it at `fixture_site_origin`.
+    browser_headless: bool = True
+    fixture_site_enabled: bool | None = None
+    fixture_site_origin: str = "http://127.0.0.1:8000"
+
     @model_validator(mode="after")
     def _production_requirements(self) -> Settings:
         # Fail at startup, not at the first saved API key.
@@ -81,6 +87,12 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.env == "production"
+
+    @property
+    def fixture_site_on(self) -> bool:
+        if self.is_production:
+            return False
+        return True if self.fixture_site_enabled is None else self.fixture_site_enabled
 
     @property
     def cookie_secure(self) -> bool:

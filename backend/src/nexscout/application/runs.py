@@ -48,6 +48,7 @@ ALLOWED_PARAMS: dict[str, set[str]] = {
         "provider_id",
     },
     "render_document": {"document_id", "version"},
+    "browser_apply": {"application_id"},
 }
 
 

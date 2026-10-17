@@ -69,7 +69,17 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
     assert gen.status_code == 202, gen.text
     await worker.run_until_idle()
     gen_doc = (await client.get(f"/api/v1/cases/{case_id}/generated-documents")).json()[0]
+    application = (
+        await client.post(
+            f"/api/v1/cases/{case_id}/applications",
+            json={"opportunity_id": opp["id"], "document_ids": [gen_doc["id"]]},
+        )
+    ).json()
+    app_event = (await client.get(f"/api/v1/applications/{application['id']}")).json()["events"][0]
     return {
+        "application_id": application["id"],
+        "app_event_id": app_event["id"],
+        "app_version": str(application["version"]),
         "gen_document_id": gen_doc["id"],
         "version_number": "1",
         "fmt": "pdf",
@@ -101,7 +111,16 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ids["node_key"],
     )
     g, vn, fmt = ids["gen_document_id"], ids["version_number"], ids["fmt"]
+    ap, ev, av = ids["application_id"], ids["app_event_id"], int(ids["app_version"])
     return [
+        ("POST", f"/api/v1/cases/{c}/applications", {"opportunity_id": o, "document_ids": []}),
+        ("GET", f"/api/v1/cases/{c}/applications", None),
+        ("GET", f"/api/v1/applications/{ap}", None),
+        ("PATCH", f"/api/v1/applications/{ap}", {"version": av, "notes": "pwned"}),
+        ("POST", f"/api/v1/applications/{ap}/status", {"version": av, "status": "withdrawn"}),
+        ("POST", f"/api/v1/applications/{ap}/resolve", {"submitted": True}),
+        ("POST", f"/api/v1/applications/{ap}/browser", None),
+        ("GET", f"/api/v1/applications/{ap}/events/{ev}/screenshot", None),
         ("GET", f"/api/v1/cases/{c}/opportunities/{o}/research", None),
         ("GET", f"/api/v1/cases/{c}/opportunities/{o}/referrals", None),
         ("POST", f"/api/v1/cases/{c}/opportunities/{o}/research", None),
@@ -200,6 +219,9 @@ async def test_other_user_gets_404_everywhere(
     assert run["run"]["status"] == "waiting_approval"  # intruder could not cancel or approve
     assert run["approvals"][0]["status"] == "pending"
     assert [p["name"] for p in (await client.get("/api/v1/providers")).json()] == ["Mine"]
+    owned = (await client.get(f"/api/v1/applications/{ids['application_id']}")).json()
+    assert owned["status"] == "preparing"
+    assert owned["notes"] is None
     gen = (await client.get(f"/api/v1/generated-documents/{ids['gen_document_id']}")).json()
     assert gen["current_version"] == 1  # intruder could not edit or delete it
     pdf = await client.get(
@@ -229,8 +251,11 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "opportunity_id",
             "node_key",
             "gen_document_id",
+            "application_id",
+            "app_event_id",
         )
     }
+    sentinel["app_version"] = "1"
     sentinel.update({"version_number": "{number}", "fmt": "{fmt}"})
     sentinel.update({"fact_version": "1", "aff_version": "1", "opp_version": "1"})
     covered = {(m, _template(u)) for m, u, _ in _requests(sentinel)}

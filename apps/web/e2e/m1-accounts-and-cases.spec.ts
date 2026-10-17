@@ -41,10 +41,10 @@ test("register, create a case, choose a path, and persist across sign-in", async
   await expect(page.getByRole("radio", { name: "PhD & research" })).toBeChecked();
   await expect(page.getByText("Saving…")).toBeHidden();
 
-  // Unbuilt sections say so honestly.
+  // Every section is reachable from the navigation.
   await page.getByRole("link", { name: /Applications/ }).first().click();
   await expect(page.getByRole("heading", { level: 1, name: "Applications" })).toBeVisible();
-  await expect(page.getByText(/planned for milestone 8/)).toBeVisible();
+  await expect(page.getByText(/No applications yet/)).toBeVisible();
 
   // Sign out, then back in: the case and the chosen path persist.
   await page.getByRole("button", { name: "Sign out" }).click();

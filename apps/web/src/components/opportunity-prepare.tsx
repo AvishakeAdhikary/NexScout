@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
@@ -10,7 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { statusLabel } from "@/lib/application-status";
 import {
+  applicationsApi,
   generatedApi,
   researchApi,
   type FindingOut,
@@ -197,6 +199,59 @@ function Referrals({
           referrals. You can change that in{" "}
           <Link className="underline" href={`/cases/${caseId}/relationships`}>Relationships</Link>.
         </p>
+      )}
+    </section>
+  );
+}
+
+function StartApplication({ caseId, opportunityId }: { caseId: string; opportunityId: string }) {
+  const router = useRouter();
+  const apps = useQuery({ queryKey: ["applications", caseId], queryFn: () => applicationsApi.list(caseId) });
+  const docs = useQuery({ queryKey: ["generated", caseId], queryFn: () => generatedApi.list(caseId) });
+  const [chosen, setChosen] = useState<string[] | null>(null);
+  const create = useMutation({
+    mutationFn: (ids: string[]) => applicationsApi.create(caseId, opportunityId, ids),
+    onSuccess: (a) => router.push(`/cases/${caseId}/applications/${a.id}`),
+  });
+  const existing = apps.data?.find((a) => a.opportunity_id === opportunityId);
+  const usable = (docs.data ?? []).filter(
+    (d) => d.opportunity_id === opportunityId || ["resume", "academic_cv"].includes(d.doc_type),
+  );
+  const selected = chosen ?? usable.map((d) => d.id);
+  return (
+    <section aria-labelledby="apply-heading" className="flex flex-col gap-2 rounded-lg border p-4">
+      <h2 id="apply-heading" className="text-xl font-semibold">Apply</h2>
+      {existing ? (
+        <p className="text-sm">
+          Application: {statusLabel(existing.status)}.{" "}
+          <Link className="underline" href={`/cases/${caseId}/applications/${existing.id}`}>Open it</Link>
+        </p>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground">
+            Choose the documents to send. NexScout fills in the form and asks you before
+            submitting anything.
+          </p>
+          {usable.length === 0 && (
+            <p className="text-sm">Prepare a resume or CV first (above, or under Documents).</p>
+          )}
+          {usable.map((d) => (
+            <label key={d.id} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={selected.includes(d.id)}
+                onChange={(e) =>
+                  setChosen(e.target.checked ? [...selected, d.id] : selected.filter((x) => x !== d.id))
+                }
+              />
+              {d.title}
+            </label>
+          ))}
+          <Button className="self-start" onClick={() => create.mutate(selected)} disabled={create.isPending}>
+            Start an application
+          </Button>
+          <ErrorAlert error={create.error ?? apps.error} />
+        </>
       )}
     </section>
   );
@@ -389,6 +444,7 @@ export function OpportunityPrepare({ academic }: { academic: boolean }) {
           </>
         )}
       </section>
+      <StartApplication caseId={caseId} opportunityId={opportunityId} />
     </div>
   );
 }

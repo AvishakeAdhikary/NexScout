@@ -14,6 +14,7 @@ from nexscout.api.errors import install_error_handlers
 from nexscout.api.middleware import RequestContextMiddleware
 from nexscout.api.routers import (
     account,
+    applications,
     auth,
     cases,
     documents,
@@ -79,6 +80,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         runs,
         providers,
         research,
+        applications,
     ):
         app.include_router(module.router, prefix=API_PREFIX)
+    if settings.fixture_site_on:
+        from nexscout.integrations.fixture_site import create_fixture_site
+
+        app.mount("/fixture-site", create_fixture_site())  # labelled demo site, never in prod
     return app

@@ -12,6 +12,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
+    Identity,
     Index,
     Integer,
     LargeBinary,
@@ -54,6 +55,8 @@ OWNED_TABLES: tuple[str, ...] = (
     "research_findings",
     "generated_documents",
     "generated_document_versions",
+    "applications",
+    "application_events",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
@@ -971,4 +974,67 @@ class GeneratedDocumentVersion(IdMixin, Base):
     __table_args__ = (
         UniqueConstraint("document_id", "number", name="uq_generated_document_versions_number"),
         CheckConstraint("origin IN ('generated','assembled','user_edit')", name="origin_valid"),
+    )
+
+
+# --- M7: applications and their timeline ------------------------------------------------------
+
+
+class Application(IdMixin, TimestampMixin, Base):
+    """One application to one opportunity. Status changes go through APPLICATION_MACHINE."""
+
+    __tablename__ = "applications"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    opportunity_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="SET NULL")
+    )
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    organization: Mapped[str] = mapped_column(String(300), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    apply_url: Mapped[str | None] = mapped_column(String(2048))
+    method: Mapped[str] = mapped_column(String(20), nullable=False, default="browser")
+    document_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    answers: Mapped[dict[str, str]] = mapped_column(JSONB, nullable=False, default=dict)
+    phone: Mapped[str | None] = mapped_column(String(40))
+    deadline: Mapped[str | None] = mapped_column(String(10))
+    notes: Mapped[str | None] = mapped_column(Text)
+    blocker: Mapped[str | None] = mapped_column(String(500))
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        case_fk(),
+        UniqueConstraint("case_id", "opportunity_id", name="uq_applications_case_opportunity"),
+        CheckConstraint("method IN ('browser','manual','email')", name="method_valid"),
+        Index("ix_applications_case_status", "case_id", "status"),
+    )
+
+
+class ApplicationEvent(IdMixin, Base):
+    """Append-only timeline of an application (status changes, notes, browser steps)."""
+
+    __tablename__ = "application_events"
+
+    seq: Mapped[int] = mapped_column(BigInteger, Identity(always=True), nullable=False)
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    application_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("applications.id", ondelete="CASCADE"), nullable=False
+    )
+    type: Mapped[str] = mapped_column(String(40), nullable=False)
+    from_status: Mapped[str | None] = mapped_column(String(30))
+    to_status: Mapped[str | None] = mapped_column(String(30))
+    actor: Mapped[str] = mapped_column(String(20), nullable=False)
+    message: Mapped[str | None] = mapped_column(String(2000))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    run_id: Mapped[uuid.UUID | None] = mapped_column()
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint("actor IN ('user','agent','system')", name="actor_valid"),
+        Index("ix_application_events_app", "application_id", "seq"),
     )

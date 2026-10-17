@@ -74,6 +74,19 @@ check their own setup with "Check connection" in Settings, which records the res
 - The backend container is about 2.1 GB because of headless Chromium.
 - Job documents: the resume is assembled from entries in a fixed order; there's no tailoring per job yet. Referral suggestions match by organization name only, so subsidiaries and renamed employers aren't linked.
 
+## Applications and browser automation (M7)
+- **Only tested against the bundled demo application site.** Real employer and university
+  portals (multi-step wizards, custom widgets, single sign-on) haven't been tried. Unsupported
+  forms stop with a reason rather than guessing.
+- Supported: single-page HTML forms with labelled inputs, textareas, selects (answered by the
+  user), file uploads and declaration checkboxes.
+- NexScout never logs in, stores site passwords, or solves CAPTCHAs. For those sites you apply
+  yourself and mark the application as submitted (your confirmation is recorded as such).
+- Confirmation detection is English-only. An unrecognized confirmation is reported as "not
+  confirmed" for you to resolve; it's never treated as submitted.
+- A screenshot of each filled form is stored with the application (it can contain the values
+  you entered).
+
 ## Agent runtime (M4)
 - Only four workflows exist: reading uploads, opportunity search, the AI summary draft, and a
   diagnostic system check. PhD and job document generation arrives in M5–M6.

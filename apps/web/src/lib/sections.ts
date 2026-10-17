@@ -34,7 +34,6 @@ export const SECTIONS: readonly Section[] = [
     slug: "applications",
     label: "Applications",
     description: "Track every application, deadline, and outcome.",
-    milestone: 8,
   },
   {
     slug: "documents",

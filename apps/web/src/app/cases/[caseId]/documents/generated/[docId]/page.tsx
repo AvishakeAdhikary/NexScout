@@ -186,7 +186,10 @@ export default function GeneratedDocumentPage() {
           {d.opportunity_id && (
             <>
               {" · "}
-              <Link className="underline" href={`/cases/${caseId}/phd/${d.opportunity_id}`}>position</Link>
+              <Link className="underline"
+                href={`/cases/${caseId}/${["resume", "cover_letter", "referral_request"].includes(d.doc_type) ? "jobs" : "phd"}/${d.opportunity_id}`}>
+                position
+              </Link>
             </>
           )}
         </p>
