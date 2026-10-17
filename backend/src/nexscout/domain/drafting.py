@@ -263,14 +263,18 @@ CV_ORDER: tuple[tuple[Section, str], ...] = (
 )
 
 
-def _dates(data: dict[str, Any]) -> str:
-    start, end = data.get("start"), data.get("end")
+def _dates(data: dict[str, Any], style: str = "year_month") -> str:
+    from nexscout.domain.formats import format_date
+
+    start = format_date(data.get("start"), style)  # type: ignore[arg-type]
+    end = format_date(data.get("end"), style)  # type: ignore[arg-type]
     if start and end:
-        return f"{start} \u2013 {'present' if end == 'present' else end}"
-    return str(start or end or data.get("date") or data.get("year") or "")
+        return f"{start} \u2013 {end}"
+    single = data.get("date") or data.get("year")
+    return start or end or (format_date(str(single), style) if single else "")  # type: ignore[arg-type]
 
 
-def _cv_line(section: Section, data: dict[str, Any]) -> str:
+def _cv_line(section: Section, data: dict[str, Any], profile: Any = None) -> str:
     label = fact_label(section, data)
     extra: list[str] = []
     if section is Section.PUBLICATION:
@@ -286,9 +290,12 @@ def _cv_line(section: Section, data: dict[str, Any]) -> str:
         extra = [str(v) for v in (data.get("organization"), data.get("role")) if v]
     elif section in (Section.AWARD, Section.CERTIFICATION):
         extra = [str(v) for v in (data.get("issuer"),) if v]
-    when = _dates(data)
-    parts = [f"**{label}**"] + extra + ([when] if when else [])
-    line = ", ".join(parts)
+    when = _dates(data, profile.date_style if profile else "year_month")
+    if profile is not None and profile.date_first:
+        # Tabular convention (e.g. German Lebenslauf): the dates lead each entry.
+        line = (f"{when} \u00b7 " if when else "") + ", ".join([f"**{label}**", *extra])
+    else:
+        line = ", ".join([f"**{label}**", *extra] + ([when] if when else []))
     if data.get("description"):
         line += f"  \n{_clean(str(data['description']))[:600]}"
     return f"- {line}"
@@ -310,24 +317,51 @@ RESUME_ORDER: tuple[tuple[Section | str, str], ...] = (
 )
 
 
-def assemble_academic_cv(name: str, facts: list[dict[str, Any]]) -> VerifiedDraft:
-    """Academic CV: education and research first."""
-    return _assemble(name, facts, (*CV_ORDER, (SKILLS, "Skills")))
+EUROPASS_RESUME_ORDER: tuple[tuple[Section | str, str], ...] = (
+    (Section.EMPLOYMENT, "Work experience"),
+    (Section.EDUCATION, "Education and training"),
+    (SKILLS, "Skills"),
+    (Section.PROJECT, "Projects"),
+    (Section.CERTIFICATION, "Certifications"),
+    (Section.AWARD, "Awards"),
+    (Section.RESEARCH, "Research"),
+    (Section.PUBLICATION, "Publications"),
+    (Section.LEADERSHIP, "Leadership"),
+    (Section.VOLUNTEER, "Volunteering"),
+)
 
 
-def assemble_resume(name: str, facts: list[dict[str, Any]]) -> VerifiedDraft:
-    """Job resume: experience, projects and skills first."""
-    return _assemble(name, facts, RESUME_ORDER)
+def assemble_academic_cv(
+    name: str, facts: list[dict[str, Any]], profile: Any = None
+) -> VerifiedDraft:
+    """Academic CV: education and research first, in the regional format's style."""
+    return _assemble(name, facts, (*CV_ORDER, (SKILLS, "Skills")), profile)
+
+
+def assemble_resume(name: str, facts: list[dict[str, Any]], profile: Any = None) -> VerifiedDraft:
+    """Job resume: experience, projects and skills first (Europass order in the EU)."""
+    order = (
+        EUROPASS_RESUME_ORDER if profile is not None and profile.europass_order else RESUME_ORDER
+    )
+    return _assemble(name, facts, order, profile)
 
 
 def _assemble(
-    name: str, facts: list[dict[str, Any]], order: tuple[tuple[Section | str, str], ...]
+    name: str,
+    facts: list[dict[str, Any]],
+    order: tuple[tuple[Section | str, str], ...],
+    profile: Any = None,
 ) -> VerifiedDraft:
-    """Every line comes from one accepted entry; the report maps lines to entry ids."""
+    """Every line comes from one accepted entry; the report maps lines to entry ids.
+    `profile` (domain/formats.FormatProfile) sets dates, layout, contact hint and closing."""
+    if profile is None:
+        from nexscout.domain.formats import DEFAULT_KEY, PROFILES
+
+        profile = PROFILES[DEFAULT_KEY]
     by_section: dict[str, list[dict[str, Any]]] = {}
     for f in facts:
         by_section.setdefault(f["section"], []).append(f)
-    lines = [f"# {name}", "", placeholder("contact details (email, phone, city)"), ""]
+    lines = [f"# {name}", "", placeholder(f"contact details ({profile.contact_hint})"), ""]
     claims: list[dict[str, Any]] = []
     summary = by_section.get(Section.SUMMARY.value, [])
     if summary:
@@ -351,7 +385,7 @@ def _assemble(
             continue
         lines += [f"## {heading}", ""]
         for f in rows:
-            line = _cv_line(section, f["data"])
+            line = _cv_line(section, f["data"], profile)
             lines.append(line)
             claims.append({"text": line[2:120], "fact_ids": [f["id"]]})
         lines.append("")
@@ -360,6 +394,26 @@ def _assemble(
             placeholder("No confirmed profile entries yet. Confirm entries on My Profile."),
             "",
         ]
+    if profile.referees_section:
+        refs = by_section.get(Section.REFERENCE.value, [])
+        lines += ["## Referees", ""]
+        if refs:
+            for f in refs:
+                d = f["data"]
+                lines.append(
+                    "- "
+                    + ", ".join(
+                        str(v)
+                        for v in (d.get("name"), d.get("relationship"), d.get("organization"))
+                        if v
+                    )
+                )
+                claims.append({"text": "Referee", "fact_ids": [f["id"]]})
+        else:
+            lines.append(placeholder("referees (name, role, contact) or 'available on request'"))
+        lines.append("")
+    if profile.signature_line:
+        lines += [f"{placeholder('place')}, {placeholder('date')}", "", name, ""]
     markdown = "\n".join(lines).rstrip() + "\n"
     report = {
         "claims": claims,

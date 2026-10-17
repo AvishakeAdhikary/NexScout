@@ -340,6 +340,7 @@ export interface DraftRequest {
   supervisor_finding_id?: string | null;
   affiliation_id?: string | null;
   provider_id?: string | null;
+  format?: string | null;
 }
 
 export const researchApi = {
@@ -351,12 +352,15 @@ export const researchApi = {
     }),
   opportunity: (caseId: string, opportunityId: string) =>
     api<OpportunityOut>(`${c(caseId)}/opportunities/${e(opportunityId)}`),
+  documentFormat: (caseId: string, opportunityId: string) =>
+    api<S["FormatOut"]>(`${c(caseId)}/opportunities/${e(opportunityId)}/document-format`),
   referrals: (caseId: string, opportunityId: string) =>
     api<S["ReferralsOut"]>(`${c(caseId)}/opportunities/${e(opportunityId)}/referrals`),
 };
 
 export const generatedApi = {
   types: () => api<DocTypeOut[]>("/document-types"),
+  formats: () => api<S["FormatOut"][]>("/document-formats"),
   draft: (caseId: string, body: DraftRequest) =>
     api<{ run_id: string }>(`${c(caseId)}/generated-documents`, { method: "POST", body }),
   list: (caseId: string, opportunityId?: string) =>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { ComplianceList } from "@/components/document-format";
 import { ErrorAlert } from "@/components/error-alert";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +92,11 @@ function Files({ doc, v }: { doc: GeneratedDocumentDetailOut; v: VersionOut }) {
   useEffect(() => {
     if (status === "succeeded") queryClient.invalidateQueries({ queryKey: ["generated-doc", doc.id] });
   }, [status, doc.id, queryClient]);
-  const files = v.files as { pdf?: FileInfo; docx?: FileInfo };
+  const files = v.files as {
+    pdf?: FileInfo;
+    docx?: FileInfo;
+    compliance?: { status?: string; checks?: { rule: string; ok: boolean; severity: string; source: string; detail: string }[] };
+  };
   const busy = render.isPending || (!!render.data && !["succeeded", "failed", "cancelled"].includes(status ?? ""));
   if (v.has_files && files.pdf && files.docx) {
     return (
@@ -109,6 +114,7 @@ function Files({ doc, v }: { doc: GeneratedDocumentDetailOut; v: VersionOut }) {
             ? `Both files were opened and checked (PDF: ${files.pdf.checks.pages} page(s)).`
             : "A file check failed: some headings are missing from the output."}
         </p>
+        <ComplianceList compliance={files.compliance} />
       </div>
     );
   }
@@ -175,6 +181,7 @@ export default function GeneratedDocumentPage() {
   const d = doc.data;
   const v = d.current;
   const shown = viewing !== null && older.data ? older.data : null;
+  const fmt = (v.report as { format?: { label: string; reason?: string; paper?: string } }).format;
 
   return (
     <div className="flex max-w-4xl flex-col gap-5">
@@ -194,6 +201,12 @@ export default function GeneratedDocumentPage() {
           )}
         </p>
         <OriginBadges v={v} />
+        {fmt && (
+          <p className="text-sm text-muted-foreground">
+            Format: <span className="font-medium text-foreground">{fmt.label}</span> · {fmt.paper} paper
+            {fmt.reason ? ` · ${fmt.reason}` : ""}
+          </p>
+        )}
       </header>
 
       {v.placeholders.length > 0 && (

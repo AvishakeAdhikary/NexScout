@@ -32,7 +32,7 @@ from nexscout.domain.drafting import PLACEHOLDER, find_placeholders
 _MD = MarkdownIt("commonmark", {"html": False, "linkify": False, "typographer": False})
 
 _CSS = """
-@page { size: A4; margin: 22mm 20mm; }
+@page { size: __PAPER__; margin: 22mm 20mm; }
 body { font-family: "Georgia", "Times New Roman", serif; font-size: 11pt; line-height: 1.45;
        color: #111; }
 h1 { font-size: 20pt; margin: 0 0 6pt; }
@@ -46,12 +46,14 @@ mark.ph { background: #ffe066; padding: 0 2px; }
 """
 
 
-def markdown_to_html(markdown: str, title: str) -> str:
+def markdown_to_html(markdown: str, title: str, paper: str = "A4") -> str:
     body = _MD.render(markdown)
+    css = _CSS.replace("__PAPER__", "letter" if paper == "Letter" else "A4")
     body = PLACEHOLDER.sub(lambda m: f'<mark class="ph">{m.group(0)}</mark>', body)
     return (
         "<!doctype html><html><head><meta charset='utf-8'>"
-        f"<title>{html_lib.escape(title)}</title><style>{_CSS}</style></head>"
+        f"<title>{html_lib.escape(title)}</title>"
+        f"<style>{css}</style></head>"
         f"<body>{body}</body></html>"
     )
 
@@ -112,8 +114,15 @@ def _add_runs(par: Paragraph, children: list[Token]) -> None:
                     run.bold, run.italic = bold or None, italic or None
 
 
-def markdown_to_docx(markdown: str, title: str) -> bytes:
+def markdown_to_docx(markdown: str, title: str, paper: str = "A4") -> bytes:
+    from docx.shared import Cm, Inches
+
     doc = DocxDocument()
+    for section in doc.sections:  # page size follows the regional format
+        if paper == "Letter":
+            section.page_width, section.page_height = Inches(8.5), Inches(11)
+        else:
+            section.page_width, section.page_height = Cm(21.0), Cm(29.7)
     doc.core_properties.title = title[:250]
     doc.core_properties.author = ""
     doc.core_properties.comments = "Created with NexScout"

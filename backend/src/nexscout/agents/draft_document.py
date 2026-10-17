@@ -33,6 +33,7 @@ from nexscout.agent_runtime.context_builder import (
 from nexscout.agent_runtime.registry import WorkflowSpec, register, tracked
 from nexscout.agents.phd_research import listing_text
 from nexscout.application.providers import record_usage, resolve_provider
+from nexscout.domain.compliance import check_document
 from nexscout.domain.drafting import (
     DOC_SPECS,
     DocType,
@@ -43,6 +44,7 @@ from nexscout.domain.drafting import (
     placeholder,
     verify_draft,
 )
+from nexscout.domain.formats import DEFAULT_KEY, PROFILES, resolve_format
 from nexscout.domain.mindmap import normalize_org
 from nexscout.domain.profile import ReviewState, fact_label
 from nexscout.domain.profile import Section as FactSection
@@ -98,6 +100,7 @@ class State(TypedDict, total=False):
     listing: str
     supervisor: dict[str, Any] | None
     contact: dict[str, Any] | None
+    format: dict[str, Any]
     approved: bool
     draft: dict[str, Any]
     model: dict[str, Any]
@@ -174,6 +177,7 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         supervisor: dict[str, Any] | None = None
         relations: list[dict[str, Any]] = []
         contact: dict[str, Any] | None = None
+        country: str | None = None
         if opp_id is not None:
             matched = await s.scalar(
                 select(OpportunityMatch.id).where(
@@ -190,6 +194,7 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                 "organization": opp.organization_name,
             }
             listing = listing_text(opp)
+            country = opp.data.get("location_country")
             findings = list(
                 await s.scalars(
                     select(ResearchFinding).where(
@@ -230,6 +235,7 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         "listing": listing,
         "supervisor": supervisor,
         "contact": contact,
+        "format": resolve_format(country, ctx.params.get("format")).as_dict(),
     }
 
 
@@ -240,7 +246,8 @@ def _route_after_gather(state: State) -> str:
 async def assemble(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
     doc_type = DocType(state["doc_type"])
     build_doc = assemble_resume if doc_type is DocType.RESUME else assemble_academic_cv
-    out = build_doc(state.get("name") or "Your name", state.get("facts", []))
+    profile = PROFILES[(state.get("format") or {}).get("key", DEFAULT_KEY)]
+    out = build_doc(state.get("name") or "Your name", state.get("facts", []), profile)
     await runtime.context.note(
         runtime.context.extras.get("current_step"),
         f"Assembled from {len(state.get('facts', []))} confirmed entries (no AI).",
@@ -305,7 +312,9 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
     provider = resolved.provider
     caps = provider.capabilities
     out_tokens = min(2048, caps.max_output_tokens)
-    system = SYSTEM_PROMPT.format(sections=", ".join(spec.sections))
+    system = SYSTEM_PROMPT.format(sections=", ".join(spec.sections)) + _format_guidance(
+        doc_type, state.get("format") or {}
+    )
     sections = [
         Section(
             "listing",
@@ -438,6 +447,7 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                     origin=v["origin"],
                     report={
                         **v["report"],
+                        "format": state.get("format"),
                         "supervisor": state.get("supervisor"),
                         "contact": state.get("contact"),
                     },
@@ -464,24 +474,44 @@ async def render_version(ctx: RunContext, document_id: uuid.UUID, number: int) -
         if doc is None or version is None:
             raise LookupError("The document was deleted before it could be rendered.")
         markdown, title = version.markdown, doc.title
-        md_hash = hashlib.sha256(markdown.encode()).hexdigest()
+        doc_type = DocType(doc.doc_type)
+        fmt = (version.report or {}).get("format") or resolve_format(None).as_dict()
+        findings = []
+        if doc.opportunity_id is not None:
+            findings = [
+                {"kind": f.kind, "field": f.field, "quote": f.quote, "summary": f.summary}
+                for f in await s.scalars(
+                    select(ResearchFinding).where(
+                        ResearchFinding.case_id == doc.case_id,
+                        ResearchFinding.opportunity_id == doc.opportunity_id,
+                    )
+                )
+            ]
+        md_hash = hashlib.sha256(
+            (markdown + str(fmt.get("key")) + str(len(findings))).encode()
+        ).hexdigest()
         existing = version.artifacts or {}
     if existing.get("markdown_sha256") == md_hash and existing.get("pdf") and existing.get("docx"):
         return dict(existing)
-    pdf = await html_to_pdf(markdown_to_html(markdown, title))
-    docx = markdown_to_docx(markdown, title)
+    paper = str(fmt.get("paper", "A4"))
+    pdf = await html_to_pdf(markdown_to_html(markdown, title, paper))
+    docx = markdown_to_docx(markdown, title, paper)
     artifacts: dict[str, Any] = {
         "markdown_sha256": md_hash,
         "rendered_at": datetime.now(UTC).isoformat(),
     }
-    for fmt, data, check in (("pdf", pdf, validate_pdf), ("docx", docx, validate_docx)):
+    for kind, data, check in (("pdf", pdf, validate_pdf), ("docx", docx, validate_docx)):
         key, digest = ctx.store.put(ctx.owner_user_id, data)
-        artifacts[fmt] = {
+        artifacts[kind] = {
             "key": key,
             "sha256": digest,
             "size": len(data),
             "checks": check(data, markdown),
         }
+    artifacts["compliance"] = check_document(
+        doc_type, markdown, artifacts["pdf"]["checks"].get("pages"), fmt, findings
+    )
+    artifacts["format"] = {"key": fmt.get("key"), "label": fmt.get("label"), "paper": paper}
     async with ctx.tenant() as s:
         version = await s.scalar(
             select(GeneratedDocumentVersion).where(
@@ -492,6 +522,18 @@ async def render_version(ctx: RunContext, document_id: uuid.UUID, number: int) -
         if version is not None:
             version.artifacts = artifacts
     return artifacts
+
+
+def _format_guidance(doc_type: DocType, fmt: dict[str, Any]) -> str:
+    """Length and convention hints for the model (the posting's own limits still win)."""
+    if not fmt:
+        return ""
+    limit = (fmt.get("page_limits") or {}).get(doc_type.value)
+    lines = [f"\nFormat: {fmt.get('label')}."]
+    if limit:
+        lines.append(f"Keep it within about {limit} page(s) (roughly {limit * 450} words).")
+    lines += [f"Convention: {n}" for n in fmt.get("notes", [])[:3]]
+    return "\n".join(lines)
 
 
 def _render_note(artifacts: dict[str, Any]) -> str:

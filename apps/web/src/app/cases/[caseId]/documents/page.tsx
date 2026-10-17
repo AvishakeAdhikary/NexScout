@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 
+import { FormatPicker } from "@/components/document-format";
 import { ErrorAlert } from "@/components/error-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -235,8 +236,9 @@ function ApplicationMaterials({ caseId }: { caseId: string }) {
     queryKey: ["generated", caseId],
     queryFn: () => generatedApi.list(caseId),
   });
+  const [format, setFormat] = useState("");
   const assemble = useMutation({
-    mutationFn: () => generatedApi.draft(caseId, { doc_type: "academic_cv" }),
+    mutationFn: () => generatedApi.draft(caseId, { doc_type: "academic_cv", format: format || null }),
   });
   const run = useRun(assemble.data?.run_id);
   const result = run.data?.run.result as { document_id?: string } | null | undefined;
@@ -250,6 +252,7 @@ function ApplicationMaterials({ caseId }: { caseId: string }) {
         Documents NexScout prepared for you. Statements of purpose, proposals and emails are
         drafted from a position&apos;s page (PhD opportunities → Research and prepare).
       </p>
+      <FormatPicker value={format} onChange={setFormat} />
       <Button variant="outline" className="self-start" onClick={() => assemble.mutate()} disabled={busy}>
         {busy ? "Assembling…" : "Create academic CV from my profile"}
       </Button>

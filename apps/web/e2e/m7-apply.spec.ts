@@ -48,7 +48,7 @@ test("fill a demo application form, approve, and get a confirmed submission", as
   // The resume has a contact placeholder: fill it, then create the files.
   const editor = page.getByRole("textbox", { name: "Text (Markdown)" });
   const md = await editor.inputValue();
-  await editor.fill(md.replace("[[PLACEHOLDER: contact details (email, phone, city)]]", "ada@example.com · Berlin"));
+  await editor.fill(md.replace(/\[\[PLACEHOLDER: contact details[^\]]*\]\]/, "ada@example.com · Amsterdam"));
   await page.getByRole("button", { name: "Save as new version" }).click();
   await expect(page.getByText("Edited by you")).toBeVisible();
   await page.getByRole("button", { name: "Create PDF and Word files" }).click();

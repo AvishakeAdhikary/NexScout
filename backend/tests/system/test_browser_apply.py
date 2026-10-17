@@ -5,6 +5,7 @@ ticked only after approval, exactly-once submission, observed vs uncertain outco
 hand-over, rejection, a crash mid-submit never resubmits, and SSRF-safe application URLs.
 """
 
+import re
 import socket
 import threading
 import time
@@ -93,8 +94,10 @@ async def _setup(client: httpx.AsyncClient, worker: Any) -> tuple[str, dict[str,
     ]
     # Like a real user: fill in the contact placeholder, then create the files for version 2.
     doc = (await client.get(f"/api/v1/generated-documents/{resume}")).json()
-    md = doc["current"]["markdown"].replace(
-        "[[PLACEHOLDER: contact details (email, phone, city)]]", "test@example.com"
+    md = re.sub(
+        r"\[\[PLACEHOLDER: contact details[^\]]*\]\]",
+        "test@example.com",
+        doc["current"]["markdown"],
     )
     await client.post(
         f"/api/v1/generated-documents/{resume}/versions", json={"markdown": md, "base_version": 1}

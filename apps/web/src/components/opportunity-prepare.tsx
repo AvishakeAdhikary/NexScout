@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { FormatPicker } from "@/components/document-format";
 import { ErrorAlert } from "@/components/error-alert";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -145,7 +146,6 @@ function DraftStatus({ runId, caseId }: { runId: string; caseId: string }) {
 
 const PHD_TYPES = ["sop", "research_proposal", "academic_cv", "inquiry_email"];
 const JOB_TYPES = ["resume", "cover_letter", "referral_request"];
-const NO_OPPORTUNITY = new Set(["academic_cv", "resume"]);
 
 function Referrals({
   caseId,
@@ -287,11 +287,13 @@ export function OpportunityPrepare({ academic }: { academic: boolean }) {
   const [drafts, setDrafts] = useState<string[]>([]);
   const [supervisor, setSupervisor] = useState("");
   const [referral, setReferral] = useState("");
+  const [format, setFormat] = useState("");
   const draft = useMutation({
     mutationFn: (docType: string) =>
       generatedApi.draft(caseId, {
         doc_type: docType,
-        opportunity_id: NO_OPPORTUNITY.has(docType) ? null : opportunityId,
+        opportunity_id: opportunityId, // documents follow this position's location format
+        format: format || null,
         supervisor_finding_id: docType === "inquiry_email" ? supervisor || null : null,
         affiliation_id: docType === "referral_request" ? referral || null : null,
       }),
@@ -390,6 +392,7 @@ export function OpportunityPrepare({ academic }: { academic: boolean }) {
           research. Every claim is checked; anything missing becomes a highlighted placeholder
           for you to fill. Nothing is sent to anyone.
         </p>
+        <FormatPicker caseId={caseId} opportunityId={opportunityId} value={format} onChange={setFormat} />
         {!academic && (
           <Referrals caseId={caseId} opportunityId={opportunityId} value={referral}
             onChange={setReferral} />

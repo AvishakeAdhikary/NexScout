@@ -1726,6 +1726,18 @@
             "title": "Doc Type",
             "type": "string"
           },
+          "format": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
           "opportunity_id": {
             "anyOf": [
               {
@@ -2311,6 +2323,57 @@
           "note"
         ],
         "title": "FindingOut",
+        "type": "object"
+      },
+      "FormatOut": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "page_limits": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Page Limits",
+            "type": "object"
+          },
+          "paper": {
+            "title": "Paper",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "paper",
+          "notes",
+          "page_limits"
+        ],
+        "title": "FormatOut",
         "type": "object"
       },
       "GapOut": {
@@ -7473,6 +7536,60 @@
         ]
       }
     },
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/document-format": {
+      "get": {
+        "description": "The format NexScout will use for this position, and why.",
+        "operationId": "opportunity_format_api_v1_cases__case_id__opportunities__opportunity_id__document_format_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "opportunity_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Opportunity Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FormatOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Opportunity Format",
+        "tags": [
+          "research"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/referrals": {
       "get": {
         "operationId": "get_referrals_api_v1_cases__case_id__opportunities__opportunity_id__referrals_get",
@@ -8321,6 +8438,32 @@
         "summary": "Diagnostics",
         "tags": [
           "tracking"
+        ]
+      }
+    },
+    "/api/v1/document-formats": {
+      "get": {
+        "description": "Regional formats NexScout can produce (conventions, not official rules).",
+        "operationId": "document_formats_api_v1_document_formats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FormatOut"
+                  },
+                  "title": "Response Document Formats Api V1 Document Formats Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Document Formats",
+        "tags": [
+          "research"
         ]
       }
     },

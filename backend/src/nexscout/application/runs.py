@@ -46,6 +46,7 @@ ALLOWED_PARAMS: dict[str, set[str]] = {
         "supervisor_finding_id",
         "affiliation_id",
         "provider_id",
+        "format",
     },
     "render_document": {"document_id", "version"},
     "browser_apply": {"application_id"},

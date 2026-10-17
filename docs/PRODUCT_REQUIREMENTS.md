@@ -33,6 +33,11 @@ Advanced diagnostics are opt-in.
 - **R-PHD-2** Requirement research with provenance, freshness and uncertainty.
 - **R-PHD-3** Generate SOP, research proposal, academic CV, inquiry emails, with placeholders for missing info.
 - **R-PHD-4** Verify every claim against accepted facts.
+- **R-DOC-1** Documents follow the conventions of the position's country (format, paper size, length,
+  layout). Fall back to an international format when the location is unknown. The user can override
+  the format.
+- **R-DOC-2** Rendered documents are checked against the posting's stated requirements (blocking)
+  and the format's conventions (warnings) before they can be uploaded.
 ### Jobs
 - **R-JOB-1** Source registry (enable, disable, configure).
 - **R-JOB-2** Normalization, entity resolution and deduplication. Repeated searches don't re-surface duplicates.

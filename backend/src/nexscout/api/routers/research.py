@@ -14,8 +14,10 @@ from nexscout.api.deps import CurrentActor, DbSession, ObjectStoreDep
 from nexscout.api.schemas import ApiModel, RunStartedOut
 from nexscout.application import generated_documents as gen
 from nexscout.application import research
+from nexscout.application.opportunities import get_opportunity
 from nexscout.application.referrals import referrals_for
 from nexscout.domain.drafting import DOC_SPECS, DocType
+from nexscout.domain.formats import PROFILES, resolve_format
 from nexscout.domain.research import is_stale
 from nexscout.infrastructure.db.models import (
     GeneratedDocument,
@@ -134,6 +136,35 @@ async def get_referrals(
     )
 
 
+class FormatOut(ApiModel):
+    key: str
+    label: str
+    paper: str
+    reason: str | None = None
+    notes: list[str]
+    page_limits: dict[str, int]
+
+
+@router.get("/document-formats", response_model=list[FormatOut])
+async def document_formats(actor: CurrentActor) -> list[FormatOut]:
+    """Regional formats NexScout can produce (conventions, not official rules)."""
+    return [
+        FormatOut(**{**resolve_format(None, key).as_dict(), "reason": None}) for key in PROFILES
+    ]
+
+
+@router.get(
+    "/cases/{case_id}/opportunities/{opportunity_id}/document-format", response_model=FormatOut
+)
+async def opportunity_format(
+    case_id: uuid.UUID, opportunity_id: uuid.UUID, actor: CurrentActor, db: DbSession
+) -> FormatOut:
+    """The format NexScout will use for this position, and why."""
+    view = await get_opportunity(db, actor, case_id, opportunity_id)
+    choice = resolve_format(view.opportunity.data.get("location_country"))
+    return FormatOut(**choice.as_dict())
+
+
 # --- Generated documents --------------------------------------------------------------------
 
 
@@ -150,6 +181,7 @@ class DraftIn(ApiModel):
     supervisor_finding_id: uuid.UUID | None = None
     affiliation_id: uuid.UUID | None = None
     provider_id: uuid.UUID | None = None
+    format: str | None = Field(default=None, max_length=40)
 
 
 class VersionSummaryOut(ApiModel):
@@ -204,6 +236,9 @@ def _files(v: GeneratedDocumentVersion) -> dict[str, Any]:
             out[fmt] = {"size": a.get("size"), "sha256": a.get("sha256"), "checks": a.get("checks")}
     if v.artifacts and v.artifacts.get("rendered_at"):
         out["rendered_at"] = v.artifacts["rendered_at"]
+    for key in ("compliance", "format"):
+        if v.artifacts and v.artifacts.get(key):
+            out[key] = v.artifacts[key]
     return out
 
 
@@ -279,6 +314,7 @@ async def draft_document(
         supervisor_finding_id=body.supervisor_finding_id,
         affiliation_id=body.affiliation_id,
         provider_id=body.provider_id,
+        format_key=body.format,
     )
     return RunStartedOut(run_id=run.id)
 

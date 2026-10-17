@@ -504,6 +504,18 @@ async def start_browser(session: AsyncSession, actor: Actor, app_id: uuid.UUID) 
             raise ValidationFailed(
                 "A chosen document still has placeholders. Fill them in before applying."
             )
+        compliance = (version.artifacts or {}).get("compliance") or {}
+        if compliance.get("status") == "blocking":
+            failed = [
+                c["rule"]
+                for c in compliance.get("checks", [])
+                if not c["ok"] and c["severity"] == "blocking"
+            ]
+            raise ValidationFailed(
+                "A chosen document doesn't meet the posting's requirements: "
+                + "; ".join(failed)
+                + ". Shorten or fix it, then create its files again."
+            )
     return await start_run(
         session,
         actor,

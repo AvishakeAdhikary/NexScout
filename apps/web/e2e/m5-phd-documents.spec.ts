@@ -59,12 +59,19 @@ test("research a position, draft a grounded SOP, edit it, and create files", asy
   await prof.getByText("Show source").click();
   await expect(prof.locator("blockquote")).toContainText("The position is supervised by");
 
+  // The position is in Germany, so documents follow German-speaking conventions (overridable).
+  await expect(page.getByRole("combobox", { name: "Document format" })).toContainText(
+    "Automatic: German-speaking",
+  );
   // Draft an SOP (mock model, labelled).
   await page.getByRole("button", { name: "Draft statement of purpose" }).click();
   await expect(page.getByText(/Draft ready: \d+ placeholder/)).toBeVisible({ timeout: 60_000 });
   await page.getByRole("link", { name: "Open it" }).click();
   await expect(page.getByRole("heading", { level: 1, name: /Statement of purpose/ })).toBeVisible();
   await expect(page.getByText("Mock text, not written by AI")).toBeVisible();
+  await expect(page.getByText(/Format: .*German-speaking/)).toBeVisible();
+  // The posting asks for at most 2 pages; that requirement is checked against the PDF.
+  await expect(page.getByText("At most 2 page(s), as the posting asks")).toBeVisible();
   await expect(page.getByText("Not ready to send")).toBeVisible();
   // The mock's unsupported claim was removed and explained, not kept.
   await expect(page.getByText(/12 peer-reviewed papers/)).toBeVisible();

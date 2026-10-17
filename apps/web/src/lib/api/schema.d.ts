@@ -586,6 +586,26 @@ export interface paths {
         patch: operations["set_status_api_v1_cases__case_id__opportunities__opportunity_id__patch"];
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/document-format": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Opportunity Format
+         * @description The format NexScout will use for this position, and why.
+         */
+        get: operations["opportunity_format_api_v1_cases__case_id__opportunities__opportunity_id__document_format_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/referrals": {
         parameters: {
             query?: never;
@@ -771,6 +791,26 @@ export interface paths {
         };
         /** Diagnostics */
         get: operations["diagnostics_api_v1_diagnostics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/document-formats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Document Formats
+         * @description Regional formats NexScout can produce (conventions, not official rules).
+         */
+        get: operations["document_formats_api_v1_document_formats_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1851,6 +1891,8 @@ export interface components {
             affiliation_id?: string | null;
             /** Doc Type */
             doc_type: string;
+            /** Format */
+            format?: string | null;
             /** Opportunity Id */
             opportunity_id?: string | null;
             /** Provider Id */
@@ -2063,6 +2105,23 @@ export interface components {
             value: {
                 [key: string]: unknown;
             };
+        };
+        /** FormatOut */
+        FormatOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Notes */
+            notes: string[];
+            /** Page Limits */
+            page_limits: {
+                [key: string]: number;
+            };
+            /** Paper */
+            paper: string;
+            /** Reason */
+            reason?: string | null;
         };
         /** GapOut */
         GapOut: {
@@ -4568,6 +4627,38 @@ export interface operations {
             };
         };
     };
+    opportunity_format_api_v1_cases__case_id__opportunities__opportunity_id__document_format_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                opportunity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormatOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_referrals_api_v1_cases__case_id__opportunities__opportunity_id__referrals_get: {
         parameters: {
             query?: never;
@@ -5117,6 +5208,26 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    document_formats_api_v1_document_formats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FormatOut"][];
                 };
             };
         };

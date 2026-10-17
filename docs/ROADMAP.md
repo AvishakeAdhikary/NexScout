@@ -6,7 +6,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 - **Date:** 2026-10-17
 - **Current milestone:** all milestones M0–M10 ✅ (see the open items below).
 - **Done so far:**
-  - M0: all §2.2 docs + ADR-0001…0011.
+  - M0: all §2.2 docs + ADR-0001…0012.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
     locking, audit log, forced RLS + least-privilege grants, health/readiness, CLI, compose,
     Dockerfiles, CI workflow, Next.js shell, E2E.
@@ -140,6 +140,20 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     - pip-audit, npm audit and a secret scan; a CI `security` job.
     - README, OPERATIONS (capacity, distribution), SECURITY, TESTING and KNOWN_LIMITATIONS final
       pass.
+  - Regional document formats (ADR-0012, R-DOC-1/2):
+    - The format follows the position's country, with an international fallback and a user
+      override.
+    - Paper size follows the format: US Letter or A4.
+    - Lebenslauf, Europass-style and referee conventions are supported.
+    - Posting page and word limits from research block uploads; convention limits only warn.
+    - UI: a format picker with the reason, and a compliance checklist on documents.
+  - Repository (2026-10-17):
+    - The old v1 `main` is tagged `v1-legacy` and merged with strategy `ours`, so this tree
+      replaces it without rewriting history.
+    - AGPL-3.0 LICENSE carried over.
+    - CI gained Chromium for backend tests and an E2E job.
+    - **The push to GitHub was blocked by the session's permission policy and is pending the
+      user's approval** (see the open items).
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -152,8 +166,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
      record a capability profile per provider.
   2. Connect real, permitted sources (job board APIs, institutional feeds, arXiv/ORCID opt-in)
      and test the browser flow on real application portals. Both are demo-only today.
-  3. Push to a remote and let GitHub Actions run; add an E2E CI job (Postgres service +
-     Chromium).
+  3. Push `main` and the tag `v1-legacy` to github.com/AvishakeAdhikary/NexScout:
+     `git push origin main` then `git push origin v1-legacy` (fast-forward; no force). The E2E
+     CI job exists. Then fix whatever the first Linux CI run shows.
   4. Code-sign the Windows installer; build and sign macOS and Linux on those platforms.
   5. Metrics exporter and alerting; API rate limiting beyond login.
   6. Optional: LLM-assisted extraction (same quote-must-be-substring rule), reduced-context
@@ -203,7 +218,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M10: `npm audit --omit=dev` (web) | 0 after moving the shadcn CLI to devDependencies. Full audit: 7 high via `braces` (dev tooling only, no fix available). Desktop: 8 moderate via electron-builder (packaging only) |
 | 2026-10-17 | M10: `scripts/secret_scan.py --history` | 317 tracked files + full history: 0 findings (the scanner was checked against planted keys) |
 | 2026-10-17 | M10: retention purge test | old events, audit rows and login attempts purged; recent data and sessions intact |
-| — | GitHub Actions CI | **not run** (no remote configured) |
+| 2026-10-17 | Regional formats: `uv run pytest` | **326 passed** (new: 20 format/compliance unit tests; 2 system tests: Germany → Lebenslauf on A4 (595×842 pt), Netherlands → Europass, unknown → international, US override → Letter (612×792 pt); a posting's "max. 2 pages" blocks an over-long statement from upload) |
+| 2026-10-17 | Regional formats: web tsc, eslint, vitest, `next build`; `npx playwright test` | passed; **12/12 E2E** (M5 journey now asserts the German format and the posting's 2-page check) |
+| — | GitHub Actions CI | **not run yet**: the push is pending the user's approval |
 
 ---
 

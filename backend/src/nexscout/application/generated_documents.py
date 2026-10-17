@@ -26,6 +26,7 @@ from nexscout.domain.errors import (
     PermissionDenied,
     ValidationFailed,
 )
+from nexscout.domain.formats import PROFILES
 from nexscout.infrastructure.db.models import (
     Affiliation,
     GeneratedDocument,
@@ -62,6 +63,7 @@ async def start_draft(
     supervisor_finding_id: uuid.UUID | None = None,
     affiliation_id: uuid.UUID | None = None,
     provider_id: uuid.UUID | None = None,
+    format_key: str | None = None,
 ) -> WorkflowRun:
     try:
         kind = DocType(doc_type)
@@ -102,7 +104,11 @@ async def start_draft(
             raise PermissionDenied(
                 "You haven't allowed NexScout to suggest a referral request to this person."
             )
+    if format_key is not None and format_key not in PROFILES:
+        raise ValidationFailed("Unknown document format.")
     params: dict[str, Any] = {"doc_type": kind.value}
+    if format_key:
+        params["format"] = format_key
     if opportunity_id:
         params["opportunity_id"] = str(opportunity_id)
     if supervisor_finding_id:
@@ -211,6 +217,7 @@ async def save_edit(
         )
     )
     number = int(last or 0) + 1
+    prev = await get_version(session, actor, document_id, doc.current_version)
     session.add(
         GeneratedDocumentVersion(
             owner_user_id=actor.user_id,
@@ -218,7 +225,7 @@ async def save_edit(
             number=number,
             markdown=markdown.replace("\r\n", "\n"),
             origin="user_edit",
-            report={"edited_from": base_version},
+            report={"edited_from": base_version, "format": (prev.report or {}).get("format")},
             placeholders=find_placeholders(markdown),
             artifacts={},
         )

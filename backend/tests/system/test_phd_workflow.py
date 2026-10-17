@@ -236,7 +236,9 @@ async def test_academic_cv_is_assembled_without_ai(
         assert heading in md
     assert "Python, PyTorch" in md
     assert "Private Person" not in md
-    assert cur["placeholders"] == ["contact details (email, phone, city)"]
+    # No position, so the international format (and its contact hint) is used.
+    assert cur["placeholders"] == ["contact details (city and country, phone, email)"]
+    assert cur["report"]["format"]["key"] == "international"
     with clean_db.connect() as conn:  # no model call
         assert conn.execute(text("SELECT count(*) FROM usage_records")).scalar() == 0
 

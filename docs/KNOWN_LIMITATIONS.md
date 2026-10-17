@@ -78,6 +78,17 @@ check their own setup with "Check connection" in Settings, which records the res
 - The backend container is about 2.1 GB because of headless Chromium.
 - Job documents: the resume is assembled from entries in a fixed order; there's no tailoring per job yet. Referral suggestions match by organization name only, so subsidiaries and renamed employers aren't linked.
 
+## Regional document formats (ADR-0012)
+- Six format profiles: North America, UK/Ireland, German-speaking, European (Europass-style),
+  Australia/New Zealand, and the international fallback. Every other country uses the fallback,
+  with a note.
+- These are conventions, not official rules. Posting requirements are checked only when
+  research quoted them (page and word limits for CVs, statements, letters and proposals).
+- Headings are in English. There's no translation into the posting's language and no standard
+  national forms (e.g. Japan's rirekisho).
+- The Lebenslauf format ends with place and date placeholders. NexScout never adds photos,
+  birth dates, signatures or declarations.
+
 ## Applications and browser automation (M7)
 - **Only tested against the bundled demo application site.** Real employer and university
   portals (multi-step wizards, custom widgets, single sign-on) haven't been tried. Unsupported
