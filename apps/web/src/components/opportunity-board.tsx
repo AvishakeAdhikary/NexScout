@@ -42,7 +42,7 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
   });
 
   return (
-    <article aria-labelledby={`opp-${opp.id}`} className="rounded-lg border p-3">
+    <article aria-labelledby={`opp-${opp.id}`} className="lift rounded-xl border bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h3 id={`opp-${opp.id}`} className="font-medium">

@@ -45,7 +45,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="animate-page w-full max-w-sm shadow-2xl shadow-primary/10 backdrop-blur">
       <CardHeader>
         <CardTitle>
           <h1 className="text-xl font-semibold">

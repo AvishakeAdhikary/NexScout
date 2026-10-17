@@ -87,6 +87,16 @@ check their own setup with "Check connection" in Settings, which records the res
 - A screenshot of each filled form is stored with the application (it can contain the values
   you entered).
 
+## Tracking, notifications and assistant (M8)
+- Notifications are in-app only. NexScout sends no email, SMS or push notifications; sending
+  messages is consequential and no outbound channel is configured.
+- Reminders and notifications are created by the worker's sweep. Without a running worker,
+  nothing new appears.
+- The assistant is a fixed-menu, rule-based router in English (no LLM). It understands a small
+  set of requests and says so otherwise. It never submits, sends or approves anything.
+- Bulk changes cover manual statuses only (tracking, completed, rejected, withdrawn, cancelled,
+  paused); each item is validated by the state machine.
+
 ## Agent runtime (M4)
 - Only four workflows exist: reading uploads, opportunity search, the AI summary draft, and a
   diagnostic system check. PhD and job document generation arrives in M5–M6.

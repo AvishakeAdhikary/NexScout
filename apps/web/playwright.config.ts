@@ -34,7 +34,11 @@ export default defineConfig({
       command: "uv run nexscout worker",
       cwd: "../../backend",
       // The demo application site is served by the API; the worker's browser goes there.
-      env: { NEXSCOUT_FIXTURE_SITE_ORIGIN: `http://127.0.0.1:${API_PORT}` },
+      // A fast maintenance sweep makes reminders/notifications appear within the test.
+      env: {
+        NEXSCOUT_FIXTURE_SITE_ORIGIN: `http://127.0.0.1:${API_PORT}`,
+        NEXSCOUT_MAINTENANCE_INTERVAL_S: "2",
+      },
       wait: { stdout: /worker_started/ },
       timeout: 120_000,
     },

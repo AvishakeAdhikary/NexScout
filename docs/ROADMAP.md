@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M8 Tracking and dashboard (⬜ next). M0–M7 ✅.
+- **Current milestone:** M9 Desktop, providers, MCP/A2A (⬜ next). M0–M8 ✅.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0010.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -92,6 +92,30 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
         choice, manual status actions, uncertain resolution, timeline with screenshots);
       - "Apply" section on position pages;
       - approval card shared with Agent Activity.
+  - M8 tracking:
+    - Migration `0007` adds reminders, notifications and chat_messages (RLS). There's a
+      column-level grant so users can see worker liveness without hostnames.
+    - The worker's maintenance sweep (every `NEXSCOUT_MAINTENANCE_INTERVAL_S`) is idempotent.
+      It creates deadline reminders (7 days and 1 day before), notifications for due reminders,
+      pending approvals and needs-you or uncertain applications. In-app only; nothing is emailed.
+    - Tracker: status and text filters, sort by deadline, bulk status changes validated per item,
+      and a CSV export protected against formula injection.
+    - Case dashboard: needs-you list, counts, the next 30 days, recent runs.
+    - Diagnostics (Settings): worker alive and busy, own queue, recent failures, provider checks.
+    - Assistant (chat): a deterministic fixed-menu intent router that calls the same use cases as
+      the screens. It refuses to submit or send.
+    - Notification bell; reminders on the application page.
+  - UI theme (requested 2026-10-17):
+    - Dark by default via next-themes, with a dark / light / system toggle in the top bar.
+    - "Night sky" indigo-violet palette for both themes.
+    - Open-source fonts self-hosted by next/font: Plus Jakarta Sans (text), Space Grotesk
+      (headings), JetBrains Mono (code and numbers). This also fixes an old bug where
+      `--font-sans` referred to itself, so the app had been rendering in Times New Roman.
+    - New SVG telescope logo and favicon (`components/logo.tsx`, `app/icon.svg`); the star
+      twinkles.
+    - Motion: page entrance (route template), card lift, popover and badge transitions. All of
+      it turns off with `prefers-reduced-motion`.
+    - Sidebar icons; the mind map follows the theme.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -99,22 +123,28 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   Studio (see KNOWN_LIMITATIONS provider matrix: none live-verified).
 - **Observed, not failing:** one `Failed to proxy … ECONNRESET` line from `next dev` during the
   M2 E2E (a request aborted by page navigation; the test passed).
-- **Next exact steps (M8 Tracking, dashboard, chat):**
-  1. Applications tracker: status and text filters, bulk status change (validated per item),
-     CSV export (owner-scoped), and deadline sorting on the list.
-  2. Reminders and notifications (migration 0007): `reminders` (application, due_at, kind,
-     done) and `notifications` (owned, read_at). A worker scheduler task creates deadline
-     reminders (7 days and 1 day before) and notifications for approvals and needs_user_action.
-     Notification bell in the top bar. No email sending (consequential; out of scope without a
-     configured channel).
-  3. Case dashboard widgets: counts by status, needs-you list (approvals, needs_user_action,
-     uncertain), upcoming deadlines, recent agent runs, profile gaps.
-  4. Diagnostics view (Settings): worker heartbeats, queue depth, last errors, provider checks.
-  5. Chat: a deterministic intent router (with an optional LLM planner constrained to the same
-     menu) that maps messages to the same use cases as the forms ("find PhD positions", "draft
-     my CV", "what needs me?", "status of <x>"). It never takes consequential actions; it links
-     to the screen that does.
-  6. Tests (unit, system, IDOR, E2E), docs, roadmap, commit.
+- **Next exact steps (M9 Desktop, providers, MCP/A2A):**
+  1. MCP server (official `mcp` Python SDK), read-only:
+     - Tools and resources scoped to one user via a personal access token: list cases,
+       confirmed profile entries, opportunities with explanations, applications and their
+       status.
+     - No write tools.
+     - Add a `personal_access_tokens` table (hashed, scoped, revocable) and an Account UI.
+     - `nexscout mcp` CLI (stdio).
+     - Tests: an in-process MCP client session; isolation across tokens.
+  2. MCP client for allowlisted external servers: deferred, with an ADR. No external server is
+     configured, so it can't be verified.
+  3. A2A: keep ADR-0007 (deferred, no remote agent consumer). Re-check the decision.
+  4. Electron shell (`apps/desktop`):
+     - contextIsolation, sandbox, no nodeIntegration, minimal preload IPC.
+     - Starts the bundled backend (api plus worker) against a configured Postgres, or connects
+       to a remote backend.
+     - safeStorage for the master key.
+     - electron-builder config.
+     - Build the Windows package if feasible; record what wasn't built (macOS, Linux signing).
+  5. Provider capability profiles: a "Check connection" record per provider, already done.
+     Document live verification as not done (no keys).
+  6. Tests, docs, roadmap, commit.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -144,6 +174,8 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M6: web tsc, eslint, vitest 12/12, `next build`; `npx playwright test` | passed; **10/10 E2E** incl. new job journey (strict-mode listing → research → referral picker shows only the permitted person, hint for the other → referral request + resume) |
 | 2026-10-17 | M7: ruff, format, mypy (106 files); `uv run pytest` | **251 passed** (new: form planning 5, browser system tests 6 against a real HTTP demo site with real headless Chromium: missing answer → needs you; nothing sent before approval; declarations only after approval; exactly once; reject; CAPTCHA hand-over + manual submit; uncertain → user resolves; crash mid-submit never resubmits; SSRF-checked URLs; IDOR +8 routes) |
 | 2026-10-17 | M7: web tsc, eslint, vitest, `next build`; `npx playwright test` | passed; **11/11 E2E** incl. new journey (resume → placeholder filled → files → start application → needs you → answer → filled → inline approval → confirmed with reference FX-… → screenshot in timeline) |
+| 2026-10-17 | M8: ruff, format, mypy (110 files); `uv run pytest` | **274 passed** (new: intent routing and CSV safety 19, tracking system tests 4: idempotent sweep with deadline reminders and notifications, dashboard + bulk + export, assistant routes and never submits, safe diagnostics; IDOR +10 routes) |
+| 2026-10-17 | M8 + theme: web tsc, eslint, vitest 12/12, `next build`; `npx playwright test` | passed; **12/12 E2E** incl. the new tracking journey (assistant refuses submit and starts a search → application → reminder → worker notification via the bell → dashboard "Coming up" → filter, bulk cancel, CSV export). Re-run after the dark theme, fonts and logo: 12/12 |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---
@@ -161,7 +193,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M5 | PhD research workflow | ✅ | Fixture workflow discovers opportunities, stores evidence, generates editable documents, and flags missing info without inventing facts |
 | M6 | Job discovery and matching | ✅ | Repeated searches don't duplicate. Matches and experience gaps are explained |
 | M7 | Browser automation and approvals | ✅ | Fixture application flow completes, stops at approval gates, and distinguishes confirmed from uncertain submission |
-| M8 | Tracking and dashboard | ⬜ | Track applications, inspect agent work, pause workflows, review documents and resolve blocked tasks in the UI |
+| M8 | Tracking and dashboard | ✅ | Track applications, inspect agent work, pause workflows, review documents and resolve blocked tasks in the UI |
 | M9 | Desktop and providers | ⬜ | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |
 | M10 | Production hardening | ⬜ | Security, isolation, concurrency and recovery tests pass. Backup and restore and migration upgrades are tested. Deployment is reproducible |
 

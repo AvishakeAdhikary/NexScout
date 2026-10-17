@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
+import { DashboardWidgets } from "@/components/dashboard-widgets";
 import { ErrorAlert } from "@/components/error-alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { casesApi, type CareerPath } from "@/lib/api/client";
@@ -49,6 +50,8 @@ export default function CaseDashboard() {
         <h1 className="text-2xl font-semibold">{c.name}</h1>
         {c.description && <p className="mt-1 text-muted-foreground">{c.description}</p>}
       </header>
+
+      <DashboardWidgets caseId={caseId} />
 
       <Card>
         <CardHeader>
@@ -101,7 +104,7 @@ export default function CaseDashboard() {
             <li key={s.slug}>
               <Link
                 href={`/cases/${caseId}/${s.slug}`}
-                className="block h-full rounded-lg border p-3 hover:bg-muted"
+                className="lift block h-full rounded-xl border bg-card p-3"
               >
                 <span className="font-medium">{s.label}</span>
                 <p className="text-sm text-muted-foreground">{s.description}</p>

@@ -76,7 +76,16 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
         )
     ).json()
     app_event = (await client.get(f"/api/v1/applications/{application['id']}")).json()["events"][0]
+    reminder = (
+        await client.post(
+            f"/api/v1/cases/{case_id}/reminders", json={"title": "Mine", "due_on": "2026-01-01"}
+        )
+    ).json()
+    await worker.maintenance_once()  # notifications for the pending approval and the reminder
+    note = (await client.get("/api/v1/notifications")).json()["items"][0]
     return {
+        "reminder_id": reminder["id"],
+        "notification_id": note["id"],
         "application_id": application["id"],
         "app_event_id": app_event["id"],
         "app_version": str(application["version"]),
@@ -112,7 +121,22 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
     )
     g, vn, fmt = ids["gen_document_id"], ids["version_number"], ids["fmt"]
     ap, ev, av = ids["application_id"], ids["app_event_id"], int(ids["app_version"])
+    rem, note = ids["reminder_id"], ids["notification_id"]
     return [
+        ("POST", f"/api/v1/notifications/{note}/read", None),
+        ("GET", f"/api/v1/cases/{c}/reminders", None),
+        ("POST", f"/api/v1/cases/{c}/reminders", {"title": "x", "due_on": "2026-01-01"}),
+        ("PATCH", f"/api/v1/reminders/{rem}", {"done": True}),
+        ("DELETE", f"/api/v1/reminders/{rem}", None),
+        ("GET", f"/api/v1/cases/{c}/dashboard", None),
+        ("GET", f"/api/v1/cases/{c}/chat", None),
+        ("POST", f"/api/v1/cases/{c}/chat", {"message": "what needs me?"}),
+        (
+            "POST",
+            f"/api/v1/cases/{c}/applications/bulk-status",
+            {"ids": [ap], "status": "cancelled"},
+        ),
+        ("GET", f"/api/v1/cases/{c}/applications/export.csv", None),
         ("POST", f"/api/v1/cases/{c}/applications", {"opportunity_id": o, "document_ids": []}),
         ("GET", f"/api/v1/cases/{c}/applications", None),
         ("GET", f"/api/v1/applications/{ap}", None),
@@ -219,6 +243,10 @@ async def test_other_user_gets_404_everywhere(
     assert run["run"]["status"] == "waiting_approval"  # intruder could not cancel or approve
     assert run["approvals"][0]["status"] == "pending"
     assert [p["name"] for p in (await client.get("/api/v1/providers")).json()] == ["Mine"]
+    notes = (await client.get("/api/v1/notifications")).json()
+    assert notes["unread"] >= 1  # intruder could not mark them read
+    rems = (await client.get(f"/api/v1/cases/{ids['case_id']}/reminders")).json()
+    assert [r["done"] for r in rems if r["title"] == "Mine"] == [False]
     owned = (await client.get(f"/api/v1/applications/{ids['application_id']}")).json()
     assert owned["status"] == "preparing"
     assert owned["notes"] is None
@@ -253,6 +281,8 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "gen_document_id",
             "application_id",
             "app_event_id",
+            "reminder_id",
+            "notification_id",
         )
     }
     sentinel["app_version"] = "1"

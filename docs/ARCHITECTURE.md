@@ -62,6 +62,14 @@ Documents, Relationships, Agent Activity, Settings. Data comes from TanStack Que
 contracts. SSE drives live activity. A case switcher sits in the header (the active case is stored in
 the URL as `/cases/[caseId]/...`).
 
+### Look and feel (as built)
+- Dark by default with a light or system toggle (next-themes, a `class` on `<html>`).
+- Shadcn tokens in OKLCH ("night sky" indigo-violet); fonts from next/font: Plus Jakarta Sans,
+  Space Grotesk, JetBrains Mono.
+- A scalable SVG logo, plus `app/icon.svg`.
+- Motion uses CSS only (tw-animate-css plus a few keyframes). `prefers-reduced-motion` turns it
+  all off.
+
 ## 6. Deployment modes
 - **Dev:** `docker compose up -d postgres`, with api, worker and web run natively (hot reload). Or all
   in compose with the `full` profile.

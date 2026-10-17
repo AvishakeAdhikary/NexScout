@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     worker_poll_s: float = Field(default=2.0, gt=0)
     worker_shutdown_grace_s: int = Field(default=30, ge=1)
     task_max_attempts: int = Field(default=3, ge=1, le=20)
+    maintenance_interval_s: float = Field(default=60.0, ge=1.0)
 
     # Providers: allow base URLs on private/loopback networks (needed for Ollama/LM Studio on
     # this machine). Disable on multi-user servers to prevent SSRF into internal services.

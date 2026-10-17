@@ -57,6 +57,9 @@ OWNED_TABLES: tuple[str, ...] = (
     "generated_document_versions",
     "applications",
     "application_events",
+    "reminders",
+    "notifications",
+    "chat_messages",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
@@ -1037,4 +1040,85 @@ class ApplicationEvent(IdMixin, Base):
     __table_args__ = (
         CheckConstraint("actor IN ('user','agent','system')", name="actor_valid"),
         Index("ix_application_events_app", "application_id", "seq"),
+    )
+
+
+# --- M8: reminders, notifications, chat --------------------------------------------------------
+
+
+class Reminder(IdMixin, Base):
+    """A dated reminder (deadline reminders are created by the worker's maintenance sweep)."""
+
+    __tablename__ = "reminders"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    application_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("applications.id", ondelete="CASCADE")
+    )
+    kind: Mapped[str] = mapped_column(String(20), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    due_on: Mapped[str] = mapped_column(String(10), nullable=False)  # YYYY-MM-DD
+    dedupe_key: Mapped[str | None] = mapped_column(String(200))
+    done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        case_fk(),
+        UniqueConstraint("owner_user_id", "dedupe_key", name="uq_reminders_dedupe"),
+        CheckConstraint("kind IN ('deadline','follow_up','custom')", name="kind_valid"),
+        Index("ix_reminders_case_due", "case_id", "due_on"),
+    )
+
+
+class Notification(IdMixin, Base):
+    """Something that needs the user's attention. Never sent outside the app."""
+
+    __tablename__ = "notifications"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    case_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("candidate_cases.id", ondelete="CASCADE")
+    )
+    kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    body: Mapped[str | None] = mapped_column(String(1000))
+    link: Mapped[str | None] = mapped_column(String(500))
+    dedupe_key: Mapped[str] = mapped_column(String(200), nullable=False)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint("owner_user_id", "dedupe_key", name="uq_notifications_dedupe"),
+        Index("ix_notifications_owner_created", "owner_user_id", "created_at"),
+    )
+
+
+class ChatMessage(IdMixin, Base):
+    """The case assistant's conversation (user messages and replies)."""
+
+    __tablename__ = "chat_messages"
+
+    seq: Mapped[int] = mapped_column(BigInteger, Identity(always=True), nullable=False)
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    role: Mapped[str] = mapped_column(String(10), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    intent: Mapped[str | None] = mapped_column(String(40))
+    actions: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        case_fk(),
+        CheckConstraint("role IN ('user','assistant')", name="role_valid"),
+        Index("ix_chat_messages_case_seq", "case_id", "seq"),
     )

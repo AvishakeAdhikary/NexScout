@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
+import { DiagnosticsPanel } from "@/components/diagnostics-panel";
 import { ErrorAlert } from "@/components/error-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -317,6 +318,7 @@ export default function SettingsPage() {
         </ul>
       </section>
       <AddProvider />
+      <DiagnosticsPanel />
     </div>
   );
 }

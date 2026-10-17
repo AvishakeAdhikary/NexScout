@@ -7,6 +7,7 @@ import { useState, type FormEvent } from "react";
 
 import { ApprovalCard } from "@/components/approval-card";
 import { ErrorAlert } from "@/components/error-alert";
+import { RemindersPanel } from "@/components/reminders-panel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -256,6 +257,8 @@ export default function ApplicationPage() {
           <ErrorAlert error={setStatus.error} />
         </section>
       )}
+
+      <RemindersPanel caseId={caseId} applicationId={app.id} />
 
       <Timeline app={app} />
     </div>

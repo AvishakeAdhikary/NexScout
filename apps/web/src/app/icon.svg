@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="0.55" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.8" cy="0.2" r="0.6">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="9" fill="url(#sky)"/>
+  <rect width="32" height="32" rx="9" fill="url(#glow)"/>
+  <g fill="#fff">
+    <g transform="rotate(-28 16 17)">
+      <rect x="5" y="14.4" width="2.6" height="2.4" rx="0.6" opacity="0.85"/>
+      <rect x="7.5" y="13" width="13" height="5.2" rx="1.6" opacity="0.95"/>
+      <rect x="20.5" y="12" width="4" height="7.2" rx="1.4"/>
+    </g>
+    <circle cx="14.6" cy="19.2" r="1.5"/>
+  </g>
+  <path d="M14.6 19.6 10.2 27.4M14.6 19.6l4.4 7.8M14.6 19.6v7.8" stroke="#fff" stroke-width="1.7" stroke-linecap="round" fill="none" opacity="0.9"/>
+  <path fill="#fff" d="M26 3.6l.75 1.95L28.7 6.3l-1.95.75L26 9l-.75-1.95L23.3 6.3l1.95-.75z"/>
+  <circle cx="21" cy="4.6" r="0.6" fill="#fff" opacity="0.6"/>
+  <circle cx="28.6" cy="11.2" r="0.5" fill="#fff" opacity="0.5"/>
+</svg>

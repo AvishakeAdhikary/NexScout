@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexscout.application.actor import Actor
@@ -18,7 +18,13 @@ from nexscout.application.cases import get_case
 from nexscout.application.opportunities import get_opportunity
 from nexscout.application.runs import start_run
 from nexscout.config import Settings
-from nexscout.domain.errors import ConcurrencyConflict, Conflict, NotFound, ValidationFailed
+from nexscout.domain.errors import (
+    ConcurrencyConflict,
+    Conflict,
+    InvalidTransition,
+    NotFound,
+    ValidationFailed,
+)
 from nexscout.domain.forms import normalize_question
 from nexscout.domain.state_machines import APPLICATION_MACHINE, ApplicationStatus
 from nexscout.infrastructure.db.models import (
@@ -252,16 +258,102 @@ async def get_application(
 
 
 async def list_applications(
-    session: AsyncSession, actor: Actor, case_id: uuid.UUID
+    session: AsyncSession,
+    actor: Actor,
+    case_id: uuid.UUID,
+    *,
+    status: str | None = None,
+    q: str | None = None,
+    sort: str = "updated",
 ) -> list[Application]:
     await get_case(session, actor, case_id)
-    return list(
-        await session.scalars(
-            select(Application)
-            .where(Application.owner_user_id == actor.user_id, Application.case_id == case_id)
-            .order_by(Application.updated_at.desc())
-        )
+    stmt = select(Application).where(
+        Application.owner_user_id == actor.user_id, Application.case_id == case_id
     )
+    if status:
+        stmt = stmt.where(Application.status.in_(status.split(",")))
+    if q:
+        like = f"%{q.strip().lower()}%"
+        title, org = func.lower(Application.title), func.lower(Application.organization)
+        stmt = stmt.where(title.like(like) | org.like(like))
+    if sort == "deadline":
+        stmt = stmt.order_by(Application.deadline.asc().nulls_last(), Application.title)
+    else:
+        stmt = stmt.order_by(Application.updated_at.desc())
+    return list(await session.scalars(stmt))
+
+
+async def bulk_status(
+    session: AsyncSession, actor: Actor, case_id: uuid.UUID, ids: list[uuid.UUID], target: str
+) -> list[dict[str, Any]]:
+    """Apply one manual status change to many applications; each is validated on its own."""
+    await get_case(session, actor, case_id)
+    results: list[dict[str, Any]] = []
+    for app_id in ids[:200]:
+        app = await session.scalar(
+            select(Application).where(
+                Application.id == app_id,
+                Application.owner_user_id == actor.user_id,
+                Application.case_id == case_id,
+            )
+        )
+        if app is None:
+            results.append({"id": str(app_id), "ok": False, "error": "Not found."})
+            continue
+        try:
+            async with session.begin_nested():
+                await change_status(session, actor, app.id, version=app.version, target=target)
+            results.append({"id": str(app_id), "ok": True, "error": None})
+        except (ValidationFailed, InvalidTransition) as exc:
+            results.append({"id": str(app_id), "ok": False, "error": str(exc).split(": ", 1)[-1]})
+    return results
+
+
+def _csv_cell(value: Any) -> str:
+    text = "" if value is None else str(value)
+    # Spreadsheet formula injection: neutralize cells that a spreadsheet would evaluate.
+    return "'" + text if text[:1] in ("=", "+", "-", "@", "\t", "\r") else text
+
+
+async def export_csv(session: AsyncSession, actor: Actor, case_id: uuid.UUID) -> str:
+    import csv
+    import io
+
+    rows = await list_applications(session, actor, case_id, sort="deadline")
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(
+        [
+            "title",
+            "organization",
+            "status",
+            "deadline",
+            "submitted_at",
+            "evidence",
+            "reference",
+            "apply_url",
+            "updated_at",
+        ]
+    )
+    for a in rows:
+        ev = a.evidence or {}
+        w.writerow(
+            [
+                _csv_cell(v)
+                for v in (
+                    a.title,
+                    a.organization,
+                    a.status,
+                    a.deadline,
+                    a.submitted_at.isoformat() if a.submitted_at else "",
+                    ev.get("source", ""),
+                    ev.get("reference", ""),
+                    a.apply_url,
+                    a.updated_at.isoformat(),
+                )
+            ]
+        )
+    return buf.getvalue()
 
 
 def _expect(app: Application, version: int) -> None:

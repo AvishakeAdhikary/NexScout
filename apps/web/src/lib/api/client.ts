@@ -411,3 +411,58 @@ export const applicationsApi = {
   screenshotUrl: (id: string, eventId: string) =>
     `/api/v1/applications/${e(id)}/events/${e(eventId)}/screenshot`,
 };
+
+// ------------------------------------------------------------------ M8: tracking, dashboard, chat
+export type NotificationsOut = S["NotificationsOut"];
+export type ReminderOut = S["ReminderOut"];
+export type ChatMessageOut = S["ChatMessageOut"];
+
+export interface DashboardOut {
+  applications_by_status: Record<string, number>;
+  applications_total: number;
+  needs_you: { kind: string; title: string; href: string }[];
+  upcoming: { kind: string; date: string; title: string; href: string }[];
+  recent_runs: { id: string; title: string; status: string; created_at: string }[];
+  profile: { accepted: number; pending: number; gaps: number };
+  opportunities: { matches: number; shortlisted: number };
+}
+
+export interface DiagnosticsOut {
+  app_version: string;
+  database: string;
+  workers_alive: number;
+  worker_last_seen: string | null;
+  worker_busy: number;
+  my_tasks: { queued: number; running: number };
+  recent_failures: { id: string; title: string; error: string | null; case_id: string; created_at: string }[];
+  providers: { name: string; kind: string; last_check: boolean | null; checked_at: string | null }[];
+}
+
+export const trackingApi = {
+  notifications: () => api<NotificationsOut>("/notifications"),
+  read: (id: string) => api<void>(`/notifications/${e(id)}/read`, { method: "POST" }),
+  readAll: () => api<void>("/notifications/read-all", { method: "POST" }),
+  reminders: (caseId: string) => api<ReminderOut[]>(`${c(caseId)}/reminders`),
+  addReminder: (caseId: string, title: string, dueOn: string, applicationId?: string) =>
+    api<ReminderOut>(`${c(caseId)}/reminders`, {
+      method: "POST",
+      body: { title, due_on: dueOn, application_id: applicationId ?? null },
+    }),
+  setDone: (id: string, done: boolean) =>
+    api<ReminderOut>(`/reminders/${e(id)}`, { method: "PATCH", body: { done } }),
+  dashboard: (caseId: string) => api<DashboardOut>(`${c(caseId)}/dashboard`),
+  diagnostics: () => api<DiagnosticsOut>("/diagnostics"),
+  chatHistory: (caseId: string) => api<ChatMessageOut[]>(`${c(caseId)}/chat`),
+  chat: (caseId: string, message: string) =>
+    api<ChatMessageOut[]>(`${c(caseId)}/chat`, { method: "POST", body: { message } }),
+  listApplications: (caseId: string, params: { status?: string; q?: string; sort?: string }) => {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);
+    return api<ApplicationOut[]>(`${c(caseId)}/applications${qs.size ? `?${qs}` : ""}`);
+  },
+  bulkStatus: (caseId: string, ids: string[], status: string) =>
+    api<{ id: string; ok: boolean; error: string | null }[]>(`${c(caseId)}/applications/bulk-status`, {
+      method: "POST",
+      body: { ids, status },
+    }),
+  exportUrl: (caseId: string) => `/api/v1${c(caseId)}/applications/export.csv`,
+};

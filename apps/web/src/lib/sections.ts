@@ -46,6 +46,11 @@ export const SECTIONS: readonly Section[] = [
     description: "Affiliations, and whether you allow them to be used in applications.",
   },
   {
+    slug: "assistant",
+    label: "Assistant",
+    description: "Ask what needs you, check statuses, or start a search in your own words.",
+  },
+  {
     slug: "activity",
     label: "Agent Activity",
     description: "Live view of running workflows. Pause, resume, approve, or cancel.",

@@ -42,7 +42,7 @@ export default function CasesPage() {
   }
 
   return (
-    <main id="main" className="mx-auto flex w-full max-w-4xl flex-col gap-8 p-6">
+    <main id="main" className="animate-page mx-auto flex w-full max-w-4xl flex-col gap-8 p-6">
       <section aria-labelledby="cases-heading" className="flex flex-col gap-3">
         <h1 id="cases-heading" className="text-2xl font-semibold">
           Your cases
@@ -64,7 +64,7 @@ export default function CasesPage() {
               <li key={c.id}>
                 <Link
                   href={`/cases/${c.id}`}
-                  className="block rounded-lg border p-4 hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                  className="lift block rounded-xl border bg-card p-4 focus-visible:outline-2 focus-visible:outline-ring"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium">{c.name}</span>

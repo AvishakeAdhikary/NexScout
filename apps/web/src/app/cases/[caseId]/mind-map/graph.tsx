@@ -15,6 +15,7 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
+import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 
 import type { MindEdgeOut, MindNodeOut } from "@/lib/api/client";
@@ -33,7 +34,7 @@ function MindNode({ data }: NodeProps<Node<MindNodeData>>) {
   const style = STATUS_STYLE[n.kind === "fact" ? (n.status ?? "") : n.kind] ?? STATUS_STYLE.section;
   return (
     <div
-      className={`rounded-lg border-2 bg-background px-2 py-1 text-xs shadow-sm ${style.border} ${data.selected ? "ring-2 ring-ring" : ""}`}
+      className={`rounded-xl border-2 bg-card px-2.5 py-1.5 text-xs shadow-md ${style.border} ${data.selected ? "ring-2 ring-ring" : ""}`}
       style={{ width: NODE_W }}
     >
       <Handle type="target" position={Position.Left} className="!opacity-0" />
@@ -125,13 +126,17 @@ export function MindGraph({
       labelStyle: { fontSize: 10 },
     }));
 
+  const { resolvedTheme } = useTheme();
+
   return (
-    <div className="h-[600px] w-full rounded-lg border" aria-label="Mind map graph">
+    <div className="h-[600px] w-full overflow-hidden rounded-xl border bg-card" aria-label="Mind map graph">
       <ReactFlow
+        colorMode={resolvedTheme === "light" ? "light" : "dark"}
         nodes={rfNodes}
         edges={rfEdges}
         nodeTypes={nodeTypes}
         fitView
+        fitViewOptions={{ maxZoom: 1.1, padding: 0.2 }}
         minZoom={0.2}
         nodesConnectable={false}
         onNodeClick={(_, node) => onSelect(node.id)}

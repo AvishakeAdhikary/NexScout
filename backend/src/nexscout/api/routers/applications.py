@@ -165,9 +165,44 @@ async def create_application(
 
 @router.get("/cases/{case_id}/applications", response_model=list[ApplicationOut])
 async def list_applications(
-    case_id: uuid.UUID, actor: CurrentActor, db: DbSession
+    case_id: uuid.UUID,
+    actor: CurrentActor,
+    db: DbSession,
+    status: str | None = None,
+    q: str | None = None,
+    sort: str = "updated",
 ) -> list[ApplicationOut]:
-    return [_out(a) for a in await apps.list_applications(db, actor, case_id)]
+    rows = await apps.list_applications(db, actor, case_id, status=status, q=q, sort=sort)
+    return [_out(a) for a in rows]
+
+
+class BulkStatusIn(ApiModel):
+    ids: list[uuid.UUID] = Field(min_length=1, max_length=200)
+    status: str
+
+
+class BulkResultOut(ApiModel):
+    id: str
+    ok: bool
+    error: str | None
+
+
+@router.post("/cases/{case_id}/applications/bulk-status", response_model=list[BulkResultOut])
+async def bulk_status(
+    case_id: uuid.UUID, body: BulkStatusIn, actor: CurrentActor, db: DbSession
+) -> list[BulkResultOut]:
+    results = await apps.bulk_status(db, actor, case_id, body.ids, body.status)
+    return [BulkResultOut(**r) for r in results]
+
+
+@router.get("/cases/{case_id}/applications/export.csv")
+async def export_csv(case_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> Response:
+    data = await apps.export_csv(db, actor, case_id)
+    return Response(
+        content=data.encode("utf-8-sig"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="applications.csv"'},
+    )
 
 
 @router.get("/applications/{application_id}", response_model=ApplicationDetailOut)

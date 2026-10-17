@@ -135,6 +135,7 @@ class Worker:
                 self._reaper_loop(),
                 self._listen_loop(),
                 self._housekeeping_loop(),
+                self._maintenance_loop(),
             )
         ]
         try:
@@ -302,6 +303,19 @@ class Worker:
             await asyncio.sleep(300)
             with contextlib.suppress(Exception):
                 await self.purge_orphan_checkpoints()
+
+    async def _maintenance_loop(self) -> None:
+        while True:
+            with contextlib.suppress(Exception):
+                await self.maintenance_once()
+            await asyncio.sleep(self.settings.maintenance_interval_s)
+
+    async def maintenance_once(self) -> dict[str, int]:
+        """Deadline reminders and in-app notifications (idempotent, see notifications.py)."""
+        from nexscout.application.notifications import run_maintenance
+
+        async with self.system_sessions() as s, s.begin():
+            return await run_maintenance(s)
 
     async def purge_orphan_checkpoints(self) -> int:
         """Delete LangGraph state for runs that no longer exist (deleted case or account)."""
