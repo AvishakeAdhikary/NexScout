@@ -111,6 +111,21 @@ An LLM is never asked whether a safety rule may be skipped.
   channel (pairing code or verified chat/user id), verified signatures where the provider signs, and
   idempotent per provider event id. A chat message can approve only what it was sent for.
 
+## 4b. Autopilot (M12, ADR-0014)
+- The autopilot is a **level-triggered reconciler** (`application/autopilot.py`, run on every worker
+  maintenance tick) plus the `autopilot_cycle` workflow (discover → shortlist → report). It moves each
+  `autopilot_items` row one stage at a time by calling the **same use cases as the screens**. Never add
+  an autopilot-only path that skips a check the screens enforce (placeholders, compliance, approvals).
+- Auto-submit happens only via `domain/policy.may_auto_submit`, evaluated inside `browser_apply` at
+  approval time. A policy approval is recorded with `RunContext.record_policy_approval` (status
+  `approved`, audited); consent strings must match `AUTO_SUBMIT_CONSENT`/`DECLARATIONS_CONSENT` exactly.
+- Questions (form fields, document placeholders) go out as `question` notifications; answers land in
+  `case_answers` via `application/answers.record_answer`. The planner reads the bank first, then the
+  application's own answers. Never fill a placeholder or field from anything but the user's answers.
+- Kill switch: `autopilot.stop_all` (UI, `POST /autopilot/stop`, or STOP from a paired chat).
+- Assisted mode (`browser_assist`) opens a visible window only where `NEXSCOUT_ASSISTED_BROWSER` is on
+  (desktop/local). NexScout never clicks submit there; it only observes the confirmation.
+
 ## 5. Workflow runtime rules
 - Every task has: input schema, output schema, allowed tools, completion condition, timeout,
   retry policy, resource limits, dependencies and an idempotency key.

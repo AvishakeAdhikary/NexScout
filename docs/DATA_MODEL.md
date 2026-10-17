@@ -66,6 +66,20 @@ opportunity links.
 - **notifications.data** (JSONB): structured context such as approval_id, application_id or the
   question.
 
+### M12 Autopilot (✅ migration 0011, ADR-0014; all owned + RLS)
+- **autopilot_policies** (one per case): enabled, interval_hours, next/last run, steps (discover,
+  research, documents, fill, submit), min_fit, max_new_per_run, daily_submit_cap, per_org_cap,
+  countries, kinds, exclude_orgs, doc_types, auto_submit, declarations, consent_text +
+  consented_at (verbatim statement), stopped_reason, version.
+- **autopilot_items** (one per case × opportunity): stage (queued → researching → drafting →
+  rendering → needs_input → applying → waiting_approval/needs_user_action → submitted, or
+  manual/skipped/failed/stopped), reason, application_id, child_run_ids, document_ids, attempts,
+  fit, title, organization.
+- **case_answers**: question_key (normalized), question, answer (the user's own words), source
+  (`user`, `app`, `chat:<channel>`). Unique per (case, question_key).
+- The worker's system role may only SELECT policies and items to find work; all changes are made
+  in the owner's tenant session.
+
 ## Migration policy
 - Forward-only in production. Each revision is tested by upgrading from the previous head with
   representative data (`tests/integration/test_migrations.py`).

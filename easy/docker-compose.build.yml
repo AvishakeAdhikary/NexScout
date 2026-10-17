@@ -1,0 +1,9 @@
+# Only for a source checkout: build the images locally instead of pulling released ones
+# (used automatically by the Start scripts when the pull fails, e.g. before the first release).
+services:
+  api:
+    build: { context: .., dockerfile: docker/backend.Dockerfile }
+  worker:
+    build: { context: .., dockerfile: docker/backend.Dockerfile }
+  web:
+    build: { context: .., dockerfile: docker/web.Dockerfile }

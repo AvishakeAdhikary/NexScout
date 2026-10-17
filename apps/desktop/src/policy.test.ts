@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { appUrl, isAppNavigation, isSafeExternal, parseConfig, safeHttpUrl } from "./policy";
+import {
+  appUrl,
+  DEFAULT_EASY_PORT,
+  dockerCandidates,
+  easyEnv,
+  isAppNavigation,
+  isSafeExternal,
+  parseConfig,
+  safeHttpUrl,
+} from "./policy";
 
 describe("desktop policy", () => {
   it("accepts https anywhere but http only on this machine", () => {
@@ -39,5 +48,30 @@ describe("desktop policy", () => {
     expect(isSafeExternal("file:///C:/Windows/system32/calc.exe")).toBe(false);
     expect(isSafeExternal("ms-msdt:/id")).toBe(false);
     expect(appUrl({ mode: "local", checkoutDir: "x", webPort: 18901 })).toBe("http://127.0.0.1:18901");
+  });
+
+  it("easy mode: loopback only, validated secrets, matching image version", () => {
+    expect(parseConfig({ mode: "easy" })).toEqual({ mode: "easy", webPort: DEFAULT_EASY_PORT });
+    expect(parseConfig({ mode: "easy", webPort: 22 })).toEqual({ mode: "easy", webPort: DEFAULT_EASY_PORT });
+    expect(appUrl({ mode: "easy", webPort: 18777 })).toBe("http://127.0.0.1:18777");
+    const key = Buffer.alloc(32, 7).toString("base64");
+    const env = easyEnv({ masterKey: key, dbPassword: "a".repeat(48), port: 18700, version: "2.3.0" });
+    expect(env.NEXSCOUT_VERSION).toBe("2.3.0");
+    expect(env.NEXSCOUT_PUBLIC_WEB_URL).toBe("http://127.0.0.1:18700");
+    expect(easyEnv({ masterKey: key, dbPassword: "b".repeat(48), port: 1, version: "0.1.0" }).NEXSCOUT_VERSION).toBe(
+      "latest",
+    );
+    // Nothing that could break out of an environment variable or a command line.
+    expect(() => easyEnv({ masterKey: "x;rm -rf /", dbPassword: "a".repeat(48), port: 1, version: "1" })).toThrow();
+    expect(() => easyEnv({ masterKey: key, dbPassword: "p w", port: 1, version: "1" })).toThrow();
+  });
+
+  it("finds Docker Desktop where it installs", () => {
+    const win = dockerCandidates("win32", { ProgramFiles: "C:\\Program Files", LOCALAPPDATA: "C:\\Users\\a\\AppData\\Local" });
+    expect(win).toEqual([
+      "C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe",
+      "C:\\Users\\a\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe",
+    ]);
+    expect(dockerCandidates("darwin", {})).toContain("/Applications/Docker.app/Contents/Resources/bin/docker");
   });
 });

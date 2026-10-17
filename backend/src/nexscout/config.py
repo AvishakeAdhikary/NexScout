@@ -82,6 +82,15 @@ class Settings(BaseSettings):
     channels_enabled: bool = True
     channel_poll_interval_s: float = Field(default=2.0, gt=0)
 
+    # Assisted mode (M12): a visible browser window on this computer where the person solves
+    # a CAPTCHA or signs in and submits. Only meaningful where the worker runs on the user's own
+    # machine (desktop app, local install); the desktop app turns it on.
+    assisted_browser: bool = False
+    assist_timeout_s: float = Field(default=900.0, ge=10)
+    assist_headless: bool = False  # tests only: the window must be visible for a person
+    # Autopilot pacing: at most one browser session per site in this many seconds.
+    autopilot_site_spacing_s: float = Field(default=600.0, ge=0)
+
     @model_validator(mode="after")
     def _production_requirements(self) -> Settings:
         # Fail at startup, not at the first saved API key.

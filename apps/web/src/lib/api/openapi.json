@@ -434,6 +434,65 @@
         "title": "AffiliationUpdate",
         "type": "object"
       },
+      "AnswerIn": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Answer",
+            "type": "string"
+          },
+          "question": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "answer"
+        ],
+        "title": "AnswerIn",
+        "type": "object"
+      },
+      "AnswerOut": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "question",
+          "answer",
+          "source",
+          "updated_at"
+        ],
+        "title": "AnswerOut",
+        "type": "object"
+      },
       "ApplicationDetailOut": {
         "additionalProperties": false,
         "properties": {
@@ -1179,6 +1238,45 @@
           "created_at"
         ],
         "title": "ApprovalOut",
+        "type": "object"
+      },
+      "AutopilotOut": {
+        "additionalProperties": false,
+        "properties": {
+          "auto_submit_consent": {
+            "title": "Auto Submit Consent",
+            "type": "string"
+          },
+          "declarations_consent": {
+            "title": "Declarations Consent",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "manual_only_sites": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Manual Only Sites",
+            "type": "array"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PolicyOut"
+          }
+        },
+        "required": [
+          "policy",
+          "items",
+          "auto_submit_consent",
+          "declarations_consent",
+          "manual_only_sites"
+        ],
+        "title": "AutopilotOut",
         "type": "object"
       },
       "Body_upload_api_v1_cases__case_id__documents_post": {
@@ -3064,6 +3162,83 @@
         "title": "HealthOut",
         "type": "object"
       },
+      "ItemOut": {
+        "additionalProperties": false,
+        "properties": {
+          "application_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Id"
+          },
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "fit": {
+            "title": "Fit",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "opportunity_id": {
+            "format": "uuid",
+            "title": "Opportunity Id",
+            "type": "string"
+          },
+          "organization": {
+            "title": "Organization",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "opportunity_id",
+          "title",
+          "organization",
+          "fit",
+          "stage",
+          "reason",
+          "application_id",
+          "attempts",
+          "updated_at"
+        ],
+        "title": "ItemOut",
+        "type": "object"
+      },
       "LoginRequest": {
         "additionalProperties": false,
         "properties": {
@@ -3653,6 +3828,364 @@
           "code"
         ],
         "title": "PairIn",
+        "type": "object"
+      },
+      "PolicyIn": {
+        "additionalProperties": false,
+        "properties": {
+          "auto_submit": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Submit"
+          },
+          "consent": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent"
+          },
+          "countries": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 40,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Countries"
+          },
+          "daily_submit_cap": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Daily Submit Cap"
+          },
+          "declarations": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declarations"
+          },
+          "declarations_consent": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declarations Consent"
+          },
+          "doc_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 5,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Types"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "exclude_orgs": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Orgs"
+          },
+          "interval_hours": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interval Hours"
+          },
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kinds"
+          },
+          "max_new_per_run": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max New Per Run"
+          },
+          "min_fit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Fit"
+          },
+          "per_org_cap": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Per Org Cap"
+          },
+          "steps": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Steps"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "PolicyIn",
+        "type": "object"
+      },
+      "PolicyOut": {
+        "additionalProperties": false,
+        "properties": {
+          "auto_submit": {
+            "title": "Auto Submit",
+            "type": "boolean"
+          },
+          "consented_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consented At"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Countries",
+            "type": "array"
+          },
+          "daily_submit_cap": {
+            "title": "Daily Submit Cap",
+            "type": "integer"
+          },
+          "declarations": {
+            "title": "Declarations",
+            "type": "boolean"
+          },
+          "doc_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Doc Types",
+            "type": "array"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "exclude_orgs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Exclude Orgs",
+            "type": "array"
+          },
+          "interval_hours": {
+            "title": "Interval Hours",
+            "type": "integer"
+          },
+          "kinds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Kinds",
+            "type": "array"
+          },
+          "last_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Run At"
+          },
+          "last_run_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Run Id"
+          },
+          "max_new_per_run": {
+            "title": "Max New Per Run",
+            "type": "integer"
+          },
+          "min_fit": {
+            "title": "Min Fit",
+            "type": "integer"
+          },
+          "next_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Run At"
+          },
+          "per_org_cap": {
+            "title": "Per Org Cap",
+            "type": "integer"
+          },
+          "steps": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "title": "Steps",
+            "type": "object"
+          },
+          "stopped_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stopped Reason"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval_hours",
+          "next_run_at",
+          "last_run_at",
+          "last_run_id",
+          "steps",
+          "min_fit",
+          "max_new_per_run",
+          "daily_submit_cap",
+          "per_org_cap",
+          "countries",
+          "kinds",
+          "exclude_orgs",
+          "doc_types",
+          "auto_submit",
+          "declarations",
+          "consented_at",
+          "stopped_reason",
+          "version"
+        ],
+        "title": "PolicyOut",
         "type": "object"
       },
       "Preferences": {
@@ -4429,6 +4962,22 @@
           }
         },
         "title": "RenderIn",
+        "type": "object"
+      },
+      "ReplyIn": {
+        "additionalProperties": false,
+        "properties": {
+          "answer": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Answer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "answer"
+        ],
+        "title": "ReplyIn",
         "type": "object"
       },
       "RescoreOut": {
@@ -5267,6 +5816,30 @@
         "title": "StepOut",
         "type": "object"
       },
+      "StopOut": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "integer"
+          },
+          "policies": {
+            "title": "Policies",
+            "type": "integer"
+          },
+          "runs_cancelled": {
+            "title": "Runs Cancelled",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "policies",
+          "items",
+          "runs_cancelled"
+        ],
+        "title": "StopOut",
+        "type": "object"
+      },
       "SyncIn": {
         "additionalProperties": false,
         "properties": {
@@ -5847,6 +6420,42 @@
         ]
       }
     },
+    "/api/v1/answers/{answer_id}": {
+      "delete": {
+        "operationId": "delete_answer_api_v1_answers__answer_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "answer_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Answer Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Answer",
+        "tags": [
+          "autopilot"
+        ]
+      }
+    },
     "/api/v1/applications/{application_id}": {
       "get": {
         "operationId": "get_application_api_v1_applications__application_id__get",
@@ -5936,6 +6545,50 @@
           }
         },
         "summary": "Update Application",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/{application_id}/assist": {
+      "post": {
+        "description": "Assisted mode: a visible browser on this computer; the person solves and submits.",
+        "operationId": "start_assist_api_v1_applications__application_id__assist_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Application Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunStartedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Assist",
         "tags": [
           "applications"
         ]
@@ -6355,6 +7008,28 @@
         ]
       }
     },
+    "/api/v1/autopilot/stop": {
+      "post": {
+        "description": "The kill switch: every autopilot off, its running work cancelled.",
+        "operationId": "stop_autopilot_api_v1_autopilot_stop_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StopOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Stop Autopilot",
+        "tags": [
+          "autopilot"
+        ]
+      }
+    },
     "/api/v1/cases": {
       "get": {
         "operationId": "list_cases_api_v1_cases_get",
@@ -6667,6 +7342,104 @@
         ]
       }
     },
+    "/api/v1/cases/{case_id}/answers": {
+      "get": {
+        "operationId": "list_answers_api_v1_cases__case_id__answers_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AnswerOut"
+                  },
+                  "title": "Response List Answers Api V1 Cases  Case Id  Answers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Answers",
+        "tags": [
+          "autopilot"
+        ]
+      },
+      "post": {
+        "operationId": "save_answer_api_v1_cases__case_id__answers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Answer",
+        "tags": [
+          "autopilot"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/applications": {
       "get": {
         "operationId": "list_applications_api_v1_cases__case_id__applications_get",
@@ -6966,6 +7739,147 @@
         "summary": "List Approvals",
         "tags": [
           "runs"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/autopilot": {
+      "get": {
+        "operationId": "get_autopilot_api_v1_cases__case_id__autopilot_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutopilotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Autopilot",
+        "tags": [
+          "autopilot"
+        ]
+      },
+      "put": {
+        "operationId": "save_autopilot_api_v1_cases__case_id__autopilot_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutopilotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Autopilot",
+        "tags": [
+          "autopilot"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/autopilot/run": {
+      "post": {
+        "operationId": "run_autopilot_api_v1_cases__case_id__autopilot_run_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Run Autopilot Api V1 Cases  Case Id  Autopilot Run Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Autopilot",
+        "tags": [
+          "autopilot"
         ]
       }
     },
@@ -10191,6 +11105,53 @@
         "summary": "Read All",
         "tags": [
           "tracking"
+        ]
+      }
+    },
+    "/api/v1/notifications/{notification_id}/answer": {
+      "post": {
+        "description": "Answer a question NexScout asked, from the app (the same as replying in a chat).",
+        "operationId": "answer_question_api_v1_notifications__notification_id__answer_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notification_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Notification Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Answer Question",
+        "tags": [
+          "autopilot"
         ]
       }
     },

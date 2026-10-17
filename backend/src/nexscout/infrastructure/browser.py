@@ -12,6 +12,8 @@
 from __future__ import annotations
 
 import asyncio
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlsplit
@@ -210,6 +212,82 @@ def _submit_sync(
                 browser.close()
     except (PlaywrightError, PermissionError, StopIteration) as exc:
         return SubmitOutcome(clicked=clicked, error=str(exc).splitlines()[0][:300] or "error")
+
+
+@dataclass
+class AssistOutcome:
+    status: str  # confirmed | timeout | closed | error
+    reference: str | None = None
+    final_url: str = ""
+    excerpt: str = ""
+    screenshot: bytes | None = None
+    error: str | None = None
+
+
+# Tests stand in for the person at the keyboard: called with (page, "blocked" | "filled").
+# Production leaves it unset; a real person solves the CAPTCHA and presses submit.
+ASSIST_HUMAN: Callable[[Any, str], None] | None = None
+
+
+def _assist_sync(
+    url: str, who: Applicant, guard: Guard, headless: bool, timeout_s: float
+) -> AssistOutcome:
+    """Assisted mode: a visible browser window on the user's computer. NexScout fills what
+    it knows; the person solves any CAPTCHA or sign-in, checks everything, ticks declarations
+    and submits. NexScout only watches for the confirmation page. It never clicks submit and
+    never touches the challenge."""
+    from playwright.sync_api import Error as PlaywrightError
+    from playwright.sync_api import sync_playwright
+
+    deadline = time.monotonic() + timeout_s
+    try:
+        with sync_playwright() as p:
+            browser, page = _open(p, url, guard, headless)
+            try:
+                filled = False
+                told_blocked = False
+                while time.monotonic() < deadline:
+                    if page.is_closed():
+                        return AssistOutcome("closed")
+                    try:
+                        text = page.inner_text("body")[:20_000]
+                        confirmed, ref = detect_confirmation(text)
+                        if confirmed:
+                            return AssistOutcome(
+                                "confirmed",
+                                ref,
+                                page.url,
+                                " ".join(text.split())[:500],
+                                page.screenshot(full_page=True),
+                            )
+                        if not filled:
+                            fields, blocker, _ = _discover(page)
+                            if blocker:
+                                if not told_blocked and ASSIST_HUMAN:
+                                    ASSIST_HUMAN(page, "blocked")
+                                told_blocked = True
+                            elif fields:
+                                _apply_plan(page, plan_form(fields, who))
+                                filled = True
+                                if ASSIST_HUMAN:
+                                    ASSIST_HUMAN(page, "filled")
+                    except PlaywrightError:
+                        pass  # navigating (the person submitted or solved a challenge)
+                    time.sleep(0.5)
+                return AssistOutcome("timeout")
+            finally:
+                browser.close()
+    except PlaywrightError as exc:
+        msg = str(exc).splitlines()[0][:300]
+        return AssistOutcome("closed" if "closed" in msg.lower() else "error", error=msg)
+    except PermissionError as exc:
+        return AssistOutcome("error", error=str(exc))
+
+
+async def assist_form(
+    url: str, who: Applicant, guard: Guard, *, headless: bool, timeout_s: float
+) -> AssistOutcome:
+    return await asyncio.to_thread(_assist_sync, url, who, guard, headless, timeout_s)
 
 
 async def fill_form(

@@ -310,7 +310,17 @@ class Worker:
         while True:
             with contextlib.suppress(Exception):
                 await self.maintenance_once()
+            with contextlib.suppress(Exception):
+                await self.autopilot_once()
             await asyncio.sleep(self.settings.maintenance_interval_s)
+
+    async def autopilot_once(self) -> dict[str, int]:
+        """Start due autopilot cycles, advance autopilot items, send the daily digest (M12)."""
+        from nexscout.application import autopilot
+
+        t = await autopilot.tick(self.system_sessions, self.app_sessions, self.settings)
+        sent = await autopilot.digest(self.app_sessions, self.system_sessions)
+        return {"started_cycles": t.started_cycles, "advanced": t.advanced, "digests": sent}
 
     def channel_loops(self) -> ChannelLoops:
         """Notification delivery and chat inbound (M11). Off with NEXSCOUT_CHANNELS_ENABLED=0."""

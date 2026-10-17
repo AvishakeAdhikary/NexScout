@@ -27,3 +27,10 @@ linux:
   target: [AppImage]
   category: Office
   icon: assets/icon.png
+# Easy mode: the compose file and database init script that NexScout's own Docker stack uses
+# (the compose file refers to ../docker/postgres/01-roles.sql, so the layout is kept).
+extraResources:
+  - from: ../../easy/docker-compose.yml
+    to: easy/docker-compose.yml
+  - from: ../../docker/postgres/01-roles.sql
+    to: docker/postgres/01-roles.sql

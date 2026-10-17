@@ -1,0 +1,179 @@
+name: Release
+
+# Every push to main whose CI passes becomes a release. The minor version is bumped from the
+# latest v2.x.y tag (v2.3.0 -> v2.4.0; the first release is v2.0.0). Published:
+#   - Docker images ghcr.io/<owner>/nexscout-backend and nexscout-web (version + latest),
+#   - the Windows installer (unsigned) from apps/desktop,
+#   - nexscout-easy-<version>.zip: double-click start scripts + compose file for Docker Desktop.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+      version: ${{ steps.v.outputs.version }}
+      previous: ${{ steps.v.outputs.previous }}
+      skip: ${{ steps.v.outputs.skip }}
+      owner: ${{ steps.v.outputs.owner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - id: v
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          if git tag --points-at "$SHA" | grep -qE '^v2\.[0-9]+\.[0-9]+$'; then
+            echo "This commit is already released."; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # Only release the newest commit on main (an older CI run finishing late is skipped).
+          git fetch origin main --quiet
+          if [ "$(git rev-parse origin/main)" != "$SHA" ]; then
+            echo "A newer commit is on main; it will be released instead."; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          last=$(git tag --list 'v2.*' --sort=-v:refname | grep -E '^v2\.[0-9]+\.[0-9]+$' | head -1 || true)
+          if [ -z "$last" ]; then next="v2.0.0"; else
+            IFS=. read -r major minor _ <<< "${last#v}"; next="v${major}.$((minor + 1)).0"; fi
+          echo "previous=$last" >> "$GITHUB_OUTPUT"
+          echo "tag=$next" >> "$GITHUB_OUTPUT"
+          echo "version=${next#v}" >> "$GITHUB_OUTPUT"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "Releasing $next (previous: ${last:-none})"
+
+  images:
+    needs: version
+    if: needs.version.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: backend
+            dockerfile: docker/backend.Dockerfile
+          - name: web
+            dockerfile: docker/web.Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          build-args: NEXSCOUT_VERSION=${{ needs.version.outputs.version }}
+          tags: |
+            ghcr.io/${{ needs.version.outputs.owner }}/nexscout-${{ matrix.name }}:${{ needs.version.outputs.version }}
+            ghcr.io/${{ needs.version.outputs.owner }}/nexscout-${{ matrix.name }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+            org.opencontainers.image.licenses=AGPL-3.0-only
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  windows:
+    needs: version
+    if: needs.version.outputs.skip != 'true'
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Build the installer (unsigned)
+        run: npx electron-builder --win nsis --publish never -c.extraMetadata.version=${{ needs.version.outputs.version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: apps/desktop/release/*.exe
+          retention-days: 7
+
+  publish:
+    needs: [version, images, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: dist
+      - name: Easy bundle (pinned to this version)
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          root="NexScout-$VERSION"
+          mkdir -p "$root/easy" "$root/docker/postgres" "$root/docs"
+          cp easy/docker-compose.yml easy/README.txt easy/*.cmd easy/*.ps1 easy/*.sh easy/*.command "$root/easy/"
+          sed -i "s/\${NEXSCOUT_VERSION:-latest}/\${NEXSCOUT_VERSION:-$VERSION}/" "$root/easy/docker-compose.yml"
+          chmod +x "$root/easy/"*.sh "$root/easy/"*.command
+          cp docker/postgres/01-roles.sql "$root/docker/postgres/"
+          cp docs/USER_GUIDE.md "$root/docs/"
+          cp LICENSE "$root/"
+          zip -r "dist/nexscout-easy-$VERSION.zip" "$root"
+          for f in dist/*.exe; do mv "$f" "dist/NexScout-Setup-$VERSION.exe"; done
+      - name: Release notes
+        env:
+          PREV: ${{ needs.version.outputs.previous }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          VERSION: ${{ needs.version.outputs.version }}
+          OWNER: ${{ needs.version.outputs.owner }}
+        run: |
+          {
+            echo "## NexScout $VERSION"
+            echo
+            echo "**Easy install:** download \`nexscout-easy-$VERSION.zip\`, unzip, then double-click"
+            echo "\`Start NexScout\` (needs [Docker Desktop](https://www.docker.com/products/docker-desktop/))."
+            echo "See [the user guide](https://github.com/${{ github.repository }}/blob/v$VERSION/docs/USER_GUIDE.md)."
+            echo
+            echo "**Windows app:** \`NexScout-Setup-$VERSION.exe\` (not code-signed yet: Windows SmartScreen"
+            echo "asks you to confirm with *More info → Run anyway*)."
+            echo
+            echo "**Images:** \`ghcr.io/$OWNER/nexscout-backend:$VERSION\`, \`ghcr.io/$OWNER/nexscout-web:$VERSION\`"
+            echo
+            echo "### Changes"
+            if [ -n "$PREV" ]; then range="$PREV..$SHA"; else range="$SHA"; fi
+            git log -n 100 --no-merges --pretty='- %s (%h)' $range
+          } > notes.md
+          cat notes.md
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.version.outputs.tag }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          gh release create "$TAG" dist/* --target "$SHA" --title "NexScout $VERSION" --notes-file notes.md

@@ -464,6 +464,26 @@ export interface DiagnosticsOut {
   providers: { name: string; kind: string; last_check: boolean | null; checked_at: string | null }[];
 }
 
+export type AutopilotOut = S["AutopilotOut"];
+export type PolicyIn = S["PolicyIn"];
+export type AnswerOut = S["AnswerOut"];
+export const autopilotApi = {
+  get: (caseId: string) => api<AutopilotOut>(`${c(caseId)}/autopilot`),
+  save: (caseId: string, body: PolicyIn) =>
+    api<AutopilotOut>(`${c(caseId)}/autopilot`, { method: "PUT", body }),
+  run: (caseId: string) =>
+    api<{ run_id: string }>(`${c(caseId)}/autopilot/run`, { method: "POST" }),
+  stop: () => api<S["StopOut"]>("/autopilot/stop", { method: "POST" }),
+  answers: (caseId: string) => api<AnswerOut[]>(`${c(caseId)}/answers`),
+  saveAnswer: (caseId: string, question: string, answer: string) =>
+    api<AnswerOut>(`${c(caseId)}/answers`, { method: "POST", body: { question, answer } }),
+  deleteAnswer: (id: string) => api<void>(`/answers/${e(id)}`, { method: "DELETE" }),
+  reply: (notificationId: string, answer: string) =>
+    api<void>(`/notifications/${e(notificationId)}/answer`, { method: "POST", body: { answer } }),
+  assist: (applicationId: string) =>
+    api<{ run_id: string }>(`/applications/${e(applicationId)}/assist`, { method: "POST" }),
+};
+
 export const trackingApi = {
   notifications: () => api<NotificationsOut>("/notifications"),
   read: (id: string) => api<void>(`/notifications/${e(id)}/read`, { method: "POST" }),

@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M12 Autopilot (🟨 in progress), then M13 Releases + easy install. M0–M11 ✅.
+- **Current milestone:** M13 Releases + easy install (🟨: implemented and verified locally; the first automatic release runs on GitHub after this push). M0–M12 ✅.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0012.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -170,6 +170,42 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     - Web: Settings → "Notifications on your phone" with provider setup steps; `/approve/[id]`.
     - The IDOR sweep covers +7 routes, and a variable-shadowing bug in it was fixed (the
       approval decision route was being swept with an application id).
+  - M12 autopilot (ADR-0014, migration 0011):
+    - Policies per case, off by default.
+    - Auto-submit and declaration ticking need the consent text sent back verbatim; the text
+      and time are stored.
+    - `domain/policy.py` (consider, shortlist and may_auto_submit, each with reasons).
+    - `domain/site_policy.py`: manual-only sites with published automation bans, robots.txt,
+      a human approval for portals and plain http, and pacing of one session per site every
+      10 minutes.
+    - `autopilot_cycle` workflow (discover → shortlist → report).
+    - A level-triggered reconciler on each worker maintenance tick. It moves `autopilot_items`
+      through research → drafts → placeholder filling → render → application → fill → submit or
+      approval, using the same use cases as the screens.
+    - Answer bank (`case_answers`):
+      - questions come from form fields and document placeholders;
+      - answers arrive from the app or by chat reply and are reused;
+      - placeholders are filled into a new, user-attributed document version.
+    - A policy approval is recorded as an approved `approval_requests` row and audited.
+    - Kill switch: the UI button, `POST /autopilot/stop`, or STOP from a paired chat. There is
+      also a daily digest.
+    - Assisted mode (`browser_assist`): a visible window where the person solves the CAPTCHA
+      and submits, and NexScout only observes. It is on in desktop local mode.
+    - Web: an Autopilot section (settings with consent, the work list, questions waiting,
+      saved answers, the manual-only list) and "Open a browser window for me" on blocked
+      applications.
+  - M13 releases and easy install:
+    - `.github/workflows/release.yml`: a minor bump from the latest `v2.x.y` on every green
+      `main` push. It publishes GHCR images, the unsigned Windows installer, a pinned easy
+      bundle zip and the GitHub Release.
+    - `easy/`: compose on the released images (127.0.0.1 only, no database port), plus
+      double-click start and stop scripts for Windows, macOS and Linux. Secrets are generated
+      once. In a source checkout, the scripts fall back to building locally.
+    - Desktop Easy mode: Docker detection and start, secrets in OS secure storage passed in
+      memory, background operation, and a "Stop NexScout" menu item.
+    - The app version comes from `NEXSCOUT_VERSION`.
+    - In-app Getting started checklist, `docs/USER_GUIDE.md` (non-technical), a user-first
+      README, and a CHANGELOG.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -178,7 +214,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 - **Observed, not failing:** one `Failed to proxy … ECONNRESET` line from `next dev` during the
   M2 E2E (a request aborted by page navigation; the test passed).
 - **Plan agreed with the user (2026-10-17): human-in-the-loop autopilot**
-  - **M11 Notification channels** (official APIs only):
+  - **M11 Notification channels** (official APIs only) — ✅ done:
     1. Data: `notification_channels` (owned; kind, encrypted credentials, paired identity, quiet hours,
        enabled) and `notification_deliveries` (outbox: status pending/sent/failed/dead, attempts,
        next_attempt_at, provider_message_id). Migration 0010.
@@ -194,7 +230,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
        every message also links to the app. Idempotent per provider event id.
     6. UI: Settings → Notifications (add, pair, test, pause), delivery log.
     7. Tests with mock transports for every provider; live verification is opt-in (`-m live`).
-  - **M12 Autopilot** (standing approvals, never guessing):
+  - **M12 Autopilot** (standing approvals, never guessing) — ✅ done:
     1. `autopilot_policies` (owned, versioned): schedule, steps (discover, research, draft, fill,
        submit), thresholds (min fit, daily/organization caps, countries, kinds, excluded
        organizations), explicit consents (auto-submit, declarations) with timestamp and text.
@@ -208,7 +244,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     5. CAPTCHA/login: notify and **assisted mode** (desktop/local: visible browser window, NexScout
        fills, the human solves the CAPTCHA and submits, NexScout detects the confirmation).
     6. Kill switch, daily digest, autopilot page in the UI.
-  - **M13 Releases and easy install:**
+  - **M13 Releases and easy install** — implemented; first GitHub release pending:
     1. `release.yml`: on green CI on main, bump minor from the latest `v2.*` tag, tag, release notes,
        GHCR images (api/worker, web), Windows installer, "easy" bundle.
     2. Desktop **Easy mode**: installer → open → NexScout starts its own Docker stack (bundled
@@ -218,6 +254,15 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 - **Still open (need keys or other platforms):** live provider and channel verification with real
   credentials; real job/academic sources and real application portals; code signing; macOS/Linux
   installers.
+- **Next exact steps:**
+  1. After the push, watch CI, then Release. Confirm the `v2.0.0` tag, the release assets
+     (installer, easy zip) and the GHCR images.
+  2. The repository owner makes the GHCR packages public (one-time). Then run the easy zip
+     from a clean folder to confirm the pull path works without building.
+  3. Smoke the Electron Easy mode against the released images (`npm run smoke` with the
+     config mode "easy").
+  4. Live-verify one channel (Telegram is the cheapest) with a real bot token, and record the
+     result in KNOWN_LIMITATIONS.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -268,6 +313,12 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | GitHub Actions CI (after push) | run 39009961870: backend, web, e2e, desktop, security all green |
 | 2026-10-17 | M11: ruff, format, mypy (123 files); `uv run pytest` | **338 passed** (new: 4 channel system tests — Telegram question → reply answer → approval buttons → foreign user refused → paired approve → submitted exactly once → replay ignored; Discord code pairing + real WebSocket Gateway IDENTIFY(intents 4096) + button from stranger refused + paired approve; WhatsApp verify handshake, forged signature rejected, signed PAIR, Reject button, duplicate webhook ignored; webhook signature, 503 retry with backoff, 401 dead letter ×5 → circuit open, resume, quiet hours defer, isolation, secret deleted with channel; 8 unit tests; IDOR +7) |
 | 2026-10-17 | M11: web tsc, eslint, vitest 12/12; `npx playwright test` | passed; **13/13 E2E** incl. new journey (webhook channel saved → signing secret shown once → test fails honestly against a closed port → pause → approval decided on `/approve/[id]`) |
+| 2026-10-17 | M11 pushed (e35d9a9): GitHub Actions run 39023019426 | **backend job failed** at `ruff format --check` (the committed snapshot had files that were only formatted afterwards); e2e, web, desktop and security green. Fixed by the next push (format check passes locally: 200 files) |
+| 2026-10-17 | M12: ruff, format, mypy (130 files); `uv run pytest` | **347 passed** (new: 3 autopilot system tests with real headless Chromium against the demo site — consented auto-submit after a placeholder question and a form question were answered, exactly one submission with the declaration, policy-approved approval recorded, submitted position never retaken; no-consent path stops at approval with the reason, saved answer reused, approve → submitted, Stop → off and run refused; assisted mode: NexScout stops at the CAPTCHA, the simulated person solves and submits, confirmation recorded as `assisted`; 6 policy/site unit tests; STOP from chat; IDOR +8 routes, which caught assist answering 422 before 404, fixed) |
+| 2026-10-17 | M13: `easy/Start NexScout` (PowerShell, this Windows machine, Docker Desktop per-user install) | **worked end to end**: found Docker, generated secrets once, the pull failed (no release images yet), fell back to a local build, all 4 containers healthy, opened :3000. A probe through the web port: register 201, create case 201, diagnostics show 1 worker alive. `Stop NexScout` stopped all containers; the probe stack and its secrets were then removed. macOS/Linux scripts were **not run** (no such machine) |
+| 2026-10-17 | M13: desktop `npm test` (tsc + vitest) | **5/5** incl. Easy-mode config, validated secrets for compose, matching image version, Docker Desktop paths. Easy mode in the Electron app itself was **not** smoke-run (it needs released images or a local build under the release names) |
+| 2026-10-17 | M13: `release.yml` | YAML parsed; the version bump was checked by hand ('' → v2.0.0, v2.0.0 → v2.1.0, v2.9.0 → v2.10.0). It first runs on GitHub after this push |
+| 2026-10-17 | M12: web tsc, eslint, vitest 12/12; desktop tests 3/3; `npx playwright test` | passed; **14/14 E2E** incl. new journey (consent shown → autopilot on → run → the placeholder question appears instead of a guess → answered → saved answer listed → Stop everything → off) |
 
 ---
 
@@ -288,8 +339,8 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M9 | Desktop and providers | ✅ with caveats: the unpacked Windows app runs (smoke-tested) and the installer was built, but an install was **not** run. Providers are not live-verified (no keys) | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |
 | M10 | Production hardening | ✅ | Security, isolation, concurrency and recovery tests pass. Backup and restore and migration upgrades are tested. Deployment is reproducible |
 | M11 | Notification channels | ✅ (providers faked at HTTP level; not live-verified) | Paired channels receive notifications through a durable outbox; approvals and answers from chat act only for the paired identity, once |
-| M12 | Autopilot | 🟨 | Scheduled discover → documents → fill → submit within a consented policy; unknowns asked, never guessed; manual-only sites respected; kill switch |
-| M13 | Releases and easy install | ⬜ | Every green main push gets a minor-bump tag and release; non-technical users can install and start NexScout with a double-click |
+| M12 | Autopilot | ✅ (demo site only; real portals unverified) | Scheduled discover → documents → fill → submit within a consented policy; unknowns asked, never guessed; manual-only sites respected; kill switch |
+| M13 | Releases and easy install | 🟨 (local checks pass; the first GitHub release is pending this push) | Every green main push gets a minor-bump tag and release; non-technical users can install and start NexScout with a double-click |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

@@ -503,7 +503,11 @@ async def resolve_uncertain(
     return await get_application(session, actor, app_id)
 
 
-async def start_browser(session: AsyncSession, actor: Actor, app_id: uuid.UUID) -> WorkflowRun:
+async def start_browser(
+    session: AsyncSession, actor: Actor, app_id: uuid.UUID, *, autopilot: bool = False
+) -> WorkflowRun:
+    """`autopilot=True`: started by the autopilot, so the submit step may be approved by the
+    user's standing policy (deterministic check in browser_apply) instead of asking."""
     app = await _get(session, actor, app_id)
     if ApplicationStatus(app.status) not in BROWSER_START:
         raise ValidationFailed(
@@ -554,6 +558,31 @@ async def start_browser(session: AsyncSession, actor: Actor, app_id: uuid.UUID) 
         actor,
         app.case_id,
         kind="browser_apply",
+        params={"application_id": str(app.id), **({"autopilot": True} if autopilot else {})},
+        internal=True,
+    )
+
+
+async def start_assist(
+    session: AsyncSession, settings: Settings, actor: Actor, app_id: uuid.UUID
+) -> WorkflowRun:
+    """Assisted mode: open the form in a visible browser on the user's computer, where they
+    solve the CAPTCHA or sign in and submit themselves."""
+    app = await _get(session, actor, app_id)  # 404 for anyone else's, before anything else
+    if not settings.assisted_browser:
+        raise ValidationFailed(
+            "Assisted mode needs NexScout running on your own computer (the desktop app). "
+            "Otherwise open the page, apply yourself, then mark the application as submitted."
+        )
+    if app.status not in (S.NEEDS_USER_ACTION.value, S.PREPARING.value, S.FAILED.value):
+        raise ValidationFailed("Only an application that needs you can be finished this way.")
+    if not app.apply_url:
+        raise ValidationFailed("Add the address of the application page first.")
+    return await start_run(
+        session,
+        actor,
+        app.case_id,
+        kind="browser_assist",
         params={"application_id": str(app.id)},
         internal=True,
     )

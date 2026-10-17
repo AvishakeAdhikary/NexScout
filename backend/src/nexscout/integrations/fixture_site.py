@@ -63,12 +63,15 @@ def create_fixture_site() -> FastAPI:
         return _page("Demo careers", "<p>Use <code>/apply/&lt;job&gt;</code> to apply.</p>")
 
     @site.get("/apply/{job}", response_class=HTMLResponse)
-    async def form(job: str) -> HTMLResponse:
-        if job.startswith("captcha"):
+    async def form(job: str, verified: int = 0) -> HTMLResponse:
+        if job.startswith("captcha") and not verified:
+            # A stand-in for a real CAPTCHA: only a person clicks it (assisted mode tests
+            # simulate that person). NexScout itself stops at this page.
             return _page(
                 "Security check",
                 "<p>Please verify you are human before applying.</p>"
-                "<div class='g-recaptcha'>[ I'm not a robot ]</div>",
+                "<div class='g-recaptcha'><a id='verify' href='?verified=1'>[ I'm not a robot ]"
+                "</a></div>",
             )
         if job.startswith("login"):
             return _page(
@@ -77,7 +80,8 @@ def create_fixture_site() -> FastAPI:
                 "<label for='p'>Password</label><input id='p' type='password'>"
                 "<button>Sign in</button></form>",
             )
-        return _page(f"Apply: {job}", FORM)
+        # After the (demo) challenge, the heading must not repeat the "captcha" slug.
+        return _page("Apply" if job.startswith("captcha") else f"Apply: {job}", FORM)
 
     @site.post("/apply/{job}", response_class=HTMLResponse)
     async def submit(job: str, request: Request) -> HTMLResponse:

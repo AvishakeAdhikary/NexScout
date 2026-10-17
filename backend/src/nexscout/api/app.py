@@ -16,6 +16,7 @@ from nexscout.api.routers import (
     account,
     applications,
     auth,
+    autopilot,
     cases,
     channels,
     documents,
@@ -85,6 +86,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         applications,
         tracking,
         channels,
+        autopilot,
     ):
         app.include_router(module.router, prefix=API_PREFIX)
     if settings.fixture_site_on:

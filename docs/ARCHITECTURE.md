@@ -55,6 +55,20 @@ application `approved` → browser task → fill (no submit) → screenshot + fi
 "Submit to X" → on approval: click submit with idempotency guard → detect confirmation →
 `submitted` | `submission_uncertain` (requires user reconciliation).
 
+### 4.5 Notifications and chat actions (M11, ADR-0013)
+notification row and outbox rows in one transaction → worker delivery loop (per-channel order,
+retries, dead letter, circuit breaker, quiet hours) → provider API → button press or reply comes
+back (Telegram long poll, Discord Gateway, WhatsApp webhook stored in the inbox, then
+signature-checked by the worker) → idempotent per provider event → paired identity checked →
+`runs.decide` or `answers.record_answer` in the owner's RLS session.
+
+### 4.6 Autopilot (M12, ADR-0014)
+policy (consented, deterministic) → scheduled `autopilot_cycle` (discover → shortlist with
+reasons) → `autopilot_items` → reconciler on each worker tick: research → drafts → placeholders
+from the answer bank (or a question) → render → application → `browser_apply` (autopilot) →
+`may_auto_submit` ? recorded policy approval : approval sent to the user's channels → submit once.
+CAPTCHA or sign-in → hand-over (assisted window in local mode). STOP anywhere → `stop_all`.
+
 ## 5. Frontend
 Next.js App Router. Route groups: `(auth)` for login and register, `(app)` for the authenticated shell
 with nav: Dashboard, My Profile, Mind Map, PhD Opportunities, Job Opportunities, Applications,
@@ -75,8 +89,15 @@ the URL as `/cases/[caseId]/...`).
   in compose with the `full` profile.
 - **Server:** containers for web, api and worker plus managed Postgres. Secrets come from env or a
   secret manager.
-- **Desktop (M9):** Electron starts a bundled api+worker pair against either a local Postgres
-  (bundled or user-installed) or a remote backend. The choice is explicit in settings.
+- **Desktop (M9, M13):** Electron in one of three modes, chosen explicitly at setup:
+  - **Easy:** NexScout's own Docker stack on the released images (`easy/docker-compose.yml`),
+    with secrets in OS secure storage.
+  - **Remote:** connect to a NexScout server.
+  - **Local:** run from a source checkout (developers).
+- **Easy bundle (M13):** double-click scripts plus the compose file on released images; needs
+  only Docker Desktop.
+- **Releases (M13):** every green `main` push makes a minor-bumped tag, GHCR images, the Windows
+  installer and the easy bundle (`release.yml`).
 
 ## 7. Cross-cutting
 - Correlation: `X-Request-ID` → logs. `run_id` and `task_id` are bound in worker logs and events.

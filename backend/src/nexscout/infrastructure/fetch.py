@@ -316,6 +316,15 @@ class SafeFetcher:
         robots = self._robots[origin]
         return robots is None or robots.can_fetch(ROBOTS_AGENT, url)
 
+    async def robots_allows(self, url: str) -> bool | None:
+        """robots.txt verdict for NexScout on `url`; None when it couldn't be checked."""
+        try:
+            _check_url(url)
+            async with self._client() as client:
+                return await self._allowed_by_robots(client, url)
+        except (FetchBlocked, FetchFailed):
+            return None
+
     async def fetch(self, url: str) -> FetchResult:
         _check_url(url)
         async with self._client() as client:

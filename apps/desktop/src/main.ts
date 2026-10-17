@@ -12,10 +12,13 @@ import { randomBytes } from "node:crypto";
 import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, safeStorage, session, shell } from "electron";
 
 import {
   appUrl,
+  DEFAULT_EASY_PORT,
+  dockerCandidates,
+  easyEnv,
   isAppNavigation,
   isSafeExternal,
   parseConfig,
@@ -130,6 +133,10 @@ function startLocal(config: DesktopConfig): void {
     NEXSCOUT_MASTER_KEY: masterKey(),
     NEXSCOUT_API_ORIGIN: `http://127.0.0.1:${config.apiPort}`,
     PYTHONUNBUFFERED: "1", // logs reach the log files immediately
+    // The worker runs on this computer, so CAPTCHA/sign-in pages can open in a visible window
+    // (assisted mode: the person solves and submits; NexScout only records the confirmation).
+    NEXSCOUT_ASSISTED_BROWSER: "true",
+    NEXSCOUT_PUBLIC_WEB_URL: `http://127.0.0.1:${config.webPort ?? 3000}`,
     ELECTRON_RUN_AS_NODE: undefined,
   };
   const logs = join(app.getPath("userData"), "logs");
@@ -149,6 +156,107 @@ function startLocal(config: DesktopConfig): void {
   run("worker", "uv", ["run", "nexscout", "worker"], backend);
   run("web", "npx", ["next", "start", "-p", String(config.webPort), "-H", "127.0.0.1"],
     join(dir, "apps", "web"));
+}
+
+// --- Easy mode: NexScout's own Docker stack -------------------------------------------------
+
+/** A database password, generated once and stored encrypted by the OS (safeStorage). */
+function dbPassword(): string {
+  const file = join(app.getPath("userData"), "db.password.enc");
+  if (existsSync(file)) return safeStorage.decryptString(readFileSync(file));
+  const value = randomBytes(24).toString("hex");
+  writeFileSync(file, safeStorage.encryptString(value), { mode: 0o600 });
+  return value;
+}
+
+function findDocker(): string | null {
+  const onPath = spawnSync("docker", ["--version"], { windowsHide: true });
+  if (onPath.status === 0) return "docker";
+  return dockerCandidates(process.platform, process.env).find((p) => existsSync(p)) ?? null;
+}
+
+function dockerRunning(docker: string): boolean {
+  return spawnSync(docker, ["info"], { windowsHide: true, timeout: 20_000 }).status === 0;
+}
+
+async function ensureDocker(): Promise<string | null> {
+  const docker = findDocker();
+  if (!docker) return null;
+  if (dockerRunning(docker)) return docker;
+  // Try to start Docker Desktop, then wait for it.
+  if (process.platform === "win32") {
+    const exe = [
+      join(process.env.ProgramFiles ?? "C:/Program Files", "Docker", "Docker", "Docker Desktop.exe"),
+      join(process.env.LOCALAPPDATA ?? "", "Programs", "DockerDesktop", "Docker Desktop.exe"),
+    ].find((p) => existsSync(p));
+    if (exe) spawn(exe, [], { detached: true, stdio: "ignore" }).unref();
+  } else if (process.platform === "darwin") {
+    spawn("open", ["-a", "Docker"], { detached: true, stdio: "ignore" }).unref();
+  }
+  const deadline = Date.now() + 180_000;
+  while (Date.now() < deadline) {
+    if (dockerRunning(docker)) return docker;
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return null;
+}
+
+/** The bundled compose file (packaged: resources/easy; development: the repo's easy/). */
+function easyCompose(): string {
+  const packaged = join(process.resourcesPath, "easy", "docker-compose.yml");
+  return existsSync(packaged) ? packaged : join(__dirname, "..", "..", "..", "easy", "docker-compose.yml");
+}
+
+function compose(docker: string, args: string[], env: Record<string, string>, log: string): Promise<number> {
+  return new Promise((resolve) => {
+    const out = createWriteStream(logFile(log), { flags: "a" });
+    out.write(`\n--- ${new Date().toISOString()} docker compose ${args.join(" ")}\n`);
+    const child = spawn(docker, ["compose", "-p", "nexscout-easy", "-f", easyCompose(), ...args], {
+      env: { ...process.env, ...env, ELECTRON_RUN_AS_NODE: undefined },
+      windowsHide: true,
+    });
+    child.stdout?.pipe(out, { end: false });
+    child.stderr?.pipe(out, { end: false });
+    child.on("error", () => resolve(-1));
+    child.on("exit", (code) => {
+      out.write(`--- exited with ${code}\n`);
+      resolve(code ?? -1);
+    });
+  });
+}
+
+function easyEnvironment(config: DesktopConfig): Record<string, string> {
+  return easyEnv({
+    masterKey: masterKey(),
+    dbPassword: dbPassword(),
+    port: config.webPort ?? DEFAULT_EASY_PORT,
+    version: app.getVersion(),
+  });
+}
+
+/** Start (or update) the stack. Containers keep running when the window closes, so the
+ *  autopilot and reminders keep working; "Stop NexScout" in the menu stops them. */
+async function startEasy(config: DesktopConfig): Promise<string | null> {
+  const docker = await ensureDocker();
+  if (!docker) {
+    void shell.openExternal("https://www.docker.com/products/docker-desktop/");
+    return "NexScout's Easy mode runs inside Docker Desktop, which isn't installed or didn't start. The download page is open: install it, start it once, then open NexScout again.";
+  }
+  mkdirSync(join(app.getPath("userData"), "logs"), { recursive: true });
+  const env = easyEnvironment(config);
+  await compose(docker, ["pull"], env, "easy");
+  const code = await compose(docker, ["up", "-d", "--remove-orphans"], env, "easy");
+  if (code !== 0) {
+    return `NexScout's containers didn't start (code ${code}). Check that you're online. Log: ${logFile("easy")}`;
+  }
+  return null;
+}
+
+async function stopEasy(): Promise<void> {
+  const config = loadConfig();
+  const docker = findDocker();
+  if (!config || config.mode !== "easy" || !docker) return;
+  await compose(docker, ["stop"], easyEnvironment(config), "easy");
 }
 
 async function waitFor(url: string, timeoutMs: number): Promise<boolean> {
@@ -195,6 +303,18 @@ async function openApp(config: DesktopConfig): Promise<void> {
       return;
     }
   }
+  if (config.mode === "easy") {
+    await win.loadFile(join(__dirname, "..", "assets", "starting.html"));
+    const problem = await startEasy(config);
+    // The first start downloads the images (a few minutes); later starts take seconds.
+    if (problem || !(await waitFor(`${url}/login`, 600_000))) {
+      dialog.showErrorBox(
+        "NexScout didn't start",
+        problem ?? `NexScout didn't become ready. Log: ${logFile("easy")}`,
+      );
+      return;
+    }
+  }
   smokeReport(win);
   await win.loadURL(url);
 }
@@ -232,6 +352,7 @@ ipcMain.handle("setup:save", async (_event, raw: unknown) => {
     return { ok: false, error: "That folder isn't a NexScout checkout (no backend/ folder)." };
   }
   saveConfig(config);
+  setMenu();
   const old = mainWindow;
   await openApp(config);
   old?.close();
@@ -242,7 +363,36 @@ app.on("web-contents-created", (_event, contents) => {
   contents.on("will-attach-webview", (event) => event.preventDefault());
 });
 
+function setMenu(): void {
+  const config = loadConfig();
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: "NexScout",
+      submenu: [
+        ...(config?.mode === "easy"
+          ? [
+              {
+                label: "Stop NexScout (background work too)",
+                click: async () => {
+                  await stopEasy();
+                  app.quit();
+                },
+              },
+              { type: "separator" as const },
+            ]
+          : []),
+        { role: "reload" as const },
+        { role: "toggleDevTools" as const, visible: !app.isPackaged },
+        { role: "quit" as const, label: "Close window (keeps working in the background)" },
+      ],
+    },
+    { role: "editMenu" as const },
+  ];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
 void app.whenReady().then(async () => {
+  setMenu();
   session.defaultSession.setPermissionRequestHandler((_wc, _perm, callback) => callback(false));
   const smokeUrl = process.env.NEXSCOUT_DESKTOP_SMOKE_URL;
   const config = smokeUrl ? parseConfig({ mode: "remote", remoteUrl: smokeUrl }) : loadConfig();

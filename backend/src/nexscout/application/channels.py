@@ -667,6 +667,13 @@ async def handle_text(
             return None  # unpaired senders get nothing back (no oracle)
         if ch.status != "active" or identity != ch.paired_identity:
             return None
+        stop_owner = ch.owner_user_id if text.strip().upper() in ("STOP", "/STOP") else None
+    if stop_owner is not None:
+        return await _stop_from_chat(app, stop_owner, channel_id)
+    async with system() as s, s.begin():
+        ch = await s.get(NotificationChannel, channel_id)
+        if ch is None:
+            return None
         if not reply_to:
             return "Reply to a NexScout question to answer it, or use the buttons on a message."
         row = await s.execute(
@@ -681,7 +688,7 @@ async def handle_text(
         owner = ch.owner_user_id
     if n is None or n.kind != "question":
         return "That message doesn't need an answer."
-    from nexscout.application.applications import record_answer
+    from nexscout.application.answers import record_answer
 
     async with app() as s, s.begin():
         await bind_tenant(s, owner)
@@ -772,3 +779,20 @@ async def handle_action(
             update(ChannelAction).where(ChannelAction.id == token).values(result=result[:300])
         )
     return result
+
+
+async def _stop_from_chat(
+    app: async_sessionmaker[AsyncSession], owner: uuid.UUID, channel_id: uuid.UUID
+) -> str:
+    """ "STOP" from the paired identity: the autopilot kill switch, from anywhere."""
+    from nexscout.application.autopilot import stop_all
+
+    async with app() as s, s.begin():
+        await bind_tenant(s, owner)
+        done = await stop_all(
+            s, Actor(user_id=owner, session_id=uuid.uuid4()), reason="STOP sent from chat"
+        )
+    return (
+        f"Autopilot stopped: {done['policies']} setting(s) turned off, "
+        f"{done['runs_cancelled']} task(s) cancelled. Turn it back on in NexScout."
+    )

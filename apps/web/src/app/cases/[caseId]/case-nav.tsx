@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  Bot,
   Briefcase,
   FileText,
   GraduationCap,
@@ -32,6 +33,7 @@ const ICONS: Record<string, LucideIcon> = {
   relationships: Users,
   assistant: MessageSquare,
   activity: Activity,
+  autopilot: Bot,
   settings: Settings,
 };
 

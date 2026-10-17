@@ -21,5 +21,7 @@ RUN useradd --system --uid 10001 --home /app nexscout \
     && mkdir -p /data/storage && chown -R nexscout /data
 USER nexscout
 ENV PATH="/app/.venv/bin:$PATH"
+ARG NEXSCOUT_VERSION=""
+ENV NEXSCOUT_VERSION=${NEXSCOUT_VERSION}
 EXPOSE 8000
 CMD ["nexscout", "serve", "--host", "0.0.0.0", "--port", "8000"]

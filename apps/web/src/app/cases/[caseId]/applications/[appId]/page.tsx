@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   applicationsApi,
+  autopilotApi,
   generatedApi,
   runsApi,
   type ApplicationDetailOut,
@@ -185,6 +186,7 @@ export default function ApplicationPage() {
                 </a>
               </>
             )}
+            <AssistButton appId={app.id} />
           </AlertDescription>
         </Alert>
       )}
@@ -262,5 +264,29 @@ export default function ApplicationPage() {
 
       <Timeline app={app} />
     </div>
+  );
+}
+
+/** Assisted mode: a browser window on this computer, filled by NexScout; you solve any CAPTCHA
+ *  or sign-in and submit. NexScout only watches for the site's confirmation. */
+function AssistButton({ appId }: { appId: string }) {
+  const queryClient = useQueryClient();
+  const assist = useMutation({
+    mutationFn: () => autopilotApi.assist(appId),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["application"] }),
+  });
+  return (
+    <span className="mt-2 flex flex-col gap-1">
+      <Button size="sm" variant="outline" className="self-start" onClick={() => assist.mutate()} disabled={assist.isPending}>
+        Open a browser window for me
+      </Button>
+      {assist.isSuccess && (
+        <span role="status" className="text-xs">
+          A browser window is opening on this computer. Finish there and press submit; NexScout
+          records the confirmation.
+        </span>
+      )}
+      <ErrorAlert error={assist.error} />
+    </span>
   );
 }

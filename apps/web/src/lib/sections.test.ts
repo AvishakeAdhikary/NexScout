@@ -24,7 +24,7 @@ describe("sections", () => {
   });
 
   it("marks every unbuilt section with a milestone", () => {
-    const built = new Set(["", "profile", "documents", "relationships", "mind-map", "phd", "jobs", "activity", "settings", "applications", "assistant"]);
+    const built = new Set(["", "profile", "documents", "relationships", "mind-map", "phd", "jobs", "activity", "settings", "applications", "assistant", "autopilot"]);
     for (const s of SECTIONS.filter((x) => !built.has(x.slug))) {
       expect(s.milestone, s.slug).toBeGreaterThan(0);
     }

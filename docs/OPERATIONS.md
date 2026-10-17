@@ -40,7 +40,44 @@ If a reverse proxy sits in front, don't compress `text/event-stream`. The SSE en
 - Local mode starts api, worker and web from a NexScout checkout and stores logs in
   `<userData>/logs`. The master key is encrypted with the OS keychain (`master.key.enc`).
   Deleting it makes saved provider API keys unreadable.
+- **Easy mode** (the default in setup) runs `easy/docker-compose.yml` (bundled as an extra
+  resource) as Compose project `nexscout-easy`, using the released images that match the app
+  version.
+  - The master key and the database password are kept in OS secure storage
+    (`master.key.enc`, `db.password.enc`). They are passed to Compose in memory and never
+    written in clear.
+  - Containers keep running when the window closes, so the autopilot and reminders keep
+    working. Menu → Stop NexScout stops them.
+  - Logs: `<userData>/logs/easy.log`.
+- Local mode turns on assisted mode (`NEXSCOUT_ASSISTED_BROWSER`), because the worker runs on
+  the user's own screen.
 - To reset the app's mode, delete `<userData>/config.json`.
+
+## Easy install without the desktop app (`easy/`)
+- `Start NexScout.cmd` (Windows), `Start NexScout.command` (macOS) and `start-nexscout.sh`
+  (Linux) check for Docker and start it if needed.
+- They create `easy/.env` once, holding the master key and the database password. This file
+  must be kept and backed up.
+- They pull the released images (`ghcr.io/avishakeadhikary/nexscout-*`). In a source checkout
+  where the pull fails, they build locally instead (`docker-compose.build.yml`).
+- They wait for the web app and open it.
+- Stop with `Stop NexScout.cmd` or `start-nexscout.sh stop`.
+- Only `127.0.0.1:${NEXSCOUT_PORT:-3000}` is published; the database has no published port.
+
+## Releases (`.github/workflows/release.yml`)
+- **Trigger:** a CI run on a `main` push finishes green. Only the newest `main` commit is
+  released; a commit that is already tagged is skipped.
+- **Version:** the minor number is bumped from the latest `v2.x.y` tag (the first one is
+  `v2.0.0`).
+- **Artifacts:**
+  - GHCR images `nexscout-backend` and `nexscout-web`, tagged with the version and `latest`.
+    The backend image has `NEXSCOUT_VERSION` baked in.
+  - The unsigned Windows installer, built on `windows-latest`.
+  - `nexscout-easy-<version>.zip`, with the compose file pinned to that version.
+  - A GitHub Release whose notes come from the commits since the previous tag.
+- **First-time setup:** GHCR packages start private. After the first release, set
+  `nexscout-backend` and `nexscout-web` to **public** (GitHub → Packages → Package settings),
+  so the easy install can pull them without logging in.
 
 ## Deploy / upgrade
 1. Back up (below). 2. Run `nexscout migrate` with the owner role (Alembic + LangGraph checkpoint
@@ -99,9 +136,11 @@ use SKIP LOCKED.
 ## Distribution assessment
 - **Server:** Docker images (api and worker share one image with Chromium, about 2.1 GB; web)
   plus managed Postgres. This is the recommended multi-user deployment.
-- **Desktop:** an Electron shell. The Windows NSIS installer was built and is unsigned; the macOS
-  and Linux configs exist but weren't built. Local mode needs a NexScout checkout, Postgres, uv
-  and Node.
+- **Desktop:** an Electron shell. The Windows NSIS installer is built by every release and is
+  unsigned; the macOS and Linux configs exist but aren't built. Easy mode needs only Docker
+  Desktop. Local mode needs a NexScout checkout, Postgres, uv and Node.
+- **Easy bundle:** a zip with double-click start scripts and the pinned compose file. It needs
+  only Docker Desktop.
 - **Not promised:** a single self-contained executable. Bundling Python, Node, Chromium and
   Postgres into one installer is possible (embedded Postgres, a PyInstaller backend, a Next
   standalone build) but isn't built or tested. It would also need its own update and migration

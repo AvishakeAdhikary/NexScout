@@ -13,9 +13,11 @@ form.addEventListener("submit", async (event) => {
   error.textContent = "";
   const mode = form.querySelector('input[name="mode"]:checked').value;
   const config =
-    mode === "remote"
-      ? { mode, remoteUrl: document.getElementById("url").value }
-      : { mode, checkoutDir: document.getElementById("dir").value };
+    mode === "easy"
+      ? { mode }
+      : mode === "remote"
+        ? { mode, remoteUrl: document.getElementById("url").value }
+        : { mode, checkoutDir: document.getElementById("dir").value };
   const res = await window.nexscoutSetup.save(config);
   if (!res.ok) error.textContent = res.error || "Something went wrong.";
 });

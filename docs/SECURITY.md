@@ -90,6 +90,18 @@ prompts. Final submit needs an approval unless a narrow, explicit standing polic
 - **Inbound text is untrusted data.** A reply is stored only as the answer to the question it
   replies to. It is never executed or treated as an instruction.
 
+## 5b. Autopilot (ADR-0014)
+- **Off by default.** Submitting without asking needs the consent statement sent back word for
+  word. The text and time are stored, revoking clears them, and changes are audited.
+- **Decided by plain code.** `domain/policy.py` decides; no model does. A policy approval is
+  recorded like a manual one, plus `approval.decided_by_policy` in the audit log.
+- **Manual-only sites.** `domain/site_policy.py` covers sites whose terms prohibit automation,
+  and pages disallowed by robots.txt. Portals and plain-http pages get a human approval. The
+  autopilot opens at most one browser session per site every 10 minutes.
+- **Never guesses.** Unknown answers and placeholders are asked. CAPTCHAs and sign-ins are
+  handed over (assisted mode). NexScout never clicks submit in assisted mode.
+- **Kill switch.** Available in the UI, through the API, and as STOP from a paired chat.
+
 ## 6. Supply chain
 Locked dependencies (`uv.lock`, `package-lock.json`). `pip-audit` and `npm audit` in CI. Secret scanning
 (detect-secrets) in CI. Development MCP servers are pinned and separate from runtime tools.

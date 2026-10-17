@@ -265,6 +265,19 @@ async def start_browser(
     return RunStartedOut(run_id=run.id)
 
 
+@router.post(
+    "/applications/{application_id}/assist",
+    response_model=RunStartedOut,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def start_assist(
+    application_id: uuid.UUID, actor: CurrentActor, db: DbSession, settings: SettingsDep
+) -> RunStartedOut:
+    """Assisted mode: a visible browser on this computer; the person solves and submits."""
+    run = await apps.start_assist(db, settings, actor, application_id)
+    return RunStartedOut(run_id=run.id)
+
+
 @router.get("/applications/{application_id}/events/{event_id}/screenshot")
 async def event_screenshot(
     application_id: uuid.UUID,

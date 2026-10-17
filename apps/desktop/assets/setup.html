@@ -31,13 +31,19 @@
   <p>Choose where your NexScout lives. You can change this later by deleting the app's settings.</p>
   <form id="setup">
     <fieldset>
-      <legend><label><input type="radio" name="mode" value="remote" checked> Connect to a NexScout server</label></legend>
+      <legend><label><input type="radio" name="mode" value="easy" checked> Easy: run NexScout on this computer (recommended)</label></legend>
+      <small>Needs <b>Docker Desktop</b> (free for personal use) installed and started once. NexScout downloads
+        and starts itself, keeps working in the background (autopilot, reminders), and keeps your encryption key in
+        the operating system's secure storage.</small>
+    </fieldset>
+    <fieldset>
+      <legend><label><input type="radio" name="mode" value="remote"> Connect to a NexScout server</label></legend>
       <label for="url">Address</label>
       <input id="url" type="url" placeholder="https://nexscout.example.org or http://127.0.0.1:3000">
       <small>HTTPS is required unless the server runs on this computer.</small>
     </fieldset>
     <fieldset>
-      <legend><label><input type="radio" name="mode" value="local"> Run NexScout on this computer</label></legend>
+      <legend><label><input type="radio" name="mode" value="local"> Developer: run from a source checkout</label></legend>
       <label for="dir">NexScout folder (a checkout with backend/ and apps/web/)</label>
       <div class="row"><input id="dir" type="text" readonly><button type="button" class="ghost" id="choose">Choose…</button></div>
       <small>Needs Postgres, uv and Node set up as in docs/DEVELOPMENT.md. Your encryption key is kept in the operating system's secure storage.</small>

@@ -63,6 +63,9 @@ OWNED_TABLES: tuple[str, ...] = (
     "notification_channels",
     "notification_deliveries",
     "channel_actions",
+    "autopilot_policies",
+    "autopilot_items",
+    "case_answers",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
@@ -1294,3 +1297,108 @@ class ChannelInboundEvent(Base):
         Index("ix_inbound_status", "status", "received_at"),
     )
 
+
+# --- M12: autopilot (standing approvals), work items, answer bank -----------------------------
+
+
+class AutopilotPolicy(IdMixin, TimestampMixin, Base):
+    """What NexScout may do on its own for one case. Off by default; every permission that
+    lets it act without asking (auto-submit, declarations) records the consent text and time."""
+
+    __tablename__ = "autopilot_policies"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    case_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("candidate_cases.id", ondelete="CASCADE"), nullable=False
+    )
+    enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
+    interval_hours: Mapped[int] = mapped_column(Integer, nullable=False, default=24)
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_run_id: Mapped[uuid.UUID | None] = mapped_column()
+    # Which steps run unattended: discover, research, documents, fill, submit.
+    steps: Mapped[dict[str, bool]] = mapped_column(JSONB, nullable=False, default=dict)
+    min_fit: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
+    max_new_per_run: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    daily_submit_cap: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    per_org_cap: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    countries: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    kinds: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    exclude_orgs: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    doc_types: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    auto_submit: Mapped[bool] = mapped_column(nullable=False, default=False)
+    declarations: Mapped[bool] = mapped_column(nullable=False, default=False)
+    consent_text: Mapped[str | None] = mapped_column(Text)
+    consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    stopped_reason: Mapped[str | None] = mapped_column(String(300))
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        UniqueConstraint("case_id", name="uq_autopilot_policies_case"),
+        CheckConstraint("interval_hours BETWEEN 1 AND 168", name="interval_valid"),
+        CheckConstraint("min_fit BETWEEN 0 AND 100", name="min_fit_valid"),
+        CheckConstraint("max_new_per_run BETWEEN 0 AND 20", name="max_new_valid"),
+        CheckConstraint("daily_submit_cap BETWEEN 0 AND 20", name="daily_cap_valid"),
+        CheckConstraint("per_org_cap BETWEEN 1 AND 10", name="org_cap_valid"),
+        Index("ix_autopilot_due", "enabled", "next_run_at"),
+    )
+
+
+class AutopilotItem(IdMixin, TimestampMixin, Base):
+    """One position the autopilot is working on, advanced stage by stage by the reconciler."""
+
+    __tablename__ = "autopilot_items"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    case_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("candidate_cases.id", ondelete="CASCADE"), nullable=False
+    )
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("opportunities.id", ondelete="CASCADE"), nullable=False
+    )
+    stage: Mapped[str] = mapped_column(String(30), nullable=False, default="queued")
+    reason: Mapped[str | None] = mapped_column(String(1000))
+    application_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("applications.id", ondelete="SET NULL")
+    )
+    child_run_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    document_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    fit: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    title: Mapped[str] = mapped_column(String(300), nullable=False, default="")
+    organization: Mapped[str] = mapped_column(String(300), nullable=False, default="")
+
+    __table_args__ = (
+        UniqueConstraint("case_id", "opportunity_id", name="uq_autopilot_items_case_opp"),
+        CheckConstraint(
+            "stage IN ('queued','researching','drafting','rendering','needs_input','applying',"
+            "'waiting_approval','needs_user_action','submitted','manual','skipped','failed',"
+            "'stopped')",
+            name="stage_valid",
+        ),
+        Index("ix_autopilot_items_stage", "owner_user_id", "stage"),
+    )
+
+
+class CaseAnswer(IdMixin, TimestampMixin, Base):
+    """The user's own answer to a question (form field or document placeholder), reused
+    whenever the same question comes up. Never generated by a model."""
+
+    __tablename__ = "case_answers"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    case_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("candidate_cases.id", ondelete="CASCADE"), nullable=False
+    )
+    question_key: Mapped[str] = mapped_column(String(500), nullable=False)
+    question: Mapped[str] = mapped_column(String(1000), nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(String(100), nullable=False, default="user")
+
+    __table_args__ = (UniqueConstraint("case_id", "question_key", name="uq_case_answers_key"),)

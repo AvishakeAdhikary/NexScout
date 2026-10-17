@@ -1,0 +1,72 @@
+# NexScout "easy" stack: the released images, nothing to build. Used by the desktop app's Easy
+# mode and by the Start NexScout scripts in this folder. Everything listens on this computer
+# only (127.0.0.1). Secrets come from the environment (the scripts/app generate them once):
+#   NEXSCOUT_MASTER_KEY             encrypts your stored keys and tokens (keep it safe)
+#   NEXSCOUT_PG_SUPERUSER_PASSWORD  the database administrator password
+# Optional: NEXSCOUT_PORT (default 3000), NEXSCOUT_VERSION (image tag, default latest).
+name: nexscout-easy
+
+x-backend: &backend
+  image: ghcr.io/avishakeadhikary/nexscout-backend:${NEXSCOUT_VERSION:-latest}
+  environment: &backend-env
+    NEXSCOUT_DATABASE_URL: postgresql+psycopg://nexscout_app:nexscout_app_dev@postgres:5432/nexscout
+    NEXSCOUT_MIGRATION_DATABASE_URL: postgresql+psycopg://nexscout_owner:nexscout_owner_dev@postgres:5432/nexscout
+    NEXSCOUT_SYSTEM_DATABASE_URL: postgresql+psycopg://nexscout_system:nexscout_system_dev@postgres:5432/nexscout
+    NEXSCOUT_STORAGE_DIR: /data/storage
+    NEXSCOUT_MASTER_KEY: ${NEXSCOUT_MASTER_KEY:?NEXSCOUT_MASTER_KEY is required}
+    NEXSCOUT_PUBLIC_WEB_URL: ${NEXSCOUT_PUBLIC_WEB_URL:-http://localhost:3000}
+  volumes:
+    - appdata:/data
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${NEXSCOUT_PG_SUPERUSER_PASSWORD:?NEXSCOUT_PG_SUPERUSER_PASSWORD is required}
+    # No published port: only the NexScout containers can reach the database.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../docker/postgres/01-roles.sql:/docker-entrypoint-initdb.d/01-roles.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nexscout"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  api:
+    <<: *backend
+    command: ["sh", "-c", "nexscout migrate && nexscout serve --host 0.0.0.0 --port 8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/readyz').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  worker:
+    <<: *backend
+    command: ["nexscout", "worker"]
+    depends_on:
+      api:
+        condition: service_healthy
+    stop_grace_period: 40s
+
+  web:
+    image: ghcr.io/avishakeadhikary/nexscout-web:${NEXSCOUT_VERSION:-latest}
+    environment:
+      NEXSCOUT_API_ORIGIN: http://api:8000
+    ports:
+      - "127.0.0.1:${NEXSCOUT_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  appdata:

@@ -23,10 +23,11 @@ from typing import Any, TypedDict, cast
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.runtime import Runtime
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from nexscout.agent_runtime.context import RunContext, UncertainOutcome
 from nexscout.agent_runtime.registry import WorkflowSpec, register, tracked
+from nexscout.application.answers import answers_for
 from nexscout.application.applications import (
     BROWSER_START,
     CV_TYPES,
@@ -42,6 +43,7 @@ from nexscout.infrastructure.browser import Guard, fill_form, submit_form
 from nexscout.infrastructure.db.models import (
     Application,
     ApplicationEvent,
+    AutopilotPolicy,
     GeneratedDocument,
     GeneratedDocumentVersion,
     User,
@@ -74,8 +76,9 @@ class Inputs:
     phone: str | None
 
     @classmethod
-    def of(cls, app: Application) -> Inputs:
-        return cls(list(app.document_ids), dict(app.answers or {}), app.phone)
+    def of(cls, app: Application, bank: dict[str, str] | None = None) -> Inputs:
+        # The case answer bank first; answers given on this application win.
+        return cls(list(app.document_ids), {**(bank or {}), **(app.answers or {})}, app.phone)
 
 
 async def _applicant(ctx: RunContext, app: Inputs, workdir: Path) -> Applicant:
@@ -139,7 +142,7 @@ async def fill(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                 message="Filling in the form again.",
             )
         url = str(app.apply_url)
-        snapshot = Inputs.of(app)
+        snapshot = Inputs.of(app, await answers_for(s, app.owner_user_id, app.case_id))
     await ctx.note(step, f"Opening {url}")
     workdir = Path(tempfile.mkdtemp(prefix="nexscout-apply-"))
     try:
@@ -265,6 +268,24 @@ async def approve(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         declarations = (ev.payload or {}).get("declarations", []) if ev else []
         event_id = str(ev.id) if ev else None
     shown = [f"{f['label']}: {f['value']}" for f in fields if f["action"] in ("fill", "upload")]
+    gate_note = ""
+    if ctx.params.get("autopilot"):
+        allowed, reasons = await _autopilot_gate(ctx, bool(declarations), str(state.get("url")))
+        if allowed:
+            await ctx.record_policy_approval(
+                node="approve",
+                action_kind="submit_application",
+                title=f"Submit your application to {org}?",
+                summary=f"Approved by your autopilot settings: {' '.join(reasons)}",
+                details={
+                    "application_id": str(_app_id(ctx)),
+                    "fields": shown,
+                    "declarations": declarations,
+                    "screenshot_event_id": event_id,
+                },
+            )
+        else:
+            gate_note = " Autopilot asks you because: " + " ".join(reasons)
     ok = await ctx.require_approval(
         node="approve",
         action_kind="submit_application",
@@ -274,6 +295,7 @@ async def approve(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             "submit it once"
             + (", confirming: " + "; ".join(declarations) if declarations else "")
             + ". Check every value and the screenshot first."
+            + gate_note
         ),
         details={
             "page": state.get("url"),
@@ -298,6 +320,63 @@ async def approve(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                 message="You chose not to submit. Nothing was sent.",
             )
     return {"result": {"status": "not_submitted"}}
+
+
+async def _autopilot_gate(
+    ctx: RunContext, has_declarations: bool, page_url: str
+) -> tuple[bool, list[str]]:
+    """May the user's standing policy approve this submission? Deterministic (domain/policy)."""
+    from nexscout.application.autopilot import to_policy
+    from nexscout.domain.policy import SubmitContext, may_auto_submit
+    from nexscout.domain.site_policy import site_verdict
+    from nexscout.infrastructure.fetch import SafeFetcher
+
+    async with ctx.tenant() as s:
+        app = await s.get(Application, _app_id(ctx))
+        assert app is not None
+        row = await s.scalar(select(AutopilotPolicy).where(AutopilotPolicy.case_id == app.case_id))
+        if row is None:
+            return False, ["No autopilot settings for this case."]
+        day = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+        submitted_today = int(
+            await s.scalar(
+                select(func.count()).where(
+                    Application.owner_user_id == ctx.owner_user_id, Application.submitted_at >= day
+                )
+            )
+            or 0
+        )
+        versions = list(
+            await s.scalars(
+                select(GeneratedDocumentVersion)
+                .join(
+                    GeneratedDocument,
+                    (GeneratedDocument.id == GeneratedDocumentVersion.document_id)
+                    & (GeneratedDocument.current_version == GeneratedDocumentVersion.number),
+                )
+                .where(GeneratedDocument.id.in_([uuid.UUID(x) for x in app.document_ids]))
+            )
+        )
+        policy = to_policy(row)
+    demo = fixture_origin(ctx.settings)
+    url = page_url or ""
+    robots = (
+        True
+        if demo and url.startswith(demo + "/")
+        else await SafeFetcher(allow_private=False).robots_allows(url)
+    )
+    verdict = may_auto_submit(
+        policy,
+        SubmitContext(
+            site=site_verdict(url, robots_allows=robots, demo_origin=demo),
+            submitted_today=submitted_today,
+            has_declarations=has_declarations,
+            mock_documents=any(v.is_mock for v in versions),
+            placeholders=any(v.placeholders for v in versions),
+            unanswered=0,
+        ),
+    )
+    return verdict.allowed, verdict.reasons
 
 
 def _route_after_approve(state: State) -> str:
@@ -326,7 +405,7 @@ async def submit(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             return {"result": {"status": "skipped", "message": f"Application is {app.status}."}}
         move(s, app, S.APPROVED, actor="user", run_id=ctx.run_id, message="You approved.")
         move(s, app, S.SUBMITTING, actor="agent", run_id=ctx.run_id)
-        snapshot = Inputs.of(app)
+        snapshot = Inputs.of(app, await answers_for(s, app.owner_user_id, app.case_id))
         url = str(app.apply_url)
     digest = str(state["digest"])
 

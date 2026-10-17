@@ -90,7 +90,13 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
             json={"kind": "webhook", "name": "Mine", "secrets": {"url": "http://127.0.0.1:9/h"}},
         )
     ).json()["channel"]
+    answer = (
+        await client.post(
+            f"/api/v1/cases/{case_id}/answers", json={"question": "Salary?", "answer": "Mine"}
+        )
+    ).json()
     return {
+        "answer_id": answer["id"],
         "channel_id": channel["id"],
         "token_id": token["id"],
         "reminder_id": reminder["id"],
@@ -232,6 +238,14 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("POST", f"/api/v1/channels/{ch}/test", None),
         ("GET", f"/api/v1/channels/{ch}/deliveries", None),
         ("DELETE", f"/api/v1/channels/{ch}", None),
+        ("GET", f"/api/v1/cases/{c}/autopilot", None),
+        ("PUT", f"/api/v1/cases/{c}/autopilot", {"version": 0, "enabled": True}),
+        ("POST", f"/api/v1/cases/{c}/autopilot/run", None),
+        ("GET", f"/api/v1/cases/{c}/answers", None),
+        ("POST", f"/api/v1/cases/{c}/answers", {"question": "q", "answer": "a"}),
+        ("DELETE", f"/api/v1/answers/{ids['answer_id']}", None),
+        ("POST", f"/api/v1/notifications/{note}/answer", {"answer": "x"}),
+        ("POST", f"/api/v1/applications/{ap}/assist", None),
         ("GET", f"/api/v1/cases/{c}/events?once=true", None),
         ("POST", f"/api/v1/providers/{pv}/verify", None),
         ("DELETE", f"/api/v1/providers/{pv}", None),
@@ -264,6 +278,10 @@ async def test_other_user_gets_404_everywhere(
     assert [t["revoked"] for t in (await client.get("/api/v1/me/tokens")).json()] == [False]
     chans = (await client.get("/api/v1/channels")).json()
     assert [(c["name"], c["status"]) for c in chans] == [("Mine", "active")]
+    bank = (await client.get(f"/api/v1/cases/{ids['case_id']}/answers")).json()
+    assert [(a["question"], a["answer"]) for a in bank] == [("Salary?", "Mine")]
+    pilot = (await client.get(f"/api/v1/cases/{ids['case_id']}/autopilot")).json()
+    assert pilot["policy"]["enabled"] is False
     notes = (await client.get("/api/v1/notifications")).json()
     assert notes["unread"] >= 1  # intruder could not mark them read
     rems = (await client.get(f"/api/v1/cases/{ids['case_id']}/reminders")).json()
@@ -306,6 +324,7 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "notification_id",
             "token_id",
             "channel_id",
+            "answer_id",
         )
     }
     sentinel["app_version"] = "1"

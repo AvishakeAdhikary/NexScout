@@ -31,7 +31,8 @@ backend/src/nexscout/  Python 3.13 (uv): api/ application/ domain/ infrastructur
 backend/alembic/       migrations · backend/tests/ unit/ integration/ security/ (pytest)
 apps/web/              Next.js 16 (App Router, Cache Components, TS strict, Tailwind 4, shadcn/ui)
 apps/web/src/lib/api/  typed API client + contracts generated from OpenAPI (scripts/gen-contracts.sh)
-apps/desktop/          Electron shell (Milestone 9)
+apps/desktop/          Electron shell (remote, local and Easy mode = own Docker stack)
+easy/                  double-click start scripts + compose on released images (non-technical users)
 apps/web/e2e/          Playwright Test journeys (real stack, mock providers)
 docker/ scripts/ docs/
 ```
@@ -65,8 +66,10 @@ Next.js 16 differs from older versions: read `apps/web/node_modules/next/dist/do
 8. **Mocks are labelled as mocks**, in code, UI and docs.
 
 ## Releases and users
-- Every green push to `main` auto-releases a **minor** version (`release.yml`): tag, GitHub Release, images,
-  Windows installer. Pushing to main is authorized; never force-push.
+- Every green push to `main` auto-releases a **minor** version (`release.yml`): tag, GitHub Release, GHCR
+  images, Windows installer, easy bundle. Pushing to main is authorized; never force-push.
+- Easy install: `easy/` (double-click start scripts + `docker-compose.yml` on released images) and the
+  desktop app's Easy mode. Keep `easy/docker-compose.yml` in step with the root compose file's services.
 - Non-technical users start from `docs/USER_GUIDE.md` (double-click install). Keep it in plain language
   whenever a user-visible behavior changes; developer docs live in `docs/DEVELOPMENT.md`.
 

@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { DashboardWidgets } from "@/components/dashboard-widgets";
+import { GettingStarted } from "@/components/getting-started";
 import { ErrorAlert } from "@/components/error-alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { casesApi, type CareerPath } from "@/lib/api/client";
@@ -50,6 +51,8 @@ export default function CaseDashboard() {
         <h1 className="text-2xl font-semibold">{c.name}</h1>
         {c.description && <p className="mt-1 text-muted-foreground">{c.description}</p>}
       </header>
+
+      <GettingStarted caseId={caseId} />
 
       <DashboardWidgets caseId={caseId} />
 

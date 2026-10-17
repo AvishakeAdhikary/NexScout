@@ -1,6 +1,6 @@
 // Pure, testable security and configuration rules for the desktop shell.
 
-export type Mode = "remote" | "local";
+export type Mode = "easy" | "remote" | "local";
 
 export interface DesktopConfig {
   mode: Mode;
@@ -14,11 +14,18 @@ export interface DesktopConfig {
 }
 
 export const DEFAULT_LOCAL = { apiPort: 18800, webPort: 18900 } as const;
+/** Easy mode: NexScout's own Docker stack (released images), shown on this port. */
+export const DEFAULT_EASY_PORT = 18700;
 
 /** Validate a config read from disk (never trust the file blindly). */
 export function parseConfig(raw: unknown): DesktopConfig | null {
   if (typeof raw !== "object" || raw === null) return null;
   const c = raw as Record<string, unknown>;
+  const port = (v: unknown, d: number) =>
+    typeof v === "number" && Number.isInteger(v) && v >= 1024 && v <= 65535 ? v : d;
+  if (c.mode === "easy") {
+    return { mode: "easy", webPort: port(c.webPort, DEFAULT_EASY_PORT) };
+  }
   if (c.mode === "remote") {
     if (typeof c.remoteUrl !== "string") return null;
     const url = safeHttpUrl(c.remoteUrl);
@@ -26,8 +33,6 @@ export function parseConfig(raw: unknown): DesktopConfig | null {
   }
   if (c.mode === "local") {
     if (typeof c.checkoutDir !== "string" || c.checkoutDir.trim() === "") return null;
-    const port = (v: unknown, d: number) =>
-      typeof v === "number" && Number.isInteger(v) && v >= 1024 && v <= 65535 ? v : d;
     return {
       mode: "local",
       checkoutDir: c.checkoutDir,
@@ -78,5 +83,41 @@ export function isSafeExternal(target: string): boolean {
 /** The page the window shows for a config. */
 export function appUrl(config: DesktopConfig): string {
   if (config.mode === "remote") return config.remoteUrl as string;
+  if (config.mode === "easy") return `http://127.0.0.1:${config.webPort ?? DEFAULT_EASY_PORT}`;
   return `http://127.0.0.1:${config.webPort ?? DEFAULT_LOCAL.webPort}`;
+}
+
+/** Where Docker usually lives when it isn't on PATH (Docker Desktop installs). */
+export function dockerCandidates(platform: string, env: Record<string, string | undefined>): string[] {
+  if (platform === "win32") {
+    const win = (...parts: string[]) => parts.join(String.fromCharCode(92)); // "\"
+    return [
+      win(env.ProgramFiles ?? "C:\u005cProgram Files", "Docker", "Docker", "resources", "bin", "docker.exe"),
+      win(env.LOCALAPPDATA ?? "", "Programs", "DockerDesktop", "resources", "bin", "docker.exe"),
+    ];
+  }
+  if (platform === "darwin") {
+    return ["/usr/local/bin/docker", "/opt/homebrew/bin/docker",
+      "/Applications/Docker.app/Contents/Resources/bin/docker"];
+  }
+  return ["/usr/bin/docker", "/usr/local/bin/docker"];
+}
+
+/** Environment for `docker compose` in Easy mode. Secrets are passed in memory, never written. */
+export function easyEnv(opts: {
+  masterKey: string;
+  dbPassword: string;
+  port: number;
+  version: string;
+}): Record<string, string> {
+  if (!/^[A-Za-z0-9+/=]{40,}$/.test(opts.masterKey)) throw new Error("invalid master key");
+  if (!/^[A-Za-z0-9]{16,}$/.test(opts.dbPassword)) throw new Error("invalid database password");
+  return {
+    NEXSCOUT_MASTER_KEY: opts.masterKey,
+    NEXSCOUT_PG_SUPERUSER_PASSWORD: opts.dbPassword,
+    NEXSCOUT_PORT: String(opts.port),
+    NEXSCOUT_PUBLIC_WEB_URL: `http://127.0.0.1:${opts.port}`,
+    // Released apps use the matching images; a development build uses the newest release.
+    NEXSCOUT_VERSION: /^\d+\.\d+\.\d+$/.test(opts.version) && opts.version !== "0.1.0" ? opts.version : "latest",
+  };
 }

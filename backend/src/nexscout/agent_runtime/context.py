@@ -147,6 +147,53 @@ class RunContext:
             await self.on_step_finished(node, status)
 
     # ----------------------------------------------------------------------------- approvals
+    async def record_policy_approval(
+        self,
+        *,
+        node: str,
+        action_kind: str,
+        title: str,
+        summary: str,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """The user's standing autopilot policy approved this action (decided by deterministic
+        code, not a model). Recorded like a manual decision so the trail is the same; a later
+        `require_approval` for the same node finds it and doesn't ask."""
+        key = f"{self.run_id}:{node}:{action_kind}"
+        now = datetime.now(UTC)
+        async with self.tenant() as s:
+            created = await s.execute(
+                insert(ApprovalRequest)
+                .values(
+                    id=uuid.uuid4(),
+                    owner_user_id=self.owner_user_id,
+                    case_id=self.case_id,
+                    run_id=self.run_id,
+                    node=node,
+                    action_kind=action_kind,
+                    title=title[:300],
+                    summary=summary[:4000],
+                    details=details or {},
+                    status="approved",
+                    decision_note="Approved by your autopilot settings.",
+                    decided_at=now,
+                    idempotency_key=key,
+                )
+                .on_conflict_do_nothing(index_elements=["idempotency_key"])
+            )
+            if created.rowcount:  # type: ignore[attr-defined]
+                from nexscout.application.audit import record_audit
+
+                record_audit(
+                    s,
+                    "approval.decided_by_policy",
+                    actor_user_id=self.owner_user_id,
+                    target_type="run",
+                    target_id=self.run_id,
+                    meta={"action": action_kind},
+                )
+        await self.emit("approval_decided", {"by": "autopilot_policy", "action": action_kind})
+
     async def require_approval(
         self,
         *,

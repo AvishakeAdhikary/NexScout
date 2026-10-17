@@ -22,6 +22,23 @@ export interface paths {
         patch: operations["update_affiliation_api_v1_affiliations__affiliation_id__patch"];
         trace?: never;
     };
+    "/api/v1/answers/{answer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Answer */
+        delete: operations["delete_answer_api_v1_answers__answer_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/{application_id}": {
         parameters: {
             query?: never;
@@ -38,6 +55,26 @@ export interface paths {
         head?: never;
         /** Update Application */
         patch: operations["update_application_api_v1_applications__application_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/applications/{application_id}/assist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Assist
+         * @description Assisted mode: a visible browser on this computer; the person solves and submits.
+         */
+        post: operations["start_assist_api_v1_applications__application_id__assist_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/applications/{application_id}/browser": {
@@ -213,6 +250,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/autopilot/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop Autopilot
+         * @description The kill switch: every autopilot off, its running work cancelled.
+         */
+        post: operations["stop_autopilot_api_v1_autopilot_stop_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases": {
         parameters: {
             query?: never;
@@ -262,6 +319,24 @@ export interface paths {
         put?: never;
         /** Create Affiliation */
         post: operations["create_affiliation_api_v1_cases__case_id__affiliations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Answers */
+        get: operations["list_answers_api_v1_cases__case_id__answers_get"];
+        put?: never;
+        /** Save Answer */
+        post: operations["save_answer_api_v1_cases__case_id__answers_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -331,6 +406,41 @@ export interface paths {
         get: operations["list_approvals_api_v1_cases__case_id__approvals_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/autopilot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Autopilot */
+        get: operations["get_autopilot_api_v1_cases__case_id__autopilot_get"];
+        /** Save Autopilot */
+        put: operations["save_autopilot_api_v1_cases__case_id__autopilot_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/autopilot/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Run Autopilot */
+        post: operations["run_autopilot_api_v1_cases__case_id__autopilot_run_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1220,6 +1330,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/{notification_id}/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Question
+         * @description Answer a question NexScout asked, from the app (the same as replying in a chat).
+         */
+        post: operations["answer_question_api_v1_notifications__notification_id__answer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/{notification_id}/read": {
         parameters: {
             query?: never;
@@ -1568,6 +1698,32 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** AnswerIn */
+        AnswerIn: {
+            /** Answer */
+            answer: string;
+            /** Question */
+            question: string;
+        };
+        /** AnswerOut */
+        AnswerOut: {
+            /** Answer */
+            answer: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Question */
+            question: string;
+            /** Source */
+            source: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** ApplicationDetailOut */
         ApplicationDetailOut: {
             /** Allowed Statuses */
@@ -1826,6 +1982,18 @@ export interface components {
             summary: string;
             /** Title */
             title: string;
+        };
+        /** AutopilotOut */
+        AutopilotOut: {
+            /** Auto Submit Consent */
+            auto_submit_consent: string;
+            /** Declarations Consent */
+            declarations_consent: string;
+            /** Items */
+            items: components["schemas"]["ItemOut"][];
+            /** Manual Only Sites */
+            manual_only_sites: string[];
+            policy: components["schemas"]["PolicyOut"];
         };
         /** Body_upload_api_v1_cases__case_id__documents_post */
         Body_upload_api_v1_cases__case_id__documents_post: {
@@ -2480,6 +2648,38 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** ItemOut */
+        ItemOut: {
+            /** Application Id */
+            application_id: string | null;
+            /** Attempts */
+            attempts: number;
+            /** Fit */
+            fit: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Opportunity Id
+             * Format: uuid
+             */
+            opportunity_id: string;
+            /** Organization */
+            organization: string;
+            /** Reason */
+            reason: string | null;
+            /** Stage */
+            stage: string;
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -2678,6 +2878,86 @@ export interface components {
         PairIn: {
             /** Code */
             code: string;
+        };
+        /** PolicyIn */
+        PolicyIn: {
+            /** Auto Submit */
+            auto_submit?: boolean | null;
+            /** Consent */
+            consent?: string | null;
+            /** Countries */
+            countries?: string[] | null;
+            /** Daily Submit Cap */
+            daily_submit_cap?: number | null;
+            /** Declarations */
+            declarations?: boolean | null;
+            /** Declarations Consent */
+            declarations_consent?: string | null;
+            /** Doc Types */
+            doc_types?: string[] | null;
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Exclude Orgs */
+            exclude_orgs?: string[] | null;
+            /** Interval Hours */
+            interval_hours?: number | null;
+            /** Kinds */
+            kinds?: string[] | null;
+            /** Max New Per Run */
+            max_new_per_run?: number | null;
+            /** Min Fit */
+            min_fit?: number | null;
+            /** Per Org Cap */
+            per_org_cap?: number | null;
+            /** Steps */
+            steps?: {
+                [key: string]: boolean;
+            } | null;
+            /** Version */
+            version: number;
+        };
+        /** PolicyOut */
+        PolicyOut: {
+            /** Auto Submit */
+            auto_submit: boolean;
+            /** Consented At */
+            consented_at: string | null;
+            /** Countries */
+            countries: string[];
+            /** Daily Submit Cap */
+            daily_submit_cap: number;
+            /** Declarations */
+            declarations: boolean;
+            /** Doc Types */
+            doc_types: string[];
+            /** Enabled */
+            enabled: boolean;
+            /** Exclude Orgs */
+            exclude_orgs: string[];
+            /** Interval Hours */
+            interval_hours: number;
+            /** Kinds */
+            kinds: string[];
+            /** Last Run At */
+            last_run_at: string | null;
+            /** Last Run Id */
+            last_run_id: string | null;
+            /** Max New Per Run */
+            max_new_per_run: number;
+            /** Min Fit */
+            min_fit: number;
+            /** Next Run At */
+            next_run_at: string | null;
+            /** Per Org Cap */
+            per_org_cap: number;
+            /** Steps */
+            steps: {
+                [key: string]: boolean;
+            };
+            /** Stopped Reason */
+            stopped_reason: string | null;
+            /** Version */
+            version: number;
         };
         /** Preferences */
         Preferences: {
@@ -2919,6 +3199,11 @@ export interface components {
         RenderIn: {
             /** Version */
             version?: number | null;
+        };
+        /** ReplyIn */
+        ReplyIn: {
+            /** Answer */
+            answer: string;
         };
         /** RescoreOut */
         RescoreOut: {
@@ -3231,6 +3516,15 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** StopOut */
+        StopOut: {
+            /** Items */
+            items: number;
+            /** Policies */
+            policies: number;
+            /** Runs Cancelled */
+            runs_cancelled: number;
+        };
         /** SyncIn */
         SyncIn: {
             /** Sources */
@@ -3480,6 +3774,35 @@ export interface operations {
             };
         };
     };
+    delete_answer_api_v1_answers__answer_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                answer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_application_api_v1_applications__application_id__get: {
         parameters: {
             query?: never;
@@ -3533,6 +3856,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApplicationDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_assist_api_v1_applications__application_id__assist_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                application_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunStartedOut"];
                 };
             };
             /** @description Validation Error */
@@ -3849,6 +4203,26 @@ export interface operations {
             };
         };
     };
+    stop_autopilot_api_v1_autopilot_stop_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StopOut"];
+                };
+            };
+        };
+    };
     list_cases_api_v1_cases_get: {
         parameters: {
             query?: {
@@ -4074,6 +4448,72 @@ export interface operations {
             };
         };
     };
+    list_answers_api_v1_cases__case_id__answers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_answer_api_v1_cases__case_id__answers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_applications_api_v1_cases__case_id__applications_get: {
         parameters: {
             query?: {
@@ -4230,6 +4670,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApprovalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_autopilot_api_v1_cases__case_id__autopilot_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutopilotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_autopilot_api_v1_cases__case_id__autopilot_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutopilotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_autopilot_api_v1_cases__case_id__autopilot_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
                 };
             };
             /** @description Validation Error */
@@ -6395,6 +6934,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    answer_question_api_v1_notifications__notification_id__answer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };

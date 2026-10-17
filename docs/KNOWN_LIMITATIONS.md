@@ -132,6 +132,34 @@ check their own setup with "Check connection" in Settings, which records the res
   are sent as text. Setting `NEXSCOUT_PUBLIC_WEB_URL` to an HTTPS address gives an "Open in
   NexScout" button.
 
+## Autopilot (M12)
+- **Real portals.** The only site NexScout fills and submits automatically in tests is the
+  labelled demo site. Real employer portals differ widely: multi-page forms, custom widgets and
+  account walls. Expect `needs_user_action` (assisted mode) more often than full automation.
+- **Manual-only list.** The list of sites with published automation bans is maintained by hand
+  (`domain/site_policy.py`, checked 2026-10). A site missing from it still goes through the
+  robots.txt and portal checks.
+- **Assisted mode** works only where the worker runs on the user's own computer (the desktop
+  app sets `NEXSCOUT_ASSISTED_BROWSER`). On a server there is no screen to show a window on.
+- **Model-written documents.** Documents written by the mock model never auto-submit. With a
+  real model, the drafting consent approval is still asked per document when profile data
+  leaves the device.
+
+## Releases and easy install (M13)
+- **GHCR images start private** on the first release. Until the repository owner makes
+  `nexscout-backend` and `nexscout-web` public, the easy install can't pull them; from a source
+  checkout it builds them locally instead.
+- **The Windows installer is unsigned**, so SmartScreen warns on first run. macOS and Linux
+  desktop builds aren't produced.
+- **Only the Windows start script has been run.** The macOS and Linux scripts were written to
+  the same steps but haven't been run.
+- **Easy mode and the zip bundle run the worker inside Docker**, so assisted mode (a visible
+  browser window) isn't available there. Use local mode, or apply yourself and mark the
+  application as submitted.
+- **Easy mode keeps the dev role passwords** for the internal database roles. The database
+  publishes no port, so only NexScout's containers can reach it, but this isn't a hardened
+  multi-user server setup (see OPERATIONS for production).
+
 ## Agent runtime (M4)
 - Only four workflows exist: reading uploads, opportunity search, the AI summary draft, and a
   diagnostic system check. PhD and job document generation arrives in M5–M6.

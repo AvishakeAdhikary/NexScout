@@ -263,6 +263,29 @@ async def test_telegram_question_answer_then_approve_submits_once(
     assert len(fake.calls) == n_before
     assert len([s for s in fixture_site.SUBMISSIONS if s["job"] == "REQ-100"]) == 1
 
+    # 7) "STOP" from the paired chat is the autopilot kill switch; from anyone else it's ignored.
+    pilot = (await client.get(f"/api/v1/cases/{case_id}/autopilot")).json()
+    await client.put(
+        f"/api/v1/cases/{case_id}/autopilot",
+        json={"version": pilot["policy"]["version"], "enabled": True},
+    )
+    for uid, update_id in ((999, 6), (111, 7)):
+        fake.tg_updates.append(
+            {
+                "update_id": update_id,
+                "message": {
+                    "message_id": 20 + update_id,
+                    "chat": {"id": uid, "type": "private"},
+                    "from": {"id": uid},
+                    "text": "STOP",
+                },
+            }
+        )
+        await loops.telegram_poll_once(cid, wait_s=0)
+        enabled = (await client.get(f"/api/v1/cases/{case_id}/autopilot")).json()["policy"]
+        assert enabled["enabled"] is (uid != 111)
+    assert fake.sent("sendMessage")[-1]["text"].startswith("<b>Autopilot stopped: 1 setting(s)")
+
 
 def _update(update_id: int) -> Any:
     from nexscout.infrastructure.channels.telegram import TelegramUpdate

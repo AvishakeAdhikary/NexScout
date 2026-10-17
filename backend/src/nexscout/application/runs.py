@@ -49,7 +49,9 @@ ALLOWED_PARAMS: dict[str, set[str]] = {
         "format",
     },
     "render_document": {"document_id", "version"},
-    "browser_apply": {"application_id"},
+    "browser_apply": {"application_id", "autopilot"},
+    "autopilot_cycle": {"policy_id"},
+    "browser_assist": {"application_id"},
 }
 
 

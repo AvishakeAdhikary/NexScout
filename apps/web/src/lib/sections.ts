@@ -51,6 +51,11 @@ export const SECTIONS: readonly Section[] = [
     description: "Ask what needs you, check statuses, or start a search in your own words.",
   },
   {
+    slug: "autopilot",
+    label: "Autopilot",
+    description: "Let NexScout work on its own within your rules, asking you only when needed.",
+  },
+  {
     slug: "activity",
     label: "Agent Activity",
     description: "Live view of running workflows. Pause, resume, approve, or cancel.",
