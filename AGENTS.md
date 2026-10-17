@@ -81,10 +81,35 @@ An LLM is never asked whether a safety rule may be skipped.
   no user-controlled paths, conversions in a subprocess with limits.
 - **No shell execution** of LLM-generated content. Ever.
 - **Consequential actions** (submit application, send email/message, accept terms, payments,
-  sharing sensitive data with a new recipient, unverifiable answers) require an
-  `approval_request` that the user approves. Narrow standing policies need explicit user configuration.
-- Never bypass CAPTCHAs, MFA, anti-bot measures or access controls. Hand off to the human instead.
+  sharing sensitive data with a new recipient, unverifiable answers) require explicit user approval,
+  given in one of two ways only:
+  1. a per-action `approval_request` the user approves (in the app, or via a *paired* chat channel);
+  2. a **standing autopilot policy** the user configured and consented to (`autopilot_policies`):
+     narrow, versioned, revocable, audited, with daily caps. The policy is evaluated by
+     deterministic code (`domain/policy.py`) that returns allow/deny **with reasons**; anything the
+     policy doesn't explicitly allow falls back to a per-action approval. An LLM never decides it.
+- **Human-in-the-loop, never guessing:** unknown required answers, CAPTCHAs, logins/MFA and
+  anything outside policy pause the workflow (LangGraph `interrupt`) and notify the user through
+  their channels. Answers the user gives are stored in the case's **answer bank** and reused;
+  NexScout never invents an answer.
+- Never bypass CAPTCHAs, MFA, anti-bot measures or access controls. Hand off to the human instead
+  (notification + assisted mode: the human solves it in a visible browser window).
+- **Online-compliance guardrails** (`domain/site_policy.py`): respect robots.txt and published
+  automation bans (sites where automated applying is prohibited are manual-only), per-site and
+  daily rate limits, one application per posting, official APIs only for messaging channels
+  (e.g. WhatsApp Cloud API, never unofficial WhatsApp Web clients), opt-in and quiet hours for
+  notifications. When unsure, the safe default is manual.
 - Audit-log security-relevant events (login, approvals, exports, deletions, credential use).
+
+## 4a. Notification channels (M11)
+- Delivery goes through a **transactional outbox** (`notification_deliveries`): rows are written in the
+  same transaction as the event; the worker delivers with retries, backoff and a dead-letter state.
+- Channel credentials are secrets (AES-GCM, never returned or logged). Outbound hosts are fixed per
+  official provider (discord.com, api.telegram.org, graph.facebook.com, hooks.slack.com); custom
+  webhooks are SSRF-checked and HMAC-signed.
+- Inbound actions (button presses, replies) are accepted only from the **paired** identity of that
+  channel (pairing code or verified chat/user id), verified signatures where the provider signs, and
+  idempotent per provider event id. A chat message can approve only what it was sent for.
 
 ## 5. Workflow runtime rules
 - Every task has: input schema, output schema, allowed tools, completion condition, timeout,
@@ -137,7 +162,12 @@ migrations provided · no secrets exposed · **verified by running it** · limit
 2. Pick the smallest complete vertical slice from the current milestone.
 3. Update the acceptance criteria if needed → implement → lint/type-check → test → run → verify.
 4. Update the docs, the roadmap checkpoint (evidence) and known limitations.
-5. Commit locally after a verified milestone. Don't push without user authorization.
+5. Commit locally after a verified milestone. Pushing to `origin/main` is authorized by the user
+   (2026-10-17) once all checks pass locally; never force-push.
+   **Releases:** every push to `main` whose CI passes is released automatically by
+   `.github/workflows/release.yml`: the **minor** version is bumped from the latest `v2.x.y` tag
+   (`v2.3.0` → `v2.4.0`), tagged, published as a GitHub Release with notes, Docker images and the
+   desktop installer. Don't hand-edit version numbers; patch/major bumps are manual and rare.
 6. Don't rewrite unrelated work. Don't reset or force anything without authorization.
 7. Research version-sensitive APIs in official docs before using them. Record decisions as ADRs
    in `docs/ARCHITECTURE_DECISIONS/NNNN-title.md` (Context, Decision, Alternatives, Consequences).

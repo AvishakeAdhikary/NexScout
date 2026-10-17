@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** all milestones M0–M10 ✅ (see the open items below).
+- **Current milestone:** M11 Notification channels (🟨 in progress), then M12 Autopilot, M13 Releases + easy install. M0–M10 ✅.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0012.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -161,18 +161,47 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   Studio (see KNOWN_LIMITATIONS provider matrix: none live-verified).
 - **Observed, not failing:** one `Failed to proxy … ECONNRESET` line from `next dev` during the
   M2 E2E (a request aborted by page navigation; the test passed).
-- **Open items (beyond M10, need a decision, keys or other platforms):**
-  1. Live-verify providers with real keys or local models (Settings → Check connection) and
-     record a capability profile per provider.
-  2. Connect real, permitted sources (job board APIs, institutional feeds, arXiv/ORCID opt-in)
-     and test the browser flow on real application portals. Both are demo-only today.
-  3. Push `main` and the tag `v1-legacy` to github.com/AvishakeAdhikary/NexScout:
-     `git push origin main` then `git push origin v1-legacy` (fast-forward; no force). The E2E
-     CI job exists. Then fix whatever the first Linux CI run shows.
-  4. Code-sign the Windows installer; build and sign macOS and Linux on those platforms.
-  5. Metrics exporter and alerting; API rate limiting beyond login.
-  6. Optional: LLM-assisted extraction (same quote-must-be-substring rule), reduced-context
-     retry for small models, an MCP client with an allowlist.
+- **Plan agreed with the user (2026-10-17): human-in-the-loop autopilot**
+  - **M11 Notification channels** (official APIs only):
+    1. Data: `notification_channels` (owned; kind, encrypted credentials, paired identity, quiet hours,
+       enabled) and `notification_deliveries` (outbox: status pending/sent/failed/dead, attempts,
+       next_attempt_at, provider_message_id). Migration 0010.
+    2. Adapters in `infrastructure/channels/`: generic webhook (HMAC-SHA256 signed), Slack incoming
+       webhook, email (SMTP), Telegram Bot API (send + inline buttons; inbound via long polling
+       `getUpdates`: pairing `/start CODE`, button presses, replies), Discord bot (REST send with
+       buttons; inbound via the official Gateway: INTERACTION_CREATE), WhatsApp Cloud API (send +
+       interactive buttons; inbound webhook with `X-Hub-Signature-256` verification).
+    3. Pairing: a one-time code links a chat identity to the user; only that identity can act.
+    4. Outbox delivery loop in the worker (retries with backoff + jitter, dead letter, per-channel
+       circuit breaker), quiet hours, event filters.
+    5. Approvals and answers from chat: approve/reject buttons, answer-by-reply (Telegram, WhatsApp);
+       every message also links to the app. Idempotent per provider event id.
+    6. UI: Settings → Notifications (add, pair, test, pause), delivery log.
+    7. Tests with mock transports for every provider; live verification is opt-in (`-m live`).
+  - **M12 Autopilot** (standing approvals, never guessing):
+    1. `autopilot_policies` (owned, versioned): schedule, steps (discover, research, draft, fill,
+       submit), thresholds (min fit, daily/organization caps, countries, kinds, excluded
+       organizations), explicit consents (auto-submit, declarations) with timestamp and text.
+    2. `domain/policy.py`: deterministic allow/deny with reasons; `domain/site_policy.py`:
+       robots.txt, published automation bans (manual-only), per-site throttle.
+    3. Case **answer bank**: question → answer, reused across applications; unknown questions are
+       asked once through notifications.
+    4. Scheduler in the worker maintenance loop; `autopilot_cycle` LangGraph workflow: discover →
+       shortlist (policy) → research → documents (regional format + compliance) → application →
+       fill → submit within policy, else approval via notification → confirmation.
+    5. CAPTCHA/login: notify and **assisted mode** (desktop/local: visible browser window, NexScout
+       fills, the human solves the CAPTCHA and submits, NexScout detects the confirmation).
+    6. Kill switch, daily digest, autopilot page in the UI.
+  - **M13 Releases and easy install:**
+    1. `release.yml`: on green CI on main, bump minor from the latest `v2.*` tag, tag, release notes,
+       GHCR images (api/worker, web), Windows installer, "easy" bundle.
+    2. Desktop **Easy mode**: installer → open → NexScout starts its own Docker stack (bundled
+       compose, generated secrets, master key in OS storage) → setup wizard in the browser window.
+    3. `Start NexScout` scripts for Windows/macOS/Linux (Docker), in-app onboarding wizard.
+    4. `docs/USER_GUIDE.md` for non-technical users; README rewritten user-first.
+- **Still open (need keys or other platforms):** live provider and channel verification with real
+  credentials; real job/academic sources and real application portals; code signing; macOS/Linux
+  installers.
 
 ## Test evidence log
 | Date | Command | Result |
