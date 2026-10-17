@@ -1,0 +1,29 @@
+# Packaging for the NexScout desktop shell. See docs/OPERATIONS.md ("Desktop") for what was
+# actually built and verified on which platform.
+appId: org.nexscout.desktop
+productName: NexScout
+copyright: NexScout contributors
+directories:
+  output: release
+  buildResources: assets
+files:
+  - dist/**/*.js
+  - assets/**/*
+  - package.json
+asar: true
+win:
+  target: [nsis]
+  icon: assets/icon.png
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+mac:
+  target: [dmg]
+  category: public.app-category.productivity
+  icon: assets/icon.png
+  hardenedRuntime: true
+linux:
+  target: [AppImage]
+  category: Office
+  icon: assets/icon.png

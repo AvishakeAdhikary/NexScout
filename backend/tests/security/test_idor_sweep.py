@@ -83,7 +83,9 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
     ).json()
     await worker.maintenance_once()  # notifications for the pending approval and the reminder
     note = (await client.get("/api/v1/notifications")).json()["items"][0]
+    token = (await client.post("/api/v1/me/tokens", json={"name": "mine"})).json()
     return {
+        "token_id": token["id"],
         "reminder_id": reminder["id"],
         "notification_id": note["id"],
         "application_id": application["id"],
@@ -123,6 +125,7 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
     ap, ev, av = ids["application_id"], ids["app_event_id"], int(ids["app_version"])
     rem, note = ids["reminder_id"], ids["notification_id"]
     return [
+        ("DELETE", f"/api/v1/me/tokens/{ids['token_id']}", None),
         ("POST", f"/api/v1/notifications/{note}/read", None),
         ("GET", f"/api/v1/cases/{c}/reminders", None),
         ("POST", f"/api/v1/cases/{c}/reminders", {"title": "x", "due_on": "2026-01-01"}),
@@ -243,6 +246,7 @@ async def test_other_user_gets_404_everywhere(
     assert run["run"]["status"] == "waiting_approval"  # intruder could not cancel or approve
     assert run["approvals"][0]["status"] == "pending"
     assert [p["name"] for p in (await client.get("/api/v1/providers")).json()] == ["Mine"]
+    assert [t["revoked"] for t in (await client.get("/api/v1/me/tokens")).json()] == [False]
     notes = (await client.get("/api/v1/notifications")).json()
     assert notes["unread"] >= 1  # intruder could not mark them read
     rems = (await client.get(f"/api/v1/cases/{ids['case_id']}/reminders")).json()
@@ -283,6 +287,7 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "app_event_id",
             "reminder_id",
             "notification_id",
+            "token_id",
         )
     }
     sentinel["app_version"] = "1"

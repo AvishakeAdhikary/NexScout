@@ -36,6 +36,26 @@ web on :3000). The api container runs migrations before it reports healthy; the 
 Health: `curl localhost:8000/healthz` (liveness), `curl localhost:8000/readyz` (DB + migrations;
 returns 503 within 3 s when the DB is down).
 
+## MCP server (read-only)
+Create a token under Account → Access tokens (shown once), then configure your MCP client to
+run, for example:
+```bash
+cd backend && NEXSCOUT_MCP_TOKEN=nxs_... uv run nexscout mcp      # stdio
+```
+In a client config, pass the token through the client's `env` setting, never as an argument.
+
+## Desktop shell
+```bash
+cd apps/desktop && npm install
+npm test                 # TypeScript build + policy unit tests
+npm start                # opens the window (first run: choose remote or local mode)
+npm run smoke            # --smoke: load, report what the page can reach, quit
+npm run pack | dist      # electron-builder: unpacked app | installer (unsigned)
+```
+VS Code terminals set `ELECTRON_RUN_AS_NODE=1`, which turns Electron into plain Node. Run with
+`env -u ELECTRON_RUN_AS_NODE` (bash) if `ipcMain` is undefined. Local mode logs are under
+`%APPDATA%\nexscout-desktop\logs` on Windows.
+
 ## End-to-end tests
 ```bash
 cd apps/web && npx playwright install chromium   # once

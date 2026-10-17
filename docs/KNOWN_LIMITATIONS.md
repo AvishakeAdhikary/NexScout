@@ -9,8 +9,12 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
 | ORCID, arXiv | Planned live adapters (M5, opt-in) | Public APIs exist |
 | Job boards | Fixture adapters only until a permitted API is configured | Terms vary per board |
 | Malware scanning of uploads | Hook only | Needs ClamAV. Not bundled |
-| A2A | Not implemented (ADR-0007) | No remote agent consumer yet |
-| macOS desktop builds | Not producible on the Windows dev host | Needs macOS for build and signing |
+| A2A | Not implemented (ADR-0007/0011) | No remote agent consumer yet |
+| MCP client (calling external MCP servers) | Not implemented (ADR-0011) | Nothing configured to verify against; needs an allowlist and approval design |
+| MCP server | Read-only, stdio only (`nexscout mcp`) | No HTTP transport; no write tools by design |
+| macOS / Linux desktop builds | Not built (configs exist) | macOS needs a Mac to build and sign; Linux AppImage wasn't built on this host |
+| Windows installer signing | Unsigned (`NotSigned`) | No code-signing certificate configured; SmartScreen will warn |
+| Self-contained desktop bundle | Not provided | The desktop app is a shell: local mode needs a NexScout checkout, Postgres, uv and Node (ADR-0011) |
 
 ## Provider capability matrix
 "Adapter" means the adapter is implemented and unit-tested against a mocked HTTP or SDK transport.

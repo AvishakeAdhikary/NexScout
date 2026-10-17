@@ -35,3 +35,6 @@ storage/
 .DS_Store
 Thumbs.db
 .idea/
+
+# Desktop packaging output (electron-builder)
+apps/desktop/release/

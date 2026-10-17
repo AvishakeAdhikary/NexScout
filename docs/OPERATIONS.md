@@ -34,6 +34,14 @@ idle worker stopped in 1.6 s. Give the container a longer stop timeout than the 
 If a reverse proxy sits in front, don't compress `text/event-stream`. The SSE endpoint sends
 `Cache-Control: no-transform`; a proxy that ignores it buffers live updates.
 
+## Desktop (apps/desktop)
+- `npm run dist` builds the platform installer into `apps/desktop/release/` (Windows NSIS was
+  built and smoke-tested; it is unsigned).
+- Local mode starts api, worker and web from a NexScout checkout and stores logs in
+  `<userData>/logs`. The master key is encrypted with the OS keychain (`master.key.enc`).
+  Deleting it makes saved provider API keys unreadable.
+- To reset the app's mode, delete `<userData>/config.json`.
+
 ## Deploy / upgrade ⬜
 1. Back up (below). 2. Run `nexscout migrate` with the owner role (Alembic + LangGraph checkpoint
 tables). 3. Roll the api, then the workers. Workers drain: they stop claiming, then finish or

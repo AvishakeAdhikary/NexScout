@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { AccessTokens } from "@/components/access-tokens";
 import { ErrorAlert } from "@/components/error-alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,8 @@ export default function AccountPage() {
           Download my data
         </a>
       </section>
+
+      <AccessTokens />
 
       <section aria-labelledby="delete-heading" className="flex flex-col gap-2 rounded-lg border border-destructive/40 p-4">
         <h2 id="delete-heading" className="text-lg font-semibold">

@@ -4,9 +4,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M9 Desktop, providers, MCP/A2A (⬜ next). M0–M8 ✅.
+- **Current milestone:** M10 Production hardening (⬜ next). M0–M9 ✅.
 - **Done so far:**
-  - M0: all §2.2 docs + ADR-0001…0010.
+  - M0: all §2.2 docs + ADR-0001…0011.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
     locking, audit log, forced RLS + least-privilege grants, health/readiness, CLI, compose,
     Dockerfiles, CI workflow, Next.js shell, E2E.
@@ -116,6 +116,20 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     - Motion: page entrance (route template), card lift, popover and badge transitions. All of
       it turns off with `prefers-reduced-motion`.
     - Sidebar icons; the mind map follows the theme.
+  - M9 (ADR-0011):
+    - Read-only MCP server (`nexscout mcp`, official SDK 2.3, 7 read-only tools, scoped by
+      personal access token; private entries never shared).
+    - Personal access tokens (migration 0008; hashed, shown once, expiring, revocable, audited)
+      with an Account UI.
+    - Electron 44 desktop shell (`apps/desktop`):
+      - secure window and navigation policy;
+      - first-run setup;
+      - remote mode, and local mode that starts API, worker and web with readiness checks and
+        log files;
+      - master key in OS secure storage;
+      - an unsigned NSIS installer built.
+    - MCP client and A2A remain deferred (ADR-0007/0011).
+    - Desktop CI job added.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -123,28 +137,29 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   Studio (see KNOWN_LIMITATIONS provider matrix: none live-verified).
 - **Observed, not failing:** one `Failed to proxy … ECONNRESET` line from `next dev` during the
   M2 E2E (a request aborted by page navigation; the test passed).
-- **Next exact steps (M9 Desktop, providers, MCP/A2A):**
-  1. MCP server (official `mcp` Python SDK), read-only:
-     - Tools and resources scoped to one user via a personal access token: list cases,
-       confirmed profile entries, opportunities with explanations, applications and their
-       status.
-     - No write tools.
-     - Add a `personal_access_tokens` table (hashed, scoped, revocable) and an Account UI.
-     - `nexscout mcp` CLI (stdio).
-     - Tests: an in-process MCP client session; isolation across tokens.
-  2. MCP client for allowlisted external servers: deferred, with an ADR. No external server is
-     configured, so it can't be verified.
-  3. A2A: keep ADR-0007 (deferred, no remote agent consumer). Re-check the decision.
-  4. Electron shell (`apps/desktop`):
-     - contextIsolation, sandbox, no nodeIntegration, minimal preload IPC.
-     - Starts the bundled backend (api plus worker) against a configured Postgres, or connects
-       to a remote backend.
-     - safeStorage for the master key.
-     - electron-builder config.
-     - Build the Windows package if feasible; record what wasn't built (macOS, Linux signing).
-  5. Provider capability profiles: a "Check connection" record per provider, already done.
-     Document live verification as not done (no keys).
-  6. Tests, docs, roadmap, commit.
+- **Next exact steps (M10 Hardening):**
+  1. Security tests:
+     - upload fuzzing (random bytes, wrong magic, zip bombs within the size cap, huge
+       filenames, path traversal names);
+     - prompt-injection fixtures through research pages and CV text, asserting that no tool
+       call, approval or unsupported claim results;
+     - the existing IDOR sweep and SSRF suites.
+  2. Concurrency and load: N concurrent users syncing, drafting and uploading against the
+     worker (time-boxed), recording latency and throughput honestly; check there are no
+     duplicates and no cross-tenant leakage.
+  3. Backup and restore:
+     - `scripts/backup.py` (`pg_dump -Fc` via docker exec, plus a storage archive) and
+       `scripts/restore.py`;
+     - a tested restore into a scratch database with row counts and file hashes compared.
+  4. Migration upgrade test: walk base → each head with representative data at each step,
+     and downgrade back.
+  5. Dependency and secret scans:
+     - `uv run pip-audit` (add as a dev dependency);
+     - `npm audit --omit=dev` for web and desktop;
+     - a secret scan (detect-secrets or a simple regex scan) over the repo.
+     Record results honestly and fix or document each finding.
+  6. Memory and profile sanity (API RSS after the load test), OPERATIONS and KNOWN_LIMITATIONS
+     final pass, distribution assessment, final roadmap and session report.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -176,6 +191,12 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M7: web tsc, eslint, vitest, `next build`; `npx playwright test` | passed; **11/11 E2E** incl. new journey (resume → placeholder filled → files → start application → needs you → answer → filled → inline approval → confirmed with reference FX-… → screenshot in timeline) |
 | 2026-10-17 | M8: ruff, format, mypy (110 files); `uv run pytest` | **274 passed** (new: intent routing and CSV safety 19, tracking system tests 4: idempotent sweep with deadline reminders and notifications, dashboard + bulk + export, assistant routes and never submits, safe diagnostics; IDOR +10 routes) |
 | 2026-10-17 | M8 + theme: web tsc, eslint, vitest 12/12, `next build`; `npx playwright test` | passed; **12/12 E2E** incl. the new tracking journey (assistant refuses submit and starts a search → application → reminder → worker notification via the bell → dashboard "Coming up" → filter, bulk cancel, CSV export). Re-run after the dark theme, fonts and logo: 12/12 |
+| 2026-10-17 | M9: ruff, format, mypy (112 files); `uv run pytest` | **276 passed** (new: MCP tools over a real in-memory MCP client session with private entries excluded, cross-user access refused and read-only annotations; token revoke, expiry and garbage refused; IDOR +1) |
+| 2026-10-17 | M9: real stdio MCP: `nexscout mcp` subprocess via the SDK stdio client | 7 tools listed, `list_my_cases` OK, invalid token refused (exit 2) |
+| 2026-10-17 | M9: desktop `npm test` (tsc + vitest 3 policy tests) | passed |
+| 2026-10-17 | M9: Electron `--smoke` | setup window: no require, process or module in the page; safeStorage available. Remote mode against dev web: sign-in page loaded, desktop bridge only. **Local mode:** API ready, `worker_started` logged plus a fresh heartbeat, web ready, page loaded, all children stopped on quit (ports closed). The first attempt wrongly passed before the worker started; fixed with readiness checks and log files |
+| 2026-10-17 | M9: `electron-builder --dir` and NSIS | `release/win-unpacked/NexScout.exe` smoke OK; `NexScout Setup 0.1.0.exe` (112 MB) built, **NotSigned** |
+| 2026-10-17 | M9: web checks + `npx playwright test` | passed; 12/12 E2E |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---
@@ -194,7 +215,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M6 | Job discovery and matching | ✅ | Repeated searches don't duplicate. Matches and experience gaps are explained |
 | M7 | Browser automation and approvals | ✅ | Fixture application flow completes, stops at approval gates, and distinguishes confirmed from uncertain submission |
 | M8 | Tracking and dashboard | ✅ | Track applications, inspect agent work, pause workflows, review documents and resolve blocked tasks in the UI |
-| M9 | Desktop and providers | ⬜ | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |
+| M9 | Desktop and providers | ✅ (providers not live-verified: no keys) | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |
 | M10 | Production hardening | ⬜ | Security, isolation, concurrency and recovery tests pass. Backup and restore and migration upgrades are tested. Deployment is reproducible |
 
 ## Deferred / open items

@@ -1122,3 +1122,28 @@ class ChatMessage(IdMixin, Base):
         CheckConstraint("role IN ('user','assistant')", name="role_valid"),
         Index("ix_chat_messages_case_seq", "case_id", "seq"),
     )
+
+
+# --- M9: personal access tokens (MCP and other local integrations) ----------------------------
+
+
+class PersonalAccessToken(IdMixin, Base):
+    """A read-only token for local integrations (the MCP server). Like sessions, only the
+    SHA-256 digest is stored; lookups by digest happen before the user is known, so this table
+    is filtered by user in code (it is not RLS-scoped)."""
+
+    __tablename__ = "personal_access_tokens"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    prefix: Mapped[str] = mapped_column(String(12), nullable=False)
+    scopes: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

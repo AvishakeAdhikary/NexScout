@@ -73,6 +73,39 @@ def _worker(args: argparse.Namespace) -> None:
     _run(main())
 
 
+def _mcp(args: argparse.Namespace) -> None:
+    """Read-only MCP server over stdio. The token comes from NEXSCOUT_MCP_TOKEN (never argv,
+    which other local users could read from the process list)."""
+    import os
+
+    from nexscout.application.tokens import authenticate_token
+    from nexscout.domain.errors import AuthenticationFailed
+    from nexscout.infrastructure.db.engine import build_engine, build_sessionmaker
+    from nexscout.mcp_server import build_server
+
+    token = os.environ.get("NEXSCOUT_MCP_TOKEN", "")
+    settings = get_settings()
+
+    async def main() -> None:
+        engine = build_engine(settings)
+        sessions = build_sessionmaker(engine)
+        try:
+            async with sessions() as s, s.begin():
+                try:
+                    user_id = await authenticate_token(s, token)
+                except AuthenticationFailed:
+                    sys.stderr.write(
+                        "NexScout MCP: set NEXSCOUT_MCP_TOKEN to a valid personal access token "
+                        "(Account > Access tokens).\n"
+                    )
+                    raise SystemExit(2) from None
+            await build_server(sessions, user_id).run_stdio_async()
+        finally:
+            await engine.dispose()
+
+    _run(main())
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="nexscout")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -89,6 +122,9 @@ def main(argv: list[str] | None = None) -> None:
 
     worker = sub.add_parser("worker", help="Run the durable background worker")
     worker.set_defaults(func=_worker)
+
+    mcp = sub.add_parser("mcp", help="Run the read-only MCP server over stdio")
+    mcp.set_defaults(func=_mcp)
 
     args = parser.parse_args(argv)
     args.func(args)

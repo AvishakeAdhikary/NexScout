@@ -1,0 +1,22 @@
+{
+  "name": "nexscout-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NexScout desktop shell (Electron): a secure window around the NexScout web app.",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && vitest run",
+    "start": "npm run build && electron .",
+    "smoke": "npm run build && electron . --smoke",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "electron": "44.8.0",
+    "electron-builder": "26.15.3",
+    "typescript": "^5",
+    "vitest": "^5.0.5"
+  }
+}
