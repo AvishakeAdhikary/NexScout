@@ -14,9 +14,20 @@ from nexscout.application.audit import record_audit
 from nexscout.application.cases import get_case
 from nexscout.application.opportunities import get_opportunity
 from nexscout.application.runs import start_run
-from nexscout.domain.drafting import DOC_SPECS, PHD_DOC_TYPES, DocType, find_placeholders
-from nexscout.domain.errors import ConcurrencyConflict, NotFound, ValidationFailed
+from nexscout.domain.drafting import (
+    AVAILABLE_DOC_TYPES,
+    DOC_SPECS,
+    DocType,
+    find_placeholders,
+)
+from nexscout.domain.errors import (
+    ConcurrencyConflict,
+    NotFound,
+    PermissionDenied,
+    ValidationFailed,
+)
 from nexscout.infrastructure.db.models import (
+    Affiliation,
     GeneratedDocument,
     GeneratedDocumentVersion,
     ResearchFinding,
@@ -49,13 +60,14 @@ async def start_draft(
     doc_type: str,
     opportunity_id: uuid.UUID | None,
     supervisor_finding_id: uuid.UUID | None = None,
+    affiliation_id: uuid.UUID | None = None,
     provider_id: uuid.UUID | None = None,
 ) -> WorkflowRun:
     try:
         kind = DocType(doc_type)
     except ValueError as exc:
         raise ValidationFailed("Unknown document type.") from exc
-    if kind not in PHD_DOC_TYPES:
+    if kind not in AVAILABLE_DOC_TYPES:
         raise ValidationFailed("This document type isn't available yet.")
     spec = DOC_SPECS[kind]
     await get_case(session, actor, case_id)
@@ -74,11 +86,29 @@ async def start_draft(
         )
         if finding is None or finding.opportunity_id != opportunity_id:
             raise NotFound("Supervisor not found for this position.")
+    if kind is DocType.REFERRAL_REQUEST:
+        if affiliation_id is None:
+            raise ValidationFailed("Choose who you want to ask for a referral.")
+        aff = await session.scalar(
+            select(Affiliation).where(
+                Affiliation.id == affiliation_id,
+                Affiliation.owner_user_id == actor.user_id,
+                Affiliation.case_id == case_id,
+            )
+        )
+        if aff is None:
+            raise NotFound("Relationship not found.")
+        if not aff.may_use_for_referral or not aff.person_name:
+            raise PermissionDenied(
+                "You haven't allowed NexScout to suggest a referral request to this person."
+            )
     params: dict[str, Any] = {"doc_type": kind.value}
     if opportunity_id:
         params["opportunity_id"] = str(opportunity_id)
     if supervisor_finding_id:
         params["supervisor_finding_id"] = str(supervisor_finding_id)
+    if affiliation_id:
+        params["affiliation_id"] = str(affiliation_id)
     if provider_id:
         params["provider_id"] = str(provider_id)
     return await start_run(

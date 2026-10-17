@@ -20,6 +20,14 @@
     "https://academic-portal.example/positions/acad-3": {
       "title": "Academic Portal (demo): Postdoc in Machine Learning Calibration",
       "html": "<html><head><title>Academic Portal (demo): Postdoc in Machine Learning Calibration</title></head><body><h1>Postdoctoral Researcher in Machine Learning Calibration</h1><p>Example Institute for Intelligent Systems.</p><p>A PhD degree in machine learning, statistics or a related field is required.</p><p>The position is funded for two years with a salary according to the institute's postdoc scale.</p><p>Your application should include:</p><ul><li>Cover letter</li><li>CV</li><li>Two representative publications</li><li>Names of three referees</li></ul><p>Applications are due 20 December 2026.</p><p>Principal investigator: Prof. Dr. Robin Exempel, research interests: probabilistic calibration, conformal prediction and robust evaluation.</p></body></html>"
+    },
+    "https://careers.acme.example/jobs/REQ-100": {
+      "title": "Acme careers (demo): Machine Learning Engineer REQ-100",
+      "html": "<html><head><title>Acme careers (demo): Machine Learning Engineer REQ-100</title></head><body><h1>Machine Learning Engineer (REQ-100)</h1><p>Acme GmbH, Berlin. Hybrid.</p><p>The salary range for this role is EUR 70,000 to 85,000 per year.</p><p>You should hold a Bachelor's degree in computer science or a related field.</p><p>Please submit:</p><ul><li>CV</li><li>Cover letter</li></ul><p>Applications close on 30 November 2026.</p><p>The hiring manager is Dr. Kim Placeholder, head of the ML Platform team.</p></body></html>"
+    },
+    "https://board-a.example/jobs/a-2001": {
+      "title": "Board A (demo): Data Analyst at Examplecorp",
+      "html": "<html><head><title>Board A (demo): Data Analyst at Examplecorp</title></head><body><h1>Data Analyst</h1><p>Examplecorp GmbH.</p><p>Your application should include:</p><ul><li>CV</li><li>Cover letter</li><li>Two references</li></ul><p>Deadline: 31 December 2026.</p></body></html>"
     }
   }
 }

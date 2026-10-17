@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M6 Job discovery and matching (⬜ next). M0–M5 ✅.
+- **Current milestone:** M7 Browser automation and approvals (⬜ next). M0–M6 ✅.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0009.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -62,6 +62,18 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
       files with checks, editor, versions, delete). Documents → Application materials, with
       "Create academic CV".
     - The backend image now includes headless Chromium.
+  - M6 jobs:
+    - Referral suggestions (`domain/referrals.py`, `GET …/opportunities/{id}/referrals`) are
+      matched to the employer by normalized organization name. Only people with
+      `may_use_for_referral` are suggested; the others are reported as a count only.
+    - Job documents:
+      - resume: assembled, no AI, job ordering;
+      - cover letter: drafted and verified; relationships appear only if
+        `may_use_in_applications`;
+      - referral request: needs a permitted named contact, otherwise 403; never sent.
+    - Demo pages for two demo jobs.
+    - A shared "Research and prepare" page for PhD and jobs, with a referral picker.
+    - The IDOR sweep covers the referrals route.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -69,22 +81,18 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   Studio (see KNOWN_LIMITATIONS provider matrix: none live-verified).
 - **Observed, not failing:** one `Failed to proxy … ECONNRESET` line from `next dev` during the
   M2 E2E (a request aborted by page navigation; the test passed).
-- **Next exact steps (M6 Jobs):**
-  1. Read PRODUCT_REQUIREMENTS R-JOB-1…6. The job source registry, dedup, strict/flexible modes
-     and explained matches already exist (M3). Add what's missing: per-source settings UI
-     (keywords, locations), sync history and checkpoints view, and "repeated searches don't
-     re-surface duplicates" across days (an E2E with the `jobs_board_b_later` fixture).
-  2. Referral suggestions (R-JOB-5): for each job, list affiliations whose organization matches
-     the employer (entity resolution via `organizations`) **and** that have
-     `may_use_for_referral=true`. Explain why. Never suggest without permission. Unit + system
-     tests, including a permission-off case.
-  3. Job documents: add `resume`, `cover_letter` and `referral_request` to `PHD_DOC_TYPES`
-     (rename to `AVAILABLE_DOC_TYPES`) with DocSpecs. The resume is assembled (no AI, like the
-     academic CV, ordered for jobs). The cover letter and referral request are drafted with the
-     verifier. The referral request needs `affiliation_id` (permission checked) and is never sent.
-     Mock handlers. Jobs page: "Prepare application" page mirroring the PhD one (research reuses
-     `phd_research`; rename it to `opportunity_research` with an alias).
-  4. Tests (unit, system, IDOR entries for new routes, E2E journey), docs, roadmap, commit.
+- **Next exact steps (M7 Browser automation):**
+  1. Fixture application site, served by the backend in dev/test only at `/fixture-site/*`
+     (labelled demo): multi-step form, file upload, a CAPTCHA page, and a confirmation page with
+     a reference number.
+  2. `applications` + `application_events` (migration 0006, state machine from
+     `domain/state_machines.py`).
+  3. `browser_apply` workflow (Playwright sync in a thread): open the form, map fields from
+     accepted facts and generated documents, fill (no submit), screenshot plus field map →
+     approval "Submit to X" → submit with an idempotency ledger → detect confirmation →
+     `submitted`, or `submission_uncertain` → the user confirms. Stop with `needs_user_action`
+     on a CAPTCHA or login (never bypass). Manual takeover = headed mode instructions.
+  4. API + UI (Applications page: list, detail, approve submit, confirm uncertain), tests, E2E.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -110,6 +118,8 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M5: web tsc, eslint, vitest 12/12, `next build` | passed |
 | 2026-10-17 | M5: `npx playwright test` | **9/9 passed**, incl. new journey: find demo PhD → research (conflicting deadlines flagged, supervisor quote) → draft SOP (mock labelled, removed claim shown, placeholders) → edit → v2 → create files → PDF download |
 | 2026-10-17 | M5: `docker compose --profile full up -d --build` + probe via web :3000 | containerized worker: research 4 sources / 18 findings / 4 conflicts; SOP drafted, `files_ok`, PDF 200 `%PDF-` (image with Chromium: 2.08 GB) |
+| 2026-10-17 | M6: ruff, format, mypy (100 files); `uv run pytest` | **240 passed** (new: referral rules, job research/referrals/cover letter/resume system tests, IDOR referrals) |
+| 2026-10-17 | M6: web tsc, eslint, vitest 12/12, `next build`; `npx playwright test` | passed; **10/10 E2E** incl. new job journey (strict-mode listing → research → referral picker shows only the permitted person, hint for the other → referral request + resume) |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---
@@ -125,7 +135,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M3 | Mind map and opportunities | ✅ | Evidence-linked mind map (graph and table). Normalized, deduplicated opportunities from fixture sources with explained matches |
 | M4 | Durable agent runtime | ✅ | Workflow survives worker or app restart, resumes from its checkpoint, and respects pause, cancel and authorization. No duplicate side effects |
 | M5 | PhD research workflow | ✅ | Fixture workflow discovers opportunities, stores evidence, generates editable documents, and flags missing info without inventing facts |
-| M6 | Job discovery and matching | ⬜ | Repeated searches don't duplicate. Matches and experience gaps are explained |
+| M6 | Job discovery and matching | ✅ | Repeated searches don't duplicate. Matches and experience gaps are explained |
 | M7 | Browser automation and approvals | ⬜ | Fixture application flow completes, stops at approval gates, and distinguishes confirmed from uncertain submission |
 | M8 | Tracking and dashboard | ⬜ | Track applications, inspect agent work, pause workflows, review documents and resolve blocked tasks in the UI |
 | M9 | Desktop and providers | ⬜ | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |

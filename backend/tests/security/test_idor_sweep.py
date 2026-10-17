@@ -103,6 +103,7 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
     g, vn, fmt = ids["gen_document_id"], ids["version_number"], ids["fmt"]
     return [
         ("GET", f"/api/v1/cases/{c}/opportunities/{o}/research", None),
+        ("GET", f"/api/v1/cases/{c}/opportunities/{o}/referrals", None),
         ("POST", f"/api/v1/cases/{c}/opportunities/{o}/research", None),
         ("POST", f"/api/v1/cases/{c}/generated-documents", {"doc_type": "academic_cv"}),
         ("GET", f"/api/v1/cases/{c}/generated-documents", None),

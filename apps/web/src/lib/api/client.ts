@@ -338,6 +338,7 @@ export interface DraftRequest {
   doc_type: string;
   opportunity_id?: string | null;
   supervisor_finding_id?: string | null;
+  affiliation_id?: string | null;
   provider_id?: string | null;
 }
 
@@ -350,6 +351,8 @@ export const researchApi = {
     }),
   opportunity: (caseId: string, opportunityId: string) =>
     api<OpportunityOut>(`${c(caseId)}/opportunities/${e(opportunityId)}`),
+  referrals: (caseId: string, opportunityId: string) =>
+    api<S["ReferralsOut"]>(`${c(caseId)}/opportunities/${e(opportunityId)}/referrals`),
 };
 
 export const generatedApi = {

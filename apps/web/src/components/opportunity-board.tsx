@@ -112,14 +112,12 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
         )}
       </details>
       <div className="mt-3 flex flex-wrap gap-2">
-        {opp.kind !== "job" && (
-          <Link
-            href={`/cases/${caseId}/phd/${opp.id}`}
-            className={buttonVariants({ size: "sm", variant: "outline" })}
-          >
-            Research and prepare
-          </Link>
-        )}
+        <Link
+          href={`/cases/${caseId}/${opp.kind === "job" ? "jobs" : "phd"}/${opp.id}`}
+          className={buttonVariants({ size: "sm", variant: "outline" })}
+        >
+          Research and prepare
+        </Link>
         {opp.match_status !== "shortlisted" && (
           <Button size="sm" onClick={() => setStatus.mutate("shortlisted")} disabled={setStatus.isPending}>
             Shortlist

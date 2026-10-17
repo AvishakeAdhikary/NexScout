@@ -68,7 +68,24 @@ DOC_SPECS: dict[DocType, DocSpec] = {
         headings=False,
     ),
 }
+DOC_SPECS.update(
+    {
+        DocType.RESUME: DocSpec("Resume", (), needs_opportunity=False, uses_model=False),
+        DocType.COVER_LETTER: DocSpec(
+            "Cover letter",
+            ("Greeting", "Opening", "Relevant experience", "Fit with the role", "Closing"),
+            headings=False,
+        ),
+        DocType.REFERRAL_REQUEST: DocSpec(
+            "Referral request",
+            ("Greeting", "Context", "Request", "Closing"),
+            headings=False,
+        ),
+    }
+)
 PHD_DOC_TYPES = (DocType.SOP, DocType.RESEARCH_PROPOSAL, DocType.ACADEMIC_CV, DocType.INQUIRY_EMAIL)
+JOB_DOC_TYPES = (DocType.RESUME, DocType.COVER_LETTER, DocType.REFERRAL_REQUEST)
+AVAILABLE_DOC_TYPES = PHD_DOC_TYPES + JOB_DOC_TYPES
 
 
 # --- What a model returns (validated with Pydantic, JSON schema for structured output) --------
@@ -277,7 +294,35 @@ def _cv_line(section: Section, data: dict[str, Any]) -> str:
     return f"- {line}"
 
 
+SKILLS = "skills"  # marker in an order: where the skills line goes
+
+RESUME_ORDER: tuple[tuple[Section | str, str], ...] = (
+    (Section.EMPLOYMENT, "Experience"),
+    (Section.PROJECT, "Projects"),
+    (SKILLS, "Skills"),
+    (Section.EDUCATION, "Education"),
+    (Section.CERTIFICATION, "Certifications"),
+    (Section.AWARD, "Awards"),
+    (Section.RESEARCH, "Research"),
+    (Section.PUBLICATION, "Publications"),
+    (Section.LEADERSHIP, "Leadership"),
+    (Section.VOLUNTEER, "Volunteering"),
+)
+
+
 def assemble_academic_cv(name: str, facts: list[dict[str, Any]]) -> VerifiedDraft:
+    """Academic CV: education and research first."""
+    return _assemble(name, facts, (*CV_ORDER, (SKILLS, "Skills")))
+
+
+def assemble_resume(name: str, facts: list[dict[str, Any]]) -> VerifiedDraft:
+    """Job resume: experience, projects and skills first."""
+    return _assemble(name, facts, RESUME_ORDER)
+
+
+def _assemble(
+    name: str, facts: list[dict[str, Any]], order: tuple[tuple[Section | str, str], ...]
+) -> VerifiedDraft:
     """Every line comes from one accepted entry; the report maps lines to entry ids."""
     by_section: dict[str, list[dict[str, Any]]] = {}
     for f in facts:
@@ -288,7 +333,19 @@ def assemble_academic_cv(name: str, facts: list[dict[str, Any]]) -> VerifiedDraf
     if summary:
         lines += ["## Profile", "", _clean(str(summary[0]["data"]["text"])), ""]
         claims.append({"text": "Profile", "fact_ids": [summary[0]["id"]]})
-    for section, heading in CV_ORDER:
+    for section, heading in order:
+        if section == SKILLS:
+            skills = by_section.get(Section.SKILL.value, [])
+            if skills:
+                lines += [
+                    f"## {heading}",
+                    "",
+                    ", ".join(str(f["data"]["name"]) for f in skills),
+                    "",
+                ]
+                claims.append({"text": heading, "fact_ids": [f["id"] for f in skills]})
+            continue
+        assert isinstance(section, Section)
         rows = by_section.get(section.value, [])
         if not rows:
             continue
@@ -298,10 +355,6 @@ def assemble_academic_cv(name: str, facts: list[dict[str, Any]]) -> VerifiedDraf
             lines.append(line)
             claims.append({"text": line[2:120], "fact_ids": [f["id"]]})
         lines.append("")
-    skills = by_section.get(Section.SKILL.value, [])
-    if skills:
-        lines += ["## Skills", "", ", ".join(str(f["data"]["name"]) for f in skills), ""]
-        claims.append({"text": "Skills", "fact_ids": [f["id"] for f in skills]})
     if len(claims) == 0:
         lines += [
             placeholder("No confirmed profile entries yet. Confirm entries on My Profile."),

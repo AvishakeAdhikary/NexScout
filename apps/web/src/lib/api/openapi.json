@@ -1010,6 +1010,18 @@
       "DraftIn": {
         "additionalProperties": false,
         "properties": {
+          "affiliation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliation Id"
+          },
           "doc_type": {
             "maxLength": 30,
             "title": "Doc Type",
@@ -2847,6 +2859,75 @@
           "migrations"
         ],
         "title": "ReadyOut",
+        "type": "object"
+      },
+      "ReferralOut": {
+        "additionalProperties": false,
+        "properties": {
+          "affiliation_id": {
+            "format": "uuid",
+            "title": "Affiliation Id",
+            "type": "string"
+          },
+          "organization": {
+            "title": "Organization",
+            "type": "string"
+          },
+          "person_name": {
+            "title": "Person Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "relationship_type": {
+            "title": "Relationship Type",
+            "type": "string"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          }
+        },
+        "required": [
+          "affiliation_id",
+          "person_name",
+          "organization",
+          "relationship_type",
+          "role",
+          "reason"
+        ],
+        "title": "ReferralOut",
+        "type": "object"
+      },
+      "ReferralsOut": {
+        "additionalProperties": false,
+        "properties": {
+          "not_permitted": {
+            "title": "Not Permitted",
+            "type": "integer"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/ReferralOut"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "suggestions",
+          "not_permitted"
+        ],
+        "title": "ReferralsOut",
         "type": "object"
       },
       "RegisterRequest": {
@@ -5564,6 +5645,59 @@
         "summary": "Set Status",
         "tags": [
           "opportunities"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/referrals": {
+      "get": {
+        "operationId": "get_referrals_api_v1_cases__case_id__opportunities__opportunity_id__referrals_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "opportunity_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Opportunity Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferralsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Referrals",
+        "tags": [
+          "research"
         ]
       }
     },

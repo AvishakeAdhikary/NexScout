@@ -39,12 +39,15 @@ from nexscout.domain.drafting import (
     DraftDocument,
     VerifiedDraft,
     assemble_academic_cv,
+    assemble_resume,
     placeholder,
     verify_draft,
 )
+from nexscout.domain.mindmap import normalize_org
 from nexscout.domain.profile import ReviewState, fact_label
 from nexscout.domain.profile import Section as FactSection
 from nexscout.infrastructure.db.models import (
+    Affiliation,
     GeneratedDocument,
     GeneratedDocumentVersion,
     Opportunity,
@@ -94,6 +97,7 @@ class State(TypedDict, total=False):
     opportunity: dict[str, Any] | None
     listing: str
     supervisor: dict[str, Any] | None
+    contact: dict[str, Any] | None
     approved: bool
     draft: dict[str, Any]
     model: dict[str, Any]
@@ -115,6 +119,24 @@ def _fact_row(f: ProfileFact) -> dict[str, Any]:
     }
 
 
+def _affiliation_row(a: Affiliation) -> dict[str, Any]:
+    who = a.person_name or "You"
+    return {
+        "id": str(a.id),
+        "kind": "relationship",
+        "summary": f"{who}: {a.relationship_type.replace('_', ' ')} at {a.organization}",
+        "quote": a.evidence or "",
+        "value": {
+            "person_name": a.person_name,
+            "organization": a.organization,
+            "relationship_type": a.relationship_type,
+            "role": a.role,
+            "status": a.status,
+        },
+        "status": "current",
+    }
+
+
 def _finding_row(f: ResearchFinding) -> dict[str, Any]:
     return {
         "id": str(f.id),
@@ -131,6 +153,7 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
     doc_type = DocType(str(ctx.params["doc_type"]))
     opp_id = _uuid(ctx.params.get("opportunity_id"))
     sup_id = _uuid(ctx.params.get("supervisor_finding_id"))
+    aff_id = _uuid(ctx.params.get("affiliation_id"))
     async with ctx.tenant() as s:
         name = await s.scalar(select(User.display_name).where(User.id == ctx.owner_user_id))
         facts = list(
@@ -149,6 +172,8 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         listing = ""
         findings: list[ResearchFinding] = []
         supervisor: dict[str, Any] | None = None
+        relations: list[dict[str, Any]] = []
+        contact: dict[str, Any] | None = None
         if opp_id is not None:
             matched = await s.scalar(
                 select(OpportunityMatch.id).where(
@@ -176,6 +201,21 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             if sup_id is not None:
                 sup = next((f for f in findings if f.id == sup_id), None)
                 supervisor = _finding_row(sup) if sup else None
+            # Relationships at this organization the user allowed in applications become
+            # citable facts about the position context (never without permission).
+            employer = normalize_org(opp.organization_name)
+            for a in await s.scalars(select(Affiliation).where(Affiliation.case_id == ctx.case_id)):
+                if normalize_org(a.organization) != employer:
+                    continue
+                if a.may_use_in_applications or (a.id == aff_id and a.may_use_for_referral):
+                    relations.append(_affiliation_row(a))
+            if aff_id is not None:
+                contact = next((r for r in relations if r["id"] == str(aff_id)), None)
+                if contact is None or not contact["value"].get("person_name"):
+                    raise PermissionError(
+                        "That relationship can't be used for a referral request. Allow it "
+                        "under Relationships first."
+                    )
     await ctx.note(
         ctx.extras.get("current_step"),
         f"Using {len(facts)} confirmed, shareable profile entries"
@@ -185,10 +225,11 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         "doc_type": doc_type.value,
         "name": name or "",
         "facts": [_fact_row(f) for f in facts],
-        "findings": [_finding_row(f) for f in findings],
+        "findings": [_finding_row(f) for f in findings] + relations,
         "opportunity": opportunity,
         "listing": listing,
         "supervisor": supervisor,
+        "contact": contact,
     }
 
 
@@ -197,7 +238,9 @@ def _route_after_gather(state: State) -> str:
 
 
 async def assemble(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
-    out = assemble_academic_cv(state.get("name") or "Your name", state.get("facts", []))
+    doc_type = DocType(state["doc_type"])
+    build_doc = assemble_resume if doc_type is DocType.RESUME else assemble_academic_cv
+    out = build_doc(state.get("name") or "Your name", state.get("facts", []))
     await runtime.context.note(
         runtime.context.extras.get("current_step"),
         f"Assembled from {len(state.get('facts', []))} confirmed entries (no AI).",
@@ -207,7 +250,7 @@ async def assemble(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]
             "markdown": out.markdown,
             "report": out.report,
             "placeholders": out.placeholders,
-            "title": "Academic CV",
+            "title": DOC_SPECS[doc_type].label,
             "origin": "assembled",
         },
         "model": {"name": None, "is_mock": False},
@@ -283,6 +326,15 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             header="Research findings (data)",
         ),
     ]
+    if state.get("contact"):
+        sections.append(
+            Section(
+                "contact",
+                [json.dumps(state["contact"], ensure_ascii=False)],
+                required=True,
+                header="The person this message is addressed to (data)",
+            )
+        )
     if state.get("supervisor"):
         sections.append(
             Section(
@@ -312,6 +364,7 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             "findings": state.get("findings", []),
             "opportunity": state.get("opportunity"),
             "supervisor": state.get("supervisor"),
+            "contact": state.get("contact"),
         },
     )
     res = await structured(provider, request, DraftDocument)
@@ -357,7 +410,7 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
     doc_type = DocType(state["doc_type"])
     opp = state.get("opportunity")
     title = str(v.get("title") or DOC_SPECS[doc_type].label)[:250]
-    if opp and doc_type is not DocType.ACADEMIC_CV:
+    if opp and DOC_SPECS[doc_type].uses_model:
         title = f"{DOC_SPECS[doc_type].label}: {opp['title']}"[:250]
     model = state.get("model") or {}
     async with ctx.tenant() as s:
@@ -383,7 +436,11 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                     number=1,
                     markdown=v["markdown"],
                     origin=v["origin"],
-                    report={**v["report"], "supervisor": state.get("supervisor")},
+                    report={
+                        **v["report"],
+                        "supervisor": state.get("supervisor"),
+                        "contact": state.get("contact"),
+                    },
                     placeholders=v["placeholders"],
                     artifacts={},
                     model=model.get("name"),
@@ -652,6 +709,82 @@ def _mock_draft(request: CompletionRequest) -> dict[str, Any]:
             ("Timeline", [_s(placeholder("a rough plan for each year"), "placeholder")]),
         ]
         title = f"Research proposal for {opp['title']}"
+    elif doc_type is DocType.COVER_LETTER:
+        rel = [f for f in findings if f["kind"] == "relationship"]
+        sections = [
+            ("Greeting", [_s("Dear hiring team,", "position")]),
+            (
+                "Opening",
+                [
+                    _s(
+                        f"I am applying for the {opp['title']} role at {opp['organization']}.",
+                        "position",
+                    ),
+                    *[
+                        _s(f"Connection: {r['summary']}.", "position", finding_ids=[r["id"]])
+                        for r in rel[:1]
+                    ],
+                ],
+            ),
+            ("Relevant experience", claims_exp + claims_bg[:1]),
+            (
+                "Fit with the role",
+                [
+                    *skill_claim,
+                    _s(placeholder("why this role and team, in your own words"), "placeholder"),
+                ],
+            ),
+            (
+                "Closing",
+                [
+                    _s("Thank you for considering my application.", "intent"),
+                    _s(placeholder("your name and contact details"), "placeholder"),
+                ],
+            ),
+        ]
+        title = f"Application for {opp['title']}"
+    elif doc_type is DocType.REFERRAL_REQUEST:
+        contact = inp.get("contact") or {}
+        cv = contact.get("value", {})
+        sections = [
+            (
+                "Greeting",
+                [
+                    _s(
+                        f"Hi {cv.get('person_name', '')},".strip(),
+                        "position",
+                        finding_ids=[contact["id"]] if contact else [],
+                    )
+                    if contact
+                    else _s(placeholder("name of the person"), "placeholder")
+                ],
+            ),
+            (
+                "Context",
+                [
+                    _s(
+                        f"I'm applying for the {opp['title']} role at {opp['organization']}.",
+                        "position",
+                    ),
+                    *claims_exp[:1],
+                ],
+            ),
+            (
+                "Request",
+                [
+                    _s("Would you be comfortable referring me for this role?", "intent"),
+                    _s("I completely understand if not.", "intent"),
+                ],
+            ),
+            (
+                "Closing",
+                [
+                    _s("Thank you either way.", "intent"),
+                    _s(placeholder("your name"), "placeholder"),
+                ],
+            ),
+        ]
+        title = f"Referral for {opp['title']}"
     else:  # inquiry email
         greet = (
             _s(

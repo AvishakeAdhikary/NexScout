@@ -72,7 +72,7 @@ check their own setup with "Check connection" in Settings, which records the res
   entry ("led" vs "contributed"). Users must review every draft; intent sentences are flagged.
 - PDF uses system serif fonts (no bundled font). Markdown tables aren't rendered as tables.
 - The backend container is about 2.1 GB because of headless Chromium.
-- Job documents (resume, cover letter, referral request) arrive in M6.
+- Job documents: the resume is assembled from entries in a fixed order; there's no tailoring per job yet. Referral suggestions match by organization name only, so subsidiaries and renamed employers aren't linked.
 
 ## Agent runtime (M4)
 - Only four workflows exist: reading uploads, opportunity search, the AI summary draft, and a

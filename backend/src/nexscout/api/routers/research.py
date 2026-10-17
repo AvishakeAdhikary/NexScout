@@ -14,6 +14,7 @@ from nexscout.api.deps import CurrentActor, DbSession, ObjectStoreDep
 from nexscout.api.schemas import ApiModel, RunStartedOut
 from nexscout.application import generated_documents as gen
 from nexscout.application import research
+from nexscout.application.referrals import referrals_for
 from nexscout.domain.drafting import DOC_SPECS, DocType
 from nexscout.domain.research import is_stale
 from nexscout.infrastructure.db.models import (
@@ -96,6 +97,43 @@ async def start_research(
     return RunStartedOut(run_id=run.id)
 
 
+class ReferralOut(ApiModel):
+    affiliation_id: uuid.UUID
+    person_name: str
+    organization: str
+    relationship_type: str
+    role: str | None
+    reason: str
+
+
+class ReferralsOut(ApiModel):
+    suggestions: list[ReferralOut]
+    not_permitted: int
+
+
+@router.get(
+    "/cases/{case_id}/opportunities/{opportunity_id}/referrals", response_model=ReferralsOut
+)
+async def get_referrals(
+    case_id: uuid.UUID, opportunity_id: uuid.UUID, actor: CurrentActor, db: DbSession
+) -> ReferralsOut:
+    suggestions, hidden = await referrals_for(db, actor, case_id, opportunity_id)
+    return ReferralsOut(
+        suggestions=[
+            ReferralOut(
+                affiliation_id=uuid.UUID(x.affiliation_id),
+                person_name=x.person_name,
+                organization=x.organization,
+                relationship_type=x.relationship_type,
+                role=x.role,
+                reason=x.reason,
+            )
+            for x in suggestions
+        ],
+        not_permitted=hidden,
+    )
+
+
 # --- Generated documents --------------------------------------------------------------------
 
 
@@ -110,6 +148,7 @@ class DraftIn(ApiModel):
     doc_type: str = Field(max_length=30)
     opportunity_id: uuid.UUID | None = None
     supervisor_finding_id: uuid.UUID | None = None
+    affiliation_id: uuid.UUID | None = None
     provider_id: uuid.UUID | None = None
 
 
@@ -238,6 +277,7 @@ async def draft_document(
         doc_type=body.doc_type,
         opportunity_id=body.opportunity_id,
         supervisor_finding_id=body.supervisor_finding_id,
+        affiliation_id=body.affiliation_id,
         provider_id=body.provider_id,
     )
     return RunStartedOut(run_id=run.id)

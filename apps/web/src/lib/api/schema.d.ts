@@ -413,6 +413,23 @@ export interface paths {
         patch: operations["set_status_api_v1_cases__case_id__opportunities__opportunity_id__patch"];
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/referrals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Referrals */
+        get: operations["get_referrals_api_v1_cases__case_id__opportunities__opportunity_id__referrals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/opportunities/{opportunity_id}/reports": {
         parameters: {
             query?: never;
@@ -1292,6 +1309,8 @@ export interface components {
         };
         /** DraftIn */
         DraftIn: {
+            /** Affiliation Id */
+            affiliation_id?: string | null;
             /** Doc Type */
             doc_type: string;
             /** Opportunity Id */
@@ -1919,6 +1938,31 @@ export interface components {
             migrations: string;
             /** Status */
             status: string;
+        };
+        /** ReferralOut */
+        ReferralOut: {
+            /**
+             * Affiliation Id
+             * Format: uuid
+             */
+            affiliation_id: string;
+            /** Organization */
+            organization: string;
+            /** Person Name */
+            person_name: string;
+            /** Reason */
+            reason: string;
+            /** Relationship Type */
+            relationship_type: string;
+            /** Role */
+            role: string | null;
+        };
+        /** ReferralsOut */
+        ReferralsOut: {
+            /** Not Permitted */
+            not_permitted: number;
+            /** Suggestions */
+            suggestions: components["schemas"]["ReferralOut"][];
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -3385,6 +3429,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpportunityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_referrals_api_v1_cases__case_id__opportunities__opportunity_id__referrals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                opportunity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralsOut"];
                 };
             };
             /** @description Validation Error */
