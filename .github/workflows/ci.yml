@@ -72,3 +72,17 @@ jobs:
           cache-dependency-path: apps/desktop/package-lock.json
       - run: npm ci
       - run: npm test # TypeScript build + security policy unit tests
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for the secret scan
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: uv run --project backend python scripts/secret_scan.py --history
+      - run: cd backend && uv run pip-audit --progress-spinner off
+      - run: cd apps/web && npm ci && npm audit --omit=dev # runtime dependencies only

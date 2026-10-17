@@ -45,11 +45,29 @@ def safe_filename(name: str | None) -> str:
     return (cleaned or "document")[:MAX_FILENAME]
 
 
+# Zip-bomb limits for .docx (checked from the central directory before anything is inflated).
+MAX_DOCX_UNCOMPRESSED = 100 * 1024 * 1024
+MAX_DOCX_RATIO = 200
+MAX_DOCX_MEMBERS = 2_000
+
+
 def _is_docx(data: bytes) -> bool:
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
-            names = set(zf.namelist())
-            return "[Content_Types].xml" in names and "word/document.xml" in names
+            infos = zf.infolist()
+            names = {i.filename for i in infos}
+            if not ("[Content_Types].xml" in names and "word/document.xml" in names):
+                return False
+            total = sum(i.file_size for i in infos)
+            if (
+                len(infos) > MAX_DOCX_MEMBERS
+                or total > MAX_DOCX_UNCOMPRESSED
+                or any(i.file_size > MAX_DOCX_RATIO * max(i.compress_size, 1) for i in infos)
+            ):
+                raise ValidationFailed(
+                    "This Word file expands to an unsafe size and can't be read."
+                )
+            return True
     except zipfile.BadZipFile:
         return False
 

@@ -190,7 +190,71 @@ async def run_maintenance(s: AsyncSession, now: datetime | None = None) -> dict[
             link=f"/cases/{case_id}/applications/{app_id}",
             key=f"application:{app_id}:{status}:{version}",
         )
-    return {"reminders_created": created_reminders, "notifications_created": notified}
+    purged = await enforce_retention(s, now)
+    return {"reminders_created": created_reminders, "notifications_created": notified, **purged}
+
+
+# Retention defaults (docs/OPERATIONS.md). Deleting old operational data limits what a breach
+# could expose; it never touches the user's profile, documents or applications.
+RETENTION_DAYS = {
+    "workflow_events": 90,
+    "notifications_read": 90,
+    "login_attempts": 30,
+    "sessions_after_expiry": 30,
+    "audit_events": 365,
+}
+
+
+async def enforce_retention(s: AsyncSession, now: datetime) -> dict[str, int]:
+    from sqlalchemy import delete
+
+    from nexscout.infrastructure.db.models import (
+        AuditEvent,
+        AuthSession,
+        LoginAttempt,
+        WorkflowEvent,
+    )
+
+    def before(days: int) -> datetime:
+        return now - timedelta(days=days)
+
+    out: dict[str, int] = {}
+    for key, stmt in (
+        (
+            "purged_workflow_events",
+            delete(WorkflowEvent).where(
+                WorkflowEvent.created_at < before(RETENTION_DAYS["workflow_events"])
+            ),
+        ),
+        (
+            "purged_notifications",
+            delete(Notification).where(
+                Notification.read_at.is_not(None),
+                Notification.read_at < before(RETENTION_DAYS["notifications_read"]),
+            ),
+        ),
+        (
+            "purged_login_attempts",
+            delete(LoginAttempt).where(
+                LoginAttempt.created_at < before(RETENTION_DAYS["login_attempts"])
+            ),
+        ),
+        (
+            "purged_sessions",
+            delete(AuthSession).where(
+                AuthSession.expires_at < before(RETENTION_DAYS["sessions_after_expiry"])
+            ),
+        ),
+        (
+            "purged_audit_events",
+            delete(AuditEvent).where(
+                AuditEvent.created_at < before(RETENTION_DAYS["audit_events"])
+            ),
+        ),
+    ):
+        res = await s.execute(stmt)
+        out[key] = int(res.rowcount or 0)  # type: ignore[attr-defined]
+    return out
 
 
 # --- User-facing use cases (app role, RLS) --------------------------------------------------

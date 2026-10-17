@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M10 Production hardening (⬜ next). M0–M9 ✅.
+- **Current milestone:** all milestones M0–M10 ✅ (see the open items below).
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0011.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -130,6 +130,16 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
       - an unsigned NSIS installer built.
     - MCP client and A2A remain deferred (ADR-0007/0011).
     - Desktop CI job added.
+  - M10 hardening:
+    - Upload fuzzing, plus a DOCX zip-bomb guard that rejects before inflating.
+    - Prompt-injection fixtures through CVs, pages, model output and chat.
+    - A migration test from base to head with data, and downgrade back.
+    - Load and concurrency test (12 or 40 users) with correctness assertions.
+    - Backup and restore scripts with a verified restore.
+    - Retention enforced by the maintenance sweep (migration 0009, delete-only grants).
+    - pip-audit, npm audit and a secret scan; a CI `security` job.
+    - README, OPERATIONS (capacity, distribution), SECURITY, TESTING and KNOWN_LIMITATIONS final
+      pass.
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -137,29 +147,17 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   Studio (see KNOWN_LIMITATIONS provider matrix: none live-verified).
 - **Observed, not failing:** one `Failed to proxy … ECONNRESET` line from `next dev` during the
   M2 E2E (a request aborted by page navigation; the test passed).
-- **Next exact steps (M10 Hardening):**
-  1. Security tests:
-     - upload fuzzing (random bytes, wrong magic, zip bombs within the size cap, huge
-       filenames, path traversal names);
-     - prompt-injection fixtures through research pages and CV text, asserting that no tool
-       call, approval or unsupported claim results;
-     - the existing IDOR sweep and SSRF suites.
-  2. Concurrency and load: N concurrent users syncing, drafting and uploading against the
-     worker (time-boxed), recording latency and throughput honestly; check there are no
-     duplicates and no cross-tenant leakage.
-  3. Backup and restore:
-     - `scripts/backup.py` (`pg_dump -Fc` via docker exec, plus a storage archive) and
-       `scripts/restore.py`;
-     - a tested restore into a scratch database with row counts and file hashes compared.
-  4. Migration upgrade test: walk base → each head with representative data at each step,
-     and downgrade back.
-  5. Dependency and secret scans:
-     - `uv run pip-audit` (add as a dev dependency);
-     - `npm audit --omit=dev` for web and desktop;
-     - a secret scan (detect-secrets or a simple regex scan) over the repo.
-     Record results honestly and fix or document each finding.
-  6. Memory and profile sanity (API RSS after the load test), OPERATIONS and KNOWN_LIMITATIONS
-     final pass, distribution assessment, final roadmap and session report.
+- **Open items (beyond M10, need a decision, keys or other platforms):**
+  1. Live-verify providers with real keys or local models (Settings → Check connection) and
+     record a capability profile per provider.
+  2. Connect real, permitted sources (job board APIs, institutional feeds, arXiv/ORCID opt-in)
+     and test the browser flow on real application portals. Both are demo-only today.
+  3. Push to a remote and let GitHub Actions run; add an E2E CI job (Postgres service +
+     Chromium).
+  4. Code-sign the Windows installer; build and sign macOS and Linux on those platforms.
+  5. Metrics exporter and alerting; API rate limiting beyond login.
+  6. Optional: LLM-assisted extraction (same quote-must-be-substring rule), reduced-context
+     retry for small models, an MCP client with an allowlist.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -197,6 +195,14 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M9: Electron `--smoke` | setup window: no require, process or module in the page; safeStorage available. Remote mode against dev web: sign-in page loaded, desktop bridge only. **Local mode:** API ready, `worker_started` logged plus a fresh heartbeat, web ready, page loaded, all children stopped on quit (ports closed). The first attempt wrongly passed before the worker started; fixed with readiness checks and log files |
 | 2026-10-17 | M9: `electron-builder --dir` and NSIS | `release/win-unpacked/NexScout.exe` smoke OK; `NexScout Setup 0.1.0.exe` (112 MB) built, **NotSigned** |
 | 2026-10-17 | M9: web checks + `npx playwright test` | passed; 12/12 E2E |
+| 2026-10-17 | M10: upload fuzz + prompt injection | 37 upload/ingestion tests passed (zip bomb 120 MB → rejected before inflating; 300 random blobs × 3 prefixes rejected cleanly; executables, images and non-docx zips → 422); 5 injection tests passed |
+| 2026-10-17 | M10: migration upgrade base → 0009 with data + downgrade | passed |
+| 2026-10-17 | M10: load test | 12 users: 36/36 runs, 4.8 runs/s, +41 MB; 40 users: 120/120 runs, 4.5 runs/s, +57 MB; 0 duplicates, 0 cross-tenant rows |
+| 2026-10-17 | M10: `scripts/backup.py` + `scripts/restore.py` (dev DB) | backup 45 tables / 9,965 rows / 149 files; restore into a scratch DB: **all row counts and 149/149 file hashes matched**; overwriting live refused |
+| 2026-10-17 | M10: `pip-audit` | no known vulnerabilities |
+| 2026-10-17 | M10: `npm audit --omit=dev` (web) | 0 after moving the shadcn CLI to devDependencies. Full audit: 7 high via `braces` (dev tooling only, no fix available). Desktop: 8 moderate via electron-builder (packaging only) |
+| 2026-10-17 | M10: `scripts/secret_scan.py --history` | 317 tracked files + full history: 0 findings (the scanner was checked against planted keys) |
+| 2026-10-17 | M10: retention purge test | old events, audit rows and login attempts purged; recent data and sessions intact |
 | — | GitHub Actions CI | **not run** (no remote configured) |
 
 ---
@@ -215,8 +221,8 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M6 | Job discovery and matching | ✅ | Repeated searches don't duplicate. Matches and experience gaps are explained |
 | M7 | Browser automation and approvals | ✅ | Fixture application flow completes, stops at approval gates, and distinguishes confirmed from uncertain submission |
 | M8 | Tracking and dashboard | ✅ | Track applications, inspect agent work, pause workflows, review documents and resolve blocked tasks in the UI |
-| M9 | Desktop and providers | ✅ (providers not live-verified: no keys) | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |
-| M10 | Production hardening | ⬜ | Security, isolation, concurrency and recovery tests pass. Backup and restore and migration upgrades are tested. Deployment is reproducible |
+| M9 | Desktop and providers | ✅ with caveats: the unpacked Windows app runs (smoke-tested) and the installer was built, but an install was **not** run. Providers are not live-verified (no keys) | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |
+| M10 | Production hardening | ✅ | Security, isolation, concurrency and recovery tests pass. Backup and restore and migration upgrades are tested. Deployment is reproducible |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

@@ -38,3 +38,6 @@ Thumbs.db
 
 # Desktop packaging output (electron-builder)
 apps/desktop/release/
+
+# Backups contain personal data: never commit them
+backups/

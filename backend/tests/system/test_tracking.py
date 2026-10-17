@@ -54,7 +54,7 @@ async def test_deadline_reminders_and_notifications_are_idempotent(
     first = await worker.maintenance_once()
     second = await worker.maintenance_once()
     assert first["reminders_created"] >= 2  # 7 days and 1 day before
-    assert second == {"reminders_created": 0, "notifications_created": 0}
+    assert (second["reminders_created"], second["notifications_created"]) == (0, 0)
 
     reminders = (await client.get(f"/api/v1/cases/{case_id}/reminders")).json()
     due = sorted(x["due_on"] for x in reminders if x["application_id"] == a["id"])
@@ -179,3 +179,43 @@ async def test_diagnostics_show_only_safe_facts(client: httpx.AsyncClient, worke
     assert "hostname" not in str(d)
     assert d["my_tasks"] == {"queued": 0, "running": 0}
     assert d["database"].startswith("PostgreSQL")
+
+
+async def test_retention_purges_only_old_operational_data(
+    client: httpx.AsyncClient, worker: Any, clean_db: Engine
+) -> None:
+    await register(client)
+    case_id = str((await create_case(client, "Retention"))["id"])
+    await client.post(f"/api/v1/cases/{case_id}/runs", json={"kind": "system_check"})
+    await worker.run_until_idle()
+    with clean_db.begin() as conn:
+        conn.execute(
+            text(
+                "UPDATE workflow_events SET created_at = now() - interval '91 days' "
+                "WHERE id = (SELECT min(id) FROM workflow_events)"
+            )
+        )
+        conn.execute(
+            text(
+                "UPDATE audit_events SET created_at = now() - interval '400 days' "
+                "WHERE action = 'case.created'"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO login_attempts (id, email_hash, succeeded, created_at) "
+                "VALUES (gen_random_uuid(), 'x', false, now() - interval '40 days')"
+            )
+        )
+        events_before = conn.execute(text("SELECT count(*) FROM workflow_events")).scalar()
+        cases = conn.execute(text("SELECT count(*) FROM candidate_cases")).scalar()
+    out = await worker.maintenance_once()
+    assert out["purged_workflow_events"] == 1
+    assert out["purged_audit_events"] == 1
+    assert out["purged_login_attempts"] == 1
+    with clean_db.connect() as conn:
+        assert (
+            conn.execute(text("SELECT count(*) FROM workflow_events")).scalar() == events_before - 1
+        )
+        assert conn.execute(text("SELECT count(*) FROM candidate_cases")).scalar() == cases
+    assert (await client.get(f"/api/v1/cases/{case_id}")).status_code == 200  # session intact

@@ -111,9 +111,24 @@ check their own setup with "Check connection" in Settings, which records the res
 - The run list relies on live events plus a 30 s fallback poll. Behind a proxy that buffers SSE,
   updates can lag by up to 30 s.
 
+## Hardening status (M10)
+- **Dependencies (2026-10-17):**
+  - `pip-audit`: no known vulnerabilities.
+  - Web runtime (`npm audit --omit=dev`): 0.
+  - Web dev tooling: high-severity `braces` (regex denial of service) through the shadcn CLI and
+    eslint-config-next. `braces` 3.0.3 is the latest version, so no fix exists yet; it's only
+    used at build and lint time on developer-controlled patterns.
+  - Desktop: moderate `sprintf-js` through electron-builder (packaging only, not in the shipped
+    app).
+- No metrics exporter (Prometheus or OpenTelemetry) and no alerting; use logs and Diagnostics.
+- Throughput was measured on one laptop (OPERATIONS.md), not under a production load profile.
+  There is no rate limiting beyond login attempts.
+- GitHub Actions CI is defined but has never run (no remote).
+- There's no automated E2E job in CI yet.
+
 ## Functional gaps
-Everything after the current milestone in ROADMAP.md is not built yet. UI sections for later
-milestones show an explicit "not available yet" state.
+All UI sections are built. What is demo-only or unverified is listed above: data sources,
+the application site, live AI providers, installers.
 
 ## Unverified artifacts (exist but have not been executed)
 | Artifact | Why unverified | Verify by |
