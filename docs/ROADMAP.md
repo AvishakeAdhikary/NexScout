@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M13 Releases + easy install (🟨: implemented and verified locally; the first automatic release runs on GitHub after this push). M0–M12 ✅.
+- **Current milestone:** none open. M0–M13 ✅. Release **v2.0.0** is published (https://github.com/AvishakeAdhikary/NexScout/releases/tag/v2.0.0); every later green push to `main` releases the next minor version.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0012.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -244,7 +244,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     5. CAPTCHA/login: notify and **assisted mode** (desktop/local: visible browser window, NexScout
        fills, the human solves the CAPTCHA and submits, NexScout detects the confirmation).
     6. Kill switch, daily digest, autopilot page in the UI.
-  - **M13 Releases and easy install** — implemented; first GitHub release pending:
+  - **M13 Releases and easy install** — ✅ done (v2.0.0 released and installed from the zip):
     1. `release.yml`: on green CI on main, bump minor from the latest `v2.*` tag, tag, release notes,
        GHCR images (api/worker, web), Windows installer, "easy" bundle.
     2. Desktop **Easy mode**: installer → open → NexScout starts its own Docker stack (bundled
@@ -255,14 +255,13 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   credentials; real job/academic sources and real application portals; code signing; macOS/Linux
   installers.
 - **Next exact steps:**
-  1. After the push, watch CI, then Release. Confirm the `v2.0.0` tag, the release assets
-     (installer, easy zip) and the GHCR images.
-  2. The repository owner makes the GHCR packages public (one-time). Then run the easy zip
-     from a clean folder to confirm the pull path works without building.
-  3. Smoke the Electron Easy mode against the released images (`npm run smoke` with the
-     config mode "easy").
-  4. Live-verify one channel (Telegram is the cheapest) with a real bot token, and record the
+  1. Live-verify one channel (Telegram is the cheapest) with a real bot token, and record the
      result in KNOWN_LIMITATIONS.
+  2. Live-verify one AI provider (a local Ollama model is free) and record its capability
+     profile.
+  3. Run the macOS and Linux easy scripts on those systems, and build their desktop installers.
+  4. Upgrade the GitHub Actions versions before the Node 20 runtime removal (CI warns:
+     checkout, setup-node, setup-uv, docker/*).
 
 ## Test evidence log
 | Date | Command | Result |
@@ -319,7 +318,10 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M13: desktop `npm test` (tsc + vitest) | **5/5** incl. Easy-mode config, validated secrets for compose, matching image version, Docker Desktop paths |
 | 2026-10-17 | M13: packaged desktop app (`electron-builder --win nsis`, version 2.0.0) in Easy mode, `--smoke` with an isolated user-data dir, using the locally built images | **passed**: the bundled `resources/easy/docker-compose.yml` and roles SQL were found; compose project `nexscout-easy` up; the master key and DB password were stored encrypted by safeStorage (`master.key.enc`, `db.password.enc`), nothing in clear; the window loaded `http://127.0.0.1:18700/login`; the renderer has no require, process or module. The stack was then removed |
 | 2026-10-17 | M13: first Release run 39025805605 (after green CI 39025532002 on 485b620) | version → v2.0.0 ✓; GHCR images backend + web pushed ✓; **Windows installer failed**: pwsh split the `-c.extraMetadata.version=…` argument, so publish didn't run and no tag was created. Fixed by running that step in bash (verified locally: `NexScout Setup 2.0.0.exe` built, easy resources bundled) |
-| 2026-10-17 | M13: `release.yml` | YAML parsed; the version bump was checked by hand ('' → v2.0.0, v2.0.0 → v2.1.0, v2.9.0 → v2.10.0). It first runs on GitHub after this push |
+| 2026-10-17 | M13: `release.yml` | YAML parsed; the version bump was checked by hand ('' → v2.0.0, v2.0.0 → v2.1.0, v2.9.0 → v2.10.0) |
+| 2026-10-17 | CI 39026238677 on f38ab96, then Release 39026495319 | CI 5/5 green. Release: version, images (backend, web), windows and publish all ✓. **v2.0.0** published with `NexScout-Setup-2.0.0.exe` (112 MB, unsigned) and `nexscout-easy-2.0.0.zip`: compose pinned to 2.0.0, `.cmd` files with CRLF, roles SQL, user guide and license included |
+| 2026-10-17 | GHCR anonymous pull (registry token → manifest 2.0.0) | backend 200, web 200: the packages are public |
+| 2026-10-17 | The released zip from a clean folder (Windows, local images deleted first) | **passed**: pulled `ghcr.io/avishakeadhikary/nexscout-backend:2.0.0` and web, 4 containers healthy, :3000 opened, register 201, diagnostics `app_version 2.0.0` with 1 worker alive. Stop script stopped everything; the test install and its volumes were removed |
 | 2026-10-17 | M12: web tsc, eslint, vitest 12/12; desktop tests 3/3; `npx playwright test` | passed; **14/14 E2E** incl. new journey (consent shown → autopilot on → run → the placeholder question appears instead of a guess → answered → saved answer listed → Stop everything → off) |
 
 ---
@@ -342,7 +344,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M10 | Production hardening | ✅ | Security, isolation, concurrency and recovery tests pass. Backup and restore and migration upgrades are tested. Deployment is reproducible |
 | M11 | Notification channels | ✅ (providers faked at HTTP level; not live-verified) | Paired channels receive notifications through a durable outbox; approvals and answers from chat act only for the paired identity, once |
 | M12 | Autopilot | ✅ (demo site only; real portals unverified) | Scheduled discover → documents → fill → submit within a consented policy; unknowns asked, never guessed; manual-only sites respected; kill switch |
-| M13 | Releases and easy install | 🟨 (local checks pass; the first GitHub release is pending this push) | Every green main push gets a minor-bump tag and release; non-technical users can install and start NexScout with a double-click |
+| M13 | Releases and easy install | ✅ (v2.0.0 released; Windows paths verified, macOS/Linux scripts not run) | Every green main push gets a minor-bump tag and release; non-technical users can install and start NexScout with a double-click |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

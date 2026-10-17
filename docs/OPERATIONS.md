@@ -75,9 +75,9 @@ If a reverse proxy sits in front, don't compress `text/event-stream`. The SSE en
   - The unsigned Windows installer, built on `windows-latest`.
   - `nexscout-easy-<version>.zip`, with the compose file pinned to that version.
   - A GitHub Release whose notes come from the commits since the previous tag.
-- **First-time setup:** GHCR packages start private. After the first release, set
-  `nexscout-backend` and `nexscout-web` to **public** (GitHub → Packages → Package settings),
-  so the easy install can pull them without logging in.
+- **Package visibility:** in this repository the packages came out public; anonymous pulls were
+  verified after v2.0.0. If a fork's packages are private, make them public (GitHub →
+  Packages → Package settings) so the easy install can pull them without logging in.
 
 ## Deploy / upgrade
 1. Back up (below). 2. Run `nexscout migrate` with the owner role (Alembic + LangGraph checkpoint

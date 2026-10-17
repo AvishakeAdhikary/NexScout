@@ -146,9 +146,9 @@ check their own setup with "Check connection" in Settings, which records the res
   leaves the device.
 
 ## Releases and easy install (M13)
-- **GHCR images start private** on the first release. Until the repository owner makes
-  `nexscout-backend` and `nexscout-web` public, the easy install can't pull them; from a source
-  checkout it builds them locally instead.
+- **GHCR images are public.** After the first release (v2.0.0), anonymous pulls of both
+  images returned 200, so no login is needed. If a fork publishes private packages, the easy
+  install can't pull them; from a source checkout it builds locally instead.
 - **The Windows installer is unsigned**, so SmartScreen warns on first run. macOS and Linux
   desktop builds aren't produced.
 - **Only the Windows start script has been run.** The macOS and Linux scripts were written to
