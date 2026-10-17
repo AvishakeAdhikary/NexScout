@@ -68,6 +68,28 @@ Never bypass CAPTCHA, MFA or anti-bot protections. On encountering them → `nee
 manual takeover. Sessions are stored encrypted, per user and per site, and deletable. Cookies never enter
 prompts. Final submit needs an approval unless a narrow, explicit standing policy exists.
 
+## 5a. Notification channels (ADR-0013)
+- **Official APIs only.** Telegram Bot API, Discord bot (REST plus Gateway), Meta WhatsApp Cloud
+  API, Slack incoming webhooks, SMTP and signed webhooks. NexScout never uses unofficial
+  WhatsApp Web clients.
+- **Paired identity.** A one-time code (hashed, 30-minute TTL) binds a channel to one chat, user
+  or phone number. Everything from any other identity is ignored. Unpaired senders get no
+  reply, so there is no oracle.
+- **Buttons.** Button tokens are random, single-use and expire after 7 days. They are bound to
+  one channel and its paired identity. Siblings are invalidated together. Decisions go through
+  `runs.decide` in a tenant (RLS) session and are audited.
+- **Inbound.** Inbound events are deduplicated by provider event id. The WhatsApp webhook is
+  unauthenticated and can only INSERT. The worker verifies `X-Hub-Signature-256` with the app
+  secret before acting, then drops the raw body.
+- **Secrets.** Credentials are sealed (AES-GCM, owner + purpose) and write-only. The webhook
+  signing secret is shown once.
+- **SSRF.** Outbound webhook URLs are checked when saved and again at every send.
+- **Message content.** Messages contain titles, short summaries and links. No documents or
+  credentials are ever sent, and chat mentions are disabled (Discord `allowed_mentions: []`).
+  Message text is plain or escaped (Telegram HTML), never interpreted.
+- **Inbound text is untrusted data.** A reply is stored only as the answer to the question it
+  replies to. It is never executed or treated as an instruction.
+
 ## 6. Supply chain
 Locked dependencies (`uv.lock`, `package-lock.json`). `pip-audit` and `npm audit` in CI. Secret scanning
 (detect-secrets) in CI. Development MCP servers are pinned and separate from runtime tools.

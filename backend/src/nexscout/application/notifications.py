@@ -57,7 +57,12 @@ async def _notify(
     body: str | None,
     link: str | None,
     key: str,
+    data: dict[str, Any] | None = None,
 ) -> bool:
+    """Create a notification once per dedupe key and, in the same transaction, queue it for
+    the user's paired channels (transactional outbox)."""
+    from nexscout.application.channels import enqueue_deliveries
+
     res = await s.execute(
         insert(Notification)
         .values(
@@ -68,12 +73,20 @@ async def _notify(
             title=title[:300],
             body=(body or "")[:1000] or None,
             link=link,
+            data=data or {},
             dedupe_key=key,
         )
         .on_conflict_do_nothing(constraint="uq_notifications_dedupe")
         .returning(Notification.id)
     )
-    return res.scalar() is not None
+    nid = res.scalar()
+    if nid is None:
+        return False
+    await enqueue_deliveries(s, owner=owner, notification_id=nid, kind=kind)
+    return True
+
+
+notify = _notify  # public name for other use cases (agents, autopilot)
 
 
 async def run_maintenance(s: AsyncSession, now: datetime | None = None) -> dict[str, int]:
@@ -166,8 +179,9 @@ async def run_maintenance(s: AsyncSession, now: datetime | None = None) -> dict[
             kind="approval",
             title=f"Approval needed: {title}",
             body=None,
-            link=f"/cases/{case_id}/activity",
+            link=f"/approve/{ap_id}",
             key=f"approval:{ap_id}",
+            data={"approval_id": str(ap_id)},
         )
     blocked = await s.execute(
         select(

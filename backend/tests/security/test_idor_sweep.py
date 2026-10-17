@@ -84,7 +84,14 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
     await worker.maintenance_once()  # notifications for the pending approval and the reminder
     note = (await client.get("/api/v1/notifications")).json()["items"][0]
     token = (await client.post("/api/v1/me/tokens", json={"name": "mine"})).json()
+    channel = (
+        await client.post(
+            "/api/v1/channels",
+            json={"kind": "webhook", "name": "Mine", "secrets": {"url": "http://127.0.0.1:9/h"}},
+        )
+    ).json()["channel"]
     return {
+        "channel_id": channel["id"],
         "token_id": token["id"],
         "reminder_id": reminder["id"],
         "notification_id": note["id"],
@@ -111,7 +118,8 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
 
 
 def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None]]:
-    r, ap, pv = ids["run_id"], ids["approval_id"], ids["provider_id"]
+    r, apr, pv = ids["run_id"], ids["approval_id"], ids["provider_id"]
+    ch = ids["channel_id"]
     c, d, f, link, a, o, n = (
         ids["case_id"],
         ids["document_id"],
@@ -217,7 +225,13 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("GET", f"/api/v1/runs/{r}", None),
         ("POST", f"/api/v1/runs/{r}/control", {"action": "cancel"}),
         ("GET", f"/api/v1/cases/{c}/approvals", None),
-        ("POST", f"/api/v1/approvals/{ap}/decision", {"approve": True}),
+        ("GET", f"/api/v1/approvals/{apr}", None),
+        ("POST", f"/api/v1/approvals/{apr}/decision", {"approve": True}),
+        ("PATCH", f"/api/v1/channels/{ch}", {"version": 1, "paused": True}),
+        ("POST", f"/api/v1/channels/{ch}/pair", {"code": "ABCDEF12"}),
+        ("POST", f"/api/v1/channels/{ch}/test", None),
+        ("GET", f"/api/v1/channels/{ch}/deliveries", None),
+        ("DELETE", f"/api/v1/channels/{ch}", None),
         ("GET", f"/api/v1/cases/{c}/events?once=true", None),
         ("POST", f"/api/v1/providers/{pv}/verify", None),
         ("DELETE", f"/api/v1/providers/{pv}", None),
@@ -248,6 +262,8 @@ async def test_other_user_gets_404_everywhere(
     assert run["approvals"][0]["status"] == "pending"
     assert [p["name"] for p in (await client.get("/api/v1/providers")).json()] == ["Mine"]
     assert [t["revoked"] for t in (await client.get("/api/v1/me/tokens")).json()] == [False]
+    chans = (await client.get("/api/v1/channels")).json()
+    assert [(c["name"], c["status"]) for c in chans] == [("Mine", "active")]
     notes = (await client.get("/api/v1/notifications")).json()
     assert notes["unread"] >= 1  # intruder could not mark them read
     rems = (await client.get(f"/api/v1/cases/{ids['case_id']}/reminders")).json()
@@ -289,6 +305,7 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "reminder_id",
             "notification_id",
             "token_id",
+            "channel_id",
         )
     }
     sentinel["app_version"] = "1"

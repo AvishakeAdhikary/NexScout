@@ -17,6 +17,7 @@ from nexscout.api.routers import (
     applications,
     auth,
     cases,
+    channels,
     documents,
     health,
     mindmap,
@@ -83,6 +84,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         research,
         applications,
         tracking,
+        channels,
     ):
         app.include_router(module.router, prefix=API_PREFIX)
     if settings.fixture_site_on:

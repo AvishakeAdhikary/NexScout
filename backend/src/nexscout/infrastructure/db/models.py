@@ -60,6 +60,9 @@ OWNED_TABLES: tuple[str, ...] = (
     "reminders",
     "notifications",
     "chat_messages",
+    "notification_channels",
+    "notification_deliveries",
+    "channel_actions",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
@@ -1075,7 +1078,8 @@ class Reminder(IdMixin, Base):
 
 
 class Notification(IdMixin, Base):
-    """Something that needs the user's attention. Never sent outside the app."""
+    """Something that needs the user's attention. Delivered in the app, and to the user's own
+    paired channels through the delivery outbox (M11)."""
 
     __tablename__ = "notifications"
 
@@ -1089,6 +1093,10 @@ class Notification(IdMixin, Base):
     title: Mapped[str] = mapped_column(String(300), nullable=False)
     body: Mapped[str | None] = mapped_column(String(1000))
     link: Mapped[str | None] = mapped_column(String(500))
+    # Structured context for channel actions (approval_id, application_id, question, ...).
+    data: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb")
+    )
     dedupe_key: Mapped[str] = mapped_column(String(200), nullable=False)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
@@ -1147,3 +1155,142 @@ class PersonalAccessToken(IdMixin, Base):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+# --- M11: notification channels, delivery outbox, chat actions ---------------------------------
+
+
+class NotificationChannel(IdMixin, Base):
+    """A user's own messaging channel (official provider APIs only). Credentials live in
+    `secrets`; only the paired identity may act through it."""
+
+    __tablename__ = "notification_channels"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    kind: Mapped[str] = mapped_column(String(20), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    config: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    secret_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("secrets.id", ondelete="SET NULL")
+    )
+    paired_identity: Mapped[str | None] = mapped_column(String(200))
+    pairing_code_hash: Mapped[str | None] = mapped_column(String(64))
+    pairing_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    events: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    quiet_start: Mapped[str | None] = mapped_column(String(5))  # "22:00"
+    quiet_end: Mapped[str | None] = mapped_column(String(5))  # "07:00"
+    timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="UTC")
+    consecutive_failures: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_error: Mapped[str | None] = mapped_column(String(500))
+    last_delivery_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    poll_offset: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    __table_args__ = (
+        CheckConstraint(
+            "kind IN ('webhook','slack','email','telegram','discord','whatsapp')",
+            name="kind_valid",
+        ),
+        CheckConstraint(
+            "status IN ('pending_pairing','active','paused','error')", name="status_valid"
+        ),
+        UniqueConstraint("owner_user_id", "name", name="uq_notification_channels_owner_name"),
+    )
+
+
+class NotificationDelivery(IdMixin, Base):
+    """Transactional outbox: one row per (notification, channel), delivered by the worker."""
+
+    __tablename__ = "notification_deliveries"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    notification_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("notifications.id", ondelete="CASCADE"), nullable=False
+    )
+    channel_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("notification_channels.id", ondelete="CASCADE"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    next_attempt_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_error: Mapped[str | None] = mapped_column(String(500))
+    provider_message_id: Mapped[str | None] = mapped_column(String(200))
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "notification_id", "channel_id", name="uq_deliveries_notification_channel"
+        ),
+        CheckConstraint(
+            "status IN ('pending','sending','sent','failed','dead','skipped')",
+            name="status_valid",
+        ),
+        Index("ix_deliveries_due", "status", "next_attempt_at"),
+    )
+
+
+class ChannelAction(Base):
+    """A single-use action offered in a chat message (approve, reject, answer). The short id is
+    what a button carries; it is useless without the paired identity of the same channel."""
+
+    __tablename__ = "channel_actions"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    channel_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("notification_channels.id", ondelete="CASCADE"), nullable=False
+    )
+    notification_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("notifications.id", ondelete="CASCADE"), nullable=False
+    )
+    action: Mapped[str] = mapped_column(String(20), nullable=False)
+    target: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    result: Mapped[str | None] = mapped_column(String(300))
+
+    __table_args__ = (
+        CheckConstraint("action IN ('approve','reject','answer')", name="action_valid"),
+    )
+
+
+class ChannelInboundEvent(Base):
+    """Inbox for provider events (webhook bodies, polled updates). Unique per provider event id
+    (idempotency). Webhook bodies are stored unverified by the API and verified by the worker
+    against the channel's secret before anything is acted on."""
+
+    __tablename__ = "channel_inbound_events"
+
+    channel_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("notification_channels.id", ondelete="CASCADE"), primary_key=True
+    )
+    provider_event_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    raw_body: Mapped[bytes | None] = mapped_column(LargeBinary)
+    signature: Mapped[str | None] = mapped_column(String(200))
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="received")
+    note: Mapped[str | None] = mapped_column(String(300))
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('received','processed','rejected','ignored')", name="status_valid"
+        ),
+        Index("ix_inbound_status", "status", "received_at"),
+    )
+

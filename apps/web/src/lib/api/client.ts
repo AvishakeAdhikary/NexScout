@@ -315,6 +315,28 @@ export const runsApi = {
   eventsUrl: (caseId: string) => `/api/v1${c(caseId)}/events`,
 };
 
+export type ApprovalDetailOut = S["ApprovalDetailOut"];
+export const approvalsApi = {
+  get: (approvalId: string) => api<ApprovalDetailOut>(`/approvals/${e(approvalId)}`),
+};
+
+export type ChannelOut = S["ChannelOut"];
+export type ChannelIn = S["ChannelIn"];
+export type ChannelPatch = S["ChannelPatch"];
+export type ChannelCreatedOut = S["ChannelCreatedOut"];
+export type DeliveryOut = S["DeliveryOut"];
+export const channelsApi = {
+  list: () => api<ChannelOut[]>("/channels"),
+  create: (body: ChannelIn) => api<ChannelCreatedOut>("/channels", { method: "POST", body }),
+  update: (id: string, body: ChannelPatch) =>
+    api<ChannelOut>(`/channels/${e(id)}`, { method: "PATCH", body }),
+  pair: (id: string, code: string) =>
+    api<ChannelOut>(`/channels/${e(id)}/pair`, { method: "POST", body: { code } }),
+  test: (id: string) => api<S["TestOut"]>(`/channels/${e(id)}/test`, { method: "POST" }),
+  deliveries: (id: string) => api<DeliveryOut[]>(`/channels/${e(id)}/deliveries`),
+  remove: (id: string) => api<void>(`/channels/${e(id)}`, { method: "DELETE" }),
+};
+
 export const providersApi = {
   list: () => api<ProviderOut[]>("/providers"),
   create: (body: ProviderIn) => api<ProviderOut>("/providers", { method: "POST", body }),

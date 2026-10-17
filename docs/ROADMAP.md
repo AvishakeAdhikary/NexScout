@@ -4,7 +4,7 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-17
-- **Current milestone:** M11 Notification channels (🟨 in progress), then M12 Autopilot, M13 Releases + easy install. M0–M10 ✅.
+- **Current milestone:** M12 Autopilot (🟨 in progress), then M13 Releases + easy install. M0–M11 ✅.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0012.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
@@ -152,8 +152,24 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
       replaces it without rewriting history.
     - AGPL-3.0 LICENSE carried over.
     - CI gained Chromium for backend tests and an E2E job.
-    - **The push to GitHub was blocked by the session's permission policy and is pending the
-      user's approval** (see the open items).
+    - Pushed after the user approved; GitHub Actions run 39009961870 passed all six jobs.
+  - M11 notification channels (ADR-0013, migration 0010):
+    - Channels: Telegram Bot API (long poll), Discord bot (REST and Gateway), WhatsApp Cloud API
+      (signed webhook), Slack webhook, SMTP email, HMAC-signed webhook. Official APIs only.
+    - Pairing by one-time code. Only the paired identity can act.
+    - Transactional outbox in the worker: retries with backoff and jitter, dead letter, circuit
+      breaker, quiet hours, event filters, per-channel ordering. Webhook URLs are re-checked
+      for SSRF at send time.
+    - Approve or reject buttons go through `runs.decide` (single-use, identity-bound, audited).
+    - Answers by reply: a form question becomes a `question` notification, and the reply is
+      stored as the user's answer.
+    - Approvals notify in real time from `require_approval`. A CAPTCHA or sign-in sends a
+      "needs you" notification.
+    - API: `/channels` (CRUD, pair, test, deliveries), `/approvals/{id}`, and the WhatsApp
+      webhook (GET verify, POST inbox).
+    - Web: Settings → "Notifications on your phone" with provider setup steps; `/approve/[id]`.
+    - The IDOR sweep covers +7 routes, and a variable-shadowing bug in it was fixed (the
+      approval decision route was being swept with an application id).
 - **Environment:** Windows 11, Docker Desktop 29.8.2 (CLI at
   `%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin`, on the user PATH), Python 3.13.15 via uv,
   Node 26.10, Postgres 17 in compose.
@@ -249,7 +265,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M10: retention purge test | old events, audit rows and login attempts purged; recent data and sessions intact |
 | 2026-10-17 | Regional formats: `uv run pytest` | **326 passed** (new: 20 format/compliance unit tests; 2 system tests: Germany → Lebenslauf on A4 (595×842 pt), Netherlands → Europass, unknown → international, US override → Letter (612×792 pt); a posting's "max. 2 pages" blocks an over-long statement from upload) |
 | 2026-10-17 | Regional formats: web tsc, eslint, vitest, `next build`; `npx playwright test` | passed; **12/12 E2E** (M5 journey now asserts the German format and the posting's 2-page check) |
-| — | GitHub Actions CI | **not run yet**: the push is pending the user's approval |
+| 2026-10-17 | GitHub Actions CI (after push) | run 39009961870: backend, web, e2e, desktop, security all green |
+| 2026-10-17 | M11: ruff, format, mypy (123 files); `uv run pytest` | **338 passed** (new: 4 channel system tests — Telegram question → reply answer → approval buttons → foreign user refused → paired approve → submitted exactly once → replay ignored; Discord code pairing + real WebSocket Gateway IDENTIFY(intents 4096) + button from stranger refused + paired approve; WhatsApp verify handshake, forged signature rejected, signed PAIR, Reject button, duplicate webhook ignored; webhook signature, 503 retry with backoff, 401 dead letter ×5 → circuit open, resume, quiet hours defer, isolation, secret deleted with channel; 8 unit tests; IDOR +7) |
+| 2026-10-17 | M11: web tsc, eslint, vitest 12/12; `npx playwright test` | passed; **13/13 E2E** incl. new journey (webhook channel saved → signing secret shown once → test fails honestly against a closed port → pause → approval decided on `/approve/[id]`) |
 
 ---
 
@@ -269,6 +287,9 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M8 | Tracking and dashboard | ✅ | Track applications, inspect agent work, pause workflows, review documents and resolve blocked tasks in the UI |
 | M9 | Desktop and providers | ✅ with caveats: the unpacked Windows app runs (smoke-tested) and the installer was built, but an install was **not** run. Providers are not live-verified (no keys) | Desktop builds install and run. Each advertised provider or integration has a verified capability profile |
 | M10 | Production hardening | ✅ | Security, isolation, concurrency and recovery tests pass. Backup and restore and migration upgrades are tested. Deployment is reproducible |
+| M11 | Notification channels | ✅ (providers faked at HTTP level; not live-verified) | Paired channels receive notifications through a durable outbox; approvals and answers from chat act only for the paired identity, once |
+| M12 | Autopilot | 🟨 | Scheduled discover → documents → fill → submit within a consented policy; unknowns asked, never guessed; manual-only sites respected; kill switch |
+| M13 | Releases and easy install | ⬜ | Every green main push gets a minor-bump tag and release; non-technical users can install and start NexScout with a double-click |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

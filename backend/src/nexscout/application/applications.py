@@ -408,6 +408,39 @@ async def update_application(
     return await get_application(session, actor, app_id)
 
 
+async def record_answer(
+    session: AsyncSession,
+    actor: Actor,
+    data: dict[str, Any],
+    answer: str,
+    *,
+    source: str,
+) -> Application:
+    """Store the user's answer to a question NexScout asked (in the app or from a paired chat).
+    The answer is the user's own words; it is reused whenever the same question comes up."""
+    question = str(data.get("question") or "").strip()
+    app_id = data.get("application_id")
+    if not question or not app_id or not answer.strip():
+        raise ValidationFailed("Nothing to answer.")
+    app = await _get(session, actor, uuid.UUID(str(app_id)), lock=True)
+    answers = dict(app.answers or {})
+    if len(answers) >= 50 and normalize_question(question) not in answers:
+        raise ValidationFailed("Too many answers on this application.")
+    answers[normalize_question(question)] = answer.strip()[:5000]
+    app.answers = answers
+    app.version += 1
+    event(
+        session,
+        app,
+        "answer_recorded",
+        actor="user",
+        message=f"You answered: {question}",
+        payload={"question": question, "source": source},
+    )
+    await session.flush()
+    return app
+
+
 async def change_status(
     session: AsyncSession,
     actor: Actor,

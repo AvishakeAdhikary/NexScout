@@ -103,14 +103,34 @@ check their own setup with "Check connection" in Settings, which records the res
   you entered).
 
 ## Tracking, notifications and assistant (M8)
-- Notifications are in-app only. NexScout sends no email, SMS or push notifications; sending
-  messages is consequential and no outbound channel is configured.
+- Notifications appear in the app and, from M11, on channels the user connects and pairs
+  (Telegram, Discord, WhatsApp Cloud API, Slack, email, webhook). NexScout sends nothing to
+  anyone else. There are no SMS or mobile push notifications.
 - Reminders and notifications are created by the worker's sweep. Without a running worker,
   nothing new appears.
 - The assistant is a fixed-menu, rule-based router in English (no LLM). It understands a small
   set of requests and says so otherwise. It never submits, sends or approves anything.
 - Bulk changes cover manual statuses only (tracking, completed, rejected, withdrawn, cancelled,
   paused); each item is validated by the state machine.
+
+## Notification channels (M11)
+- **Not live-verified.** Every provider adapter is tested against faked HTTP APIs and a fake
+  Discord Gateway. No message has been sent to real Telegram, Discord, WhatsApp, Slack or SMTP
+  servers from this repository's tests. Verifying needs the user's own bot, app or account.
+- **WhatsApp:**
+  - Needs a Meta WhatsApp Business app.
+  - Replies need a public HTTPS webhook (a tunnel or a server).
+  - Outside the 24-hour customer-service window, Meta only delivers approved templates
+    (`template_name`).
+  - Interactive buttons work only inside that window.
+- **Discord:** the bot can DM the user only if they share a server with it.
+- **Telegram:** each bot token is long-polled by one NexScout worker at a time. Two workers
+  polling the same token conflict (Telegram returns 409).
+- **Slack, email and webhook** are outbound only. Their links open NexScout; there are no
+  buttons in them.
+- **Links:** chat apps refuse buttons that point at localhost or private addresses. Such links
+  are sent as text. Setting `NEXSCOUT_PUBLIC_WEB_URL` to an HTTPS address gives an "Open in
+  NexScout" button.
 
 ## Agent runtime (M4)
 - Only four workflows exist: reading uploads, opportunity search, the AI summary draft, and a

@@ -339,6 +339,19 @@ async def list_approvals(
     return list(await session.scalars(stmt.order_by(ApprovalRequest.created_at.desc())))
 
 
+async def get_approval(
+    session: AsyncSession, actor: Actor, approval_id: uuid.UUID
+) -> ApprovalRequest:
+    row = await session.scalar(
+        select(ApprovalRequest).where(
+            ApprovalRequest.id == approval_id, ApprovalRequest.owner_user_id == actor.user_id
+        )
+    )
+    if row is None:
+        raise NotFound("Approval request not found.")
+    return row
+
+
 async def decide(
     session: AsyncSession, actor: Actor, approval_id: uuid.UUID, *, approve: bool, note: str | None
 ) -> ApprovalRequest:

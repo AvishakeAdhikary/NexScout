@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import hmac
 import os
 import uuid
 from dataclasses import dataclass
@@ -37,7 +38,12 @@ class SecretBox:
         if len(key) != 32:
             raise SecretsUnavailable("The master key must be 32 bytes.")
         self._aead = AESGCM(key)
+        self._derive_key = hashlib.sha256(b"nexscout-derive:" + key).digest()
         self.key_id = hashlib.sha256(key).hexdigest()[:12]
+
+    def derive(self, label: str) -> str:
+        """A stable, non-reversible token for `label` (e.g. a webhook verify token)."""
+        return hmac.new(self._derive_key, label.encode(), hashlib.sha256).hexdigest()[:32]
 
     @staticmethod
     def _aad(owner_id: uuid.UUID, purpose: str) -> bytes:

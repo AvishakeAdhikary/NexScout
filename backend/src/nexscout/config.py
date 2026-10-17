@@ -76,6 +76,12 @@ class Settings(BaseSettings):
     fixture_site_enabled: bool | None = None
     fixture_site_origin: str = "http://127.0.0.1:8000"
 
+    # Notification channels (M11). Links in messages point here; set it to the address you
+    # open NexScout at (a public HTTPS address makes chat apps show an "Open" button).
+    public_web_url: str = "http://localhost:3000"
+    channels_enabled: bool = True
+    channel_poll_interval_s: float = Field(default=2.0, gt=0)
+
     @model_validator(mode="after")
     def _production_requirements(self) -> Settings:
         # Fail at startup, not at the first saved API key.

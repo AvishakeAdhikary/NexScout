@@ -35,7 +35,8 @@ from nexscout.application.applications import (
     fixture_origin,
     move,
 )
-from nexscout.domain.forms import Applicant
+from nexscout.application.notifications import notify
+from nexscout.domain.forms import Applicant, normalize_question
 from nexscout.domain.state_machines import ApplicationStatus
 from nexscout.infrastructure.browser import Guard, fill_form, submit_form
 from nexscout.infrastructure.db.models import (
@@ -203,6 +204,34 @@ async def fill(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         )
         target = S.FAILED if out.status == "error" else S.NEEDS_USER_ACTION
         move(s, app, target, actor="agent", run_id=ctx.run_id, message=reason)
+        # Ask once per question, on the user's own channels. NexScout never guesses; the answer
+        # is stored and reused (domain/forms.plan_form reads `answers`).
+        for question in out.plan.missing if out.status == "missing" and out.plan else []:
+            await notify(
+                s,
+                owner=app.owner_user_id,
+                case_id=app.case_id,
+                kind="question",
+                title=f"{app.organization} asks: {question}",
+                body=f"NexScout has no answer for this on “{app.title}”. Your reply is saved "
+                "and reused; nothing is guessed.",
+                link=f"/cases/{app.case_id}/applications/{app.id}",
+                key=f"question:{app.id}:{normalize_question(question)}",
+                data={"application_id": str(app.id), "question": question},
+            )
+        if out.status == "blocked":
+            await notify(
+                s,
+                owner=app.owner_user_id,
+                case_id=app.case_id,
+                kind="application",
+                title=f"{app.organization} needs you: "
+                + ("a CAPTCHA" if out.blocker == "captcha" else "a sign-in"),
+                body=reason,
+                link=f"/cases/{app.case_id}/applications/{app.id}",
+                key=f"blocked:{app.id}:{app.version}",
+                data={"application_id": str(app.id), "blocker": out.blocker},
+            )
     await ctx.note(step, reason)
     return {
         "result": {

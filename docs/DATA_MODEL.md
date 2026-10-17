@@ -47,6 +47,25 @@ opportunity links.
 ### M5–M8
 ✅ (M5, migration 0005, all owned + RLS) research_sources (case, opportunity, url, origin listing/demo/web, status, text, links, content_hash, retrieved_at) · research_findings (source, kind deadline/degree/language_test/document_required/funding/supervisor/other, field, summary, verbatim quote, value, confidence, method `rules_v1`, status current/conflict, note). Supervisors are findings of kind `supervisor`, not a separate faculty table · generated_documents (case, opportunity, doc_type, title, current_version, created_by_run_id unique, version) + generated_document_versions (number, markdown, origin generated/assembled/user_edit, report, placeholders, artifacts {pdf, docx: key, sha256, size, checks}, model, is_mock) · ✅ (M7, migration 0006, owned + RLS) applications (case, opportunity, title, organization, status per APPLICATION_MACHINE, apply_url, method, document_ids, answers, phone, deadline, notes, blocker, submitted_at, evidence {source observed/user/none, reference, url, excerpt, screenshot_key}, version) + application_events (identity `seq` for ordering, type, from/to status, actor user/agent/system, message, payload, run_id) · ✅ (M8, migration 0007, owned + RLS) reminders (case, application, kind deadline/follow_up/custom, due_on, dedupe_key, done_at, notified_at) · notifications (owner, case, kind, title, body, link, dedupe_key, read_at) · chat_messages (identity seq, role, content, intent, actions) · ⬜ communications (no outbound channel) · ⬜ browser_sessions, credential_refs, secrets · ⬜ provider_configs
 
+### M11 Notification channels (✅ migration 0010, ADR-0013)
+- **notification_channels** (owned + RLS): kind (webhook/slack/email/telegram/discord/whatsapp),
+  name (unique per owner), status (pending_pairing/active/paused/error), config (non-secret
+  settings), secret_id → secrets (sealed JSON, purpose `channel:<kind>`), paired_identity,
+  pairing_code_hash and pairing_expires_at, events (filter), quiet_start and quiet_end (HH:MM),
+  timezone, consecutive_failures (circuit breaker), last_error, last_delivery_at, poll_offset
+  (Telegram), version.
+- **notification_deliveries** (owned + RLS; the outbox): notification, channel, status
+  (pending/sending/sent/failed/dead/skipped), attempts, next_attempt_at, locked_until (lease),
+  last_error, provider_message_id (used to match replies), sent_at. Unique per
+  (notification, channel).
+- **channel_actions** (owned + RLS): a short random id carried by a button; channel,
+  notification, action (approve/reject/answer), target, expires_at, used_at, result.
+- **channel_inbound_events** (no owner; app role may INSERT only): primary key
+  (channel_id, provider_event_id) for idempotency, payload, raw_body (dropped after
+  verification), signature, status (received/processed/rejected/ignored), note.
+- **notifications.data** (JSONB): structured context such as approval_id, application_id or the
+  question.
+
 ## Migration policy
 - Forward-only in production. Each revision is tested by upgrading from the previous head with
   representative data (`tests/integration/test_migrations.py`).

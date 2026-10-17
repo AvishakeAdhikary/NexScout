@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 
 import { AccessTokens } from "@/components/access-tokens";
 import { ErrorAlert } from "@/components/error-alert";
+import { NotificationChannels } from "@/components/notification-channels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +49,8 @@ export default function AccountPage() {
           Download my data
         </a>
       </section>
+
+      <NotificationChannels />
 
       <AccessTokens />
 

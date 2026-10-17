@@ -152,6 +152,18 @@ async def list_approvals(
     ]
 
 
+class ApprovalDetailOut(ApprovalOut):
+    case_id: uuid.UUID
+
+
+@router.get("/approvals/{approval_id}", response_model=ApprovalDetailOut)
+async def get_approval(
+    approval_id: uuid.UUID, actor: CurrentActor, db: DbSession
+) -> ApprovalDetailOut:
+    """One approval (the page a notification links to)."""
+    return ApprovalDetailOut.model_validate(await runs.get_approval(db, actor, approval_id))
+
+
 @router.post("/approvals/{approval_id}/decision", response_model=ApprovalOut)
 async def decide(
     approval_id: uuid.UUID, body: DecisionIn, actor: CurrentActor, db: DbSession

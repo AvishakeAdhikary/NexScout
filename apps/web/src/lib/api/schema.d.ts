@@ -108,6 +108,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/approvals/{approval_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Approval
+         * @description One approval (the page a notification links to).
+         */
+        get: operations["get_approval_api_v1_approvals__approval_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/approvals/{approval_id}/decision": {
         parameters: {
             query?: never;
@@ -776,6 +796,93 @@ export interface paths {
         put?: never;
         /** Add Link */
         post: operations["add_link_api_v1_cases__case_id__social_profiles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Channels */
+        get: operations["list_channels_api_v1_channels_get"];
+        put?: never;
+        /** Create Channel */
+        post: operations["create_channel_api_v1_channels_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/channels/{channel_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Channel */
+        delete: operations["delete_channel_api_v1_channels__channel_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Channel */
+        patch: operations["update_channel_api_v1_channels__channel_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/channels/{channel_id}/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Deliveries */
+        get: operations["deliveries_api_v1_channels__channel_id__deliveries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/channels/{channel_id}/pair": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pair */
+        post: operations["pair_api_v1_channels__channel_id__pair_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/channels/{channel_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test */
+        post: operations["test_api_v1_channels__channel_id__test_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1643,6 +1750,47 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** ApprovalDetailOut */
+        ApprovalDetailOut: {
+            /** Action Kind */
+            action_kind: string;
+            /**
+             * Case Id
+             * Format: uuid
+             */
+            case_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decided At */
+            decided_at: string | null;
+            /** Decision Note */
+            decision_note: string | null;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Node */
+            node: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Status */
+            status: string;
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+        };
         /** ApprovalOut */
         ApprovalOut: {
             /** Action Kind */
@@ -1761,6 +1909,99 @@ export interface components {
              */
             version: number;
         };
+        /** ChannelCreatedOut */
+        ChannelCreatedOut: {
+            channel: components["schemas"]["ChannelOut"];
+            /** Instructions */
+            instructions: string;
+            /** Pairing Code */
+            pairing_code: string | null;
+            /** Signing Secret */
+            signing_secret?: string | null;
+        };
+        /** ChannelIn */
+        ChannelIn: {
+            /** Config */
+            config?: {
+                [key: string]: string;
+            };
+            /** Events */
+            events?: string[];
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /** Quiet End */
+            quiet_end?: string | null;
+            /** Quiet Start */
+            quiet_start?: string | null;
+            /** Secrets */
+            secrets?: {
+                [key: string]: string;
+            };
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+        };
+        /** ChannelOut */
+        ChannelOut: {
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            /** Consecutive Failures */
+            consecutive_failures: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Events */
+            events: string[];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Last Delivery At */
+            last_delivery_at: string | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Name */
+            name: string;
+            /** Paired */
+            paired: boolean;
+            /** Quiet End */
+            quiet_end: string | null;
+            /** Quiet Start */
+            quiet_start: string | null;
+            /** Status */
+            status: string;
+            /** Timezone */
+            timezone: string;
+            /** Version */
+            version: number;
+            webhook?: components["schemas"]["WebhookInfo"] | null;
+        };
+        /** ChannelPatch */
+        ChannelPatch: {
+            /** Events */
+            events?: string[] | null;
+            /** Name */
+            name?: string | null;
+            /** Paused */
+            paused?: boolean | null;
+            /** Quiet End */
+            quiet_end?: string | null;
+            /** Quiet Start */
+            quiet_start?: string | null;
+            /** Version */
+            version: number;
+        };
         /** ChatIn */
         ChatIn: {
             /** Message */
@@ -1816,6 +2057,31 @@ export interface components {
         DefaultIn: {
             /** Provider Id */
             provider_id: string | null;
+        };
+        /** DeliveryOut */
+        DeliveryOut: {
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Last Error */
+            last_error: string | null;
+            /** Sent At */
+            sent_at: string | null;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
         };
         /** DocTypeOut */
         DocTypeOut: {
@@ -2408,6 +2674,11 @@ export interface components {
             /** Source Url */
             source_url: string;
         };
+        /** PairIn */
+        PairIn: {
+            /** Code */
+            code: string;
+        };
         /** Preferences */
         Preferences: {
             /** Accessibility Notes */
@@ -2965,6 +3236,13 @@ export interface components {
             /** Sources */
             sources?: string[] | null;
         };
+        /** TestOut */
+        TestOut: {
+            /** Error */
+            error: string | null;
+            /** Ok */
+            ok: boolean;
+        };
         /** TokenCreatedOut */
         TokenCreatedOut: {
             /**
@@ -3110,6 +3388,13 @@ export interface components {
             origin: string;
             /** Placeholders */
             placeholders: string[];
+        };
+        /** WebhookInfo */
+        WebhookInfo: {
+            /** Callback Url */
+            callback_url: string;
+            /** Verify Token */
+            verify_token: string;
         };
         /** WorkflowOut */
         WorkflowOut: {
@@ -3381,6 +3666,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApplicationDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_approval_api_v1_approvals__approval_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                approval_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalDetailOut"];
                 };
             };
             /** @description Validation Error */
@@ -5177,6 +5493,220 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SocialProfileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_channels_api_v1_channels_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelOut"][];
+                };
+            };
+        };
+    };
+    create_channel_api_v1_channels_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChannelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelCreatedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_channel_api_v1_channels__channel_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_channel_api_v1_channels__channel_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChannelPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deliveries_api_v1_channels__channel_id__deliveries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pair_api_v1_channels__channel_id__pair_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PairIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_api_v1_channels__channel_id__test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                channel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestOut"];
                 };
             };
             /** @description Validation Error */

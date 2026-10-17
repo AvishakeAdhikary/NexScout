@@ -35,6 +35,7 @@ services:
       # Unset in dev: a generated key is kept at /data/master.key on the shared volume, so the
       # api and worker use the same key and it survives container rebuilds. Set it in production.
       NEXSCOUT_MASTER_KEY: ${NEXSCOUT_MASTER_KEY:-}
+      NEXSCOUT_PUBLIC_WEB_URL: ${NEXSCOUT_PUBLIC_WEB_URL:-http://localhost:3000}
     volumes:
       - appdata:/data
     ports:

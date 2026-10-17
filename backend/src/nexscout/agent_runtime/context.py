@@ -185,6 +185,22 @@ class RunContext:
             )
             assert row is not None
             status, approval_id = row.status, row.id
+            if status == "pending" and created.rowcount:  # type: ignore[attr-defined]
+                # Reach the user on their paired channels right away (same dedupe key as the
+                # maintenance sweep, so it is never sent twice).
+                from nexscout.application.notifications import notify
+
+                await notify(
+                    s,
+                    owner=self.owner_user_id,
+                    case_id=self.case_id,
+                    kind="approval",
+                    title=f"Approval needed: {title}",
+                    body=summary[:1000],
+                    link=f"/approve/{approval_id}",
+                    key=f"approval:{approval_id}",
+                    data={"approval_id": str(approval_id)},
+                )
         if status == "pending":
             if created.rowcount:  # type: ignore[attr-defined]
                 await self.emit(

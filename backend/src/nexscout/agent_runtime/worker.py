@@ -30,6 +30,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from nexscout.agent_runtime import events, queue
+from nexscout.agent_runtime.channel_loops import ChannelLoops
 from nexscout.agent_runtime.context import RunContext, TokenBudgetExceeded, UncertainOutcome
 from nexscout.agent_runtime.registry import WorkflowSpec, get_workflow
 from nexscout.config import Settings
@@ -136,6 +137,7 @@ class Worker:
                 self._listen_loop(),
                 self._housekeeping_loop(),
                 self._maintenance_loop(),
+                *(self.channel_loops().loops() if self.settings.channels_enabled else []),
             )
         ]
         try:
@@ -309,6 +311,10 @@ class Worker:
             with contextlib.suppress(Exception):
                 await self.maintenance_once()
             await asyncio.sleep(self.settings.maintenance_interval_s)
+
+    def channel_loops(self) -> ChannelLoops:
+        """Notification delivery and chat inbound (M11). Off with NEXSCOUT_CHANNELS_ENABLED=0."""
+        return ChannelLoops(self.settings, self.system_sessions, self.app_sessions, self._stop)
 
     async def maintenance_once(self) -> dict[str, int]:
         """Deadline reminders and in-app notifications (idempotent, see notifications.py)."""
