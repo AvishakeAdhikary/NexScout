@@ -33,6 +33,9 @@ TEST_SYSTEM_DB_URL = os.environ.get(
     "postgresql+psycopg://nexscout_system:nexscout_system_dev@127.0.0.1:5432/nexscout_test",
 )
 REQUIRE_DB = os.environ.get("NEXSCOUT_REQUIRE_DB") == "1"
+# The labelled demo sources and demo application site are test fixtures: on for every test
+# (a shipped install has them off). Set before any Settings is built.
+os.environ.setdefault("NEXSCOUT_DEMO_DATA", "1")
 
 # Tables truncated between tests (children first is not needed with CASCADE).
 DATA_TABLES = (
@@ -70,6 +73,7 @@ def make_settings(**overrides: Any) -> Settings:
         "log_json": False,
         "log_level": "WARNING",
         "db_pool_size": 5,
+        "demo_data": True,
     }
     base.update(overrides)
     return Settings(**base)

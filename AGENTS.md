@@ -147,6 +147,20 @@ An LLM is never asked whether a safety rule may be skipped.
 - Async everywhere on the request path. Use `httpx.AsyncClient` with explicit timeouts.
 - Logging: `structlog`, JSON, with request/run/task correlation IDs. The redaction processor is mandatory.
 - Errors: domain errors are typed exceptions, mapped to HTTP problem responses in `api/`.
+- **User-visible error text only through `agent_runtime/errors.user_message`** (runs, steps, sources).
+  Intentional messages (DomainError, FetchFailed, ProviderError, LookupError…) pass through; anything
+  else becomes "Something went wrong … reference <id>" and the traceback goes to the log under that
+  reference. Never put `f"{type(exc).__name__}: {exc}"` in a field a user sees.
+- **No demo data in a shipped install.** Labelled demo sources and the demo application site exist only
+  with `NEXSCOUT_DEMO_DATA=1` (tests, E2E, developer demos). Shipped images, the Easy compose and the
+  desktop app run `NEXSCOUT_ENV=production` with demo data off.
+- **Countries are ISO 3166-1 alpha-2 codes** everywhere they are stored or compared (`domain/geo.py`);
+  groups (EU, EEA, NORDICS, EUROPE, …) expand to codes. Free-text locations go through
+  `resolve_location`; unknown text resolves to no country, never a guess.
+- **Job sources** go through `integrations/sources` providers and `SafeFetcher` (public addresses only,
+  pacing, size caps; robots.txt for pages that aren't official public APIs). Sites whose terms or
+  robots.txt forbid automation are never fetched; list them in `domain/site_policy.MANUAL_ONLY` or the
+  catalog's `unsupported` list with the reason.
 ### TypeScript / web
 - TS `strict: true`, ESLint + Prettier. Server components by default.
 - API types come from `apps/web/src/lib/api/schema.d.ts` (generated from OpenAPI by `scripts/gen-contracts.sh`). Don't hand-write duplicates.
@@ -165,6 +179,10 @@ An LLM is never asked whether a safety rule may be skipped.
   (`-m live`, needs env keys) and never run in CI by default.
 - Every bug fix gets a regression test. Every new owned resource gets a cross-tenant test.
 - Report results honestly: passed / failed / skipped / not run. "It compiles" is not a test.
+- E2E journeys import `test` from `apps/web/e2e/fixtures.ts`, which fails any journey on a page error,
+  a console error or an API 5xx. CI runs them twice: dev and production build (`E2E_PROD=1`).
+- Tests turn demo data on themselves (`tests/conftest.py`, `playwright.config.ts`); never rely on it
+  being on by default.
 
 ## 8. Definition of done (per feature)
 Correct layer · validated I/O · authorization enforced · failure cases handled · durable state

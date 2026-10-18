@@ -22,6 +22,6 @@ RUN useradd --system --uid 10001 --home /app nexscout \
 USER nexscout
 ENV PATH="/app/.venv/bin:$PATH"
 ARG NEXSCOUT_VERSION=""
-ENV NEXSCOUT_VERSION=${NEXSCOUT_VERSION}
+ENV NEXSCOUT_VERSION=${NEXSCOUT_VERSION} NEXSCOUT_ENV=production
 EXPOSE 8000
 CMD ["nexscout", "serve", "--host", "0.0.0.0", "--port", "8000"]

@@ -239,7 +239,9 @@ class SafeFetcher:
         max_redirects: int = 5,
         respect_robots: bool = True,
         min_interval_s: float = 1.0,
+        user_agent: str = USER_AGENT,
     ) -> None:
+        self.user_agent = user_agent
         self.allow_private = allow_private
         self.timeout_s = timeout_s
         self.max_bytes = max_bytes
@@ -255,7 +257,7 @@ class SafeFetcher:
             transport=_PinnedTransport(allow_private=self.allow_private),
             timeout=self.timeout_s,
             follow_redirects=False,
-            headers={"User-Agent": USER_AGENT, "Accept": "text/html,text/plain;q=0.9"},
+            headers={"User-Agent": self.user_agent, "Accept": "text/html,text/plain;q=0.9"},
         )
 
     async def _pace(self, host: str) -> None:
@@ -267,14 +269,28 @@ class SafeFetcher:
 
     async def _get(self, client: httpx.AsyncClient, url: str) -> tuple[httpx.Response, bytes, str]:
         """GET with manual, re-checked redirects. Returns (response, body, final url)."""
+        return await self._send(client, "GET", url)
+
+    async def _send(
+        self,
+        client: httpx.AsyncClient,
+        method: str,
+        url: str,
+        *,
+        content: bytes | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> tuple[httpx.Response, bytes, str]:
+        """One request with manual, re-checked redirects (a redirected POST continues as GET,
+        like a browser). Returns (response, body, final url)."""
         current = url
         for _ in range(self.max_redirects + 1):
             target = _check_url(current)
             await self._pace(target.host)
             try:
-                async with client.stream("GET", target) as resp:
+                async with client.stream(method, target, content=content, headers=headers) as resp:
                     if resp.is_redirect and "location" in resp.headers:
                         current = urljoin(str(target), resp.headers["location"])
+                        method, content = "GET", None
                         continue
                     body = bytearray()
                     async for chunk in resp.aiter_bytes():
@@ -291,7 +307,7 @@ class SafeFetcher:
                     exc.__context__, FetchBlocked
                 ):
                     raise FetchBlocked(str(exc.__cause__ or exc.__context__)) from exc
-                raise FetchFailed(f"Couldn't connect: {type(exc).__name__}") from exc
+                raise FetchFailed("Couldn't connect to the site (network error).") from exc
         raise FetchFailed("Too many redirects.")
 
     async def _allowed_by_robots(self, client: httpx.AsyncClient, url: str) -> bool:
@@ -324,6 +340,30 @@ class SafeFetcher:
                 return await self._allowed_by_robots(client, url)
         except (FetchBlocked, FetchFailed):
             return None
+
+    async def request(
+        self,
+        method: str,
+        url: str,
+        *,
+        content: bytes | None = None,
+        headers: dict[str, str] | None = None,
+        check_robots: bool | None = None,
+    ) -> tuple[int, dict[str, str], bytes, str]:
+        """Any public HTTP request (APIs, feeds, pages) with the same SSRF, size and pacing
+        guards. Returns (status, headers, body, final url). Robots are checked when
+        `check_robots` (default: this fetcher's `respect_robots`)."""
+        _check_url(url)
+        robots = self.respect_robots if check_robots is None else check_robots
+        async with self._client() as client:
+            if robots and not await self._allowed_by_robots(client, url):
+                raise FetchBlocked(
+                    "The site's robots.txt asks automated tools not to read this page."
+                )
+            resp, body, final_url = await self._send(
+                client, method, url, content=content, headers=headers
+            )
+        return resp.status_code, dict(resp.headers), body, final_url
 
     async def fetch(self, url: str) -> FetchResult:
         _check_url(url)

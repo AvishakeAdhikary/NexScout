@@ -267,10 +267,14 @@ async def approve(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         fields = (ev.payload or {}).get("fields", []) if ev else []
         declarations = (ev.payload or {}).get("declarations", []) if ev else []
         event_id = str(ev.id) if ev else None
+        page_fallback = (ev.payload or {}).get("url") if ev else None
+        page_fallback = str(page_fallback or app.apply_url or "")
     shown = [f"{f['label']}: {f['value']}" for f in fields if f["action"] in ("fill", "upload")]
     gate_note = ""
     if ctx.params.get("autopilot"):
-        allowed, reasons = await _autopilot_gate(ctx, bool(declarations), str(state.get("url")))
+        allowed, reasons = await _autopilot_gate(
+            ctx, bool(declarations), str(state.get("url") or page_fallback)
+        )
         if allowed:
             await ctx.record_policy_approval(
                 node="approve",

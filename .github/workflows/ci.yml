@@ -91,6 +91,13 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # dev: next dev + API in development mode. prod: `next build` + `next start` and the API
+        # in production mode, the way users run it (demo data still on for the journeys).
+        mode: [dev, prod]
+    name: e2e (${{ matrix.mode }})
     services:
       postgres:
         image: postgres:17-alpine
@@ -129,9 +136,11 @@ jobs:
       - name: Playwright journeys (API + worker + web are started by the config)
         working-directory: apps/web
         run: npx playwright test
+        env:
+          E2E_PROD: ${{ matrix.mode == 'prod' && '1' || '0' }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.mode }}
           path: apps/web/test-results
           retention-days: 7

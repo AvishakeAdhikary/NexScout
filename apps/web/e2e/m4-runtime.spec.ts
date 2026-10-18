@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M4 acceptance journey: background work is visible and controllable. Start a workflow, pause
 // and resume it, answer its approval, add a (mock) AI model, and draft a grounded summary that

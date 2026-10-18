@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M5 acceptance journey (PRODUCT_REQUIREMENTS journeys 3–4): research a (demo) PhD position
 // with quoted sources, draft a statement of purpose, see placeholders and removed claims, edit,

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M6 acceptance journey: research a (demo) job, see referral suggestions only for people the
 // user allowed, draft a referral request and a resume. Mock model; synthetic data.

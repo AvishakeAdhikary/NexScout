@@ -32,6 +32,8 @@ services:
       NEXSCOUT_MIGRATION_DATABASE_URL: postgresql+psycopg://nexscout_owner:nexscout_owner_dev@postgres:5432/nexscout
       NEXSCOUT_SYSTEM_DATABASE_URL: postgresql+psycopg://nexscout_system:nexscout_system_dev@postgres:5432/nexscout
       NEXSCOUT_STORAGE_DIR: /data/storage
+      NEXSCOUT_ENV: ${NEXSCOUT_ENV:-development}
+      NEXSCOUT_DEMO_DATA: ${NEXSCOUT_DEMO_DATA:-0}
       # Unset in dev: a generated key is kept at /data/master.key on the shared volume, so the
       # api and worker use the same key and it survives container rebuilds. Set it in production.
       NEXSCOUT_MASTER_KEY: ${NEXSCOUT_MASTER_KEY:-}

@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M2 acceptance journey: upload a CV, review extracted facts against their source, edit and
 // accept, and find the data again from a fresh session. Synthetic persona only.

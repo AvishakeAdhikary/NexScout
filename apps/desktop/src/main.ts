@@ -136,6 +136,7 @@ function startLocal(config: DesktopConfig): void {
     // The worker runs on this computer, so CAPTCHA/sign-in pages can open in a visible window
     // (assisted mode: the person solves and submits; NexScout only records the confirmation).
     NEXSCOUT_ASSISTED_BROWSER: "true",
+    NEXSCOUT_ENV: "production", // a real install: no demo data, no API docs
     NEXSCOUT_PUBLIC_WEB_URL: `http://127.0.0.1:${config.webPort ?? 3000}`,
     ELECTRON_RUN_AS_NODE: undefined,
   };
@@ -351,12 +352,17 @@ ipcMain.handle("setup:save", async (_event, raw: unknown) => {
   if (config.mode === "local" && !existsSync(join(config.checkoutDir as string, "backend"))) {
     return { ok: false, error: "That folder isn't a NexScout checkout (no backend/ folder)." };
   }
-  saveConfig(config);
-  setMenu();
-  const old = mainWindow;
-  await openApp(config);
-  old?.close();
-  return { ok: true };
+  try {
+    saveConfig(config);
+    setMenu();
+    const old = mainWindow;
+    await openApp(config);
+    old?.close();
+    return { ok: true };
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `NexScout couldn't start: ${detail.slice(0, 300)}` };
+  }
 });
 
 app.on("web-contents-created", (_event, contents) => {

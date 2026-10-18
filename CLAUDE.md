@@ -49,6 +49,7 @@ uv run nexscout worker                        # background worker: uploads, sear
 cd apps/web && npm run dev | lint | typecheck | test | build     # web :3000
 bash scripts/gen-contracts.sh                 # after changing API schemas
 cd apps/web && npm run e2e                    # Playwright: starts API :8100 + web :3200 against dev DB
+E2E_PROD=1 npx playwright test                # same journeys on a production build + production API
 ```
 Platform: Windows host. Bash and PowerShell are both available. Use `uv run` (never the host Python 3.14).
 Next.js 16 differs from older versions: read `apps/web/node_modules/next/dist/docs/` before using an API.

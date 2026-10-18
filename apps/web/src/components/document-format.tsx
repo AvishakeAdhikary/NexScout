@@ -95,7 +95,7 @@ export function ComplianceList({ compliance }: { compliance?: { status?: string;
             : "Not ready: fix the items marked ✗ before applying."}
       </p>
       <ul className="flex flex-col gap-1">
-        {compliance.checks.map((c) => (
+        {(compliance.checks ?? []).map((c) => (
           <li key={`${c.rule}-${c.source}`} className="flex gap-2">
             <span
               aria-hidden
@@ -107,7 +107,7 @@ export function ComplianceList({ compliance }: { compliance?: { status?: string;
               <span className="sr-only">{c.ok ? "Passed: " : "Not met: "}</span>
               {c.rule}{" "}
               <span className="text-xs text-muted-foreground">
-                ({c.detail} {c.source.startsWith("posting:") ? `From the posting: “${c.source.slice(9).trim()}”` : c.source.startsWith("convention:") ? `Convention: ${c.source.slice(11).trim()}` : ""})
+                ({c.detail} {(c.source ?? "").startsWith("posting:") ? `From the posting: “${(c.source ?? "").slice(9).trim()}”` : (c.source ?? "").startsWith("convention:") ? `Convention: ${(c.source ?? "").slice(11).trim()}` : ""})
               </span>
             </span>
           </li>

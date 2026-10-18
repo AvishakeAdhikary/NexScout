@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M7 acceptance journey (PRODUCT_REQUIREMENTS journey 5): prepare a resume, start an
 // application, let NexScout fill the demo site's form, answer the question it couldn't, approve

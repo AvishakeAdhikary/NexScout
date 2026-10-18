@@ -246,7 +246,9 @@ async def test_retry_resumes_failed_step(
     await worker.run_until_idle()
     d = await _run(client, run["id"])
     assert d["run"]["status"] == "failed"
-    assert "FileNotFoundError" in d["run"]["error"]
+    # A bug-type error reaches the user as a plain sentence with a log reference, no internals.
+    assert "Something went wrong in this step" in d["run"]["error"]
+    assert "FileNotFoundError" not in d["run"]["error"]
     missing_dir.mkdir()
     assert (await _control(client, run["id"], "retry")).json()["status"] == "pending"
     await worker.run_until_idle()

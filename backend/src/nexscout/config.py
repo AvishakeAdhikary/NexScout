@@ -70,8 +70,13 @@ class Settings(BaseSettings):
     # Research: read public pages linked from listings (SSRF-safe, robots.txt respected).
     research_fetch_enabled: bool = True
 
-    # Browser automation. The demo application site is mounted at /fixture-site unless disabled
-    # (always off in production); the worker reaches it at `fixture_site_origin`.
+    # Demo data (labelled demo sources and the demo application site at /fixture-site) is for
+    # tests, E2E and developer demos only. It is OFF unless NEXSCOUT_DEMO_DATA=1, so a shipped
+    # install never shows demo listings.
+    demo_data: bool = False
+
+    # Browser automation. The demo site (only with demo data on) is reached by the worker at
+    # `fixture_site_origin`.
     browser_headless: bool = True
     fixture_site_enabled: bool | None = None
     fixture_site_origin: str = "http://127.0.0.1:8000"
@@ -80,6 +85,7 @@ class Settings(BaseSettings):
     # open NexScout at (a public HTTPS address makes chat apps show an "Open" button).
     public_web_url: str = "http://localhost:3000"
     channels_enabled: bool = True
+    secure_cookies: bool | None = None  # None: secure exactly when public_web_url is https
     channel_poll_interval_s: float = Field(default=2.0, gt=0)
 
     # Assisted mode (M12): a visible browser window on this computer where the person solves
@@ -106,13 +112,17 @@ class Settings(BaseSettings):
 
     @property
     def fixture_site_on(self) -> bool:
-        if self.is_production:
+        if not self.demo_data:
             return False
         return True if self.fixture_site_enabled is None else self.fixture_site_enabled
 
     @property
     def cookie_secure(self) -> bool:
-        return self.is_production
+        # Secure cookies need HTTPS. A local install (http://localhost) in production mode must
+        # still be able to sign in, so the default follows the public address.
+        if self.secure_cookies is not None:
+            return self.secure_cookies
+        return self.is_production and self.public_web_url.lower().startswith("https://")
 
 
 @lru_cache(maxsize=1)

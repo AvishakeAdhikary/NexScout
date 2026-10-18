@@ -13,6 +13,8 @@ x-backend: &backend
     NEXSCOUT_MIGRATION_DATABASE_URL: postgresql+psycopg://nexscout_owner:nexscout_owner_dev@postgres:5432/nexscout
     NEXSCOUT_SYSTEM_DATABASE_URL: postgresql+psycopg://nexscout_system:nexscout_system_dev@postgres:5432/nexscout
     NEXSCOUT_STORAGE_DIR: /data/storage
+    # Production: no demo data, no API docs; cookies are secure when the address is https.
+    NEXSCOUT_ENV: production
     NEXSCOUT_MASTER_KEY: ${NEXSCOUT_MASTER_KEY:?NEXSCOUT_MASTER_KEY is required}
     NEXSCOUT_PUBLIC_WEB_URL: ${NEXSCOUT_PUBLIC_WEB_URL:-http://localhost:3000}
   volumes:

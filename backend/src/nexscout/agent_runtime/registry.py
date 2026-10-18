@@ -43,7 +43,7 @@ def tracked(node: str, fn: NodeFn) -> NodeFn:
             await asyncio.shield(ctx.step_finished(step_id, node, "cancelled"))
             raise
         except Exception as exc:
-            await ctx.step_finished(step_id, node, "failed", error=_safe_error(exc))
+            await ctx.step_finished(step_id, node, "failed", error=_safe_error(exc, node))
             raise
         await ctx.step_finished(
             step_id, node, "succeeded", summary={"updated": sorted((update or {}).keys())}
@@ -54,9 +54,11 @@ def tracked(node: str, fn: NodeFn) -> NodeFn:
     return wrapper
 
 
-def _safe_error(exc: BaseException) -> str:
-    """User-facing error text. Never includes secrets or stack traces."""
-    return f"{type(exc).__name__}: {exc}"[:500]
+def _safe_error(exc: BaseException, node: str = "") -> str:
+    """User-facing error text. Never includes secrets, class names or stack traces."""
+    from nexscout.agent_runtime.errors import user_message
+
+    return user_message(exc, where=f"step:{node}")
 
 
 _REGISTRY: dict[str, WorkflowSpec] = {}

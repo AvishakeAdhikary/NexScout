@@ -38,7 +38,7 @@ async def call(
     try:
         resp = await client.post(_url(token, method), json=payload, timeout=wait)
     except httpx.HTTPError as exc:
-        raise ChannelError(f"Telegram unreachable: {type(exc).__name__}") from exc
+        raise ChannelError("Telegram unreachable (network error or timeout).") from exc
     data = await check_response(resp, "Telegram")
     if not data.get("ok", False):
         raise ChannelError(

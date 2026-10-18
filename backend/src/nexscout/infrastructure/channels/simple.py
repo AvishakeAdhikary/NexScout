@@ -59,7 +59,7 @@ class WebhookAdapter:
         try:
             resp = await client.post(secrets["url"], content=body, headers=headers)
         except httpx.HTTPError as exc:
-            raise ChannelError(f"Webhook unreachable: {type(exc).__name__}") from exc
+            raise ChannelError("Webhook unreachable (network error or timeout).") from exc
         await check_response(resp, "Webhook")
         return SendResult(resp.headers.get("X-Request-Id"))
 
@@ -97,7 +97,7 @@ class SlackAdapter:
         try:
             resp = await client.post(secrets["webhook_url"], json={"text": text, "blocks": blocks})
         except httpx.HTTPError as exc:
-            raise ChannelError(f"Slack unreachable: {type(exc).__name__}") from exc
+            raise ChannelError("Slack unreachable (network error or timeout).") from exc
         await check_response(resp, "Slack")
         return SendResult(None)
 

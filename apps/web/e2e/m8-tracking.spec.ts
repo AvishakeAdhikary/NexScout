@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M8 acceptance journey: the assistant routes requests to the same tools as the screens and
 // refuses to submit; an application gets a reminder that shows on the dashboard and as a

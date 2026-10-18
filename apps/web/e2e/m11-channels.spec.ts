@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M11 journey: connect a notification channel (signed webhook), send a test, pause it, and
 // decide an approval from the page a notification links to. Synthetic persona only; no real

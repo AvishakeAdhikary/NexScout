@@ -68,6 +68,14 @@ class NormalizedOpportunity(BaseModel):
     location_city: Short | None = None
     location_region: Short | None = None
     location_country: Short | None = None
+    # ISO 3166-1 alpha-2 codes for every place the posting names (first = primary), the
+    # source's own location text, and the area a remote role is open to (a group key such as
+    # "EU" or "WORLD", or a country code). See domain/geo.py.
+    country_codes: list[Annotated[str, Field(min_length=2, max_length=2)]] = Field(
+        default_factory=list
+    )
+    location_text: Short | None = None
+    remote_scope: Annotated[str | None, Field(default=None, max_length=20)] = None
     remote: Remote = Remote.UNKNOWN
     employment_type: Short | None = None
     seniority: Short | None = None

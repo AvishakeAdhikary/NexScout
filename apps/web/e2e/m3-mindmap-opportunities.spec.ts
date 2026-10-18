@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 const PASSWORD = "correct horse battery staple";
 const CV = path.resolve(__dirname, "../../../backend/tests/fixtures/personas/ada_example_cv.md");

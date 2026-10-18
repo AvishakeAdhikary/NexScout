@@ -236,8 +236,8 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                 meta={
                     "generated": True,
                     "run_id": str(ctx.run_id),
-                    "model": state.get("model", {}).get("name"),
-                    "is_mock": bool(state.get("model", {}).get("is_mock")),
+                    "model": (state.get("model") or {}).get("name"),
+                    "is_mock": bool((state.get("model") or {}).get("is_mock")),
                     "method": PURPOSE,
                     "cited_fact_ids": sorted({i for x in kept for i in x["fact_ids"]}),
                     "sentences": kept,
@@ -253,7 +253,7 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         "result": {
             "status": "drafted",
             "fact_id": str(existing),
-            "model": state.get("model", {}),
+            "model": state.get("model") or {},
             "summary": text,
             "sentences": kept,
             "dropped": state.get("dropped", []),

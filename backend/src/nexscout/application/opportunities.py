@@ -220,8 +220,17 @@ async def _upsert_listing(
         if src.content_hash != digest:
             src.content_hash, src.raw, src.retrieved_at = digest, record, now
             src.source_url = norm.source_url
-            opp.data = norm.model_dump(mode="json")
-            opp.title, opp.normalized_title = norm.title, normalize_title(norm.title)
+            # A posting merged from several sources keeps the data of the source that first
+            # listed it; a later source's edit must not flip its title or details.
+            primary = await session.scalar(
+                select(OpportunitySource.id)
+                .where(OpportunitySource.opportunity_id == opp.id)
+                .order_by(OpportunitySource.id)  # UUIDv7: creation order
+                .limit(1)
+            )
+            if primary is None or primary == src.id:
+                opp.data = norm.model_dump(mode="json")
+                opp.title, opp.normalized_title = norm.title, normalize_title(norm.title)
             summary.updated += 1
         else:
             summary.unchanged += 1

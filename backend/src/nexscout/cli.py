@@ -23,6 +23,10 @@ def _serve(args: argparse.Namespace) -> None:
         proxy_headers=True,
         log_config=None,
         access_log=False,
+        # Keep idle connections open longer than the web proxy's (Node) keep-alive, so the
+        # proxy never reuses a socket the API is closing at the same moment (ECONNRESET → a
+        # spurious 500 for the user).
+        timeout_keep_alive=75,
     )
 
 

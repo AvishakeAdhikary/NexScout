@@ -32,6 +32,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from nexscout.agent_runtime import events, queue
 from nexscout.agent_runtime.channel_loops import ChannelLoops
 from nexscout.agent_runtime.context import RunContext, TokenBudgetExceeded, UncertainOutcome
+from nexscout.agent_runtime.errors import user_message
 from nexscout.agent_runtime.registry import WorkflowSpec, get_workflow
 from nexscout.config import Settings
 from nexscout.domain.state_machines import RUN_MACHINE, RunStatus
@@ -58,7 +59,7 @@ def libpq_url(sqlalchemy_url: str) -> str:
 
 
 class StepBudgetExceeded(Exception):
-    pass
+    user_facing = True
 
 
 @dataclass
@@ -582,8 +583,8 @@ class Worker:
         except UncertainOutcome as exc:
             await self._set_run(run.id, RunStatus.FAILED, event="run_failed", error=str(exc)[:1000])
             await self._finish(task, "failed", str(exc))
-        except TRANSIENT_ERRORS as exc:
-            msg = f"Temporary problem: {type(exc).__name__}"
+        except TRANSIENT_ERRORS:
+            msg = "A temporary problem (a database or network hiccup)"
             if task.attempt < task.max_attempts:
                 delay = queue.backoff_s(task.attempt) + random.uniform(0, 2)  # noqa: S311
                 await self._set_run(
@@ -600,7 +601,7 @@ class Worker:
                 await self._set_run(run.id, RunStatus.FAILED, event="run_failed", error=msg)
                 await self._finish(task, "failed", msg)
         except Exception as exc:  # noqa: BLE001 - any node error fails the run, never the worker
-            msg = f"{type(exc).__name__}: {exc}"[:1000]
+            msg = user_message(exc, where=f"run:{run.kind}")
             log.warning("run_failed", run=str(run.id), error=type(exc).__name__)
             await self._set_run(run.id, RunStatus.FAILED, event="run_failed", error=msg)
             await self._finish(task, "failed", msg)

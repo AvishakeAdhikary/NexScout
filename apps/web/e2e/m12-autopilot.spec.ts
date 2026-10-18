@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M12 journey: turn the autopilot on (consent shown word for word), run it against the labelled
 // demo sources, answer the question it asks instead of guessing, see the saved answer, then stop

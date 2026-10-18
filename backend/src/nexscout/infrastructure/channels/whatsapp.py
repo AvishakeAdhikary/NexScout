@@ -108,7 +108,7 @@ class WhatsAppAdapter:
                 url, json=payload, headers={"Authorization": f"Bearer {secrets['access_token']}"}
             )
         except httpx.HTTPError as exc:
-            raise ChannelError(f"WhatsApp unreachable: {type(exc).__name__}") from exc
+            raise ChannelError("WhatsApp unreachable (network error or timeout).") from exc
         data = await check_response(resp, "WhatsApp")
         msgs = data.get("messages") or [{}]
         return SendResult(str(msgs[0].get("id")) if msgs[0].get("id") else None)

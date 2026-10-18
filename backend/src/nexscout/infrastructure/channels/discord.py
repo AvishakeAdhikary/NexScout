@@ -51,7 +51,7 @@ async def rest(
     try:
         resp = await client.request(method, f"{API}{path}", json=payload, headers=_headers(token))
     except httpx.HTTPError as exc:
-        raise ChannelError(f"Discord unreachable: {type(exc).__name__}") from exc
+        raise ChannelError("Discord unreachable (network error or timeout).") from exc
     return await check_response(resp, "Discord")
 
 
@@ -149,7 +149,7 @@ async def respond_to_interaction(
             json={"type": 7, "data": {"content": text[:1990], "components": []}},
         )
     except httpx.HTTPError as exc:
-        raise ChannelError(f"Discord unreachable: {type(exc).__name__}") from exc
+        raise ChannelError("Discord unreachable (network error or timeout).") from exc
     await check_response(resp, "Discord")
 
 

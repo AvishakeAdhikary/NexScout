@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 
 // M1 acceptance journey: register, create an isolated case, choose a career path,
 // sign out/in, and confirm a second user cannot open the first user's case.
