@@ -107,14 +107,26 @@ function safeJson(text: string): unknown {
   }
 }
 
+/** The browser's IANA time zone, so "due today" means the user's today. */
+function browserTimezone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export const authApi = {
   me: () => api<UserOut>("/auth/me"),
   login: (email: string, password: string) =>
-    api<SessionOut>("/auth/login", { method: "POST", body: { email, password } }),
+    api<SessionOut>("/auth/login", {
+      method: "POST",
+      body: { email, password, timezone: browserTimezone() },
+    }),
   register: (email: string, password: string, display_name: string) =>
     api<SessionOut>("/auth/register", {
       method: "POST",
-      body: { email, password, display_name },
+      body: { email, password, display_name, timezone: browserTimezone() },
     }),
   logout: () => api<void>("/auth/logout", { method: "POST" }),
 };
@@ -261,6 +273,22 @@ export const mindmapApi = {
   resetAll: (caseId: string) => api<void>(`${c(caseId)}/mindmap/overrides`, { method: "DELETE" }),
   compare: (caseId: string, from: number, to: number) =>
     api<SnapshotDiffOut>(`${c(caseId)}/snapshots/compare?from_number=${from}&to_number=${to}`),
+};
+
+export type GeoOut = S["GeoOut"];
+export type SourceTestOut = S["SourceTestOut"];
+export type SourceImportOut = S["SourceImportOut"];
+export const sourcesApi = {
+  list: () => api<SourceOut[]>("/sources"),
+  bulk: (keys: string[], enabled: boolean) =>
+    api<{ changed: number }>("/sources/bulk", { method: "POST", body: { keys, enabled } }),
+  add: (body: S["SourceAddIn"]) => api<S["SourceAddOut"]>("/sources", { method: "POST", body }),
+  remove: (key: string) => api<void>(`/sources/${e(key)}`, { method: "DELETE" }),
+  test: (key: string) => api<SourceTestOut>(`/sources/${e(key)}/test`, { method: "POST" }),
+  importPortals: (content: string) =>
+    api<SourceImportOut>("/sources/import", { method: "POST", body: { content } }),
+  manual: () => api<S["ManualSourceOut"][]>("/sources/manual"),
+  geo: () => api<GeoOut>("/geo"),
 };
 
 export const opportunitiesApi = {

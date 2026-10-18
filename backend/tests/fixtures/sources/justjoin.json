@@ -1,0 +1,344 @@
+{
+ "provider": "justjoin",
+ "entry": {
+  "name": "Just Join IT",
+  "url": "",
+  "config": {
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 100,
+ "responses": {
+  "GET https://justjoin.it/api/candidate-api/offers?from=0&itemsCount=100&orderBy=descending&sortBy=publishedAt&currency=pln&keywordType=any": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "data": [
+     {
+      "guid": "2771c9da-6cce-4446-9ecd-ae8692bb64e1",
+      "slug": "inteca-software-engineer-ai-java--wroclaw-java-94ff7f03",
+      "title": "Software Engineer (AI & Java)",
+      "workplaceType": "remote",
+      "workingTime": "b2b_contract",
+      "experienceLevel": "senior",
+      "category": {
+       "key": "java",
+       "parentKey": null
+      },
+      "city": "Wrocław",
+      "street": "Powstańców Śląskich 9",
+      "latitude": 51.09731650000001,
+      "longitude": 17.0240185,
+      "isRemoteInterview": false,
+      "companyName": "Inteca",
+      "companyLogoThumbUrl": "https://imgproxy.justjoinit.tech/g07hAXopMo0xVTIi4LKpwpAiCUVAYQUYbfa8nf8QTcI/h:200/w:200/plain/https://public.justjoin.it/companies/logos/original/0949f56f7f91a9ceefb51c6fcfac57b2ca1b6c99.png",
+      "publishedAt": "2026-10-19T06:40:05.815Z",
+      "isOpenToHireUkrainians": false,
+      "locations": [
+       {
+        "city": "Wrocław",
+        "street": "Powstańców Śląskich 9",
+        "latitude": 51.09731650000001,
+        "longitude": 17.0240185,
+        "slug": "inteca-software-engineer-ai-java--wroclaw-java-94ff7f03"
+       },
+       {
+        "city": "Kraków",
+        "street": "Powstańców Śląskich 9, CitySpace",
+        "latitude": 50.06465009999999,
+        "longitude": 19.9449799,
+        "slug": "inteca-software-engineer-ai-java--krakow-java-35592c3a"
+       },
+       {
+        "city": "Warszawa",
+        "street": "Powstańców Śląskich 9, CitySpace",
+        "latitude": 52.2296756,
+        "longitude": 21.0122287,
+        "slug": "inteca-software-engineer-ai-java--warszawa-java-6e5c94c4"
+       }
+      ],
+      "employmentTypes": [
+       {
+        "from": 20000.0,
+        "fromPerUnit": 20000.0,
+        "to": 26000.0,
+        "toPerUnit": 26000.0,
+        "currency": "PLN",
+        "currencySource": "original",
+        "type": "b2b",
+        "unit": "Month",
+        "gross": false
+       },
+       {
+        "from": 5113.0,
+        "fromPerUnit": 5112.9972389815,
+        "to": 6647.0,
+        "toPerUnit": 6646.89641067595,
+        "currency": "USD",
+        "currencySource": "conversion",
+        "type": "b2b",
+        "unit": "Month",
+        "gross": false
+       },
+       {
+        "from": 4560.0,
+        "fromPerUnit": 4560.4834112416,
+        "to": 5929.0,
+        "toPerUnit": 5928.62843461408,
+        "currency": "EUR",
+        "currencySource": "conversion",
+        "type": "b2b",
+        "unit": "Month",
+        "gross": false
+       }
+      ],
+      "requiredSkills": [
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "Java",
+        "level": 5,
+        "group": null
+       },
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "Spring Boot",
+        "level": 5,
+        "group": null
+       },
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "Keycloak",
+        "level": 1,
+        "group": null
+       }
+      ],
+      "niceToHaveSkills": [],
+      "languages": [
+       {
+        "code": "pl",
+        "level": "C2"
+       },
+       {
+        "code": "en",
+        "level": "C1"
+       }
+      ],
+      "isPromoted": false,
+      "isSuperOffer": false,
+      "applyMethod": "external",
+      "applyUrl": "https://inteca.recruitify.ai/job/de1fa68f-5523-459c-8785-aabd62ea5fad?sourceId=37",
+      "lastPublishedAt": "2026-10-01T11:26:25.277133Z",
+      "expiredAt": "2026-10-31T11:26:25.277133Z",
+      "companyProfileSlug": null,
+      "hybridWorkSchedule": null
+     },
+     {
+      "guid": "4a73c947-0fee-4ac6-b574-bb65bf16c656",
+      "slug": "trimlogic-sp-z-o-o-senior-project-manager-it-warszawa-pm",
+      "title": "Senior Project Manager IT",
+      "workplaceType": "hybrid",
+      "workingTime": "full_time",
+      "experienceLevel": "senior",
+      "category": {
+       "key": "pm",
+       "parentKey": null
+      },
+      "city": "Warszawa",
+      "street": "Wspólna 70",
+      "latitude": 52.23584,
+      "longitude": 21.011959,
+      "isRemoteInterview": false,
+      "companyName": "Trimlogic Sp.z.o.o",
+      "companyLogoThumbUrl": "https://imgproxy.justjoinit.tech/gpzUktNRpi4jKdzLVSUUwthebKqSjZ-0yC1R4C7ulKM/h:200/w:200/plain/https://public.justjoin.it/companies/logos/original/4be55ddaede508b7852a3fa08b31400c04727ead.png",
+      "publishedAt": "2026-10-19T06:00:05.286Z",
+      "isOpenToHireUkrainians": false,
+      "locations": [
+       {
+        "city": "Warszawa",
+        "street": "Wspólna 70",
+        "latitude": 52.23584,
+        "longitude": 21.011959,
+        "slug": "trimlogic-sp-z-o-o-senior-project-manager-it-warszawa-pm"
+       }
+      ],
+      "employmentTypes": [
+       {
+        "from": 15000.0,
+        "fromPerUnit": 15000.0,
+        "to": 28000.0,
+        "toPerUnit": 28000.0,
+        "currency": "PLN",
+        "currencySource": "original",
+        "type": "b2b",
+        "unit": "Month",
+        "gross": false
+       },
+       {
+        "from": 3829.0,
+        "fromPerUnit": 3828.777088597905,
+        "to": 7147.0,
+        "toPerUnit": 7147.050565382756,
+        "currency": "USD",
+        "currencySource": "conversion",
+        "type": "b2b",
+        "unit": "Month",
+        "gross": false
+       },
+       {
+        "from": 3424.0,
+        "fromPerUnit": 3424.188467333235,
+        "to": 6392.0,
+        "toPerUnit": 6391.818472355372,
+        "currency": "EUR",
+        "currencySource": "conversion",
+        "type": "b2b",
+        "unit": "Month",
+        "gross": false
+       }
+      ],
+      "requiredSkills": [
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "PM",
+        "level": 4,
+        "group": null
+       },
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "Jira",
+        "level": 4,
+        "group": null
+       },
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "Microsoft Office",
+        "level": 4,
+        "group": null
+       }
+      ],
+      "niceToHaveSkills": [],
+      "languages": [],
+      "isPromoted": false,
+      "isSuperOffer": false,
+      "applyMethod": "external",
+      "applyUrl": "https://trimlogic.traffit.com/public/form/a/1070f5415a876edd4701ae05d53a4a376568673d?source=justjoin.it",
+      "lastPublishedAt": "2026-10-14T08:47:05.286742Z",
+      "expiredAt": "2026-11-13T08:47:05.286742Z",
+      "companyProfileSlug": null,
+      "hybridWorkSchedule": null
+     },
+     {
+      "guid": "226f3fab-a690-4f00-855b-dd2a8891d402",
+      "slug": "cloud-technologies-s-a--data-solutions-engineer-warszawa-data-dea93f0c",
+      "title": "Data Solutions Engineer",
+      "workplaceType": "hybrid",
+      "workingTime": "b2b_contract",
+      "experienceLevel": "junior",
+      "category": {
+       "key": "data",
+       "parentKey": null
+      },
+      "city": "Warszawa",
+      "street": "Dobra 40",
+      "latitude": 52.2410025,
+      "longitude": 21.0263486,
+      "isRemoteInterview": false,
+      "companyName": "Cloud Technologies S.A.",
+      "companyLogoThumbUrl": "https://imgproxy.justjoinit.tech/dGvWf5IwuIAAH3gEfwUO_O4x1njScrDL-jggpdTkQ7E/h:200/w:200/plain/https://public.justjoin.it/companies/logos/original/5dc371c7013dbf03546eed24cde6ad933beb6395.png",
+      "publishedAt": "2026-10-19T06:00:03.588Z",
+      "isOpenToHireUkrainians": false,
+      "locations": [
+       {
+        "city": "Warszawa",
+        "street": "Dobra 40",
+        "latitude": 52.2410025,
+        "longitude": 21.0263486,
+        "slug": "cloud-technologies-s-a--data-solutions-engineer-warszawa-data-dea93f0c"
+       }
+      ],
+      "employmentTypes": [
+       {
+        "from": null,
+        "fromPerUnit": null,
+        "to": null,
+        "toPerUnit": null,
+        "currency": "CHF",
+        "currencySource": "conversion",
+        "type": "b2b",
+        "unit": "month",
+        "gross": false
+       },
+       {
+        "from": null,
+        "fromPerUnit": null,
+        "to": null,
+        "toPerUnit": null,
+        "currency": "EUR",
+        "currencySource": "conversion",
+        "type": "b2b",
+        "unit": "month",
+        "gross": false
+       },
+       {
+        "from": null,
+        "fromPerUnit": null,
+        "to": null,
+        "toPerUnit": null,
+        "currency": "GBP",
+        "currencySource": "conversion",
+        "type": "b2b",
+        "unit": "month",
+        "gross": false
+       }
+      ],
+      "requiredSkills": [
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "SQL",
+        "level": 3,
+        "group": null
+       },
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "Python",
+        "level": 2,
+        "group": null
+       },
+       {
+        "skillId": "00000000-0000-0000-0000-000000000000",
+        "name": "Pandas",
+        "level": 2,
+        "group": null
+       }
+      ],
+      "niceToHaveSkills": [],
+      "languages": [],
+      "isPromoted": false,
+      "isSuperOffer": false,
+      "applyMethod": "external",
+      "applyUrl": "https://ct.elementapp.ai/application/v2/1ee3f6aa-2f8b-401a-913f-adc271c411f0/8790729b-f8f4-4e60-9758-0dc480f4336d?source=3641903a-b08e-463d-bfac-96c0c04fd91d",
+      "lastPublishedAt": "2026-09-30T13:27:11.055138Z",
+      "expiredAt": "2026-10-30T13:27:11.055138Z",
+      "companyProfileSlug": null,
+      "hybridWorkSchedule": {
+       "officeDays": 4,
+       "remoteDays": 1
+      }
+     }
+    ],
+    "meta": {
+     "from": 0,
+     "totalItems": 10000,
+     "prev": {
+      "cursor": null,
+      "itemsCount": 100
+     },
+     "next": {
+      "cursor": 100,
+      "itemsCount": 100
+     }
+    }
+   }
+  }
+ }
+}

@@ -1937,6 +1937,57 @@
         "title": "ControlIn",
         "type": "object"
       },
+      "CountryGroupOut": {
+        "additionalProperties": false,
+        "properties": {
+          "codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Codes",
+            "type": "array"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "codes"
+        ],
+        "title": "CountryGroupOut",
+        "type": "object"
+      },
+      "CountryOut": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "continent": {
+            "title": "Continent",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "continent"
+        ],
+        "title": "CountryOut",
+        "type": "object"
+      },
       "DecisionIn": {
         "additionalProperties": false,
         "properties": {
@@ -3135,6 +3186,31 @@
         "title": "GeneratedDocumentOut",
         "type": "object"
       },
+      "GeoOut": {
+        "additionalProperties": false,
+        "properties": {
+          "countries": {
+            "items": {
+              "$ref": "#/components/schemas/CountryOut"
+            },
+            "title": "Countries",
+            "type": "array"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/CountryGroupOut"
+            },
+            "title": "Groups",
+            "type": "array"
+          }
+        },
+        "required": [
+          "countries",
+          "groups"
+        ],
+        "title": "GeoOut",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -3251,6 +3327,18 @@
             "maxLength": 256,
             "title": "Password",
             "type": "string"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
           }
         },
         "required": [
@@ -3258,6 +3346,30 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "ManualSourceOut": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "url",
+          "reason"
+        ],
+        "title": "ManualSourceOut",
         "type": "object"
       },
       "MatchGapOut": {
@@ -3862,7 +3974,7 @@
                 "items": {
                   "type": "string"
                 },
-                "maxItems": 40,
+                "maxItems": 60,
                 "type": "array"
               },
               {
@@ -3870,6 +3982,21 @@
               }
             ],
             "title": "Countries"
+          },
+          "countries_exclude": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 60,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Countries Exclude"
           },
           "daily_submit_cap": {
             "anyOf": [
@@ -4056,6 +4183,13 @@
             "title": "Countries",
             "type": "array"
           },
+          "countries_exclude": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Countries Exclude",
+            "type": "array"
+          },
           "daily_submit_cap": {
             "title": "Daily Submit Cap",
             "type": "integer"
@@ -4176,6 +4310,7 @@
           "daily_submit_cap",
           "per_org_cap",
           "countries",
+          "countries_exclude",
           "kinds",
           "exclude_orgs",
           "doc_types",
@@ -4216,6 +4351,17 @@
             ],
             "title": "Application Horizon Days"
           },
+          "budget_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Currency"
+          },
           "cities": {
             "items": {
               "maxLength": 120,
@@ -4234,6 +4380,16 @@
             },
             "maxItems": 50,
             "title": "Countries",
+            "type": "array"
+          },
+          "countries_exclude": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Countries Exclude",
             "type": "array"
           },
           "disciplines": {
@@ -4276,9 +4432,29 @@
             "title": "Employment Types",
             "type": "array"
           },
+          "exclude_keywords": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Exclude Keywords",
+            "type": "array"
+          },
           "experience_mode": {
             "$ref": "#/components/schemas/ExperienceMode",
             "default": "strict"
+          },
+          "funding": {
+            "default": "any",
+            "enum": [
+              "required",
+              "preferred",
+              "any"
+            ],
+            "title": "Funding",
+            "type": "string"
           },
           "funding_required": {
             "anyOf": [
@@ -4310,6 +4486,29 @@
             "maxItems": 50,
             "title": "Job Titles",
             "type": "array"
+          },
+          "languages": {
+            "items": {
+              "maxLength": 3,
+              "minLength": 2,
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Languages",
+            "type": "array"
+          },
+          "max_upfront_cost": {
+            "anyOf": [
+              {
+                "maximum": 100000000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Upfront Cost"
           },
           "max_years_experience": {
             "anyOf": [
@@ -4422,6 +4621,16 @@
               }
             ],
             "title": "Salary Min"
+          },
+          "search_keywords": {
+            "items": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Search Keywords",
+            "type": "array"
           },
           "seniority": {
             "items": {
@@ -4828,6 +5037,18 @@
             "maxLength": 256,
             "title": "Password",
             "type": "string"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
           }
         },
         "required": [
@@ -5616,6 +5837,102 @@
         "title": "SocialProfileOut",
         "type": "object"
       },
+      "SourceAddIn": {
+        "additionalProperties": false,
+        "properties": {
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Countries",
+            "type": "array"
+          },
+          "kinds": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 2,
+            "title": "Kinds",
+            "type": "array"
+          },
+          "name": {
+            "default": "",
+            "maxLength": 200,
+            "title": "Name",
+            "type": "string"
+          },
+          "url": {
+            "maxLength": 2048,
+            "minLength": 8,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "title": "SourceAddIn",
+        "type": "object"
+      },
+      "SourceAddOut": {
+        "additionalProperties": false,
+        "properties": {
+          "already_in_catalog": {
+            "title": "Already In Catalog",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "postings": {
+            "title": "Postings",
+            "type": "integer"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "provider",
+          "name",
+          "postings",
+          "already_in_catalog"
+        ],
+        "title": "SourceAddOut",
+        "type": "object"
+      },
+      "SourceBulkIn": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "keys": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Keys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "keys",
+          "enabled"
+        ],
+        "title": "SourceBulkIn",
+        "type": "object"
+      },
       "SourceConfigIn": {
         "additionalProperties": false,
         "properties": {
@@ -5635,12 +5952,76 @@
         "title": "SourceConfigIn",
         "type": "object"
       },
+      "SourceImportIn": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "maxLength": 2000000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "SourceImportIn",
+        "type": "object"
+      },
+      "SourceImportOut": {
+        "additionalProperties": false,
+        "properties": {
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Added",
+            "type": "array"
+          },
+          "enabled_catalog": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Enabled Catalog",
+            "type": "array"
+          },
+          "unsupported": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Unsupported",
+            "type": "array"
+          }
+        },
+        "required": [
+          "enabled_catalog",
+          "added",
+          "unsupported"
+        ],
+        "title": "SourceImportOut",
+        "type": "object"
+      },
       "SourceOut": {
         "additionalProperties": false,
         "properties": {
           "auth": {
             "title": "Auth",
             "type": "string"
+          },
+          "category": {
+            "default": "",
+            "title": "Category",
+            "type": "string"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Countries",
+            "type": "array"
           },
           "enabled": {
             "title": "Enabled",
@@ -5665,6 +6046,51 @@
             "title": "Kinds",
             "type": "array"
           },
+          "last_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Count"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_fetched_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Fetched At"
+          },
+          "last_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Status"
+          },
           "limitations": {
             "items": {
               "type": "string"
@@ -5676,8 +6102,18 @@
             "title": "Name",
             "type": "string"
           },
+          "origin": {
+            "default": "demo",
+            "title": "Origin",
+            "type": "string"
+          },
           "pagination": {
             "title": "Pagination",
+            "type": "string"
+          },
+          "provider": {
+            "default": "",
+            "title": "Provider",
             "type": "string"
           },
           "rate_limit": {
@@ -5691,6 +6127,11 @@
           },
           "terms": {
             "title": "Terms",
+            "type": "string"
+          },
+          "url": {
+            "default": "",
+            "title": "Url",
             "type": "string"
           }
         },
@@ -5709,6 +6150,45 @@
           "limitations"
         ],
         "title": "SourceOut",
+        "type": "object"
+      },
+      "SourceTestOut": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "postings": {
+            "title": "Postings",
+            "type": "integer"
+          },
+          "sample": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sample",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ok",
+          "error",
+          "postings",
+          "sample"
+        ],
+        "title": "SourceTestOut",
         "type": "object"
       },
       "StatusIn": {
@@ -6097,12 +6577,17 @@
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
           }
         },
         "required": [
           "id",
           "email",
-          "display_name"
+          "display_name",
+          "timezone"
         ],
         "title": "UserOut",
         "type": "object"
@@ -10920,6 +11405,28 @@
         ]
       }
     },
+    "/api/v1/geo": {
+      "get": {
+        "description": "Every country (ISO 3166-1) and the groups people pick from (EU, Nordics, \u2026).",
+        "operationId": "geo_data_api_v1_geo_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Geo Data",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
     "/api/v1/me/delete": {
       "post": {
         "operationId": "delete_account_api_v1_me_delete_post",
@@ -11612,9 +12119,196 @@
         "tags": [
           "opportunities"
         ]
+      },
+      "post": {
+        "description": "Add a source by address: a company's careers board, a job board, a feed, or a vacancies\npage with JobPosting data. NexScout checks it can read it before saving.",
+        "operationId": "add_source_api_v1_sources_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceAddIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceAddOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Source",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/sources/bulk": {
+      "post": {
+        "description": "Turn many sources on or off at once (e.g. every Finnish source).",
+        "operationId": "bulk_enable_api_v1_sources_bulk_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceBulkIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Bulk Enable Api V1 Sources Bulk Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Bulk Enable",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/sources/import": {
+      "post": {
+        "description": "Import a career-ops portals.yml.",
+        "operationId": "import_sources_api_v1_sources_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceImportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceImportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Sources",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/sources/manual": {
+      "get": {
+        "description": "Boards NexScout doesn't automate, and why (search those yourself).",
+        "operationId": "manual_sources_api_v1_sources_manual_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManualSourceOut"
+                  },
+                  "title": "Response Manual Sources Api V1 Sources Manual Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Manual Sources",
+        "tags": [
+          "opportunities"
+        ]
       }
     },
     "/api/v1/sources/{source_key}": {
+      "delete": {
+        "operationId": "delete_source_api_v1_sources__source_key__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_key",
+            "required": true,
+            "schema": {
+              "title": "Source Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Source",
+        "tags": [
+          "opportunities"
+        ]
+      },
       "put": {
         "operationId": "configure_source_api_v1_sources__source_key__put",
         "parameters": [
@@ -11661,6 +12355,48 @@
           }
         },
         "summary": "Configure Source",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/sources/{source_key}/test": {
+      "post": {
+        "operationId": "test_source_api_v1_sources__source_key__test_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_key",
+            "required": true,
+            "schema": {
+              "title": "Source Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceTestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Test Source",
         "tags": [
           "opportunities"
         ]

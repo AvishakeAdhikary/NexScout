@@ -80,6 +80,25 @@ opportunity links.
 - The worker's system role may only SELECT policies and items to find work; all changes are made
   in the owner's tenant session.
 
+### M15 Real sources, countries, budget (✅ migrations 0012–0013, ADR-0015/0016)
+- **custom_sources** (owned + RLS): key (`custom:<provider>:<slug>`), provider, name, url,
+  config JSONB (provider settings such as slug or feed URL), countries, kinds, created_at.
+  Unique per (owner, key). At most 300 per user.
+- **source_configs** gains health: last_status (`ok`/`error`), last_error (user-safe text),
+  last_count, last_fetched_at.
+- **fx_rates** (catalog, no owner): currency (PK), per_eur, as_of. ECB daily reference rates
+  written by the worker's system role; the app role may only read them.
+- **autopilot_policies** gains countries_exclude (JSONB, ISO codes or group keys).
+- **users** gains timezone (IANA name reported by the browser at sign-in, default UTC). The
+  worker's system role may read only `users(id, timezone)`, so date-only reminders fall due on
+  the user's own calendar day.
+- Preferences (`case_preferences` JSON) gain countries_exclude, funding
+  (`required`/`preferred`/`any`), languages (ISO 639-1), max_upfront_cost and budget_currency,
+  search_keywords and exclude_keywords. Countries are stored as ISO 3166-1 alpha-2 codes or
+  group keys (`EU`, `NORDICS`, …).
+- The opportunity payload (`opportunities.data`) gains country_codes, location_text and
+  remote_scope.
+
 ## Migration policy
 - Forward-only in production. Each revision is tested by upgrading from the previous head with
   representative data (`tests/integration/test_migrations.py`).

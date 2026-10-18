@@ -1,0 +1,190 @@
+{
+ "provider": "solidjobs",
+ "entry": {
+  "name": "SolidJobs",
+  "url": "",
+  "config": {
+   "division": "it"
+  }
+ },
+ "live_jobs": 500,
+ "responses": {
+  "GET https://solid.jobs/public-api/offers/it?campaign=nexscout": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "jobs": [
+     {
+      "jobOfferKey": "a6b00eeb-d5d4-4a5a-a0a4-94930625494d",
+      "title": "Senior AI Forward Deployed Software Engineer",
+      "division": "IT",
+      "category": "Developer",
+      "subCategory": "Python",
+      "company": "ITFS",
+      "companyLogoUrl": "https://cdn.solid.jobs/companies/logos/341ccccdb6ad4b22a597191f5ccb5d6c.png",
+      "salary": {
+       "from": 50400.0,
+       "to": 67200.0,
+       "currency": "PLN",
+       "period": "Month",
+       "employmentType": "B2B"
+      },
+      "contractTime": "full_time",
+      "locations": [
+       "Gdynia"
+      ],
+      "benefits": [
+       "Pakiet medyczny",
+       "Pakiet sportowy"
+      ],
+      "isRemote": true,
+      "isHybrid": false,
+      "url": "https://solid.jobs/o/jwoa3ty3/nexscout",
+      "experienceLevel": "Senior",
+      "skills": [
+       {
+        "level": "Expert",
+        "name": "Python"
+       },
+       {
+        "level": "Expert",
+        "name": "Node.js"
+       },
+       {
+        "level": "Expert",
+        "name": "Java"
+       }
+      ],
+      "languages": [
+       {
+        "level": "Expert",
+        "name": "Polski"
+       },
+       {
+        "level": "Advanced",
+        "name": "Angielski"
+       }
+      ],
+      "description": "<div class=\"well job - description\"><p><strong>Czym będziesz się zajmować?</strong><br><br><p><strong>Miejsce pracy:</strong> Praca zdalna (Polska), podróże służbowe do 30% (gł. Europa/UK)</p><p><strong>Start:</strong> ASAP (listopad 2026)</p><p><strong>Forma współpracy:</strong> B2B z ITFS</p><p><strong>Stawka:</strong> do 400 PLN/h + VAT</p><p><strong>Proces rekrutacyjny:</strong> Krótka rozmowa telefoniczna z rekruterem ITFS → rozmowa rekrutacyjna → 2 rundy techniczne z Klientem → decyzja</p><span>ZAKRES OBOWIĄZKÓW</span><ul><li>Projektowanie i wdrażanie produkcyjnych rozwiązań AI end-to-end: backend, orkiestracja danych, potoki LLM i UI.</li><li>Kluczowe decyzje architektoniczne i dbanie o skalowalność.</li><li>Warsztaty z zespołami klienta (do 30% wyjazdów): identyfikacja potoków wartości, analiza problemów biznesowych.</li><li>Budowa full-stack: API (REST/GraphQL), orkiestracja potoków, integracje z bazami wektorowymi, LangChain, Semantic Kernel, komponenty React/Angular.</li><li>Integracja z systemami legacy i wdrożenia w dynamicznym środowisku.</li><li>Tworzenie reusable resources: biblioteki, SDK, szablony promptów, dokumentacja.</li><li>Przekazywanie wniosków do zespołów produktowych, współtworzenie rozwoju platformy.</li><li>Diagnoza systemów rozproszonych, optymalizacja opóźnień, monitoring i obserwowalność.</li><li>Wdrażanie i utrzymanie w chmurze (AWS, Azure, GCP) z CI/CD, konteneryzacją i IaC.</li><li>Liderowanie wdrożeniom technicznym i budowanie zaufania z architektami, PM i zespołami klienta.</li></ul><br><br><strong>Kogo poszukujemy?</strong><br><br><span>WYMAGANIA</span><ul><li>Min. <strong>8 lat doświadczenia w inżynierii oprogramowania</strong>, </li><li>Min. <strong>2 lata doświadczenia w rolach bezpośrednio współpracujących z klientem (customer-facing / embedded)</strong>,</li><li>Praktyczne doświadczenie w projektowaniu i wdrażaniu oprogramowania AI-native oraz integrowaniu sztucznej inteligencji w procesy biznesowe i decyzyjne,</li><li>Biegła znajomość technologii backendowych (<strong>Python</strong>, <strong>Node.js</strong>, <strong>Java</strong>) oraz frontendowych (<strong>React</strong>, <strong>Angular</strong>),</li><li>Praktyczna znajomość narzędzi i zagadnień z obszaru <strong>LLM</strong>, w tym <strong>LangChain</strong>, <strong>Semantic Kernel</strong>, prompt chaining, vector search oraz zarządzania kontekstem,</li><li>Doskonała znajomość architektury systemów, projektowania <strong>REST/GraphQL API</strong> oraz diagnozowania i optymalizacji wydajności systemów rozproszonych,</li><li>Doświadczenie w obszarze <strong>DevOps</strong> oraz wdrażaniu rozwiązań na platformach chmurowych (<strong>AWS</strong>, <strong><em>Azure</em></strong> lub <strong>GCP</strong>) przy użyciu <strong><em>CI/CD</em></strong>, kontenerów i <strong>IaC</strong>,</li><li>Gotowość do wyjazdów służbowych do <strong>30% czasu pracy</strong>,</li><li>Język angielski na poziomie <strong>biegłym (min. C1)</strong> w mowie i pismie.</li></ul><br><br><strong>Czego wymagamy?</strong><br><br><span>8 lat doświadczenia na podobnym stanowisku</span><br><span>Znajomości:</span><ul><li>Python</li><li>Node.js</li><li>Java</li><li>React</li><li>Angular</li><li>REST</li><li>GraphQL</li><li>LLM</li><li>LangChain</li><li>Inżynieria promptów</li><li>DevOps</li><li>CI/CD</li><li>IaC</li></ul><span>Języki:</span><ul><li>Polski</li><li>Angielski</li></ul><br><br><strong>Jakie warunki i benefity otrzymasz?</strong><ul><li>50.4k–67.2k PLN netto/m (B2B)</li><li>B2B - Elastyczne godziny pracy (100%)</li><li>Praca zdalna: W całości</li><li>Pakiet medyczny, Pakiet sportowy</li></ul><br><br><strong>Kim jesteśmy?</strong><br>ITFS jest firmą consultingową z Trójmiasta, posiadającą także oddział w Warszawie. Zajmujemy się przede wszystkim rekrutacją specjalistów IT i tworzeniem projektowych Software House dla naszych Klientów z Polski oraz Europy Zachodniej.</p></div>",
+      "validFrom": "2026-10-16T16:13:59.6695013+02:00",
+      "validTo": "2026-11-16T16:13:59.6695013+02:00",
+      "updatedAt": "2026-10-16T16:13:55.1642823+02:00"
+     },
+     {
+      "jobOfferKey": "c92d568b-07c7-4b01-abe2-53d0c67335f4",
+      "title": "Senior PHP Developer (Yii, Symfony)",
+      "division": "IT",
+      "category": "Developer",
+      "subCategory": "PHP",
+      "company": "Lumicode (Grupa Pentacomp)",
+      "companyLogoUrl": "https://cdn.solid.jobs/companies/logos/2893298909f448b290c1ce78aa527691",
+      "salary": {
+       "from": 15100.0,
+       "to": 16800.0,
+       "currency": "PLN",
+       "period": "Month",
+       "employmentType": "B2B"
+      },
+      "contractTime": "full_time",
+      "locations": [
+       "Warszawa"
+      ],
+      "benefits": [
+       "Pakiet medyczny",
+       "Pakiet sportowy"
+      ],
+      "isRemote": true,
+      "isHybrid": false,
+      "url": "https://solid.jobs/o/ef0pv7uh/nexscout",
+      "experienceLevel": "Senior",
+      "skills": [
+       {
+        "level": "Advanced",
+        "name": "PHP"
+       },
+       {
+        "level": "Advanced",
+        "name": "Git"
+       },
+       {
+        "level": "Advanced",
+        "name": "WCAG"
+       }
+      ],
+      "languages": [
+       {
+        "level": "Expert",
+        "name": "Polski"
+       }
+      ],
+      "description": "<div class=\"well job - description\"><p><strong>Czym będziesz się zajmować?</strong><br><br><span>Kim jesteśmy</span><p><em>Lumicode Sp. z o.o. należy do Grupy Pentacomp</em>, która jest producentem rozwiązań informatycznych i dostawcą profesjonalnych usług IT dla dużych przedsiębiorstw i sektora publicznego.</p><p>Jako <em>Pentacomp</em> tworzymy rozwiązania IT łączące innowacyjność z latami doświadczeń - a ich mamy całkiem sporo. Istniejemy na rynku prawie 30 lat i możemy pochwalić się wieloma zrealizowanymi projektami.</p><p>Aktualnie poszukujemy do projektu <strong>Senior PHP Developer</strong></p><ul><li><strong>Praca zdalna;</strong></li><li>Stawka do <strong>100 pln/h netto + VAT B2B</strong>;</li><li>Skorzystanie z karty sportowej oraz możliwość skorzystania z prywatnej opieki zdrowotnej;</li><li>Praca od zaraz.</li></ul><span>Zakres obowiązków:</span><ul><li>Projektowanie, rozwój i utrzymanie aplikacji webowych z wykorzystaniem <strong>PHP, Symfony, Yii2 oraz API Platform</strong>.</li><li>Implementacja nowych funkcjonalności oraz rozwój istniejących rozwiązań.</li><li>Projektowanie, tworzenie i integracja usług <strong>REST API</strong>.</li><li>Implementacja i optymalizacja mechanizmów wyszukiwania opartych na <strong>Elasticsearch</strong>.</li><li>Tworzenie i utrzymywanie testów jednostkowych oraz automatycznych z wykorzystaniem <strong>PHPUnit i Behat</strong>.</li><li>Praca ze środowiskami kontenerowymi <strong>Docker i Docker Compose</strong>.</li><li>Rozwijanie i utrzymywanie procesów <strong>GitLab CI/CD</strong>, w tym automatyzacja testów i analizy jakości kodu.</li></ul><br><br><strong>Kogo poszukujemy?</strong><br><br><ul><li><strong>Minimum 8 lat doświadczenia w programowaniu w PHP 7+</strong>.</li><li><strong>Doświadczenia z Symfony</strong>.</li><li><strong>Doświadczenia z Yii2</strong>.</li><li><strong>Doświadczenia w tworzeniu testów jednostkowych</strong>, preferowany PHPUnit.</li><li><strong>Doświadczenia z GitLab CI/CD</strong> i narzędziami analizy jakości kodu.</li><li><strong>Doświadczenia z WCAG</strong>.</li><li>Praktyczna znajomość <strong>RabbitMQ, Elasticsearch oraz Behat</strong>.</li><li>Dobra znajomość <strong>JavaScript, SQL, REST API i Git</strong>.</li></ul><br><br><strong>Czego wymagamy?</strong><br><br><span>8 lat doświadczenia na podobnym stanowisku</span><br><span>Znajomości:</span><ul><li>PHP</li><li>Git</li><li>WCAG</li><li>Yii</li><li>Symfony</li><li>PHPUnit</li></ul><span>Języki:</span><ul><li>Polski</li></ul><br><br><strong>Jakie warunki i benefity otrzymasz?</strong><ul><li>15.1k–16.8k PLN netto/m (B2B)</li><li>B2B - Elastyczne godziny pracy (100%)</li><li>Praca zdalna: W całości</li><li>Pakiet medyczny, Pakiet sportowy</li></ul><br><br><strong>Kim jesteśmy?</strong><br>Lumicode Sp. z o.o. należy do Grupy Pentacomp, która jest producentem rozwiązań informatycznych i dostawcą profesjonalnych usług IT dla dużych przedsiębiorstw i sektora publicznego.\n\nJako Pentacomp tworzymy rozwiązania IT łączące innowacyjność z latami doświadczeń - a ich mamy całkiem sporo. Istniejemy na rynku prawie 30 lat i możemy pochwalić się wieloma zrealizowanymi projektami.</p></div>",
+      "validFrom": "2026-10-16T14:37:01.6475718+02:00",
+      "validTo": "2026-11-16T14:37:01.6475718+02:00",
+      "updatedAt": "2026-10-16T14:00:14.8099156+02:00"
+     },
+     {
+      "jobOfferKey": "c211ac38-327e-49fa-a54c-a95dd2f5041d",
+      "title": "Manualny Tester / Testerka Aplikacji Internetowych",
+      "division": "IT",
+      "category": "Tester",
+      "subCategory": "ManualTester",
+      "company": "BTNET",
+      "companyLogoUrl": "https://cdn.solid.jobs/companies/logos/6580aaa07799431c9fed69510b603e02.png",
+      "salary": {
+       "from": 7000.0,
+       "to": 11000.0,
+       "currency": "PLN",
+       "period": "Month",
+       "employmentType": "B2B"
+      },
+      "contractTime": "full_time",
+      "locations": [
+       "Poznań"
+      ],
+      "benefits": [
+       "Budżet szkoleniowy",
+       "Pakiet medyczny",
+       "Pakiet sportowy"
+      ],
+      "isRemote": true,
+      "isHybrid": true,
+      "url": "https://solid.jobs/o/mu996yqm/nexscout",
+      "experienceLevel": "Regular",
+      "skills": [
+       {
+        "level": "Advanced",
+        "name": "BrowserStack"
+       },
+       {
+        "level": "Advanced",
+        "name": "CI/CD"
+       },
+       {
+        "level": "Advanced",
+        "name": "GitLab"
+       }
+      ],
+      "languages": [
+       {
+        "level": "Expert",
+        "name": "Polski"
+       },
+       {
+        "level": "Advanced",
+        "name": "Angielski"
+       }
+      ],
+      "description": "<div class=\"well job - description\"><p><strong>Czym będziesz się zajmować?</strong><br><br><p>Dołącz do nas jako Tester aplikacji i gier WEBi odgrywaj kluczową rolę w projekcie. W naszej pracy wykorzystujemy szereg nowoczesnych technologii, w tym NextJS, NestJS, React, Typescript, PixiJs, PHP, Laravel, Lumen, BigQuery, CloudSQL, MemoryStore Redis, Appengine, CloudRun, Gitlab CI/CD, Jira, Python, Selenium, Sentry oraz Browserstack, korzystając z infrastruktury Google Cloud Platform.</p><br><br><strong>Kogo poszukujemy?</strong><br><br><ul><li>Zaawansowaną znajomością SQL i Redis, umożliwiającą efektywną analizę i aktualizację danych. </li><li>Doświadczeniem w testowaniu API oraz interfejsów użytkownika.</li><li> Umiejętnościami w automatyzacji testów, z otwartością na wybór odpowiedniej technologii. </li><li>Skupieniem na detalach UI/UX oraz zdolnością do identyfikacji potencjalnych błędów w kodzie. </li><li>Precyzyjnością w raportowaniu błędów, wraz z diagnozowaniem ich przyczyn i proponowaniem rozwiązań</li></ul><br><br><strong>Czego wymagamy?</strong><br><br><span>4 lata doświadczenia na podobnym stanowisku</span><br><span>Znajomości:</span><ul><li>BrowserStack</li><li>CI/CD</li><li>GitLab</li><li>Jira</li><li>NestJS</li><li>Next.js</li><li>Redis</li><li>Linux</li><li>REST</li><li>Postman</li></ul><span>Języki:</span><ul><li>Polski</li><li>Angielski</li></ul><br><br><strong>Jakie warunki i benefity otrzymasz?</strong><ul><li>7k–11k PLN netto/m (B2B)</li><li>B2B - Elastyczne godziny pracy (100%)</li><li>Praca zdalna: Dowolnie</li><li>Budżet szkoleniowy</li><li>Pakiet medyczny, Pakiet sportowy</li><li>Kawa / Herbata, Zimne napoje</li><li>Parking</li><li>Płatny \"urlop\" dla B2B</li></ul><br><br><strong>Kim jesteśmy?</strong><br><p>Jesteśmy firmą IT specjalizującą się w tworzeniu<strong> aplikacji, gier oraz rozwiązań opartych o technologię blockchain.</strong></p><p>Nasze produkty działają globalnie, obsługując każdego dnia ponad <strong>170 milionów transakcji użytkowników</strong> i generując ponad <strong>250 milionów zapytań do API</strong>.</p><p>Działamy na styku <strong>gamingu, esportu oraz kryptowalut</strong>, tworząc innowacyjne produkty i rozwijając nowe standardy w rozrywce cyfrowej.</p><p>Pracujemy partnersko, bez sztucznego dystansu i hierarchii<strong>, </strong>bo wierzymy, że wzajemny szacunek i równe traktowanie tworzą naszą wyjątkową kulturę pracy.</p></p></div>",
+      "validFrom": "2026-10-16T13:52:15.0041036+02:00",
+      "validTo": "2026-11-16T13:52:15.0041036+02:00",
+      "updatedAt": "2026-10-16T13:51:23.6714682+02:00"
+     }
+    ],
+    "pageIndex": 0,
+    "pageSize": 500,
+    "totalCount": 1586,
+    "totalPages": 4
+   }
+  }
+ }
+}

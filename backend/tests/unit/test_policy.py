@@ -60,7 +60,7 @@ def test_consider_lists_every_reason() -> None:
         "requirement",
         "below your minimum",
         "only academic",
-        "isn't in your list",
+        "Germany isn't in your countries",
         "excluded",
         "your limit",
     ):

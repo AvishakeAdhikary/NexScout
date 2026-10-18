@@ -161,6 +161,13 @@ An LLM is never asked whether a safety rule may be skipped.
   pacing, size caps; robots.txt for pages that aren't official public APIs). Sites whose terms or
   robots.txt forbid automation are never fetched; list them in `domain/site_policy.MANUAL_ONLY` or the
   catalog's `unsupported` list with the reason.
+  - Change the catalog in `scripts/build_catalog.py` (never hand-edit `catalog.yaml`); upstream career-ops
+    is pinned by commit. A new or changed provider gets a recorded real response
+    (`scripts/record_source_fixtures.py <provider>`) and a replay test. CI never calls third-party sites.
+- **"Today" is the user's day.** Anything date-only the user sees (reminders falling due, upcoming
+  deadlines) uses `domain/timezones.local_today(now, users.timezone)`, never the server's or UTC date.
+- **Money is compared in one currency** via `domain/fx.convert` and the stored ECB rates. A missing rate
+  is reported ("couldn't be converted"), never assumed.
 ### TypeScript / web
 - TS `strict: true`, ESLint + Prettier. Server components by default.
 - API types come from `apps/web/src/lib/api/schema.d.ts` (generated from OpenAPI by `scripts/gen-contracts.sh`). Don't hand-write duplicates.

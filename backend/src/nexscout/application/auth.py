@@ -15,6 +15,7 @@ from nexscout.application.actor import Actor
 from nexscout.application.audit import record_audit
 from nexscout.config import Settings
 from nexscout.domain.errors import AuthenticationFailed, Conflict, RateLimited, ValidationFailed
+from nexscout.domain.timezones import DEFAULT_TZ, valid_timezone
 from nexscout.infrastructure.db.models import AuthSession, LoginAttempt, User
 from nexscout.infrastructure.security.passwords import (
     hash_password,
@@ -54,7 +55,13 @@ def _now() -> datetime:
 
 
 async def register_user(
-    session: AsyncSession, *, email: str, password: str, display_name: str, ip: str | None
+    session: AsyncSession,
+    *,
+    email: str,
+    password: str,
+    display_name: str,
+    ip: str | None,
+    timezone: str | None = None,
 ) -> User:
     email_n = normalize_email(email)
     validate_password_policy(password)
@@ -62,7 +69,12 @@ async def register_user(
     if not name or len(name) > MAX_DISPLAY_NAME:
         raise ValidationFailed(f"Display name must be 1-{MAX_DISPLAY_NAME} characters.")
 
-    user = User(email=email_n, password_hash=hash_password(password), display_name=name)
+    user = User(
+        email=email_n,
+        password_hash=hash_password(password),
+        display_name=name,
+        timezone=valid_timezone(timezone) or DEFAULT_TZ,
+    )
     session.add(user)
     try:
         await session.flush()
@@ -112,6 +124,7 @@ async def login(
     password: str,
     ip: str | None,
     user_agent: str | None,
+    timezone: str | None = None,
 ) -> IssuedSession:
     try:
         email_n = normalize_email(email)
@@ -131,6 +144,9 @@ async def login(
 
     if needs_rehash(user.password_hash):
         user.password_hash = hash_password(password)
+    # Follow the user's current zone (they may have travelled); unknown names are ignored.
+    if (tz := valid_timezone(timezone)) and tz != user.timezone:
+        user.timezone = tz
 
     now = _now()
     token, csrf = new_token(), new_token()

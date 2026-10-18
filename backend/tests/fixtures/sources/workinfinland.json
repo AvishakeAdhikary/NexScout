@@ -1,0 +1,605 @@
+{
+ "provider": "workinfinland",
+ "entry": {
+  "name": "Work in Finland",
+  "url": "",
+  "config": {}
+ },
+ "live_jobs": 1145,
+ "responses": {
+  "GET https://www.workinfinland.com/api/jobs/?": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "totalJobs": 1145,
+    "totalPages": 1,
+    "categories": [
+     {
+      "id": "ict",
+      "count": 530,
+      "name": "Technology"
+     },
+     {
+      "id": "gaming",
+      "count": 15,
+      "name": "Gaming"
+     },
+     {
+      "id": "deep-tech",
+      "count": 280,
+      "name": "Deep Tech"
+     },
+     {
+      "id": "software-development",
+      "count": 217,
+      "name": "Software Development"
+     },
+     {
+      "id": "engineering",
+      "count": 474,
+      "name": "Engineering"
+     },
+     {
+      "id": "academic",
+      "count": 97,
+      "name": "Academics"
+     },
+     {
+      "id": "health",
+      "count": 27,
+      "name": "Healthcare"
+     },
+     {
+      "id": "sales",
+      "count": 77,
+      "name": "Sales and marketing"
+     },
+     {
+      "id": "administration",
+      "count": 40,
+      "name": "Administration"
+     },
+     {
+      "id": "finance",
+      "count": 65,
+      "name": "Finance"
+     },
+     {
+      "id": "hr",
+      "count": 20,
+      "name": "Human resources"
+     },
+     {
+      "id": "manufacturing",
+      "count": 232,
+      "name": "Manufacturing"
+     },
+     {
+      "id": "management",
+      "count": 151,
+      "name": "Project management"
+     },
+     {
+      "id": "construction",
+      "count": 179,
+      "name": "Construction"
+     },
+     {
+      "id": "datacenters",
+      "count": 150,
+      "name": "Data centers"
+     },
+     {
+      "id": "intern",
+      "count": 254,
+      "name": "Interns & summer jobs"
+     },
+     {
+      "id": "services",
+      "count": 168,
+      "name": "Services"
+     }
+    ],
+    "cities": [
+     {
+      "name": "Helsinki",
+      "count": 289,
+      "id": "helsinki"
+     },
+     {
+      "name": "Espoo",
+      "count": 281,
+      "id": "espoo"
+     },
+     {
+      "name": "Tampere",
+      "count": 71,
+      "id": "tampere"
+     },
+     {
+      "name": "Vantaa",
+      "count": 20,
+      "id": "vantaa"
+     },
+     {
+      "name": "Oulu",
+      "count": 23,
+      "id": "oulu"
+     },
+     {
+      "name": "Turku",
+      "count": 43,
+      "id": "turku"
+     },
+     {
+      "name": "Jyväskylä",
+      "count": 7,
+      "id": "jyvaskyla"
+     },
+     {
+      "name": "Lahti",
+      "count": 10,
+      "id": "lahti"
+     },
+     {
+      "name": "Kuopio",
+      "count": 7,
+      "id": "kuopio"
+     },
+     {
+      "name": "Kouvola",
+      "count": 9,
+      "id": "kouvola"
+     },
+     {
+      "name": "Pori",
+      "count": 10,
+      "id": "pori"
+     },
+     {
+      "name": "Joensuu",
+      "count": 11,
+      "id": "joensuu"
+     },
+     {
+      "name": "Lappeenranta",
+      "count": 22,
+      "id": "lappeenranta"
+     },
+     {
+      "name": "Vaasa",
+      "count": 32,
+      "id": "vaasa"
+     },
+     {
+      "name": "Rovaniemi",
+      "count": 49,
+      "id": "rovaniemi"
+     },
+     {
+      "name": "Seinäjoki",
+      "count": 16,
+      "id": "seinajoki"
+     },
+     {
+      "name": "Mikkeli",
+      "count": 2,
+      "id": "mikkeli"
+     },
+     {
+      "name": "Kotka",
+      "count": 11,
+      "id": "kotka"
+     },
+     {
+      "name": "Salo",
+      "count": 4,
+      "id": "salo"
+     },
+     {
+      "name": "Porvoo",
+      "count": 4,
+      "id": "porvoo"
+     },
+     {
+      "name": "Kokkola",
+      "count": 6,
+      "id": "kokkola"
+     },
+     {
+      "name": "Lohja",
+      "count": 7,
+      "id": "lohja"
+     },
+     {
+      "name": "Hyvinkää",
+      "count": 9,
+      "id": "hyvinkaa"
+     },
+     {
+      "name": "Nurmijärvi",
+      "count": 2,
+      "id": "nurmijarvi"
+     },
+     {
+      "name": "Rauma",
+      "count": 8,
+      "id": "rauma"
+     },
+     {
+      "name": "Kajaani",
+      "count": 3,
+      "id": "kajaani"
+     },
+     {
+      "name": "Kerava",
+      "count": 1,
+      "id": "kerava"
+     },
+     {
+      "name": "Ylöjärvi",
+      "count": 2,
+      "id": "ylojarvi"
+     },
+     {
+      "name": "Kaarina",
+      "count": 2,
+      "id": "kaarina"
+     },
+     {
+      "name": "Riihimäki",
+      "count": 2,
+      "id": "riihimaki"
+     },
+     {
+      "name": "Imatra",
+      "count": 2,
+      "id": "imatra"
+     },
+     {
+      "name": "Raahe",
+      "count": 2,
+      "id": "raahe"
+     },
+     {
+      "name": "Tornio",
+      "count": 4,
+      "id": "tornio"
+     },
+     {
+      "name": "Kemi",
+      "count": 6,
+      "id": "kemi"
+     },
+     {
+      "name": "Kurikka",
+      "count": 1,
+      "id": "kurikka"
+     },
+     {
+      "name": "Jämsä",
+      "count": 1,
+      "id": "jamsa"
+     },
+     {
+      "name": "Valkeakoski",
+      "count": 1,
+      "id": "valkeakoski"
+     },
+     {
+      "name": "Hamina",
+      "count": 9,
+      "id": "hamina"
+     },
+     {
+      "name": "Naantali",
+      "count": 2,
+      "id": "naantali"
+     },
+     {
+      "name": "Forssa",
+      "count": 2,
+      "id": "forssa"
+     },
+     {
+      "name": "Kauhava",
+      "count": 5,
+      "id": "kauhava"
+     },
+     {
+      "name": "Uusikaupunki",
+      "count": 2,
+      "id": "uusikaupunki"
+     },
+     {
+      "name": "Lapua",
+      "count": 1,
+      "id": "lapua"
+     },
+     {
+      "name": "Ulvila",
+      "count": 3,
+      "id": "ulvila"
+     },
+     {
+      "name": "Lieksa",
+      "count": 1,
+      "id": "lieksa"
+     },
+     {
+      "name": "Paimio",
+      "count": 2,
+      "id": "paimio"
+     },
+     {
+      "name": "Keuruu",
+      "count": 2,
+      "id": "keuruu"
+     },
+     {
+      "name": "Kauniainen",
+      "count": 2,
+      "id": "kauniainen"
+     },
+     {
+      "name": "Karkkila",
+      "count": 1,
+      "id": "karkkila"
+     },
+     {
+      "name": "Hanko",
+      "count": 5,
+      "id": "hanko"
+     },
+     {
+      "name": "Kuhmo",
+      "count": 1,
+      "id": "kuhmo"
+     },
+     {
+      "name": "Kiuruvesi",
+      "count": 1,
+      "id": "kiuruvesi"
+     },
+     {
+      "name": "Laitila",
+      "count": 3,
+      "id": "laitila"
+     },
+     {
+      "name": "Kokemäki",
+      "count": 3,
+      "id": "kokemaki"
+     },
+     {
+      "name": "Harjavalta",
+      "count": 2,
+      "id": "harjavalta"
+     },
+     {
+      "name": "Virrat",
+      "count": 1,
+      "id": "virrat"
+     },
+     {
+      "name": "Pello",
+      "count": 1,
+      "id": "pello"
+     },
+     {
+      "name": "Kaavi",
+      "count": 2,
+      "id": "kaavi"
+     },
+     {
+      "name": "Muonio",
+      "count": 5,
+      "id": "muonio"
+     },
+     {
+      "name": "Kempele",
+      "count": 2,
+      "id": "kempele"
+     },
+     {
+      "name": "Kirkkonummi",
+      "count": 3,
+      "id": "kirkkonummi"
+     },
+     {
+      "name": "Aura",
+      "count": 1,
+      "id": "aura"
+     },
+     {
+      "name": "Lempäälä",
+      "count": 1,
+      "id": "lempaala"
+     },
+     {
+      "name": "Hollola",
+      "count": 1,
+      "id": "hollola"
+     },
+     {
+      "name": "Kangasala",
+      "count": 5,
+      "id": "kangasala"
+     },
+     {
+      "name": "Mäntsälä",
+      "count": 1,
+      "id": "mantsala"
+     },
+     {
+      "name": "Laukaa",
+      "count": 1,
+      "id": "laukaa"
+     },
+     {
+      "name": "Siuntio",
+      "count": 1,
+      "id": "siuntio"
+     },
+     {
+      "name": "Nousiainen",
+      "count": 1,
+      "id": "nousiainen"
+     },
+     {
+      "name": "Raseborg",
+      "count": 2,
+      "id": "raseborg"
+     },
+     {
+      "name": "Hämeenkyrö",
+      "count": 1,
+      "id": "hameenkyro"
+     },
+     {
+      "name": "Eura",
+      "count": 1,
+      "id": "eura"
+     },
+     {
+      "name": "Kontiolahti",
+      "count": 1,
+      "id": "kontiolahti"
+     },
+     {
+      "name": "Eurajoki",
+      "count": 1,
+      "id": "eurajoki"
+     },
+     {
+      "name": "Koski Tl",
+      "count": 1,
+      "id": "koski-tl"
+     },
+     {
+      "name": "Pälkäne",
+      "count": 1,
+      "id": "palkane"
+     },
+     {
+      "name": "Marttila",
+      "count": 1,
+      "id": "marttila"
+     },
+     {
+      "name": "Urjala",
+      "count": 3,
+      "id": "urjala"
+     },
+     {
+      "name": "Lapinlahti",
+      "count": 1,
+      "id": "lapinlahti"
+     },
+     {
+      "name": "Vörå",
+      "count": 2,
+      "id": "vora"
+     },
+     {
+      "name": "Joroinen",
+      "count": 1,
+      "id": "joroinen"
+     },
+     {
+      "name": "Kuortane",
+      "count": 1,
+      "id": "kuortane"
+     },
+     {
+      "name": "Föglö",
+      "count": 1,
+      "id": "foglo"
+     },
+     {
+      "name": "Vieremä",
+      "count": 1,
+      "id": "vierema"
+     },
+     {
+      "name": "Sotkamo",
+      "count": 1,
+      "id": "sotkamo"
+     },
+     {
+      "name": "Siikainen",
+      "count": 1,
+      "id": "siikainen"
+     },
+     {
+      "name": "Kolari",
+      "count": 1,
+      "id": "kolari"
+     },
+     {
+      "name": "Kittilä",
+      "count": 11,
+      "id": "kittila"
+     },
+     {
+      "name": "Pelkosenniemi",
+      "count": 7,
+      "id": "pelkosenniemi"
+     },
+     {
+      "name": "Utsjoki",
+      "count": 1,
+      "id": "utsjoki"
+     },
+     {
+      "name": "Inari",
+      "count": 6,
+      "id": "inari"
+     },
+     {
+      "name": "Vihti",
+      "count": 7,
+      "id": "vihti"
+     },
+     {
+      "name": "Pöytyä",
+      "count": 5,
+      "id": "poytya"
+     }
+    ],
+    "jobs": [
+     {
+      "title": "Senior T24 Architect",
+      "employer": {
+       "name": "Lokki Henkilöstöpalvelut Oy",
+       "city": "Kangasala",
+       "imageUrl": ""
+      },
+      "expireDate": "2026-10-25T21:59:00.000Z",
+      "externalUrl": "https://tyomarkkinatori.fi/en/personal-customers/vacancies/a8860220-1b02-42e0-a76b-a7be4eeb348a"
+     },
+     {
+      "title": "Senior Frontend Developers - Mobile / Web",
+      "employer": {
+       "name": "Lokki Henkilöstöpalvelut Oy",
+       "city": "Kangasala",
+       "imageUrl": ""
+      },
+      "expireDate": "2026-10-23T16:00:00.000Z",
+      "externalUrl": "https://tyomarkkinatori.fi/en/personal-customers/vacancies/1ad9af01-97a0-4e6b-97ba-0ce67caf2ac2"
+     },
+     {
+      "title": "Are you a data center expert or IT professional? Join our platform and connect with clients looking to hire!",
+      "employer": {
+       "name": "Sansaino Oy",
+       "city": "Lahti",
+       "imageUrl": ""
+      },
+      "expireDate": "2026-12-25T21:59:00.000Z",
+      "externalUrl": "https://tyomarkkinatori.fi/en/personal-customers/vacancies/a5248698-e2d9-4909-be8a-ed91f3275422"
+     }
+    ]
+   }
+  }
+ }
+}

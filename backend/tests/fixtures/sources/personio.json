@@ -1,0 +1,18 @@
+{
+ "provider": "personio",
+ "entry": {
+  "name": "Personio",
+  "url": "https://personio.jobs.personio.de",
+  "config": {
+   "host": "personio.jobs.personio.de"
+  }
+ },
+ "live_jobs": 1,
+ "responses": {
+  "GET https://personio.jobs.personio.de/xml": {
+   "status": 200,
+   "kind": "text",
+   "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<workzag-jobs>\n\n<position>\n    <id>1834171</id>\n    <subcompany>Personio SE &amp; Co. KG</subcompany>\n    <office>Munich</office>\n    <additionalOffices>\n        <office>Berlin</office>\n    </additionalOffices>\n    <department>Product and Tech</department>\n    <recruitingCategory>Engineering</recruitingCategory>\n    <name>Staff Software Engineer, Data Platform</name>\n    <jobDescriptions></jobDescriptions>\n    <employmentType>permanent</employmentType>\n    <seniority>experienced</seniority>\n    <schedule>full-time</schedule>\n    <yearsOfExperience>7-10</yearsOfExperience>\n    <occupation>software_and_web_development</occupation>\n    <occupationCategory>it_software</occupationCategory>\n    <createdAt>2024-11-13T14:10:41+00:00</createdAt>\n</position>\n\n</workzag-jobs>"
+  }
+ }
+}

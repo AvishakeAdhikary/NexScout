@@ -1,0 +1,363 @@
+{
+ "provider": "nofluffjobs",
+ "entry": {
+  "name": "No Fluff Jobs",
+  "url": "",
+  "config": {
+   "keywords": [
+    "machine learning"
+   ]
+  }
+ },
+ "live_jobs": 276,
+ "responses": {
+  "POST https://nofluffjobs.com/api/search/posting?sort=newest&pageTo=1&pageSize=100&salaryCurrency=PLN&salaryPeriod=month&region=pl&language=en-GB": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "criteriaSearch": {
+     "country": [],
+     "withSalaryMatch": [],
+     "city": [],
+     "more": [],
+     "employment": [],
+     "requirement": [],
+     "salary": [],
+     "jobPosition": [],
+     "applicationStatus": [],
+     "province": [],
+     "company": [],
+     "id": [],
+     "category": [],
+     "keyword": [
+      "machine",
+      "learning"
+     ],
+     "jobLanguage": [],
+     "seniority": []
+    },
+    "postings": [
+     {
+      "id": "ai-engineer-link-group-Remote-6",
+      "name": "Link Group",
+      "location": {
+       "places": [
+        {
+         "city": "Remote",
+         "url": "ai-engineer-link-group-remote-7"
+        },
+        {
+         "country": {
+          "code": "POL",
+          "name": "Poland"
+         },
+         "province": "lower-silesian",
+         "url": "ai-engineer-link-group-lower-silesian-4",
+         "provinceOnly": true
+        },
+        {
+         "country": {
+          "code": "POL",
+          "name": "Poland"
+         },
+         "province": "kuyavian-pomeranian",
+         "url": "ai-engineer-link-group-kuyavian-pomeranian-4",
+         "provinceOnly": true
+        }
+       ],
+       "fullyRemote": true,
+       "covidTimeRemotely": false,
+       "hybridDesc": "",
+       "type": "remote"
+      },
+      "posted": 1792274500640,
+      "renewed": 1792360900640,
+      "title": "AI Engineer",
+      "technology": "Python",
+      "logo": {
+       "original": "companies/logos/original/link_group_240px_20230907_142205.png",
+       "jobs_details": "companies/logos/jobs_details/link_group_240px_20230907_142205.png",
+       "jobs_listing": "companies/logos/jobs_listing/link_group_240px_20230907_142205.png",
+       "jobs_details_2x": "companies/logos/jobs_details_2x/link_group_240px_20230907_142205.png",
+       "jobs_listing_2x": "companies/logos/jobs_listing_2x/link_group_240px_20230907_142205.png",
+       "companies_details": "companies/logos/companies_details/link_group_240px_20230907_142205.png",
+       "companies_listing": "companies/logos/companies_listing/link_group_240px_20230907_142205.png",
+       "jobs_details_webp": "companies/logos/jobs_details/link_group_240px_20230907_142205.webp",
+       "jobs_listing_webp": "companies/logos/jobs_listing/link_group_240px_20230907_142205.webp",
+       "companies_details_2x": "companies/logos/companies_details_2x/link_group_240px_20230907_142205.png",
+       "companies_listing_2x": "companies/logos/companies_listing_2x/link_group_240px_20230907_142205.png",
+       "jobs_details_2x_webp": "companies/logos/jobs_details_2x/link_group_240px_20230907_142205.webp",
+       "jobs_listing_2x_webp": "companies/logos/jobs_listing_2x/link_group_240px_20230907_142205.webp",
+       "original_pixel_image": "companies/logos/original_pixel_image/link_group_240px_20230907_142205.png",
+       "companies_details_webp": "companies/logos/companies_details/link_group_240px_20230907_142205.webp",
+       "companies_listing_webp": "companies/logos/companies_listing/link_group_240px_20230907_142205.webp",
+       "companies_details_2x_webp": "companies/logos/companies_details_2x/link_group_240px_20230907_142205.webp",
+       "companies_listing_2x_webp": "companies/logos/companies_listing_2x/link_group_240px_20230907_142205.webp"
+      },
+      "category": "artificialIntelligence",
+      "seniority": [
+       "Mid"
+      ],
+      "url": "ai-engineer-link-group-remote-7",
+      "regions": [
+       "pl"
+      ],
+      "fullyRemote": false,
+      "salary": {
+       "from": 20000.0,
+       "to": 24000.0,
+       "type": "b2b",
+       "currency": "PLN",
+       "period": "Month",
+       "disclosedAt": "VISIBLE",
+       "flexibleUpperBound": false,
+       "containsSalary": "VISIBLE"
+      },
+      "flavors": [
+       "it"
+      ],
+      "topInSearch": false,
+      "highlighted": false,
+      "help4Ua": false,
+      "reference": "07XF1UYN",
+      "searchBoost": true,
+      "onlineInterviewAvailable": true,
+      "tiles": {
+       "values": [
+        {
+         "value": "artificial-intelligence",
+         "type": "category"
+        },
+        {
+         "value": "Machine",
+         "type": "requirement"
+        },
+        {
+         "value": "Learning",
+         "type": "requirement"
+        }
+       ]
+      }
+     },
+     {
+      "id": "ai-engineer-link-group-lower-silesian-4",
+      "name": "Link Group",
+      "location": {
+       "places": [
+        {
+         "country": {
+          "code": "POL",
+          "name": "Poland"
+         },
+         "province": "lower-silesian",
+         "url": "ai-engineer-link-group-lower-silesian-4",
+         "provinceOnly": true
+        },
+        {
+         "city": "Remote",
+         "url": "ai-engineer-link-group-remote-7"
+        },
+        {
+         "country": {
+          "code": "POL",
+          "name": "Poland"
+         },
+         "province": "kuyavian-pomeranian",
+         "url": "ai-engineer-link-group-kuyavian-pomeranian-4",
+         "provinceOnly": true
+        }
+       ],
+       "fullyRemote": true,
+       "covidTimeRemotely": false,
+       "hybridDesc": "",
+       "type": "remote"
+      },
+      "posted": 1792274500640,
+      "renewed": 1792360900640,
+      "title": "AI Engineer",
+      "technology": "Python",
+      "logo": {
+       "original": "companies/logos/original/link_group_240px_20230907_142205.png",
+       "jobs_details": "companies/logos/jobs_details/link_group_240px_20230907_142205.png",
+       "jobs_listing": "companies/logos/jobs_listing/link_group_240px_20230907_142205.png",
+       "jobs_details_2x": "companies/logos/jobs_details_2x/link_group_240px_20230907_142205.png",
+       "jobs_listing_2x": "companies/logos/jobs_listing_2x/link_group_240px_20230907_142205.png",
+       "companies_details": "companies/logos/companies_details/link_group_240px_20230907_142205.png",
+       "companies_listing": "companies/logos/companies_listing/link_group_240px_20230907_142205.png",
+       "jobs_details_webp": "companies/logos/jobs_details/link_group_240px_20230907_142205.webp",
+       "jobs_listing_webp": "companies/logos/jobs_listing/link_group_240px_20230907_142205.webp",
+       "companies_details_2x": "companies/logos/companies_details_2x/link_group_240px_20230907_142205.png",
+       "companies_listing_2x": "companies/logos/companies_listing_2x/link_group_240px_20230907_142205.png",
+       "jobs_details_2x_webp": "companies/logos/jobs_details_2x/link_group_240px_20230907_142205.webp",
+       "jobs_listing_2x_webp": "companies/logos/jobs_listing_2x/link_group_240px_20230907_142205.webp",
+       "original_pixel_image": "companies/logos/original_pixel_image/link_group_240px_20230907_142205.png",
+       "companies_details_webp": "companies/logos/companies_details/link_group_240px_20230907_142205.webp",
+       "companies_listing_webp": "companies/logos/companies_listing/link_group_240px_20230907_142205.webp",
+       "companies_details_2x_webp": "companies/logos/companies_details_2x/link_group_240px_20230907_142205.webp",
+       "companies_listing_2x_webp": "companies/logos/companies_listing_2x/link_group_240px_20230907_142205.webp"
+      },
+      "category": "artificialIntelligence",
+      "seniority": [
+       "Mid"
+      ],
+      "url": "ai-engineer-link-group-lower-silesian-4",
+      "regions": [
+       "pl"
+      ],
+      "fullyRemote": false,
+      "salary": {
+       "from": 20000.0,
+       "to": 24000.0,
+       "type": "b2b",
+       "currency": "PLN",
+       "period": "Month",
+       "disclosedAt": "VISIBLE",
+       "flexibleUpperBound": false,
+       "containsSalary": "VISIBLE"
+      },
+      "flavors": [
+       "it"
+      ],
+      "topInSearch": false,
+      "highlighted": false,
+      "help4Ua": false,
+      "reference": "07XF1UYN",
+      "searchBoost": true,
+      "onlineInterviewAvailable": true,
+      "tiles": {
+       "values": [
+        {
+         "value": "artificial-intelligence",
+         "type": "category"
+        },
+        {
+         "value": "Machine",
+         "type": "requirement"
+        },
+        {
+         "value": "Learning",
+         "type": "requirement"
+        }
+       ]
+      }
+     },
+     {
+      "id": "ai-engineer-link-group-kuyavian-pomeranian-4",
+      "name": "Link Group",
+      "location": {
+       "places": [
+        {
+         "country": {
+          "code": "POL",
+          "name": "Poland"
+         },
+         "province": "kuyavian-pomeranian",
+         "url": "ai-engineer-link-group-kuyavian-pomeranian-4",
+         "provinceOnly": true
+        },
+        {
+         "city": "Remote",
+         "url": "ai-engineer-link-group-remote-7"
+        },
+        {
+         "country": {
+          "code": "POL",
+          "name": "Poland"
+         },
+         "province": "lower-silesian",
+         "url": "ai-engineer-link-group-lower-silesian-4",
+         "provinceOnly": true
+        }
+       ],
+       "fullyRemote": true,
+       "covidTimeRemotely": false,
+       "hybridDesc": "",
+       "type": "remote"
+      },
+      "posted": 1792274500640,
+      "renewed": 1792360900640,
+      "title": "AI Engineer",
+      "technology": "Python",
+      "logo": {
+       "original": "companies/logos/original/link_group_240px_20230907_142205.png",
+       "jobs_details": "companies/logos/jobs_details/link_group_240px_20230907_142205.png",
+       "jobs_listing": "companies/logos/jobs_listing/link_group_240px_20230907_142205.png",
+       "jobs_details_2x": "companies/logos/jobs_details_2x/link_group_240px_20230907_142205.png",
+       "jobs_listing_2x": "companies/logos/jobs_listing_2x/link_group_240px_20230907_142205.png",
+       "companies_details": "companies/logos/companies_details/link_group_240px_20230907_142205.png",
+       "companies_listing": "companies/logos/companies_listing/link_group_240px_20230907_142205.png",
+       "jobs_details_webp": "companies/logos/jobs_details/link_group_240px_20230907_142205.webp",
+       "jobs_listing_webp": "companies/logos/jobs_listing/link_group_240px_20230907_142205.webp",
+       "companies_details_2x": "companies/logos/companies_details_2x/link_group_240px_20230907_142205.png",
+       "companies_listing_2x": "companies/logos/companies_listing_2x/link_group_240px_20230907_142205.png",
+       "jobs_details_2x_webp": "companies/logos/jobs_details_2x/link_group_240px_20230907_142205.webp",
+       "jobs_listing_2x_webp": "companies/logos/jobs_listing_2x/link_group_240px_20230907_142205.webp",
+       "original_pixel_image": "companies/logos/original_pixel_image/link_group_240px_20230907_142205.png",
+       "companies_details_webp": "companies/logos/companies_details/link_group_240px_20230907_142205.webp",
+       "companies_listing_webp": "companies/logos/companies_listing/link_group_240px_20230907_142205.webp",
+       "companies_details_2x_webp": "companies/logos/companies_details_2x/link_group_240px_20230907_142205.webp",
+       "companies_listing_2x_webp": "companies/logos/companies_listing_2x/link_group_240px_20230907_142205.webp"
+      },
+      "category": "artificialIntelligence",
+      "seniority": [
+       "Mid"
+      ],
+      "url": "ai-engineer-link-group-kuyavian-pomeranian-4",
+      "regions": [
+       "pl"
+      ],
+      "fullyRemote": false,
+      "salary": {
+       "from": 20000.0,
+       "to": 24000.0,
+       "type": "b2b",
+       "currency": "PLN",
+       "period": "Month",
+       "disclosedAt": "VISIBLE",
+       "flexibleUpperBound": false,
+       "containsSalary": "VISIBLE"
+      },
+      "flavors": [
+       "it"
+      ],
+      "topInSearch": false,
+      "highlighted": false,
+      "help4Ua": false,
+      "reference": "07XF1UYN",
+      "searchBoost": true,
+      "onlineInterviewAvailable": true,
+      "tiles": {
+       "values": [
+        {
+         "value": "artificial-intelligence",
+         "type": "category"
+        },
+        {
+         "value": "Machine",
+         "type": "requirement"
+        },
+        {
+         "value": "Learning",
+         "type": "requirement"
+        }
+       ]
+      }
+     }
+    ],
+    "totalCount": 1019,
+    "totalPages": 5,
+    "exactMatchesPages": 5,
+    "rawSearch": "keyword=machine,learning",
+    "locationCriteria": false,
+    "divs": 100,
+    "additionalSearch": [],
+    "salaryMatchBlock": {
+     "offers": [],
+     "totalCount": 0,
+     "divs": 0
+    },
+    "overridenSalaryFilter": {}
+   }
+  }
+ }
+}

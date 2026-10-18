@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 
+from nexscout.domain.geo import GeoResult, country_names, expand, in_area
 from nexscout.domain.site_policy import SiteVerdict
 
 STEPS = ("discover", "research", "documents", "fill", "submit")
@@ -41,7 +42,8 @@ class Policy:
     max_new_per_run: int
     daily_submit_cap: int
     per_org_cap: int
-    countries: tuple[str, ...] = ()
+    countries: tuple[str, ...] = ()  # ISO codes or groups (EU, NORDICS, …)
+    countries_exclude: tuple[str, ...] = ()
     kinds: tuple[str, ...] = ()  # job | academic
     exclude_orgs: tuple[str, ...] = ()
     auto_submit: bool = False
@@ -61,7 +63,9 @@ class Candidate:
     fit: int  # 0-100
     eligible: bool
     open: bool
-    country: str | None = None
+    country: str | None = None  # primary ISO code
+    countries: tuple[str, ...] = ()  # every ISO code the posting names
+    remote_scope: str | None = None
     deadline: date | None = None
     already_tracked: bool = False
 
@@ -93,8 +97,17 @@ def consider(p: Policy, c: Candidate, *, today: date, org_count: int) -> Verdict
         no.append(f"Fit {c.fit} is below your minimum of {p.min_fit}.")
     if p.kinds and c.kind not in p.kinds:
         no.append(f"You chose only {', '.join(p.kinds)} positions.")
-    if p.countries and (c.country or "").upper() not in {x.upper() for x in p.countries}:
-        no.append(f"Country {c.country or 'unknown'} isn't in your list.")
+    codes = list(c.countries) or ([c.country.upper()] if c.country else [])
+    geo = GeoResult(codes, c.remote_scope is not None, c.remote_scope)
+    excluded = expand(p.countries_exclude)
+    if codes and excluded and all(x in excluded for x in codes):
+        no.append(f"{country_names(codes)} is on your excluded list.")
+    if p.countries:
+        inside = in_area(geo, expand(p.countries))
+        if inside is False:
+            no.append(f"{country_names(codes) or 'Its location'} isn't in your countries.")
+        elif inside is None:
+            no.append("Its location doesn't name a country, so it can't be checked.")
     if any(_norm(x) and _norm(x) in _norm(c.organization) for x in p.exclude_orgs):
         no.append(f"You excluded {c.organization}.")
     if org_count >= p.per_org_cap:

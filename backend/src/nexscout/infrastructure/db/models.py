@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import (
@@ -66,12 +66,18 @@ OWNED_TABLES: tuple[str, ...] = (
     "autopilot_policies",
     "autopilot_items",
     "case_answers",
+    "custom_sources",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
 # Shared, non-personal catalog tables (public opportunity data). Not RLS-protected; users reach
 # them only through their own opportunity_matches rows.
-CATALOG_TABLES: tuple[str, ...] = ("organizations", "opportunities", "opportunity_sources")
+CATALOG_TABLES: tuple[str, ...] = (
+    "organizations",
+    "opportunities",
+    "opportunity_sources",
+    "fx_rates",
+)
 
 
 def case_fk() -> ForeignKeyConstraint:
@@ -90,6 +96,10 @@ class User(IdMixin, TimestampMixin, Base):
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     display_name: Mapped[str] = mapped_column(String(120), nullable=False)
     is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
+    # IANA zone reported by the user's browser; "due today" uses the user's calendar day.
+    timezone: Mapped[str] = mapped_column(
+        String(64), nullable=False, default="UTC", server_default="UTC"
+    )
 
     __table_args__ = (CheckConstraint("email = lower(email)", name="email_lowercase"),)
 
@@ -475,10 +485,48 @@ class SourceConfig(IdMixin, Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+    # Health of the last read (shown in Settings → Sources).
+    last_status: Mapped[str | None] = mapped_column(String(20))  # ok | error
+    last_error: Mapped[str | None] = mapped_column(String(500))
+    last_count: Mapped[int | None] = mapped_column(Integer)
+    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     __table_args__ = (
         UniqueConstraint("owner_user_id", "adapter_key", name="uq_source_configs_owner_key"),
     )
+
+
+class CustomSource(IdMixin, Base):
+    """A source the user added (a company's board, a job board, a feed or a vacancies page),
+    read by one of the providers in integrations/sources."""
+
+    __tablename__ = "custom_sources"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    key: Mapped[str] = mapped_column(String(100), nullable=False)  # "custom:<provider>:<id>"
+    provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    config: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    countries: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    kinds: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (UniqueConstraint("owner_user_id", "key", name="uq_custom_sources_owner_key"),)
+
+
+class FxRate(Base):
+    """ECB euro reference rate (public data, shared): units of `currency` per 1 EUR."""
+
+    __tablename__ = "fx_rates"
+
+    currency: Mapped[str] = mapped_column(String(3), primary_key=True)
+    per_eur: Mapped[float] = mapped_column(nullable=False)
+    as_of: Mapped[date] = mapped_column(nullable=False)
 
 
 class SyncCheckpoint(IdMixin, Base):
@@ -1325,6 +1373,9 @@ class AutopilotPolicy(IdMixin, TimestampMixin, Base):
     daily_submit_cap: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     per_org_cap: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     countries: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    countries_exclude: Mapped[list[str]] = mapped_column(
+        JSONB, nullable=False, default=list, server_default=text("'[]'::jsonb")
+    )
     kinds: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
     exclude_orgs: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
     doc_types: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)

@@ -57,10 +57,21 @@ class SensitiveAttributes(BaseModel):
     )
 
 
+def _country_codes(values: list[str]) -> list[str]:
+    """Names, codes or groups → ISO codes / group keys (unknown entries are kept as typed so
+    nothing the user wrote disappears; matching ignores them)."""
+    from nexscout.domain.geo import normalize_list
+
+    ok, unknown = normalize_list(values)
+    return [*ok, *unknown]
+
+
 class Preferences(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
+    # ISO 3166-1 alpha-2 codes or group keys (EU, EEA, NORDICS, EUROPE, …). Empty = anywhere.
     countries: ShortList = Field(default_factory=list)
+    countries_exclude: ShortList = Field(default_factory=list)
     regions: ShortList = Field(default_factory=list)
     cities: ShortList = Field(default_factory=list)
     remote: Literal["any", "onsite", "hybrid", "remote"] = "any"
@@ -81,6 +92,17 @@ class Preferences(BaseModel):
 
     needs_visa_sponsorship: bool | None = None
     funding_required: bool | None = None
+    funding: Literal["required", "preferred", "any"] = "any"
+    # Languages you can work in (ISO 639-1, e.g. "en", "de"); used for "fluent X required" checks.
+    languages: list[Annotated[str, Field(min_length=2, max_length=3)]] = Field(
+        default_factory=list, max_length=20
+    )
+    # The most you can spend up front (application fees, deposits, first tuition payment).
+    max_upfront_cost: int | None = Field(default=None, ge=0, le=100_000_000)
+    budget_currency: str | None = None
+    # Words that select postings from sources (title or text) and words that rule them out.
+    search_keywords: ShortList = Field(default_factory=list)
+    exclude_keywords: ShortList = Field(default_factory=list)
     salary_min: int | None = Field(default=None, ge=0, le=10_000_000)
     salary_currency: str | None = None
     earliest_start: str | None = None
@@ -89,7 +111,20 @@ class Preferences(BaseModel):
 
     sensitive: SensitiveAttributes = Field(default_factory=SensitiveAttributes)
 
-    @field_validator("salary_currency")
+    @field_validator("countries", "countries_exclude")
+    @classmethod
+    def _countries(cls, v: list[str]) -> list[str]:
+        return _country_codes(v)
+
+    @field_validator("languages")
+    @classmethod
+    def _languages(cls, v: list[str]) -> list[str]:
+        out = [x.strip().lower() for x in v if x.strip()]
+        if any(not re.fullmatch(r"[a-z]{2,3}", x) for x in out):
+            raise ValueError("Use language codes such as en, de or fi")
+        return list(dict.fromkeys(out))
+
+    @field_validator("salary_currency", "budget_currency")
     @classmethod
     def _currency(cls, v: str | None) -> str | None:
         if v is None or not v.strip():
@@ -113,6 +148,10 @@ class Preferences(BaseModel):
         lo, hi = self.min_years_experience, self.max_years_experience
         if lo is not None and hi is not None and hi < lo:
             raise ValueError("max_years_experience must be at least min_years_experience")
+        if self.funding_required and self.funding == "any":
+            self.funding = "required"
+        if self.max_upfront_cost is not None and not self.budget_currency:
+            raise ValueError("Choose the currency of your budget (for example INR or EUR)")
         return self
 
 

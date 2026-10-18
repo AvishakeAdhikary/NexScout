@@ -49,7 +49,12 @@ async def register(
 ) -> SessionOut:
     ip = client_ip(request)
     user = await auth.register_user(
-        db, email=body.email, password=body.password, display_name=body.display_name, ip=ip
+        db,
+        email=body.email,
+        password=body.password,
+        display_name=body.display_name,
+        ip=ip,
+        timezone=body.timezone,
     )
     issued = await auth.login(
         db,
@@ -83,6 +88,7 @@ async def login(
             password=body.password,
             ip=client_ip(request),
             user_agent=request.headers.get("user-agent"),
+            timezone=body.timezone,
         )
     except AuthenticationFailed:
         # Persist the failed-attempt record (rate limiting + audit) before returning 401.

@@ -1,0 +1,152 @@
+{
+ "provider": "himalayas",
+ "entry": {
+  "name": "Himalayas",
+  "url": "",
+  "config": {
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 20,
+ "responses": {
+  "GET https://himalayas.app/jobs/api?limit=20&offset=0": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "comments": "21/08/2026: Cursor pagination is now available and is the preferred way to page through the feed. Pass the nextCursor value from each response back as ?cursor=. It is faster than offset and will never return the same job twice. The offset parameter is deprecated and will be removed in a future release. 13/03/2026: The API has been updated to include the companySlug field in the response.",
+    "updatedAt": 1792360681,
+    "offset": 0,
+    "limit": 20,
+    "totalCount": 129073,
+    "nextCursor": "MjAyNi0xMC0xOFQyMTo0Njo1Mi44NDg0NzdafDI0MjU3NDU",
+    "jobs": [
+     {
+      "title": "Entry Level - Case Manager (Lawyer or Law Student  Philippines)",
+      "excerpt": "Job Title: Entry-Level Case Manager (Personal Injury Law Law Student or Lawyer, U.",
+      "companyName": "GENTASK Virtual Assistance Services",
+      "companySlug": "gentaskglobal",
+      "companyLogo": "https://cdn-images.himalayas.app/emi56wnx0q7e4g2q03kkk46wl6ln",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "salaryPeriod": "annual",
+      "seniority": [
+       "Entry-level"
+      ],
+      "currency": null,
+      "locationRestrictions": [
+       "United States"
+      ],
+      "timezoneRestrictions": [
+       -10,
+       -9,
+       -8
+      ],
+      "categories": [
+       "Case-Manager",
+       "Legal-Case-Manager",
+       "Paralegal",
+       "Legal-Assistant",
+       "Personal-Injury-Case-Manager",
+       "Case-Management-Associate",
+       "Entry-Level-Legal-Assistant",
+       "Law-Firm-Case-Manager",
+       "Entry-Level-Legal-Jobs",
+       "Entry-Level-Paralegal",
+       "Legal"
+      ],
+      "parentCategories": [
+       "Healthcare",
+       "Legal"
+      ],
+      "description": "<p><strong>Job Title:</strong> Entry-Level Case Manager (Personal Injury Law  Law Student or Lawyer, U.S. Experience Required)<br><strong>Location:</strong> Remote (Philippines-based)<br><strong>Employment Type:</strong> Full-Time<br><strong>Experience:</strong> Must have U.S. Personal Injury experience</p><p><strong>Job Overview:</strong><br>We are seeking a proactive and detail-oriented Case Manager who is either a <strong>law student or licensed lawyer</strong>, with <strong>personal injury experience in the U.S.</strong>. The ideal candidate has handled cases involving direct interaction with clients, insurance adjusters, and medical providers. This role involves legal case coordination, document preparation, and client communication in a fast-paced personal injury practice.</p><h3>Key Responsibilities:</h3><ul>\n<li><p>Manage and track U.S. personal injury cases with regular updates and follow-ups.</p></li>\n<li><p>Draft case summaries, pleadings, and legal correspondence.</p></li>\n<li><p>Communicate directly with clients, insurance adjusters, and medical providers.</p></li>\n<li><p>Organize case files, supporting evidence, and documentation.</p></li>\n<li><p>Coordinate meetings, hearings, and track deadlines.</p></li>\n<li><p>Ensure strict compliance with legal procedures and confidentiality standards.</p></li>\n<li><p>Provide administrative and legal support to attorneys as required.</p></li>\n</ul><h3>Qualifications:</h3><ul>\n<li><h3>Must be a law student or a licensed lawyer.</h3></li>\n<li><h3>Must have U.S. personal injury experience.</h3></li>\n<li><p><strong>Preferred:</strong> Experience with direct client communication and coordination with insurance companies and medical providers.</p></li>\n<li><p>Strong legal research, writing, and analytical skills.</p></li>\n<li><p>Proficiency with Microsoft Office and legal case management tools.</p></li>\n<li><p>Highly organized and detail-oriented, with strong time management skills.</p></li>\n<li><p>Able to work independently in a remote, fast-paced legal environment.</p></li>\n</ul><h3>Why Join Us?</h3><ul>\n<li><p>Be part of a respected international legal team.</p></li>\n<li><h3>Remote work with flexible scheduling.</h3></li>\n<li><p>Hands-on experience in U.S. personal injury law.</p></li>\n<li><p>Competitive compensation aligned with experience and skillset.</p></li>\n</ul><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1792360681,
+      "expiryDate": 1797544680,
+      "applicationLink": "https://himalayas.app/companies/gentaskglobal/jobs/entry-level-case-manager-lawyer-or-law-student-philippines?utm_source=api",
+      "guid": "https://himalayas.app/companies/gentaskglobal/jobs/entry-level-case-manager-lawyer-or-law-student-philippines"
+     },
+     {
+      "title": "Systems Engineer",
+      "excerpt": "Systems Engineer – Active Directory • Support, design, install, customize, and maintain servers and all associated components.",
+      "companyName": "Inizio Partners Corp",
+      "companySlug": "inizio-partners-corp",
+      "companyLogo": "",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "salaryPeriod": "annual",
+      "seniority": [
+       "Mid-level"
+      ],
+      "currency": null,
+      "locationRestrictions": [
+       "United States"
+      ],
+      "timezoneRestrictions": [
+       -10,
+       -9,
+       -8
+      ],
+      "categories": [
+       "Systems-Engineer",
+       "Active-Directory-Engineer",
+       "Windows-Systems-Engineer",
+       "IT-Systems-Engineer",
+       "Network-Systems-Engineer",
+       "Systems-Engineer-Jobs",
+       "Systems-Services-Engineer"
+      ],
+      "parentCategories": [
+       "Operations"
+      ],
+      "description": "<p><strong>Systems Engineer – Active Directory</strong><br></p><ul>\n<li>Support, design, install, customize, and maintain servers and all associated components.</li>\n<li>Provide general administration of systems. This includes user access administration, system services, configurations, and the development of tools to manage the environment.</li>\n<li>Assists with the development of prototypes/proofs of concepts to validate key project assumptions prior to making significant investments.</li>\n<li>Provide break/fix support of associated software and operating system.</li>\n<li>Communicating with team, customers, and sponsors effectively. Able to establish credibility by appealing to reason and using research, data and facts.</li>\n<li>Maintain system performance by pro-active monitoring and trending the utilization of system resources.</li>\n<li>Maintain system reliability and availability by managing system updates and patches.</li>\n<li>Design, install and implement systems to provide efficient, cost-effective solutions for the business' computing needs. Research industry trends and directions within the industry, to assist with developing long-term IT infrastructure strategies.</li>\n<li>Assists with the identification of system requirements. Devises or modifies procedures to solve problems considering computer equipment capacity and limitations, operating time, form of desired results, and integration of components.</li>\n<li>Use appropriate change control procedures for implementing software enhancements.</li>\n<li>Oversees systems testing, leads integration testing, and assists in user testing.</li>\n<li>Coordinates the maintenance of assigned applications.</li>\n<li>Monitors system and application performance metrics. May provide input to solutions and/or recommendations for improvements.</li>\n<li>Remain abreast of current technologies and best practices that may be applicable to the company.</li>\n<li>Establishes relationships with the users and the IT organization to provide technical solutions to meet user needs through the analysis of business workflows and an understanding of business needs.</li>\n<li>Assists in the performance of Merger and Acquisitions</li>\n<li>Assists in Domain mergers and divestures.<br><br><strong>Essential Skills/Experience:</strong>\n</li>\n</ul><h3>Active Directory - Microsoft centric environment</h3><ul>\n<li>Basic computer skills: Operating Systems, Microsoft Office</li>\n<li>Provide support for Active Directory and related technologies:</li>\n<li>Active Directory Domain Services (ADDS)</li>\n<li>Sites and Services Configuration</li>\n<li>Azure Entra ID</li>\n<li>AD Connect</li>\n<li>DNS</li>\n<li>DHCP</li>\n<li>Microsoft Certificate Authority (MSCA)</li>\n<li>KMS and RDP licensing</li>\n<li>PowerShell scripting</li>\n</ul><h3>TCP/IP Subnetting</h3><p><strong>Working Conditions:</strong><br></p><ul>\n<li>Professional office environment, expected to be hybrid or fully remote.</li>\n<li>24-hour on-call support will require occasional night and weekend work.</li>\n<li>Willingness to work overtime hours as necessary, especially during critical issue resolution and to achieve project milestones.</li>\n<li>Will be required to carry cell phones and be accessible after hours as needed.<br><br><strong>Minimum Requirements:</strong><br> Five (5) years business experience using and supporting active directory, computing, and network technology in an enterprise environment.<br><br><strong>Preferred Qualifications:</strong><br> Bachelor's degree in business, Computer Science, or related discipline from an accredited four-year college/university<br><br><strong>Additional Knowledge, Skills, and Abilities:</strong><br><br>\n</li>\n<li>Expresses technical and business concepts, ideas, feelings, opinions, and conclusions so that others understand or are persuaded to act.</li>\n<li>Creates an environment that encourages and values the opinions of others and promotes sharing of information and ideas.</li>\n<li>Consistently displays awareness and sensitivity to the needs of internal and/or external clients. Proactively ensures these needs are met or exceeded.</li>\n<li>Makes decision by quickly assessing the scope of an issue and providing options leading to its closure. Determines appropriate options based on the situation.</li>\n<li>Proactively identifies present and future obstacles, issues, and opportunities. Take actions to address such obstacles.</li>\n<li>Develop plans prior to acting and executes accordingly. Sets and renegotiates priorities to achieve goals.</li>\n<li>Thinks critically and anticipates, recognizes, identifies, and develops solutions to problems in a timely manner.</li>\n<li>Fosters an environment where individuals collaborate in pursuit of a common mission and mutual goals.</li>\n<li>Identifies risks and obstacles to plans. Defines scarcity and conflicts of resource needs, and potential constraints. Investigates risks within various project elements, assesses impact, and develops contingencyplans to address major risks.</li>\n<li>Knowledge of the systems architecture used consistently within or across the organization or enterprise.<br> In depth experience with architecture, installation and support of</li>\n<li>Active Directory and domain migrations and consolidations</li>\n<li>Server hardware support experience</li>\n<li>PowerShell scripting experience</li>\n<li>Cloud services experience: AWS, Azure</li>\n<li>Virtualization experience: VMware</li>\n<li>Leads the identification of system requirements. Devises or modifies procedures to solve problems considering computer equipment capacity and limitations, operating time, form of desired results, and integration of components</li>\n</ul><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1792360515,
+      "expiryDate": 1797544515,
+      "applicationLink": "https://himalayas.app/companies/inizio-partners-corp/jobs/systems-engineer?utm_source=api",
+      "guid": "https://himalayas.app/companies/inizio-partners-corp/jobs/systems-engineer"
+     },
+     {
+      "title": "Senior Costpoint System Administrator",
+      "excerpt": "About UsEvery moment of every day, people all over the world rely on the infrastructure work provided by Quanta Services and Quanta Government Solutions (QGS).",
+      "companyName": "Quanta Services",
+      "companySlug": "quanta-services",
+      "companyLogo": "",
+      "employmentType": "Full Time",
+      "minSalary": null,
+      "maxSalary": null,
+      "salaryPeriod": "annual",
+      "seniority": [
+       "Senior"
+      ],
+      "currency": null,
+      "locationRestrictions": [
+       "United States"
+      ],
+      "timezoneRestrictions": [
+       -10,
+       -9,
+       -8
+      ],
+      "categories": [
+       "Systems-Administrator",
+       "ERP-Administrator",
+       "Deltek-Administrator",
+       "IT-Administrator",
+       "Costpoint-Specialist",
+       "Costpoint-Administration",
+       "Senior-Application-Administrator"
+      ],
+      "parentCategories": [
+       "Operations"
+      ],
+      "description": "<h3>About Us</h3><p>Every moment of every day, people all over the world rely on the infrastructure work provided by <a href=\"https://himalayas.app/companies/quanta-services\">Quanta Services</a> and Quanta Government Solutions (QGS). With its highly skilled and innovative workforce, Quanta is the largest specialty contractor in North America that powers modern life. Find your future with us by being a part of something bigger – leading the energy transition in building a better world for generations to come.</p><p>Imagine what you could do here. We encourage and inspire our people to embrace opportunities within our corporate office and 200 operating companies providing solutions for the utility, renewable energy, electric power, industrial, communications and government industries worldwide.</p><p>Quanta’s culture is about creating an environment where all employees can be themselves, are valued, and have an equal opportunity to succeed. When you join our team, you join a dynamic culture in which career development is encouraged, excellence is rewarded, and diversity is valued. </p><h3>About this Role</h3><h3>COMPANY: Quanta Government Solutions </h3><h3>JOB TITLE: Senior Costpoint System Administrator</h3><h3>DEPARTMENT: Information Technology</h3><h3>LOCATION: Remote</h3><h3>REPORTS TO: Director, IT</h3><h3>CLASSIFICATION: Exempt</h3><p></p><p></p><h3>POSITION OVERVIEW:</h3><p>QGS is seeking a Senior Costpoint System Administrator to serve as the subject matter expert and functional owner of Deltek Costpoint across QGS and its affiliated Operating Companies. In addition, this role manages, configures, and maintains the Deltek Costpoint enterprise resource planning (ERP) environment, serving as the organization’s main point of expertise for system security, integrations, and module troubleshooting across accounting, projects, and other business modules.</p><p>This is a hands-on role that combines day-to-day functional system administration and end-user support with technical ownership of the Costpoint ERP environment, including user access management, system security, compliance standards, integrations, and platform maintenance and upgrades. The Senior Costpoint System Administrator partners with accounting, finance, project control, and program teams to configure the system, resolve issues, manage integrations, process batch jobs, and keep month-end close, billing, and reporting cycles running smoothly.</p><p>This role is ideal for a seasoned Costpoint professional with deep government contract accounting knowledge, strong troubleshooting skills, and the ability to work across teams to bring accuracy, consistency, and reliability to critical financial systems and reporting. This role reports to the Director, IT; direction on the accounting and finance aspects of the role is provided by the Director, Accounting and Finance.</p><h3>What You'll Do</h3><ul>\n<li>Serve as the subject matter expert and system administrator for Deltek Costpoint GCCM, supporting government contract accounting operations end to end across QGS and its affiliated Operating Companies.</li>\n<li>Administer core Costpoint modules, including General Ledger, Accounts Payable, Accounts Receivable, People, Projects, and Procurement.</li>\n<li>Lead User Access Management for Costpoint and Cognos BI, including user and user group setup and maintenance, security roles, and access controls to protect system security and enforce segregation of duties.</li>\n<li>Maintain compliance with applicable Compliance Standards (e.g., DCAA, SOX/ITGC) through system configuration, access controls, and audit-ready documentation.</li>\n<li>Serve as the primary point of contact for Deltek Support and the escalation point for Costpoint issues, owning Tier 1 &amp; 2 support internally, escalating to Deltek (Tier 3) as needed, and managing system maintenance, upgrades, and testing, with responsibility for change control in accordance with SOX controls, to keep the environment current, stable, and secure.</li>\n<li>Own Costpoint configuration standards, technical roadmap, upgrade strategy, and the Deltek vendor relationship, leading the resolution of complex system and configuration issues.</li>\n<li>Support Costpoint account/org structure configuration driven by new entity setup (subsidiaries, affiliated companies, and joint ventures), M&amp;A, organic growth, or internal reorganization, including data migration, reporting hierarchy realignment, and department-level restructuring.</li>\n<li>Support configuration, maintenance, and troubleshooting for indirect cost pools, rates, and revenue formulas to ensure accurate project reporting and DCAA compliance.</li>\n<li>Provide training, ad hoc support, and problem-solving for finance, project control, and program teams.</li>\n<li>Develop and document internal processes, procedures, and SOPs for consistent, compliant system use.</li>\n<li>Develop and maintain reference guides and training documentation for key master data areas (e.g., project setup, indirect cost pools and rates, account-org structure), and guide the accounting team in owning day-to-day master data maintenance, including ongoing quality review.</li>\n<li>Manage third-party system integrations (file-based and API/middleware) between Costpoint and platforms such as payroll (ADP) and expense (SAP Concur), including extracting and importing ADP/Concur files and troubleshooting integration issues and manual ETL where necessary.</li>\n</ul><h3>What You'll Bring</h3><h3>Required Education and Experience </h3><ul><li>Bachelor’s degree in IT, Computer Science, or a related field required; an equivalent combination of education and progressive, hands-on experience may be considered in lieu of a degree. Also requires 7+ years of hands-on experience administering and supporting Deltek Costpoint in a government contracting environment, including General Ledger, Accounts Payable, project setup, billing, indirect pools and rates, user access and system security administration, and third-party integrations (file-based and API/middleware).</li></ul><h3>Preferred Education and Experience </h3><ul>\n<li>Prior experience as a Costpoint functional consultant or system administrator supporting multiple government contractors; working knowledge of the Cognos BI reporting tools; experience with Costpoint integrations to payroll (ADP) and expense (SAP Concur) systems, and with Deltek Cobra EVMS; and familiarity with DCAA requirements and Incurred Cost Submissions.</li>\n<li>Experience administering Costpoint within Deltek's GovCon Cloud Moderate (GCCM) environment or Deltek's commercial SaaS offering, given the differing support and compliance model compared to an on-premises deployment.</li>\n<li>Experience administering Costpoint at an organization subject to SOX controls, including change management (formal patch and version approval processes), backup and restore (recovery testing and validation against Key Reports), and access authorization (a maintained user access authorization matrix).</li>\n<li>Experience supporting M&amp;A or internal reorganization activity within Costpoint, including new entity setup, data migration, and account/org structure configuration.</li>\n</ul><h3>LICENSES / CERTIFICATIONS:</h3><h3>Required Licenses/Certifications</h3><ul><li>None required.</li></ul><h3>Preferred Licenses/Certifications</h3><ul><li>Deltek Costpoint certification(s) and/or relevant accounting or project management credentials.</li></ul><h3>SUPERVISORY RESPONSIBILITIES:</h3><ul><li>This position has no direct supervisory responsibilities.</li></ul><h3>TRAVEL REQUIREMENTS:</h3><ul>\n<li>Travels: Yes </li>\n<li>Percent of time: 10%</li>\n<li>Overnight required: Yes </li>\n</ul><h3>PHYSICAL DEMANDS: </h3><ul>\n<li>Stationary Position - Constantly</li>\n<li>Pushing/Pulling/Reaching - Seldom</li>\n<li>Climb - Seldom</li>\n<li>Kneel - Seldom</li>\n<li>Grab - Frequently</li>\n<li>Bend - Seldom</li>\n<li>Lift/carry over - Less than 5 LBS</li>\n<li>Vision - 20/20 Corrected Vision</li>\n<li>Hearing - Receive detailed information if spoken to</li>\n</ul><h3>WORKING CONDITIONS:</h3><ul>\n<li>Wet or Humid - N/A</li>\n<li>Working near or on moving mechanical parts - N/A</li>\n<li>Working near or on heavy machinery - N/A</li>\n<li>Working in high places - N/A</li>\n<li>Exposed to fumes or airborne particles - N/A</li>\n<li>Exposed to toxic or caustic chemicals - N/A</li>\n<li>Frequency of working in outdoor weather conditions - N/A</li>\n<li>Work with Electricity - N/A</li>\n<li>Work with explosives - N/A</li>\n<li>Work on or near a source of radiation - N/A</li>\n<li>Loud noise conditions (above 87dB) - N/A</li>\n<li>Other Environmental Factors including weather conditions</li>\n</ul><p><strong>Note: This job description is not designed to cover or contain a comprehensive listing of activities, duties or responsibilities that are required of the employee. Duties, responsibilities, working conditions, physical demands, and activities may change or new ones may be assigned at any time with or without notice. </strong></p><h3>What You'll Get</h3><h3>Our Benefits &amp; Perks</h3><ul>\n<li>Comprehensive medical, dental, and vision insurance coverage</li>\n<li>Company-paid life and disability insurance</li>\n<li>Access to mental health support and resources</li>\n<li>160 hours of paid time off per calendar year, prorated in the year of hire based on the employee’s start date, along with 11 company-observed paid holidays</li>\n</ul><h3>Growth &amp; Development</h3><ul>\n<li>Ongoing training and development programs</li>\n<li>Career advancement opportunities to support professional growth</li>\n<li>Tuition reimbursement for continued education</li>\n</ul><h3>Recognition &amp; Financial Well-Being</h3><ul>\n<li>Employee recognition and rewards program</li>\n<li>401(k) retirement savings plan with company match</li>\n<li>Flexible Spending Account (FSA) and Health Savings Account (HSA) options (based on plan selection)</li>\n</ul><h3>Family Support</h3><ul><li>Maternity and paternity leave programs to support growing families</li></ul><h3>Application Deadline</h3><ul><li>QGS anticipates accepting applications through December 2026. This posting may be extended if the position remains unfilled or closed earlier if the position is filled before the anticipated closing date.</li></ul><h3>Equal Opportunity Employer</h3><p>All qualified applicants will receive consideration for employment and will not be discriminated against on the basis of race, color, religion, national origin or ancestry, sex (including gender, pregnancy, sexual orientation, and/or gender identity), age, disability, genetic information, veteran status, and/or any other basis protected by applicable federal, state or local law.We are an Equal Opportunity Employer, including disability and protected veteran status. We prohibit all types of discrimination and are committed to providing access and equal opportunity for individuals with disabilities. For additional information or if reasonable accommodation is needed to participate in the job application, interview, or hiring processes or to perform the essential functions of a position, please contact us the Company’s Human Resources department.</p><p>Originally posted on <a href=\"https://himalayas.app\">Himalayas</a></p>",
+      "pubDate": 1792360484,
+      "expiryDate": 1797544483,
+      "applicationLink": "https://himalayas.app/companies/quanta-services/jobs/senior-costpoint-system-administrator?utm_source=api",
+      "guid": "https://himalayas.app/companies/quanta-services/jobs/senior-costpoint-system-administrator"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -81,7 +81,11 @@ test("upload a CV, review against the source, accept, and find it again", async 
   await page.getByRole("textbox", { name: "Add a link" }).fill("github.com/ada-example");
   await page.getByRole("button", { name: "Add link" }).click();
   await expect(page.getByRole("link", { name: "https://github.com/ada-example" })).toBeVisible();
-  await page.getByRole("textbox", { name: "Countries" }).fill("Germany, Netherlands");
+  const lookIn = page.getByRole("textbox", { name: "Countries to look in" });
+  await lookIn.fill("Germany");
+  await lookIn.press("Enter");
+  await lookIn.fill("Netherl");
+  await page.getByRole("button", { name: "Netherlands", exact: true }).click();
   await page.getByRole("button", { name: "Save preferences" }).click();
   await expect(page.locator("#preferences").getByRole("status")).toHaveText("Saved.");
 
@@ -105,7 +109,8 @@ test("upload a CV, review against the source, accept, and find it again", async 
   const confirmed = again.locator("#confirmed");
   await expect(confirmed.getByRole("article", { name: "Machine Learning Engineer at Examplecorp GmbH" })).toBeVisible();
   await expect(confirmed.getByRole("article", { name: "Rust", exact: true })).toBeVisible();
-  await expect(again.getByRole("textbox", { name: "Countries" })).toHaveValue("Germany, Netherlands");
+  const chosen = again.getByRole("list", { name: "Countries to look in: chosen" });
+  await expect(chosen.getByRole("listitem")).toHaveText(["Germany", "Netherlands"]);
 
   // Export works and contains the data.
   const exported = await again.request.get("/api/v1/me/export");

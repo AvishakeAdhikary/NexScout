@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
 import { DiagnosticsPanel } from "@/components/diagnostics-panel";
+import { SourcesManager } from "@/components/sources-manager";
 import { ErrorAlert } from "@/components/error-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -294,7 +295,7 @@ export default function SettingsPage() {
       <header>
         <h1 className="text-2xl font-semibold">Settings</h1>
         <p className="text-muted-foreground">
-          AI models apply to all your cases. Opportunity sources are on the PhD and Jobs pages.
+          Sources and AI models apply to all your cases.
         </p>
       </header>
       <section aria-labelledby="providers-heading" className="flex flex-col gap-3">
@@ -318,6 +319,7 @@ export default function SettingsPage() {
         </ul>
       </section>
       <AddProvider />
+      <SourcesManager />
       <DiagnosticsPanel />
     </div>
   );

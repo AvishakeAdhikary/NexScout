@@ -3,9 +3,10 @@
 Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed and passed) · ⛔ blocked
 
 ## Checkpoint (update at the end of every session)
-- **Date:** 2026-10-18
-- **Current milestone:** M14 production defaults + error sweep (🟨). Then M15 real sources/countries, M16 provider
-  editing + auto-update, M17 real-world run. M0–M13 ✅ (v2.0.0, v2.1.0 released).
+- **Date:** 2026-10-19
+- **Current milestone:** M16 provider editing + auto-update (next). M14 ✅ (commit 411dc55) and M15 ✅ (real
+  sources, countries, signals, budget, user time zone) are committed and released together as v2.2.0. Then M17
+  real-world run. M0–M13 ✅ (v2.0.0, v2.1.0 released).
 - **Why (user feedback on v2.1.0, 2026-10-18):** the shipped app had only demo sources and the demo application
   site (Easy/desktop ran with NEXSCOUT_ENV unset = development); no real or custom job sources; countries were free
   text (autopilot asked for codes, data had names, so its filter matched nothing); AI providers could not be
@@ -285,17 +286,43 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
        compose, generated secrets, master key in OS storage) → setup wizard in the browser window.
     3. `Start NexScout` scripts for Windows/macOS/Linux (Docker), in-app onboarding wizard.
     4. `docs/USER_GUIDE.md` for non-technical users; README rewritten user-first.
-- **Still open (need keys or other platforms):** live provider and channel verification with real
-  credentials; real job/academic sources and real application portals; code signing; macOS/Linux
-  installers.
+- **M14 (✅, 411dc55):** shipped builds run `NEXSCOUT_ENV=production`; demo sources and the demo site only with
+  `NEXSCOUT_DEMO_DATA=1`; cookies secure only on https; runtime `/api` proxy (`src/proxy.ts`); `user_message()`
+  for every user-visible error; uvicorn keep-alive 75 s (fixed ECONNRESET 500s through the Next proxy); only
+  the primary source updates a merged listing; E2E error guard (`e2e/fixtures.ts`) + route crawl; CI E2E in dev
+  and production builds.
+- **M15 (✅):**
+  - Sources (ADR-0015): 32 providers ported from career-ops @340a53b1 (THIRD_PARTY_NOTICES.md), every network
+    provider checked live and replay-tested from recorded real responses (`scripts/record_source_fixtures.py`,
+    `tests/fixtures/sources/`); `catalog.yaml` (168 entries; 61 unsupported and 10 manual-only, each with a
+    reason) built by `scripts/build_catalog.py`; custom sources by URL with detection (patterns → ATS links on
+    branded pages → feed autodiscovery → JSON-LD) and test-fetch; career-ops `portals.yml` import; per-source
+    health; parallel fetch with isolation; keyword and country filtering before storage. Settings → "Where to
+    look" (`components/sources-manager.tsx`); the opportunity board links there and says when nothing is on.
+  - Countries/signals/budget (ADR-0016): ISO 3166-1 data (249 + 15 groups, `scripts/gen_countries.py`),
+    `CountryPicker` in preferences and autopilot (include + exclude), signals (sponsorship, work rights,
+    languages, funding, fees), ECB FX (`fx_rates`, refreshed daily by the worker), budget check in the user's
+    currency. Policy messages name countries ("Germany isn't in your countries").
+  - Found while verifying: the country picker chose the DACH group for "Germany" + Enter (fixed: exact →
+    prefix → contains ranking, countries before groups); **reminders were due on the UTC day, not the user's**
+    (m8 E2E failed between 00:00 and 05:30 IST). Fixed with `users.timezone` (migration 0013, reported by the
+    browser at register/login, system role may read only `users(id, timezone)`), used by the reminder sweep
+    and the dashboard; `tzdata` is now a direct dependency so Linux images have zone data.
+  - Desktop `tsconfig.json`: `module`/`moduleResolution` `node16` (node10 is deprecated and is removed in
+    TypeScript 7); still emits CommonJS for Electron; verified with TypeScript 6.0.3.
+- **Still open (need keys or other platforms):** live AI provider and channel verification with real
+  credentials (NVIDIA NIM in M17); real application portals; code signing; macOS/Linux installers.
 - **Next exact steps:**
-  1. Live-verify one channel (Telegram is the cheapest) with a real bot token, and record the
-     result in KNOWN_LIMITATIONS.
-  2. Live-verify one AI provider (a local Ollama model is free) and record its capability
-     profile.
-  3. Run the macOS and Linux easy scripts on those systems, and build their desktop installers.
-  4. Upgrade the GitHub Actions versions before the Node 20 runtime removal (CI warns:
-     checkout, setup-node, setup-uv, docker/*).
+  1. Confirm CI and the v2.2.0 release (`gh run list`, `gh release view v2.2.0`).
+  2. M16: `PATCH /providers/{id}` (name, model, base_url, default, key keep/replace/clear, version check,
+     re-verify, audit) + Edit form + IDOR coverage; electron-updater (`latest.yml` + blockmap in the release,
+     check at start and every 6 h, Restart to update, cache cleanup); Easy mode pull + prune old images;
+     `GET /api/v1/version` + update banner; easy scripts `-Update`; ADR-0017; USER_GUIDE.
+  3. M17: `scripts/real_world_run.py` (reads `NEXSCOUT_REAL_RUN_DIR`, writes to a scratch folder, nothing
+     personal in git) against a production-mode stack; NVIDIA NIM key only via env var → provider API; the user
+     approves submissions in the app; fix everything found; sanitized evidence here.
+  4. Later: live-verify one notification channel; macOS/Linux scripts and installers; upgrade GitHub Actions
+     before the Node 20 runtime removal.
 
 ## Test evidence log
 | Date | Command | Result |
@@ -356,6 +383,12 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | CI 39026238677 on f38ab96, then Release 39026495319 | CI 5/5 green. Release: version, images (backend, web), windows and publish all ✓. **v2.0.0** published with `NexScout-Setup-2.0.0.exe` (112 MB, unsigned) and `nexscout-easy-2.0.0.zip`: compose pinned to 2.0.0, `.cmd` files with CRLF, roles SQL, user guide and license included |
 | 2026-10-17 | GHCR anonymous pull (registry token → manifest 2.0.0) | backend 200, web 200: the packages are public |
 | 2026-10-17 | The released zip from a clean folder (Windows, local images deleted first) | **passed**: pulled `ghcr.io/avishakeadhikary/nexscout-backend:2.0.0` and web, 4 containers healthy, :3000 opened, register 201, diagnostics `app_version 2.0.0` with 1 worker alive. Stop script stopped everything; the test install and its volumes were removed |
+| 2026-10-18 | M14: backend suite, `npx playwright test`, `E2E_PROD=1 npx playwright test` | 351 passed; **15/15** dev E2E (after the keep-alive fix); production E2E m5/m6 failures fixed (primary-source rule), then green |
+| 2026-10-18 | M15: live provider probe (28 network providers) and fixture recording | all 28 returned postings; EU employers checked: Wolt, Oura, KONE, Helsing, DeepL, Synthesia, Wayve, Spotify, Adyen, Celonis, GetYourGuide, Delivery Hero, N26, Philips, Wise, Dataiku, Aalto (Workday); Varbi: Uppsala, KTH, Lund; Work in Finland (~1,180 jobs); Getro b2venture; ECB feed incl. INR |
+| 2026-10-19 | M15: `uv run ruff check . && ruff format --check . && mypy` | all clean (142 source files) |
+| 2026-10-19 | M15: `uv run pytest` | **422 passed** in 187 s (incl. 3 new time-zone tests: UTC+14 vs UTC-11 reminders, login follows zone, zone validation) |
+| 2026-10-19 | M15: web typecheck, lint, vitest 12/12; desktop tests 5/5 | passed |
+| 2026-10-19 | M15: `npx playwright test` and `E2E_PROD=1 npx playwright test` | **15/15** and **15/15** (first run: 2 failures, both real bugs: picker ranking and UTC reminders; fixed) |
 | 2026-10-17 | M12: web tsc, eslint, vitest 12/12; desktop tests 3/3; `npx playwright test` | passed; **14/14 E2E** incl. new journey (consent shown → autopilot on → run → the placeholder question appears instead of a guess → answered → saved answer listed → Stop everything → off) |
 
 ---
@@ -379,6 +412,10 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M11 | Notification channels | ✅ (providers faked at HTTP level; not live-verified) | Paired channels receive notifications through a durable outbox; approvals and answers from chat act only for the paired identity, once |
 | M12 | Autopilot | ✅ (demo site only; real portals unverified) | Scheduled discover → documents → fill → submit within a consented policy; unknowns asked, never guessed; manual-only sites respected; kill switch |
 | M13 | Releases and easy install | ✅ (v2.0.0 released; Windows paths verified, macOS/Linux scripts not run) | Every green main push gets a minor-bump tag and release; non-technical users can install and start NexScout with a double-click |
+| M14 | Production defaults and error sweep | ✅ | Shipped builds have no demo data, production settings, runtime API origin; no raw exception text reaches users; E2E fails on any page/console error or API 5xx in dev and production builds |
+| M15 | Real sources, countries, signals, budget | ✅ (providers checked live 2026-10-18/19; endpoints can drift) | Real postings from catalog and custom sources with health; ISO include/exclude everywhere; sponsorship/language/funding/fee signals explained; budget in the user's currency |
+| M16 | Provider editing and auto-update | ⬜ | Providers editable without re-adding; installed desktop app updates itself and removes old installers and images; web shows when an update exists |
+| M17 | Real-world run | ⬜ | The user's real CV and preferences run end to end on a production-mode stack with real sources and a live AI provider; every error found is fixed |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

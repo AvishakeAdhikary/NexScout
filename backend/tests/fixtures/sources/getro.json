@@ -1,0 +1,179 @@
+{
+ "provider": "getro",
+ "entry": {
+  "name": "b2venture",
+  "url": "https://jobs.b2venture.vc/jobs",
+  "config": {
+   "collection": "4283",
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 20,
+ "responses": {
+  "POST https://api.getro.com/api/v2/collections/4283/search/jobs": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "results": {
+     "jobs": [
+      {
+       "compensation_public": true,
+       "featured": false,
+       "compensation_amount_max_cents": null,
+       "searchable_locations": [
+        "Berlin, Germany",
+        "Germany",
+        "Europe"
+       ],
+       "created_at": 1792322606,
+       "weight": 0,
+       "compensation_amount_min_cents": null,
+       "source": "career_page",
+       "title": "Sales Manager Germany",
+       "work_mode": "on_site",
+       "url": "https://join.com/companies/ambiomaterials/16842878-sales-manager-germany",
+       "skills": [],
+       "location_details": [
+        {
+         "name": "Berlin, Germany",
+         "area_type": "locality",
+         "point": "POINT (13.404954 52.52000659999999)"
+        }
+       ],
+       "compensation_offers_equity": null,
+       "compensation_currency": null,
+       "compensation_period": "period_not_defined",
+       "organization": {
+        "stage": "other",
+        "logo_url": "https://cdn.getro.com/companies/1be6d5f2-3096-4ae5-af75-677d9f5f589d-1760779251",
+        "topics": [],
+        "name": "Ambio",
+        "head_count": 1,
+        "id": 1401226,
+        "industry_tags": [
+         "Distributors/Wholesale",
+         "Other Commercial Products"
+        ],
+        "slug": "ambio-2"
+       },
+       "locations": [
+        "Berlin, Germany"
+       ],
+       "has_description": false,
+       "slug": "97364189-sales-manager-germany",
+       "seniority": "mid_senior",
+       "id": 97364189
+      },
+      {
+       "compensation_public": true,
+       "featured": false,
+       "compensation_amount_max_cents": null,
+       "searchable_locations": [
+        "Munich, Germany",
+        "Upper Bavaria, Germany",
+        "Bavaria, Germany"
+       ],
+       "created_at": 1792322054,
+       "weight": 0,
+       "compensation_amount_min_cents": null,
+       "source": "career_page",
+       "title": "Flight Software Architect",
+       "work_mode": "on_site",
+       "url": "https://jobs.ashbyhq.com/the-exploration-company/3e6f4bdf-dcb3-4ac7-a97f-1844127babd2",
+       "skills": [
+        "Software Architecture",
+        "Embedded Software",
+        "Real Time Systems"
+       ],
+       "location_details": [
+        {
+         "name": "Munich, Germany",
+         "area_type": "locality",
+         "point": "POINT (11.5819806 48.1351253)"
+        }
+       ],
+       "compensation_offers_equity": null,
+       "compensation_currency": null,
+       "compensation_period": "period_not_defined",
+       "organization": {
+        "stage": "series_c",
+        "logo_url": "https://cdn.getro.com/companies/437c2194-19a3-417d-bc0f-d92ffed81a2f-1760837243",
+        "topics": [],
+        "name": "The Exploration Company",
+        "head_count": 4,
+        "id": 60629,
+        "industry_tags": [
+         "Aerospace",
+         "Aerospace & Defense",
+         "Air Transportation"
+        ],
+        "slug": "the-exploration-company"
+       },
+       "locations": [
+        "Munich, Germany"
+       ],
+       "has_description": true,
+       "slug": "97363641-flight-software-architect",
+       "seniority": "mid_senior",
+       "id": 97363641
+      },
+      {
+       "compensation_public": true,
+       "featured": false,
+       "compensation_amount_max_cents": null,
+       "searchable_locations": [
+        "London, UK",
+        "Greater London, UK",
+        "England, UK"
+       ],
+       "created_at": 1792242767,
+       "weight": 0,
+       "compensation_amount_min_cents": null,
+       "source": "career_page",
+       "title": "Content Manager - Retail",
+       "work_mode": "on_site",
+       "url": "https://boards.greenhouse.io/sumup/jobs/8888622002",
+       "skills": [
+        "Content Management",
+        "Content Strategy",
+        "Copywriting"
+       ],
+       "location_details": [
+        {
+         "name": "London, UK",
+         "area_type": "locality",
+         "point": "POINT (-0.1277583 51.5073509)"
+        }
+       ],
+       "compensation_offers_equity": null,
+       "compensation_currency": null,
+       "compensation_period": "period_not_defined",
+       "organization": {
+        "stage": "acquisition",
+        "logo_url": "https://cdn.getro.com/companies/55d7743c-1e55-4d3b-b388-0ab7979f0bbf-1767800961",
+        "topics": [],
+        "name": "Sumup",
+        "head_count": 4,
+        "id": 4374494,
+        "industry_tags": [
+         "Finance",
+         "Financial Services",
+         "Financial Software"
+        ],
+        "slug": "sumup-2"
+       },
+       "locations": [
+        "London, UK"
+       ],
+       "has_description": true,
+       "slug": "97338763-content-manager-retail",
+       "seniority": "mid_senior",
+       "id": 97338763
+      }
+     ],
+     "count": 1193
+    }
+   }
+  }
+ }
+}

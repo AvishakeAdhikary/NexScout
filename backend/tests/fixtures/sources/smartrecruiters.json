@@ -1,0 +1,5419 @@
+{
+ "provider": "smartrecruiters",
+ "entry": {
+  "name": "Bosch",
+  "url": "https://jobs.smartrecruiters.com/BoschGroup",
+  "config": {
+   "slug": "BoschGroup",
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 2500,
+ "responses": {
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=0&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 0,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000156179239",
+      "name": "Application Engineer_DCCS",
+      "uuid": "2f3b809e-3431-4af4-83e4-4d5579bb3537",
+      "jobAdId": "883229ac-33d6-476d-89bd-6ce4842dd7d1",
+      "defaultJobAd": true,
+      "refNumber": "REF298864P",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-18T07:28:14.846Z",
+      "location": {
+       "city": "Shanghai",
+       "region": "Shanghai",
+       "country": "cn",
+       "postalCode": "200000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.2304",
+       "longitude": "121.4737",
+       "fullLocation": "Shanghai, Shanghai, China"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "DCCS",
+        "valueLabel": "DCCS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000156179239",
+      "creator": {
+       "name": "Lin Li"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000156179119",
+      "name": "Head of PR and Corporate Communications",
+      "uuid": "9ed12689-0a97-4f82-8145-2ee7307e2b8f",
+      "jobAdId": "754a39dc-4275-48d4-b9dc-a7bf0d226b6d",
+      "defaultJobAd": true,
+      "refNumber": "REF296877S",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-18T07:17:23.829Z",
+      "location": {
+       "city": "Worcester",
+       "region": "England",
+       "country": "gb",
+       "address": "Cotswold Way",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "52.2154288",
+       "longitude": "-2.1875122",
+       "fullLocation": "Worcester, England, United Kingdom"
+      },
+      "industry": {
+       "id": "consumer_electronics",
+       "label": "Consumer Electronics"
+      },
+      "department": {},
+      "function": {
+       "id": "management",
+       "label": "Management"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "executive",
+       "label": "Executive"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "6be1389b-3b89-46a0-ab4a-b51338ddae47",
+        "valueLabel": "United Kingdom Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "686cf9ab-a53b-45a5-8578-8f2ad07b9811",
+        "valueLabel": "TTGB"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000156179119",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000156173229",
+      "name": "制冷系统研发科学家Research Scientist on HVAC Refrigeration System_CR",
+      "uuid": "1ab542c1-f108-4cdc-9b30-5bd6d938a2f7",
+      "jobAdId": "059733f7-92c6-4fc4-acbf-e3313e615f60",
+      "defaultJobAd": true,
+      "refNumber": "REF298863O",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-18T02:01:53.606Z",
+      "location": {
+       "city": "Shanghai",
+       "region": "Shanghai",
+       "country": "cn",
+       "postalCode": "200000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.2304",
+       "longitude": "121.4737",
+       "fullLocation": "Shanghai, Shanghai, China"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBCN",
+        "valueLabel": "RBCN"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000156173229",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=100&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 100,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000155912199",
+      "name": "Praktikum Software Development (w/m/div.)",
+      "uuid": "d7f6482d-c0bb-4efc-9901-0175502509b9",
+      "jobAdId": "9475d9a9-34de-4f36-8a3f-1559340c454f",
+      "defaultJobAd": true,
+      "refNumber": "REF298680M",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-16T05:42:24.081Z",
+      "location": {
+       "city": "Wien",
+       "region": "Wien",
+       "country": "at",
+       "address": "Göllnergasse",
+       "postalCode": "1030",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "48.200088",
+       "longitude": "16.4007122",
+       "fullLocation": "Wien, Wien, Austria"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "intern",
+       "label": "Intern"
+      },
+      "experienceLevel": {
+       "id": "entry_level",
+       "label": "Entry Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "674561e9-85b5-4df9-b4f9-86383934469c",
+        "valueLabel": "Austria Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "0f12d4c0-9bfe-4549-937d-29f3055abca2",
+        "valueLabel": "RBOS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155912199",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000155911459",
+      "name": "IN_RBIC_Customer Quality management/Product Quality Management_QMM3-ChkP",
+      "uuid": "af306526-315c-4431-9e85-a8f4a32017e2",
+      "jobAdId": "24ee07bd-327a-4592-953f-43985d880dbc",
+      "defaultJobAd": true,
+      "refNumber": "REF298338V",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-16T05:34:26.393Z",
+      "location": {
+       "city": "Kurli",
+       "region": "MH",
+       "country": "in",
+       "address": "Chakan - Nanekarwadi - Pune",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "18.710356",
+       "longitude": "73.8486045",
+       "fullLocation": "Kurli, MH, India"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBIC",
+        "valueLabel": "RBIC"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155911459",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155908788",
+      "name": "[GR] 本社ファシリティマネジメント及び総務管理 #REF262076Z",
+      "uuid": "40d106f5-4a43-42b0-93b1-ac624f2ca747",
+      "jobAdId": "051653c6-6328-4da5-9385-463dfa74f829",
+      "defaultJobAd": true,
+      "refNumber": "REF262076Z",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-16T04:53:54.418Z",
+      "location": {
+       "city": "Yokohama",
+       "country": "jp",
+       "address": "Tsuzuki Nakagawa Chuo 1-9-32",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Yokohama, , Japan"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "817c1a47-d176-4a29-ad5e-f5dc47c15cb3",
+        "valueLabel": "Japan Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "4dd2f911-715c-45fe-9d7d-4489aaba1500",
+        "valueLabel": "RBJP"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155908788",
+      "language": {
+       "code": "ja",
+       "label": "Japanese",
+       "labelNative": "日本語"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=200&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 200,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000155672379",
+      "name": "AI Expert_PS",
+      "uuid": "f42dc64c-5d67-4e5b-96bf-213366606f98",
+      "jobAdId": "a8bf091f-3373-409c-86c2-302b2202901a",
+      "defaultJobAd": true,
+      "refNumber": "REF298643R",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-15T06:37:01.401Z",
+      "location": {
+       "city": "Wuxi",
+       "region": "Jiangsu",
+       "country": "cn",
+       "postalCode": "214000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.4912",
+       "longitude": "120.3119",
+       "fullLocation": "Wuxi, Jiangsu, China"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "manufacturing",
+       "label": "Manufacturing"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBCD",
+        "valueLabel": "RBCD"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155672379",
+      "creator": {
+       "name": "Jintao YU (GS/HRS-PAC1-CN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155672249",
+      "name": "Ipar 4.0 és üzleti adatelemző gyakornok",
+      "uuid": "4e268662-5ed0-4a32-bd40-1cc4d01ee5e3",
+      "jobAdId": "e7636f09-443b-4025-84b9-67b69b9d113d",
+      "defaultJobAd": true,
+      "refNumber": "REF298642M",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-15T06:36:19.328Z",
+      "location": {
+       "city": "Hatvan",
+       "country": "hu",
+       "address": "Robert Bosch út",
+       "postalCode": "3000",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "47.6712632",
+       "longitude": "19.647456",
+       "fullLocation": "Hatvan, , Hungary"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "quality_assurance",
+       "label": "Quality Assurance"
+      },
+      "typeOfEmployment": {
+       "id": "intern",
+       "label": "Intern"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5a5f5198-846e-40f9-a392-a572a6c71e28",
+        "valueLabel": "Hungary Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "0aded8c2-d594-4885-ac8e-4a4de1d07fc1",
+        "valueLabel": "RBHH"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155672249",
+      "language": {
+       "code": "hu",
+       "label": "Hungarian",
+       "labelNative": "magyar"
+      }
+     },
+     {
+      "id": "744000155672159",
+      "name": "Head of Strategy",
+      "uuid": "1cf4ce87-d816-4f87-a1fd-b08b02b030ea",
+      "jobAdId": "978574f3-7b97-4fe3-bb5e-e5261b9dfc50",
+      "defaultJobAd": true,
+      "refNumber": "REF294762U",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-15T06:34:35.291Z",
+      "location": {
+       "city": "Bengaluru",
+       "region": "Karnataka",
+       "country": "in",
+       "address": "No.123 Industrial layout hosur road, Koramangala",
+       "postalCode": "560095",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Bengaluru, Karnataka, India"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155672159",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=300&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 300,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000155452020",
+      "name": "HR Internship (Administration, Training & Organization)",
+      "uuid": "834af2ab-a435-4ce3-8043-b3960162dc28",
+      "jobAdId": "05f8fcf1-fe38-4506-a6bc-2732e489f509",
+      "defaultJobAd": true,
+      "refNumber": "REF298347D",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-14T09:10:03.799Z",
+      "location": {
+       "city": "Cernusco sul Naviglio",
+       "region": "Lombardia",
+       "country": "it",
+       "address": "Strada Padana Superiore",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "45.5153963",
+       "longitude": "9.3370022",
+       "fullLocation": "Cernusco sul Naviglio, Lombardia, Italy"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "human_resources",
+       "label": "Human Resources"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "entry_level",
+       "label": "Entry Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "667d3dcb-a010-426f-80d4-c3103bba3e7a",
+        "valueLabel": "Italy Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "6f83e466-39bc-4f9b-8b9b-927078044a89",
+        "valueLabel": "DCIT"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155452020",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155451499",
+      "name": "SAP Project Manager (S/4 HANA Transformation)",
+      "uuid": "ece9d3dd-5490-4823-b422-a1a6f56702d2",
+      "jobAdId": "a1727b31-a64d-4514-b3ff-2dee51d0b056",
+      "defaultJobAd": true,
+      "refNumber": "REF298021N",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-14T09:07:16.769Z",
+      "location": {
+       "city": "Bengaluru",
+       "region": "KA",
+       "country": "in",
+       "address": "3000, Hosur Road, Adugodi",
+       "postalCode": "560030",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "3 days work from office per week",
+       "fullLocation": "Bengaluru, KA, India"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBIN",
+        "valueLabel": "RBIN"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155451499",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155449380",
+      "name": "CNC机械维修技师（济南）_VM",
+      "uuid": "f65edd37-5b54-48d2-bbdb-20dd36ef35ce",
+      "jobAdId": "89bd3fc8-198f-4b00-898b-4130136a7c8c",
+      "defaultJobAd": true,
+      "refNumber": "REF298547F",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-14T09:04:31.225Z",
+      "location": {
+       "city": "济南",
+       "country": "cn",
+       "address": "济南-历城区",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "济南, , China"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "manufacturing",
+       "label": "Manufacturing"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "entry_level",
+       "label": "Entry Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "ASCJ",
+        "valueLabel": "ASCJ"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155449380",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=400&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 400,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000155262227",
+      "name": "Mac Developer (f/m)",
+      "uuid": "934f5c85-69d1-49d8-b928-bc94caa5791f",
+      "jobAdId": "b731ef72-691d-4395-ae2f-c107588e26b1",
+      "defaultJobAd": true,
+      "refNumber": "REF297543V",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-13T13:25:06.321Z",
+      "location": {
+       "city": "Łódź",
+       "region": "województwo łódzkie",
+       "country": "pl",
+       "address": "Składowa 35",
+       "postalCode": "90-127",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "only 2 office days per month",
+       "fullLocation": "Łódź, województwo łódzkie, Poland"
+      },
+      "industry": {
+       "id": "it_and_services",
+       "label": "Information Technology And Services"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "aca83824-d7ce-4fc5-95e5-efc078f1f18d",
+        "valueLabel": "Poland Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "6edc97cd-8593-4de3-a8e6-243bac09e15f",
+        "valueLabel": "RBPL"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155262227",
+      "creator": {
+       "name": "Kseniia Kalko"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155262688",
+      "name": "Warehouse Operations Executive / Senior Executive",
+      "uuid": "e7f6efc3-dc49-4310-bddc-6aed565a293d",
+      "jobAdId": "67f99e55-b56f-4230-a4a9-55b40ed9b089",
+      "defaultJobAd": true,
+      "refNumber": "REF298363I",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-13T13:24:59.504Z",
+      "location": {
+       "city": "Petaling Jaya",
+       "region": "Selangor",
+       "country": "my",
+       "address": "Level 7 & 8, Menara Star 2, Pacific Towers, Jalan 13/6, Section 13,",
+       "postalCode": "46200",
+       "remote": false,
+       "hybrid": true,
+       "fullLocation": "Petaling Jaya, Selangor, Malaysia"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5dca63dd-f7fb-4b43-b7ee-6eb0df1d58b3",
+        "valueLabel": "Malaysia Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "382b45f0-9fef-4edf-b8e9-902d7359018c",
+        "valueLabel": "RBMY"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155262688",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155262429",
+      "name": "Workshop Sales Representative",
+      "uuid": "51f45034-193e-48fa-b9bf-c866a323f4ba",
+      "jobAdId": "96dde744-c73a-4fd1-b2ba-dee4385567af",
+      "defaultJobAd": true,
+      "refNumber": "REF298373U",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-13T13:24:22.848Z",
+      "location": {
+       "city": "Petaling Jaya",
+       "region": "Selangor",
+       "country": "my",
+       "address": "Level 7 & 8, Menara Star 2, Pacific Towers, Jalan 13/6,",
+       "postalCode": "46200",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Petaling Jaya, Selangor, Malaysia"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5dca63dd-f7fb-4b43-b7ee-6eb0df1d58b3",
+        "valueLabel": "Malaysia Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "382b45f0-9fef-4edf-b8e9-902d7359018c",
+        "valueLabel": "RBMY"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155262429",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=500&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 500,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000155091588",
+      "name": "Senior System Test Engineer",
+      "uuid": "792fc63b-8fc6-4f3d-aabd-8fd420f225db",
+      "jobAdId": "4eb609d3-6813-4494-a8fb-4c92515919a8",
+      "defaultJobAd": true,
+      "refNumber": "REF297998T",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-12T18:30:23.757Z",
+      "location": {
+       "city": "bangalore",
+       "country": "in",
+       "address": "building 601 & 602, p.b.3000, adugodi. hosur road,",
+       "postalCode": "560030",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bangalore, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155091588",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155086259",
+      "name": " Chief Expert Robotics",
+      "uuid": "54529185-fb27-4d2c-8d42-86d9b06ca67d",
+      "jobAdId": "99f5629c-e53c-4426-8804-083ab8c7ea06",
+      "defaultJobAd": false,
+      "refNumber": "REF296825F",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-12T17:51:25.295Z",
+      "location": {
+       "city": "Pittsburgh",
+       "region": "PA",
+       "country": "us",
+       "address": "2555 Smallman Street",
+       "postalCode": "15222",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "3 days in office",
+       "latitude": "40.4553472",
+       "longitude": "-79.9800679",
+       "fullLocation": "Pittsburgh, PA, United States"
+      },
+      "industry": {
+       "id": "it_and_services",
+       "label": "Information Technology And Services"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "director",
+       "label": "Director"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBUS",
+        "valueLabel": "RBUS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155086259",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000155078749",
+      "name": "Software Developer (f/m/div.)",
+      "uuid": "868363d2-6b71-4feb-9317-34d602a4a895",
+      "jobAdId": "2cfc4834-9dc6-47a2-b20f-7a997d44d042",
+      "defaultJobAd": true,
+      "refNumber": "REF298316X",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-12T17:03:16.849Z",
+      "location": {
+       "city": "Cacia, Aveiro",
+       "country": "pt",
+       "address": "EN 16 – km 3.7",
+       "remote": false,
+       "hybrid": true,
+       "fullLocation": "Cacia, Aveiro, , Portugal"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "7174fab4-934a-47da-81a5-cb2d914a4719",
+        "valueLabel": "Portugal Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "6bd00876-3efa-419c-9aac-20d5efb2d4fb",
+        "valueLabel": "TTPO"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000155078749",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=600&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 600,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000154931829",
+      "name": "Solution Manager - Custom Web & Mobile Solutions, Bosch Digital India",
+      "uuid": "da45684a-066b-406d-b32f-f35864f75ef4",
+      "jobAdId": "f3379e04-e47a-472c-a857-8f9891cc68ac",
+      "defaultJobAd": true,
+      "refNumber": "REF297498Y",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-12T06:50:49.288Z",
+      "location": {
+       "city": "bengaluru",
+       "country": "in",
+       "address": "no.123  industrial layout  hosur road  koramangala,",
+       "postalCode": "560095",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bengaluru, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154931829",
+      "creator": {
+       "name": "Mohammed Fiyaz S (GS/HRS23-IN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000154931267",
+      "name": "SAP PS Sr. Functional Consultant",
+      "uuid": "7260388e-ffc9-432e-8711-f721d61700c3",
+      "jobAdId": "803da5be-c49e-4e06-99b3-4b60b3b55eb4",
+      "defaultJobAd": true,
+      "refNumber": "REF297566G",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-12T06:50:30.287Z",
+      "location": {
+       "city": "bangalore",
+       "country": "in",
+       "address": "cyber park, survey no.66 & 67, doddathogur village, electronic city,",
+       "postalCode": "5600100",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bangalore, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "consulting",
+       "label": "Consulting"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154931267",
+      "creator": {
+       "name": "Mohammed Fiyaz S (GS/HRS23-IN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000154928924",
+      "name": "ADAS系统工程师_BCSC",
+      "uuid": "8b5d0521-6a1d-4227-ad04-d503b8a30f6d",
+      "jobAdId": "ba61f173-794b-4ff7-b79c-d03cd94d86fb",
+      "defaultJobAd": true,
+      "refNumber": "REF298239V",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-12T06:42:56.472Z",
+      "location": {
+       "city": "Suzhou",
+       "region": "Jiangsu",
+       "country": "cn",
+       "postalCode": "215000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.299",
+       "longitude": "120.5853",
+       "fullLocation": "Suzhou, Jiangsu, China"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "8f5dcb28-474e-4bc4-bc98-a27bf4c889b5",
+        "valueLabel": "BCSC-Szh"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154928924",
+      "creator": {
+       "name": "Wenhui MAO (GS/HRS-PAC1-CN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=700&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 700,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000154634864",
+      "name": "Außendienstmitarbeiter für die Buderus Niederlassung Bremen (w/m/div.)",
+      "uuid": "c556e2e5-7e9e-4acb-a8cb-e8af3ff7a31a",
+      "jobAdId": "3a376078-76ba-4c7e-ae41-1ac5e23a9481",
+      "defaultJobAd": true,
+      "refNumber": "REF298054E",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-09T09:51:46.002Z",
+      "location": {
+       "city": "Stuhr",
+       "region": "NDS",
+       "country": "de",
+       "address": "Lise-Meitner-Straße 1",
+       "postalCode": "28816",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "52.9978685",
+       "longitude": "8.777341",
+       "fullLocation": "Stuhr, NDS, Germany"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "sales",
+       "label": "Sales"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154634864",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000154627659",
+      "name": "AI & Data Quality Improvement Internship",
+      "uuid": "6330905a-d690-4a6f-963b-497dd1ca88be",
+      "jobAdId": "8e9ad45c-1885-44cc-835c-790dfa7c18f7",
+      "defaultJobAd": true,
+      "refNumber": "REF298075A",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-09T09:20:21.922Z",
+      "location": {
+       "city": "Beograd",
+       "country": "rs",
+       "address": "Omladinskih brigada 90e",
+       "postalCode": "11070",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "44.8222284",
+       "longitude": "20.4114858",
+       "fullLocation": "Beograd, , Serbia"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "f96116fc-f11c-4981-9057-536875429bc4",
+        "valueLabel": "Serbia Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "6286f52d-aa4b-4e77-a2f9-fa0d4d9e87a6",
+        "valueLabel": "RBSM"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154627659",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000154624002",
+      "name": "Pflichtpraktikum Mediendesign",
+      "uuid": "1068e9c7-ad3e-4e50-8040-7f6c29df9708",
+      "jobAdId": "91a760c6-2a2d-4ef9-b902-cc56c48cde44",
+      "defaultJobAd": true,
+      "refNumber": "REF298042L",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-09T09:17:08.507Z",
+      "location": {
+       "city": "Salzgitter",
+       "region": "NDS",
+       "country": "de",
+       "address": "John-F.-Kennedy-Straße 43",
+       "postalCode": "38228",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "52.1374676",
+       "longitude": "10.2982753",
+       "fullLocation": "Salzgitter, NDS, Germany"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "marketing",
+       "label": "Marketing"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154624002",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=800&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 800,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000154410022",
+      "name": "Praktikum Projektmanagement Einkauf eBike",
+      "uuid": "b0f91ea8-6a2c-48cf-9467-8a6778d42f7e",
+      "jobAdId": "dea58976-b4df-40d4-bbd1-82de028e8d55",
+      "defaultJobAd": true,
+      "refNumber": "REF298032E",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-08T11:18:36.748Z",
+      "location": {
+       "city": "Reutlingen",
+       "region": "BW",
+       "country": "de",
+       "address": "Markwiesenstraße 58",
+       "postalCode": "72770",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "48.4950381",
+       "longitude": "9.1376823",
+       "fullLocation": "Reutlingen, BW, Germany"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "purchasing",
+       "label": "Purchasing"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154410022",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000154408529",
+      "name": "Senior UX Researcher",
+      "uuid": "6c394a2a-e651-46fd-b2d3-287b6c098d0e",
+      "jobAdId": "941d08e9-99b3-4a24-a616-4ade610a80de",
+      "defaultJobAd": true,
+      "refNumber": "REF289950G",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-08T11:09:54.255Z",
+      "location": {
+       "city": "bengaluru",
+       "country": "in",
+       "address": "no.123  industrial layout  hosur road  koramangala,",
+       "postalCode": "560095",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bengaluru, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "design",
+       "label": "Design"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154408529",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000154409109",
+      "name": "Sr. Embedded SW developer ORC2-EDC3",
+      "uuid": "8a7e1430-57e4-450e-b01a-702353a46d04",
+      "jobAdId": "7caafc70-9826-4d66-a000-80c4b3c148b0",
+      "defaultJobAd": true,
+      "refNumber": "REF297741R",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-08T11:08:39.769Z",
+      "location": {
+       "city": "bangalore",
+       "country": "in",
+       "address": "cyber park, survey no.66 & 67, doddathogur village, electronic city,",
+       "postalCode": "5600100",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bangalore, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154409109",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=900&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 900,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000154056607",
+      "name": "MSR-Techniker (w/m/div.) Gebäudeautomation für Bundeswehrobjekte – Gebiet Hannover",
+      "uuid": "43ec9506-57db-4963-b931-29e1854e92dc",
+      "jobAdId": "1dbbe1e3-72ed-4ae8-afe9-902fa4000a4e",
+      "defaultJobAd": true,
+      "refNumber": "REF211945Y",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-07T09:59:05.587Z",
+      "location": {
+       "city": "Isernhagen",
+       "region": "NDS",
+       "country": "de",
+       "address": "Stahlstraße 1",
+       "postalCode": "30916",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "52.484165",
+       "longitude": "9.802349999999999",
+       "fullLocation": "Isernhagen, NDS, Germany"
+      },
+      "industry": {
+       "id": "facilities_services",
+       "label": "Facilities Services"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154056607",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000154058289",
+      "name": "MSR-Techniker (w/m/div.) Gebäudeautomation für Bundeswehrobjekte – Gebiet Jena",
+      "uuid": "a22653d8-b20b-41ac-9b36-d5ad0a534d58",
+      "jobAdId": "06af9345-6553-454c-af59-2a6b706bec79",
+      "defaultJobAd": true,
+      "refNumber": "REF263602X",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-07T09:56:27.111Z",
+      "location": {
+       "city": "Jena",
+       "region": "TH",
+       "country": "de",
+       "address": "Otto-Schott-Straße 41",
+       "postalCode": "07745",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "50.9215054",
+       "longitude": "11.5714751",
+       "fullLocation": "Jena, TH, Germany"
+      },
+      "industry": {
+       "id": "facilities_services",
+       "label": "Facilities Services"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154058289",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000154053796",
+      "name": "Corporate Governance and Compliance Internship",
+      "uuid": "c65da997-a2c8-4fce-a20e-54f1c9983444",
+      "jobAdId": "f54794af-7bea-4a2a-a2f8-21006fa74646",
+      "defaultJobAd": true,
+      "refNumber": "REF297836L",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-07T09:51:59.039Z",
+      "location": {
+       "city": "Milano",
+       "region": "Lombardia",
+       "country": "it",
+       "address": "Via Marcantonio Colonna",
+       "postalCode": "20149",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "45.4870444",
+       "longitude": "9.1525332",
+       "fullLocation": "Milano, Lombardia, Italy"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "legal",
+       "label": "Legal"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "667d3dcb-a010-426f-80d4-c3103bba3e7a",
+        "valueLabel": "Italy Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "613c4d49-bce9-431e-b1ef-e7235563121b",
+        "valueLabel": "RBIT"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000154053796",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1000&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1000,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000153700719",
+      "name": "Wafer-level Test Engineer ",
+      "uuid": "503275ef-4e59-4d8d-b20a-165ce4dd8958",
+      "jobAdId": "0db19e65-304d-4dbd-a744-d36242789320",
+      "defaultJobAd": true,
+      "refNumber": "REF292391Q",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-06T09:00:38.215Z",
+      "location": {
+       "city": "Budapest",
+       "country": "hu",
+       "address": "Gyömrői út 104",
+       "postalCode": "1103",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "47.4652907",
+       "longitude": "19.1553794",
+       "fullLocation": "Budapest, , Hungary"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5a5f5198-846e-40f9-a392-a572a6c71e28",
+        "valueLabel": "Hungary Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "02a8eabd-4fd4-4061-94f0-3a30c2da95f5",
+        "valueLabel": "RBHU"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000153700719",
+      "language": {
+       "code": "hu",
+       "label": "Hungarian",
+       "labelNative": "magyar"
+      }
+     },
+     {
+      "id": "744000153700399",
+      "name": "Application Center Tesztjármű Technikus",
+      "uuid": "2b7c8722-59f1-4f85-924f-2b5e3aef785f",
+      "jobAdId": "7618aad2-912c-4d7a-9636-21a6e30cddc4",
+      "defaultJobAd": true,
+      "refNumber": "REF294142D",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-06T08:58:24.514Z",
+      "location": {
+       "city": "Budapest",
+       "country": "hu",
+       "address": "Gyömrői út 104",
+       "postalCode": "1103",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "47.4652907",
+       "longitude": "19.1553794",
+       "fullLocation": "Budapest, , Hungary"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5a5f5198-846e-40f9-a392-a572a6c71e28",
+        "valueLabel": "Hungary Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "02a8eabd-4fd4-4061-94f0-3a30c2da95f5",
+        "valueLabel": "RBHU"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000153700399",
+      "language": {
+       "code": "hu",
+       "label": "Hungarian",
+       "labelNative": "magyar"
+      }
+     },
+     {
+      "id": "744000153696660",
+      "name": "Project Leader for Mobility Electronics (Engineering Sensors Inertial)",
+      "uuid": "fac515f1-941f-463b-946d-68a51c13d84b",
+      "jobAdId": "e6e33347-7188-4749-bca4-cc02c760cde4",
+      "defaultJobAd": true,
+      "refNumber": "REF293606U",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-06T08:57:26.773Z",
+      "location": {
+       "city": "Budapest",
+       "country": "hu",
+       "address": "Gyömrői út 104",
+       "postalCode": "1103",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "47.4652907",
+       "longitude": "19.1553794",
+       "fullLocation": "Budapest, , Hungary"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5a5f5198-846e-40f9-a392-a572a6c71e28",
+        "valueLabel": "Hungary Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "02a8eabd-4fd4-4061-94f0-3a30c2da95f5",
+        "valueLabel": "RBHU"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000153696660",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1100&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1100,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000153403348",
+      "name": "SAP S4H PP QM Consultant",
+      "uuid": "2124a831-b524-4215-9c23-d8af01e57203",
+      "jobAdId": "710b3fe7-a3e6-49d9-a39f-9666f71dd33b",
+      "defaultJobAd": true,
+      "refNumber": "REF296710U",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-05T04:53:16.912Z",
+      "location": {
+       "city": "bengaluru",
+       "country": "in",
+       "address": "no.123  industrial layout  hosur road  koramangala,",
+       "postalCode": "560095",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bengaluru, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "consulting",
+       "label": "Consulting"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000153403348",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000153402679",
+      "name": "IN_Bosch Rexroth India_Engineer / Executive_Logistics (Imports)",
+      "uuid": "682af14e-de2a-4699-a871-019eb7683794",
+      "jobAdId": "d87be4b9-7f32-4bb2-b551-c31152ed6ce1",
+      "defaultJobAd": true,
+      "refNumber": "REF292045S",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-05T04:34:55.979Z",
+      "location": {
+       "city": "Bangalore",
+       "region": "Karnataka",
+       "country": "in",
+       "address": "Survey No.26/2 & 27/2, Kenchenahalli Village,Kengeri Hobli,South Taluk,",
+       "postalCode": "560059",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Bangalore, Karnataka, India"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "supply_chain",
+       "label": "Supply Chain"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "executive",
+       "label": "Executive"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "DCIN",
+        "valueLabel": "DCIN"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000153402679",
+      "creator": {
+       "name": "Saranya R (GS/HRS24-IN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000153401729",
+      "name": "Manufacturing IT Specialist",
+      "uuid": "149aea61-11e5-4952-971d-f101e8b99385",
+      "jobAdId": "c8d08b12-07ef-4bce-9334-b9019d40ac62",
+      "defaultJobAd": true,
+      "refNumber": "REF297667C",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-05T04:08:47.059Z",
+      "location": {
+       "city": "Cikarang Selatan",
+       "region": "Jawa Barat",
+       "country": "id",
+       "address": "Jalan Delta Silicon III",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "-6.3543486",
+       "longitude": "107.1331613",
+       "fullLocation": "Cikarang Selatan, Jawa Barat, Indonesia"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "a6c3ba01-684a-4733-bd71-803752726013",
+        "valueLabel": "Indonesia Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "9b6bcb1c-a2cf-49f8-821c-73fef6498731",
+        "valueLabel": "RBIY"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000153401729",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1200&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1200,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000152947167",
+      "name": "Master Data Steward (f/m/div.)",
+      "uuid": "e33f3a4a-228b-4d15-92eb-84ebda9b8987",
+      "jobAdId": "bf96d0c4-4804-4114-a3fc-ed6cfd83daca",
+      "defaultJobAd": true,
+      "refNumber": "REF297549Y",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-01T13:57:02.045Z",
+      "location": {
+       "city": "Ovar",
+       "country": "pt",
+       "address": "EN109, Zona Indutrial de Ovar, Lugar da Pardala",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "2 days on-site",
+       "fullLocation": "Ovar, , Portugal"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "75141c2b-6dde-484b-b128-d81d40a9be41",
+        "valueLabel": "According to Arrangement"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "7174fab4-934a-47da-81a5-cb2d914a4719",
+        "valueLabel": "Portugal Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "c728a5a5-daa6-4674-84c4-59a4edd1a0d3",
+        "valueLabel": "SOPO"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152947167",
+      "creator": {
+       "name": "Mariana Silva (GS/HRS-PAC-EU)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000152946618",
+      "name": "Arbeitsmedizinischer Assistent (w/m/div.) - befristet bis 31.12.2030",
+      "uuid": "4696251c-5bdc-49b9-a06d-5c38663900cf",
+      "jobAdId": "9f2b9df8-709d-4203-9aab-02f0e958a93f",
+      "defaultJobAd": true,
+      "refNumber": "REF297465W",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-01T13:41:57.099Z",
+      "location": {
+       "city": "Schwäbisch Gmünd",
+       "region": "BW",
+       "country": "de",
+       "address": "Richard-Bullinger-Straße 77",
+       "postalCode": "73527",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "48.8143012",
+       "longitude": "9.8236485",
+       "fullLocation": "Schwäbisch Gmünd, BW, Germany"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "health_care_provider",
+       "label": "Health Care Provider"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "91e4d6ce-4a5d-4c76-9549-402fdd4a626c",
+        "valueLabel": "Baden-Württemberg"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152946618",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000152941750",
+      "name": "Sales Manager Aviation and Defense (m/f/d)",
+      "uuid": "75b1c8b1-47fc-44db-a2b4-c85f36e36a03",
+      "jobAdId": "b764c60f-fe93-4307-aadf-dfe1c6f6efee",
+      "defaultJobAd": true,
+      "refNumber": "REF288224S",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-10-01T13:30:13.639Z",
+      "location": {
+       "city": "Torino",
+       "region": "Piemonte",
+       "country": "it",
+       "address": "Strada del Drosso",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "45.0168529",
+       "longitude": "7.6092542",
+       "fullLocation": "Torino, Piemonte, Italy"
+      },
+      "industry": {
+       "id": "aviation_and_aerospace",
+       "label": "Aviation And Aerospace"
+      },
+      "department": {},
+      "function": {
+       "id": "sales",
+       "label": "Sales"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "667d3dcb-a010-426f-80d4-c3103bba3e7a",
+        "valueLabel": "Italy Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "5c7210b7-12ce-4dd4-8370-23b364108dd9",
+        "valueLabel": "BEG"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152941750",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1300&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1300,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000152600529",
+      "name": "Zuverlässigkeitsingenieur für innovative Mobilitätslösungen (w/m/div.)",
+      "uuid": "be089212-ea55-4c67-8aea-7abdb9f5bce8",
+      "jobAdId": "0a12e0f9-8bfe-4c48-89fe-4c426f1e1b5f",
+      "defaultJobAd": true,
+      "refNumber": "REF290494H",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-30T06:39:50.772Z",
+      "location": {
+       "city": "Linz",
+       "region": "Oberösterreich",
+       "country": "at",
+       "address": "Robert-Bosch-Straße 1",
+       "postalCode": "4020",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Linz, Oberösterreich, Austria"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "674561e9-85b5-4df9-b4f9-86383934469c",
+        "valueLabel": "Austria Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "0f12d4c0-9bfe-4549-937d-29f3055abca2",
+        "valueLabel": "RBOS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152600529",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000152597566",
+      "name": "Public Cloud Migration/Build Specialist",
+      "uuid": "9bdbdbf6-6834-4f9b-aed1-4700caea9710",
+      "jobAdId": "fb1c0cee-f69d-4531-97b7-3ea3638502ae",
+      "defaultJobAd": true,
+      "refNumber": "REF293372C",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-30T06:39:10.438Z",
+      "location": {
+       "city": "telengana",
+       "country": "in",
+       "address": "worldwide realcon pvt ltd., sattva knowledge park, tower 1, 13th to 18th floor, plot no. 16, survey no. 83/1, raidurg village, serilingampally mandal, ranga reddy district, hyderabad,",
+       "postalCode": "500081",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "telengana, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152597566",
+      "creator": {
+       "name": "Mohammed Fiyaz S (GS/HRS23-IN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000152600019",
+      "name": "Elektrokonstrukteur mit Fokus Steuerungstechnik (w/m/div.)",
+      "uuid": "4c34fd8f-ae3d-4e9c-b80a-1089779fb304",
+      "jobAdId": "33a249a7-1c49-45c4-9bfc-15617edaf31b",
+      "defaultJobAd": true,
+      "refNumber": "REF295207B",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-30T06:35:30.148Z",
+      "location": {
+       "city": "Linz",
+       "region": "Oberösterreich",
+       "country": "at",
+       "address": "Petzoldstrasse 12",
+       "postalCode": "4020",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Linz, Oberösterreich, Austria"
+      },
+      "industry": {
+       "id": "machinery",
+       "label": "Machinery"
+      },
+      "department": {},
+      "function": {
+       "id": "production",
+       "label": "Production"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "674561e9-85b5-4df9-b4f9-86383934469c",
+        "valueLabel": "Austria Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "5c1cfeb4-eaba-4a0f-a282-4562eeff77e8",
+        "valueLabel": "DCAT"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152600019",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1400&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1400,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000152323919",
+      "name": "Staff AI Systems Engineer- Autonomous Driving",
+      "uuid": "ba487879-e541-47c5-9df0-6a86d6f4ad8d",
+      "jobAdId": "da90c82d-bd92-48ab-909a-deb09b882371",
+      "defaultJobAd": true,
+      "refNumber": "REF292319U",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-29T04:48:19.693Z",
+      "location": {
+       "city": "Sunnyvale",
+       "region": "CA",
+       "country": "us",
+       "address": "384 Santa Trinita Avenue",
+       "postalCode": "94085",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "In office 3 days a week",
+       "latitude": "37.3820466",
+       "longitude": "-121.9996484",
+       "fullLocation": "Sunnyvale, CA, United States"
+      },
+      "industry": {
+       "id": "research",
+       "label": "Research"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBUS",
+        "valueLabel": "RBUS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152323919",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000152323479",
+      "name": "Engineer - Process (Battery Pack Value Stream)",
+      "uuid": "0963aba7-3b03-4e07-9cd1-613ff06bd2b8",
+      "jobAdId": "5fb6a7bb-7054-45c0-b36b-37f64d3dca32",
+      "defaultJobAd": true,
+      "refNumber": "REF296814N",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-29T04:37:57.354Z",
+      "location": {
+       "city": "Bayan Lepas",
+       "region": "Pulau Pinang",
+       "country": "my",
+       "address": "45 Hilir Sungai Kluang 1",
+       "postalCode": "11900",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "5.300611",
+       "longitude": "100.2947527",
+       "fullLocation": "Bayan Lepas, Pulau Pinang, Malaysia"
+      },
+      "industry": {
+       "id": "electrical_manufacturing",
+       "label": "Electrical And Electronic Manufacturing"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5dca63dd-f7fb-4b43-b7ee-6eb0df1d58b3",
+        "valueLabel": "Malaysia Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "34e5ab60-714a-4b9f-aa27-6e87fdc33781",
+        "valueLabel": "PTMA"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152323479",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000152323139",
+      "name": "STIBO Sr. Developer",
+      "uuid": "a108c63b-055b-4ae3-a0c2-4bc37800e02f",
+      "jobAdId": "c42ed968-5457-4e82-a9a7-cd1e8de1766d",
+      "defaultJobAd": true,
+      "refNumber": "REF296880Z",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-29T04:32:10.898Z",
+      "location": {
+       "city": "bangalore",
+       "country": "in",
+       "address": "cyber park, survey no.66 & 67, doddathogur village, electronic city,",
+       "postalCode": "5600100",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bangalore, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "business_development",
+       "label": "Business Development"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000152323139",
+      "creator": {
+       "name": "Mohammed Fiyaz S (GS/HRS23-IN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1500&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1500,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000151840555",
+      "name": "Pflichtpraktikum im Bereich Benchmark Consulting",
+      "uuid": "1196e573-3172-47eb-8e07-042282cd8c92",
+      "jobAdId": "9abd9aa0-20bf-45b9-a3b0-33e5c1702f38",
+      "defaultJobAd": true,
+      "refNumber": "REF297087N",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-25T12:35:47.814Z",
+      "location": {
+       "city": "Leonberg",
+       "region": "BW",
+       "country": "de",
+       "address": "Poststraße 70",
+       "postalCode": "71229",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "48.7965287",
+       "longitude": "9.003955",
+       "fullLocation": "Leonberg, BW, Germany"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "consulting",
+       "label": "Consulting"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151840555",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000151828325",
+      "name": "Engineering Manager - Assembly Technology",
+      "uuid": "386f825a-2c6a-4365-8ccc-0cf4931892b9",
+      "jobAdId": "ecf8af15-7318-4c6a-b57c-b1f5ad99ab9b",
+      "defaultJobAd": true,
+      "refNumber": "REF296703Z",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-25T12:03:22.027Z",
+      "location": {
+       "city": "Pineville",
+       "region": "NC",
+       "country": "us",
+       "address": "12026 Carolina Logistics Drive",
+       "postalCode": "28134",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "4 days a week on site",
+       "latitude": "35.1035683",
+       "longitude": "-80.90939809999999",
+       "fullLocation": "Pineville, NC, United States"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "project_management",
+       "label": "Project Management"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "DCUS",
+        "valueLabel": "DCUS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151828325",
+      "creator": {
+       "name": "Charlotte Butko (DCNA/HRA-US)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000151829679",
+      "name": "Praktikum in der Produktentwicklung neuer Bremssysteme",
+      "uuid": "5518bf51-b351-444a-9f1e-e78e13e2202a",
+      "jobAdId": "b4618d31-5980-4309-bbea-ce3aacb66e8d",
+      "defaultJobAd": true,
+      "refNumber": "REF297084J",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-25T11:57:37.868Z",
+      "location": {
+       "city": "Immenstadt im Allgäu",
+       "region": "BY",
+       "country": "de",
+       "address": "Robert-Bosch-Straße 1",
+       "postalCode": "87509",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "47.591935",
+       "longitude": "10.2508219",
+       "fullLocation": "Immenstadt im Allgäu, BY, Germany"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151829679",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1600&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1600,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000151563196",
+      "name": "Praktikum im Bereich International Sales bei Bosch eBike Systems",
+      "uuid": "6b7a62c8-0844-4485-bc64-1fe71d508b65",
+      "jobAdId": "cc4ee320-6f69-49c9-9918-d8a345a55ff1",
+      "defaultJobAd": true,
+      "refNumber": "REF296765X",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-24T09:04:48.045Z",
+      "location": {
+       "city": "Reutlingen",
+       "region": "BW",
+       "country": "de",
+       "address": "Markwiesenstraße 58",
+       "postalCode": "72770",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "48.4950381",
+       "longitude": "9.1376823",
+       "fullLocation": "Reutlingen, BW, Germany"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "sales",
+       "label": "Sales"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151563196",
+      "creator": {
+       "name": "Angelika Matzke (GS/HRS-PAC6-DE)"
+      },
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000151562985",
+      "name": "Process Developer for Laser  Welding Processes /McP kéziszerszámgyár/",
+      "uuid": "6af45bfc-cbca-4af3-9b45-cf27a1303b31",
+      "jobAdId": "9c5ad224-4dab-4faa-890c-22f32f59856d",
+      "defaultJobAd": true,
+      "refNumber": "REF271544N",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-24T08:58:36.009Z",
+      "location": {
+       "city": "Miskolc",
+       "country": "hu",
+       "address": "Robert Bosch park 1",
+       "postalCode": "3526",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "48.1307844",
+       "longitude": "20.7847888",
+       "fullLocation": "Miskolc, , Hungary"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "5a5f5198-846e-40f9-a392-a572a6c71e28",
+        "valueLabel": "Hungary Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "b4eff094-b9c9-4047-993a-3cfc20cf6d4b",
+        "valueLabel": "PTHU"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151562985",
+      "language": {
+       "code": "en-GB",
+       "label": "English (UK)",
+       "labelNative": "English (UK)"
+      }
+     },
+     {
+      "id": "744000151560895",
+      "name": "Kundendiensttechniker Raum Stralsund/Greifswald (w/m/div.)",
+      "uuid": "0ba15e56-74e8-43be-b88f-05d0a70ce14c",
+      "jobAdId": "4c6b16da-2132-40ec-9029-e354370e226d",
+      "defaultJobAd": true,
+      "refNumber": "REF288757N",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-24T08:49:04.295Z",
+      "location": {
+       "city": "Neubrandenburg",
+       "region": "MV",
+       "country": "de",
+       "address": "Feldmark 9",
+       "postalCode": "17034",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "53.58421070000001",
+       "longitude": "13.2850643",
+       "fullLocation": "Neubrandenburg, MV, Germany"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "customer_service",
+       "label": "Customer Service"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "4711eaf7-f783-4b51-9768-34b9ad8cdddd",
+        "valueLabel": "Hesse"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151560895",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1700&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1700,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000151149285",
+      "name": "Sr. Field Application Engineer",
+      "uuid": "fc15ca95-1c6f-4128-ab4e-3ace613cd62c",
+      "jobAdId": "e2af4409-a455-421d-8724-07c129b244a7",
+      "defaultJobAd": true,
+      "refNumber": "REF286760V",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-22T23:57:06.316Z",
+      "location": {
+       "city": "Sunnyvale",
+       "region": "CA",
+       "country": "us",
+       "address": "384 Santa Trinita Avenue",
+       "postalCode": "94085",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "3 days onsite",
+       "latitude": "37.3820466",
+       "longitude": "-121.9996484",
+       "fullLocation": "Sunnyvale, CA, United States"
+      },
+      "industry": {
+       "id": "consumer_electronics",
+       "label": "Consumer Electronics"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBUS",
+        "valueLabel": "RBUS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151149285",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000151131949",
+      "name": "Entrenador y ventas técnicas Automotriz",
+      "uuid": "6eaabfee-4f77-46eb-ad9a-8388c14adc28",
+      "jobAdId": "818670c0-6f60-4b38-bbc5-696a3adc5162",
+      "defaultJobAd": true,
+      "refNumber": "REF295773P",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-22T20:42:37.843Z",
+      "location": {
+       "city": "Guadalajara",
+       "region": "Jal.",
+       "country": "mx",
+       "address": "Avenida Ignacio L Vallarta 3090",
+       "postalCode": "44690",
+       "remote": false,
+       "hybrid": true,
+       "hybridDescription": "Work at MA CDMX Workshop and field aftermarket vistis ",
+       "latitude": "20.6752737",
+       "longitude": "-103.3929652",
+       "fullLocation": "Guadalajara, Jal., Mexico"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "training",
+       "label": "Training"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "540ff3f7-a953-4856-97e3-f2202d80c57c",
+        "valueLabel": "Mexico Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBME",
+        "valueLabel": "RBME"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151131949",
+      "language": {
+       "code": "es-MX",
+       "label": "Spanish (LATAM)",
+       "labelNative": "español (LATAM)"
+      }
+     },
+     {
+      "id": "744000151117694",
+      "name": "Warehouse Associate II (2nd Shift)",
+      "uuid": "7324f224-f922-44db-905f-94f048dd6bdc",
+      "jobAdId": "68dab70c-e173-47f2-9d55-e8e3b1aa5d3e",
+      "defaultJobAd": true,
+      "refNumber": "REF296821Z",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-22T19:22:02.994Z",
+      "location": {
+       "city": "West Memphis",
+       "region": "AR",
+       "country": "us",
+       "address": "2700 College Boulevard",
+       "postalCode": "72301",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "35.1748368",
+       "longitude": "-90.2263164",
+       "fullLocation": "West Memphis, AR, United States"
+      },
+      "industry": {
+       "id": "warehousing",
+       "label": "Warehousing"
+      },
+      "department": {},
+      "function": {
+       "id": "distribution",
+       "label": "Distribution"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "entry_level",
+       "label": "Entry Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "PTNA",
+        "valueLabel": "PTNA"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000151117694",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1800&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1800,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000150934398",
+      "name": "云端算法专家（静态数据产线方向)_XC",
+      "uuid": "06f406c3-e03e-4130-b73a-438d564e2a98",
+      "jobAdId": "e5b44e52-c6bd-4492-b4c7-54d78490bc79",
+      "defaultJobAd": true,
+      "refNumber": "REF296737F",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-22T05:43:01.901Z",
+      "location": {
+       "city": "Suzhou",
+       "region": "Jiangsu",
+       "country": "cn",
+       "postalCode": "215000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.299",
+       "longitude": "120.5853",
+       "fullLocation": "Suzhou, Jiangsu, China"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "marketing",
+       "label": "Marketing"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBAC",
+        "valueLabel": "RBAC"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000150934398",
+      "creator": {
+       "name": "Nana WANG (GS/HRS-PAC2-CN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000150933789",
+      "name": "算法工程师（三维重建方向）_XC",
+      "uuid": "ead58085-9d01-4bdd-9f1e-3fdbcfda738a",
+      "jobAdId": "929821dd-7ac4-47fe-adc3-370c5543186e",
+      "defaultJobAd": true,
+      "refNumber": "REF296736C",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-22T05:36:13.644Z",
+      "location": {
+       "city": "Shanghai",
+       "region": "Shanghai",
+       "country": "cn",
+       "postalCode": "200000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.2304",
+       "longitude": "121.4737",
+       "fullLocation": "Shanghai, Shanghai, China"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBAC",
+        "valueLabel": "RBAC"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000150933789",
+      "creator": {
+       "name": "Yuxiang NING (GS/HRS-PAC1-CN)"
+      },
+      "language": {
+       "code": "zh-CN",
+       "label": "Chinese (Simplified)",
+       "labelNative": "中文 (简体)"
+      }
+     },
+     {
+      "id": "744000150931499",
+      "name": "[EMC] NEO Vehicle Autosar Embedded SW Engineer (1 year contract)",
+      "uuid": "02fffb3f-3122-4497-a7e1-49ae81d49a17",
+      "jobAdId": "76a98d2e-aff5-48f1-aae5-255802c4c526",
+      "defaultJobAd": true,
+      "refNumber": "REF285885R",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-22T04:50:18.482Z",
+      "location": {
+       "city": "Ho Chi Minh",
+       "country": "vn",
+       "address": "Etown 2 Building, 364 Cong Hoa Street, Tan Binh Ward",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Ho Chi Minh, , Vietnam"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "59cb1718-309b-426d-9923-78cb153bc85c",
+        "valueLabel": "Vietnam Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "a88913e8-c3ca-427f-a052-c87f1aff2200",
+        "valueLabel": "BGSV"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000150931499",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=1900&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 1900,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000150275869",
+      "name": "Sr.Claim Manager_M/PUQ-RBCW",
+      "uuid": "857db129-0c26-46c7-b9b7-6be5ba75ed77",
+      "jobAdId": "e2ba548b-0bad-4142-881a-bd1c2574d0ab",
+      "defaultJobAd": true,
+      "refNumber": "REF296537N",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-18T04:40:42.707Z",
+      "location": {
+       "city": "Wuxi",
+       "region": "Jiangsu",
+       "country": "cn",
+       "postalCode": "214000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.4912",
+       "longitude": "120.3119",
+       "fullLocation": "Wuxi, Jiangsu, China"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBCW",
+        "valueLabel": "RBCW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000150275869",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000150275429",
+      "name": "Senior Sales Account Manager - Semiconductor Portfolio ",
+      "uuid": "b8cfc8c0-7e17-415a-ba16-8518e13732a0",
+      "jobAdId": "a2031aef-9cc8-46f9-8ad4-ad9ed547f0cc",
+      "defaultJobAd": false,
+      "refNumber": "REF286758X",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-18T04:36:20.130Z",
+      "location": {
+       "city": "Sunnyvale",
+       "region": "CA",
+       "country": "us",
+       "address": "384 Santa Trinita Avenue",
+       "postalCode": "94085",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "37.3820466",
+       "longitude": "-121.9996484",
+       "fullLocation": "Sunnyvale, CA, United States"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBUS",
+        "valueLabel": "RBUS"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000150275429",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000150274919",
+      "name": "AI Expert – Generative AI Solutions Developer",
+      "uuid": "743041b2-8e17-4d12-893d-5afa35cc84c7",
+      "jobAdId": "c14cfde3-98d8-4b92-b48b-39dd31ae8c98",
+      "defaultJobAd": true,
+      "refNumber": "REF290148Q",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-18T04:28:54.613Z",
+      "location": {
+       "city": "coimbatore",
+       "country": "in",
+       "address": "india land tech park private limited,  kgisl infrastructure private limited , sez, keeranatham village, saravanampatti,",
+       "postalCode": "641035.",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "coimbatore, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000150274919",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=2000&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 2000,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000149776229",
+      "name": "Sr. Complaint Engineer",
+      "uuid": "b4ab0011-55d8-485b-8f7d-f6dacad3e8c8",
+      "jobAdId": "37284ba5-2d47-49b5-bc4f-c72fd7523d49",
+      "defaultJobAd": true,
+      "refNumber": "REF289977U",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-16T05:36:03.466Z",
+      "location": {
+       "city": "Qingdao",
+       "region": "Shandong",
+       "country": "cn",
+       "postalCode": "266000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "36.0671",
+       "longitude": "120.3826",
+       "fullLocation": "Qingdao, Shandong, China"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "QINP",
+        "valueLabel": "QinP"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000149776229",
+      "creator": {
+       "name": "Hongyu ZHANG (GS/HRS3.3-CN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000149775909",
+      "name": "Data Provisioning Expert",
+      "uuid": "dac872e7-1877-4963-b495-6086172cad81",
+      "jobAdId": "12f646bb-f3ed-477c-9c5e-983143efb512",
+      "defaultJobAd": true,
+      "refNumber": "REF295560V",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-16T05:30:53.415Z",
+      "location": {
+       "city": "bangalore",
+       "country": "in",
+       "address": "building 601 & 602, p.b.3000, adugodi. hosur road,",
+       "postalCode": "560030",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bangalore, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "supply_chain",
+       "label": "Supply Chain"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000149775909",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000149774550",
+      "name": "Negotiation Expert_GS",
+      "uuid": "b6a24fac-be1f-4970-9389-8307fc365111",
+      "jobAdId": "386ed89c-9ea6-4c11-8376-f2112642f707",
+      "defaultJobAd": true,
+      "refNumber": "REF296346M",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-16T05:28:10.708Z",
+      "location": {
+       "city": "Shanghai",
+       "region": "Shanghai",
+       "country": "cn",
+       "postalCode": "200000",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "31.2304",
+       "longitude": "121.4737",
+       "fullLocation": "Shanghai, Shanghai, China"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "project_management",
+       "label": "Project Management"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "33fa4f4b-08d7-4ea6-b5fe-d0ce453f899d",
+        "valueLabel": "China Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBCN",
+        "valueLabel": "RBCN"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000149774550",
+      "creator": {
+       "name": "Qianyu ZHOU (GS/HRS-PAC-CN)"
+      },
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=2100&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 2100,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000148998034",
+      "name": "Estágio Curricular em Engenharia e Gestão de Operações (f/m/div.)",
+      "uuid": "509063e2-190b-47a9-826d-140698591eba",
+      "jobAdId": "fec46a13-936b-4fd2-803d-88698202378a",
+      "defaultJobAd": true,
+      "refNumber": "REF296114I",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-11T11:44:40.607Z",
+      "location": {
+       "city": "Braga",
+       "region": "Braga",
+       "country": "pt",
+       "address": "Rua Max Grundig",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "41.5323579",
+       "longitude": "-8.4351741",
+       "fullLocation": "Braga, Braga, Portugal"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "7174fab4-934a-47da-81a5-cb2d914a4719",
+        "valueLabel": "Portugal Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "801a758b-8dfb-45d2-8b60-0c54967b2096",
+        "valueLabel": "RBPB"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148998034",
+      "creator": {
+       "name": "Rúben Lobo (BrgP/HRL)"
+      },
+      "language": {
+       "code": "pt",
+       "label": "Portuguese",
+       "labelNative": "português (Portugal)"
+      }
+     },
+     {
+      "id": "744000148997769",
+      "name": "Sales Development and Analytics Internship",
+      "uuid": "7384eee7-21b6-40d9-b52b-35c7182ce88e",
+      "jobAdId": "e2bd1796-d53f-41b7-925e-b0e92ff36447",
+      "defaultJobAd": true,
+      "refNumber": "REF293428J",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-11T11:42:08.653Z",
+      "location": {
+       "city": "Mechelen",
+       "region": "Vlaanderen",
+       "country": "be",
+       "address": "Zandvoortstraat 47",
+       "postalCode": "2800",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "51.05451069999999",
+       "longitude": "4.4451676",
+       "fullLocation": "Mechelen, Vlaanderen, Belgium"
+      },
+      "industry": {
+       "id": "wholesale",
+       "label": "Wholesale"
+      },
+      "department": {},
+      "function": {
+       "id": "sales",
+       "label": "Sales"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "b8339437-df9b-4ff9-bbf6-5581b0624947",
+        "valueLabel": "Belgium Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "c480dfe6-7ca7-4362-b2c0-86a6b0f2ece0",
+        "valueLabel": "TTBE"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148997769",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000148997759",
+      "name": "Junior Managers Program (Trainee) - Unsolicited Application",
+      "uuid": "9e7af766-2ebc-4d4d-b0a1-6cfd0b3724f2",
+      "jobAdId": "1fa48aef-76fe-48f8-8a6d-27bc7d945070",
+      "defaultJobAd": false,
+      "refNumber": "REF20329L",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-11T11:42:08.606Z",
+      "location": {
+       "city": "Gerlingen",
+       "region": "BW",
+       "country": "de",
+       "address": "Robert-Bosch-Platz 1",
+       "postalCode": "70839",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Gerlingen, BW, Germany"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "other",
+       "label": "Other"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "entry_level",
+       "label": "Entry Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "df3baeb9-5034-40b4-8286-a27e2f6d7dd4",
+        "valueLabel": "North Württemberg-North Baden"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148997759",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=2200&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 2200,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000148675234",
+      "name": "Maschinenbediener im Bereich SMT (w/m/div.) - befristet",
+      "uuid": "f9e6da65-7553-405c-8e44-da052edcf5ce",
+      "jobAdId": "36d9669f-4cc3-4c11-bfd3-412b0433a4ed",
+      "defaultJobAd": true,
+      "refNumber": "REF295928O",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-10T05:27:28.654Z",
+      "location": {
+       "city": "Lohr am Main",
+       "region": "BY",
+       "country": "de",
+       "address": "Bürgermeister-Dr.-Nebel-Straße 2",
+       "postalCode": "97816",
+       "remote": false,
+       "hybrid": false,
+       "latitude": "49.97677359999999",
+       "longitude": "9.5809327",
+       "fullLocation": "Lohr am Main, BY, Germany"
+      },
+      "industry": {
+       "id": "industrial_automation",
+       "label": "Industrial Automation"
+      },
+      "department": {},
+      "function": {
+       "id": "production",
+       "label": "Production"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "bee157b1-7d4f-4ef7-9e28-1b23159eaeb5",
+        "valueLabel": "Bavaria"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148675234",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     },
+     {
+      "id": "744000148672590",
+      "name": "ボッシュ株式会社 JMPパワーソリューション事業部　開発",
+      "uuid": "84d15bbc-134d-4020-96a0-1c58ff647707",
+      "jobAdId": "071449d8-b1bb-4a72-b014-d00085b0e003",
+      "defaultJobAd": true,
+      "refNumber": "REF260671V",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-10T05:13:30.720Z",
+      "location": {
+       "city": "Yokohama",
+       "country": "jp",
+       "address": "Tsuzuki Ushikubo 3-9-1",
+       "remote": false,
+       "hybrid": true,
+       "fullLocation": "Yokohama, , Japan"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "817c1a47-d176-4a29-ad5e-f5dc47c15cb3",
+        "valueLabel": "Japan Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "4dd2f911-715c-45fe-9d7d-4489aaba1500",
+        "valueLabel": "RBJP"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148672590",
+      "language": {
+       "code": "ja",
+       "label": "Japanese",
+       "labelNative": "日本語"
+      }
+     },
+     {
+      "id": "744000148672629",
+      "name": "Praktikum Controlling, Projektmanagement & SAP S/4 HANA",
+      "uuid": "86d52c87-ee24-44b7-a2aa-7d419f6f806b",
+      "jobAdId": "6441bfa0-d20e-4ad0-9402-5c0d819216cf",
+      "defaultJobAd": true,
+      "refNumber": "REF296004S",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-10T05:05:38.132Z",
+      "location": {
+       "city": "Lohr am Main",
+       "region": "BY",
+       "country": "de",
+       "address": "Zum Eisengießer 1",
+       "postalCode": "97816",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "49.99907289999999",
+       "longitude": "9.5747046",
+       "fullLocation": "Lohr am Main, BY, Germany"
+      },
+      "industry": {
+       "id": "industrial_automation",
+       "label": "Industrial Automation"
+      },
+      "department": {},
+      "function": {
+       "id": "finance",
+       "label": "Finance"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "internship",
+       "label": "Internship"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "98487475-2a49-44f5-a615-408b525b3821",
+        "valueLabel": "Limited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "45a4fe7c-ec96-4eda-907f-4aa0356a7704",
+        "valueLabel": "Not tariff-bound / non-tariff / SLx"
+       },
+       {
+        "fieldId": "5aca30e46d8bc56863dd98d8",
+        "fieldLabel": "Tags",
+        "valueId": "f8aadd7e-9952-41c5-af48-02debb3e9010",
+        "valueLabel": "Please enter Career Site Tags"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148672629",
+      "language": {
+       "code": "de",
+       "label": "German",
+       "labelNative": "Deutsch"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=2300&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 2300,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000148191341",
+      "name": "Sr.Data Engineer",
+      "uuid": "15fcfeaf-3dfa-4d8e-9f49-33d130903021",
+      "jobAdId": "d30068d0-b172-4200-92e1-b64d61362320",
+      "defaultJobAd": true,
+      "refNumber": "REF295704A",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-08T10:08:15.459Z",
+      "location": {
+       "city": "bengaluru",
+       "country": "in",
+       "address": "no.123  industrial layout  hosur road  koramangala,",
+       "postalCode": "560095",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bengaluru, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148191341",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000148190900",
+      "name": "Sr.Data Engineer",
+      "uuid": "b041a943-d698-4f44-8898-94ff05222775",
+      "jobAdId": "2a321f5d-2a09-4205-8623-ed613b7479b9",
+      "defaultJobAd": true,
+      "refNumber": "REF295703R",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-08T10:07:47.965Z",
+      "location": {
+       "city": "bengaluru",
+       "country": "in",
+       "address": "no.123  industrial layout  hosur road  koramangala,",
+       "postalCode": "560095",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bengaluru, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148190900",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000148191999",
+      "name": "Sr.Data Engineer",
+      "uuid": "66699708-4120-4cc3-80f8-71a70cad7784",
+      "jobAdId": "11bc5f73-6355-4a9f-8054-94a892c5dc7a",
+      "defaultJobAd": true,
+      "refNumber": "REF295701Z",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-08T10:07:13.661Z",
+      "location": {
+       "city": "bengaluru",
+       "country": "in",
+       "address": "no.123  industrial layout  hosur road  koramangala,",
+       "postalCode": "560095",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "bengaluru, , India"
+      },
+      "industry": {
+       "id": "computer_software",
+       "label": "Computer Software"
+      },
+      "department": {},
+      "function": {
+       "id": "information_technology",
+       "label": "Information Technology"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "2473485f-051f-4fbc-b802-f3620b73998c",
+        "valueLabel": "India Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "RBEI",
+        "valueLabel": "BGSW"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000148191999",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  },
+  "GET https://api.smartrecruiters.com/v1/companies/BoschGroup/postings?limit=100&offset=2400&status=PUBLIC": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "offset": 2400,
+    "limit": 100,
+    "totalFound": 5079,
+    "content": [
+     {
+      "id": "744000147399549",
+      "name": "Machines Maintenance Junior Staff",
+      "uuid": "4c2b372d-d98b-4f42-b044-183faaf0b8bd",
+      "jobAdId": "bf38755e-fc4e-4436-b15c-77aef60fb05b",
+      "defaultJobAd": true,
+      "refNumber": "REF291870X",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-04T01:32:14.608Z",
+      "location": {
+       "city": "Amata City Rayong Industrial Estate",
+       "region": "RAYONG",
+       "country": "th",
+       "address": "7/102 Moo 4, T. Mabyangporn, Pluak Daeng",
+       "postalCode": "21140",
+       "remote": false,
+       "hybrid": false,
+       "fullLocation": "Amata City Rayong Industrial Estate, RAYONG, Thailand"
+      },
+      "industry": {
+       "id": "automotive",
+       "label": "Automotive"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "associate",
+       "label": "Associate"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "650aec66-817c-483f-9356-bdb277613c92",
+        "valueLabel": "Thailand Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "726f5739-bf81-4602-abd3-b6435c3b7946",
+        "valueLabel": "RBTY"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000147399549",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000147347753",
+      "name": "Applied HVAC Solutions Engineer",
+      "uuid": "3b947512-f29c-4ac2-9a9c-a0890920618a",
+      "jobAdId": "bad61598-5dcd-4202-9bca-280c66dd06a8",
+      "defaultJobAd": false,
+      "refNumber": "REF289708F",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-03T19:55:38.466Z",
+      "location": {
+       "city": "Norman",
+       "region": "OK",
+       "country": "us",
+       "address": "5005 York Drive",
+       "postalCode": "73069",
+       "remote": true,
+       "hybrid": false,
+       "latitude": "35.2811922",
+       "longitude": "-97.48198649999999",
+       "fullLocation": "Norman, OK, United States"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "TTNA",
+        "valueLabel": "TTNA"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000147347753",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     },
+     {
+      "id": "744000147347759",
+      "name": "Applied HVAC Solutions Engineer",
+      "uuid": "4ad73a71-e2df-4c32-b1a0-32e86b868490",
+      "jobAdId": "3d5711ba-d8e3-45b2-8300-b7d67dd805d9",
+      "defaultJobAd": false,
+      "refNumber": "REF289708F",
+      "company": {
+       "identifier": "BoschGroup",
+       "name": "Bosch Group"
+      },
+      "releasedDate": "2026-09-03T19:54:58.477Z",
+      "location": {
+       "city": "Dallas",
+       "region": "TX",
+       "country": "us",
+       "address": "2828 Routh Street",
+       "postalCode": "75204",
+       "remote": false,
+       "hybrid": true,
+       "latitude": "32.7988072",
+       "longitude": "-96.8040422",
+       "fullLocation": "Dallas, TX, United States"
+      },
+      "industry": {
+       "id": "mechanical_engineering",
+       "label": "Mechanical Or Industrial Engineering"
+      },
+      "department": {},
+      "function": {
+       "id": "engineering",
+       "label": "Engineering"
+      },
+      "typeOfEmployment": {
+       "id": "permanent",
+       "label": "Full-time"
+      },
+      "experienceLevel": {
+       "id": "mid_senior_level",
+       "label": "Mid-Senior Level"
+      },
+      "customField": [
+       {
+        "fieldId": "5abe2a4ab60a5e486a2d9b1d",
+        "fieldLabel": "Contract type",
+        "valueId": "1e46492b-d24f-460c-b095-38cf08a778d8",
+        "valueLabel": "Unlimited"
+       },
+       {
+        "fieldId": "5abe28e96d8bc56863dd9746",
+        "fieldLabel": "Tariff Area",
+        "valueId": "82f1dd4b-de9d-4134-9f1a-8d315be380ae",
+        "valueLabel": "United States Local Grades"
+       },
+       {
+        "fieldId": "586a997ee4b05fd937b86098",
+        "fieldLabel": "Legal Entity(acronym)",
+        "valueId": "TTNA",
+        "valueLabel": "TTNA"
+       }
+      ],
+      "visibility": "PUBLIC",
+      "ref": "https://api.smartrecruiters.com/v1/companies/BoschGroup/postings/744000147347759",
+      "language": {
+       "code": "en",
+       "label": "English",
+       "labelNative": "English (US)"
+      }
+     }
+    ]
+   }
+  }
+ }
+}

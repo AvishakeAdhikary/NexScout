@@ -17,11 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from nexscout.application.actor import Actor
 from nexscout.application.cases import get_case
 from nexscout.domain.errors import NotFound, ValidationFailed
+from nexscout.domain.timezones import local_today
 from nexscout.infrastructure.db.models import (
     Application,
     ApprovalRequest,
     Notification,
     Reminder,
+    User,
 )
 
 # Applications in these states don't need deadline reminders.
@@ -92,7 +94,8 @@ notify = _notify  # public name for other use cases (agents, autopilot)
 async def run_maintenance(s: AsyncSession, now: datetime | None = None) -> dict[str, int]:
     """Idempotent sweep across users (worker system role). Safe to run concurrently."""
     now = now or datetime.now(UTC)
-    today = _today(now)
+    # Dates are the user's own calendar days: "today" differs by up to a day across zones.
+    zones = dict((await s.execute(select(User.id, User.timezone))).all())
     created_reminders = notified = 0
 
     # 1) Deadline reminders for open applications.
@@ -111,6 +114,7 @@ async def run_maintenance(s: AsyncSession, now: datetime | None = None) -> dict[
             due = date.fromisoformat(str(deadline))
         except ValueError:
             continue
+        today = local_today(now, zones.get(owner))
         for days in REMIND_DAYS_BEFORE:
             on = due - timedelta(days=days)
             if on < today - timedelta(days=1) or due < today:
@@ -132,12 +136,13 @@ async def run_maintenance(s: AsyncSession, now: datetime | None = None) -> dict[
             )
             created_reminders += int(res.scalar() is not None)
 
-    # 2) Due reminders become notifications (once).
+    # 2) Due reminders become notifications (once). No zone is more than a day ahead of UTC.
+    latest = (_today(now) + timedelta(days=1)).isoformat()
     due_rows = (
         await s.scalars(
             select(Reminder)
             .where(
-                Reminder.due_on <= today.isoformat(),
+                Reminder.due_on <= latest,
                 Reminder.done_at.is_(None),
                 Reminder.notified_at.is_(None),
             )
@@ -145,6 +150,8 @@ async def run_maintenance(s: AsyncSession, now: datetime | None = None) -> dict[
         )
     ).all()
     for r in due_rows:
+        if r.due_on > local_today(now, zones.get(r.owner_user_id)).isoformat():
+            continue
         link = (
             f"/cases/{r.case_id}/applications/{r.application_id}"
             if r.application_id

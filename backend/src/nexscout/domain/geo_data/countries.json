@@ -1,0 +1,3544 @@
+{
+ "source": "ISO 3166-1 (pycountry) + continents (pycountry-convert)",
+ "countries": [
+  {
+   "code": "AD",
+   "alpha3": "AND",
+   "name": "Andorra",
+   "continent": "Europe",
+   "aliases": [
+    "Andorra",
+    "Principality of Andorra"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AE",
+   "alpha3": "ARE",
+   "name": "United Arab Emirates",
+   "continent": "Asia",
+   "aliases": [
+    "Emirates",
+    "UAE",
+    "United Arab Emirates"
+   ],
+   "cities": [
+    "Dubai",
+    "Abu Dhabi"
+   ]
+  },
+  {
+   "code": "AF",
+   "alpha3": "AFG",
+   "name": "Afghanistan",
+   "continent": "Asia",
+   "aliases": [
+    "Afghanistan",
+    "Islamic Republic of Afghanistan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AG",
+   "alpha3": "ATG",
+   "name": "Antigua and Barbuda",
+   "continent": "North America",
+   "aliases": [
+    "Antigua and Barbuda"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AI",
+   "alpha3": "AIA",
+   "name": "Anguilla",
+   "continent": "North America",
+   "aliases": [
+    "Anguilla"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AL",
+   "alpha3": "ALB",
+   "name": "Albania",
+   "continent": "Europe",
+   "aliases": [
+    "Albania",
+    "Republic of Albania"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AM",
+   "alpha3": "ARM",
+   "name": "Armenia",
+   "continent": "Asia",
+   "aliases": [
+    "Armenia",
+    "Republic of Armenia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AO",
+   "alpha3": "AGO",
+   "name": "Angola",
+   "continent": "Africa",
+   "aliases": [
+    "Angola",
+    "Republic of Angola"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AQ",
+   "alpha3": "ATA",
+   "name": "Antarctica",
+   "continent": "Antarctica",
+   "aliases": [
+    "Antarctica"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AR",
+   "alpha3": "ARG",
+   "name": "Argentina",
+   "continent": "South America",
+   "aliases": [
+    "Argentina",
+    "Argentine Republic"
+   ],
+   "cities": [
+    "Buenos Aires"
+   ]
+  },
+  {
+   "code": "AS",
+   "alpha3": "ASM",
+   "name": "American Samoa",
+   "continent": "Oceania",
+   "aliases": [
+    "American Samoa"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AT",
+   "alpha3": "AUT",
+   "name": "Austria",
+   "continent": "Europe",
+   "aliases": [
+    "Austria",
+    "Oesterreich",
+    "Republic of Austria",
+    "Österreich"
+   ],
+   "cities": [
+    "Vienna",
+    "Wien",
+    "Graz",
+    "Linz",
+    "Salzburg",
+    "Innsbruck",
+    "Klosterneuburg"
+   ]
+  },
+  {
+   "code": "AU",
+   "alpha3": "AUS",
+   "name": "Australia",
+   "continent": "Oceania",
+   "aliases": [
+    "Australia"
+   ],
+   "cities": [
+    "Sydney",
+    "Melbourne",
+    "Brisbane",
+    "Perth"
+   ]
+  },
+  {
+   "code": "AW",
+   "alpha3": "ABW",
+   "name": "Aruba",
+   "continent": "North America",
+   "aliases": [
+    "Aruba"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AX",
+   "alpha3": "ALA",
+   "name": "Åland Islands",
+   "continent": "Europe",
+   "aliases": [
+    "Åland Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "AZ",
+   "alpha3": "AZE",
+   "name": "Azerbaijan",
+   "continent": "Asia",
+   "aliases": [
+    "Azerbaijan",
+    "Republic of Azerbaijan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BA",
+   "alpha3": "BIH",
+   "name": "Bosnia and Herzegovina",
+   "continent": "Europe",
+   "aliases": [
+    "Bosnia and Herzegovina",
+    "Republic of Bosnia and Herzegovina"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BB",
+   "alpha3": "BRB",
+   "name": "Barbados",
+   "continent": "North America",
+   "aliases": [
+    "Barbados"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BD",
+   "alpha3": "BGD",
+   "name": "Bangladesh",
+   "continent": "Asia",
+   "aliases": [
+    "Bangladesh",
+    "People's Republic of Bangladesh"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BE",
+   "alpha3": "BEL",
+   "name": "Belgium",
+   "continent": "Europe",
+   "aliases": [
+    "Belgien",
+    "Belgique",
+    "Belgium",
+    "België",
+    "Kingdom of Belgium"
+   ],
+   "cities": [
+    "Brussels",
+    "Bruxelles",
+    "Brussel",
+    "Antwerp",
+    "Antwerpen",
+    "Ghent",
+    "Gent",
+    "Leuven",
+    "Louvain",
+    "Liège",
+    "Liege"
+   ]
+  },
+  {
+   "code": "BF",
+   "alpha3": "BFA",
+   "name": "Burkina Faso",
+   "continent": "Africa",
+   "aliases": [
+    "Burkina Faso"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BG",
+   "alpha3": "BGR",
+   "name": "Bulgaria",
+   "continent": "Europe",
+   "aliases": [
+    "Bulgaria",
+    "Republic of Bulgaria",
+    "България"
+   ],
+   "cities": [
+    "Sofia"
+   ]
+  },
+  {
+   "code": "BH",
+   "alpha3": "BHR",
+   "name": "Bahrain",
+   "continent": "Asia",
+   "aliases": [
+    "Bahrain",
+    "Kingdom of Bahrain"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BI",
+   "alpha3": "BDI",
+   "name": "Burundi",
+   "continent": "Africa",
+   "aliases": [
+    "Burundi",
+    "Republic of Burundi"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BJ",
+   "alpha3": "BEN",
+   "name": "Benin",
+   "continent": "Africa",
+   "aliases": [
+    "Benin",
+    "Republic of Benin"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BL",
+   "alpha3": "BLM",
+   "name": "Saint Barthélemy",
+   "continent": "North America",
+   "aliases": [
+    "Saint Barthélemy"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BM",
+   "alpha3": "BMU",
+   "name": "Bermuda",
+   "continent": "North America",
+   "aliases": [
+    "Bermuda"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BN",
+   "alpha3": "BRN",
+   "name": "Brunei Darussalam",
+   "continent": "Asia",
+   "aliases": [
+    "Brunei",
+    "Brunei Darussalam"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BO",
+   "alpha3": "BOL",
+   "name": "Bolivia",
+   "continent": "South America",
+   "aliases": [
+    "Bolivia",
+    "Bolivia, Plurinational State of",
+    "Plurinational State of Bolivia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BQ",
+   "alpha3": "BES",
+   "name": "Bonaire, Sint Eustatius and Saba",
+   "continent": "North America",
+   "aliases": [
+    "Bonaire, Sint Eustatius and Saba"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BR",
+   "alpha3": "BRA",
+   "name": "Brazil",
+   "continent": "South America",
+   "aliases": [
+    "Brazil",
+    "Federative Republic of Brazil"
+   ],
+   "cities": [
+    "São Paulo",
+    "Sao Paulo",
+    "Rio de Janeiro"
+   ]
+  },
+  {
+   "code": "BS",
+   "alpha3": "BHS",
+   "name": "Bahamas",
+   "continent": "North America",
+   "aliases": [
+    "Bahamas",
+    "Commonwealth of the Bahamas"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BT",
+   "alpha3": "BTN",
+   "name": "Bhutan",
+   "continent": "Asia",
+   "aliases": [
+    "Bhutan",
+    "Kingdom of Bhutan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BV",
+   "alpha3": "BVT",
+   "name": "Bouvet Island",
+   "continent": "Antarctica",
+   "aliases": [
+    "Bouvet Island"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BW",
+   "alpha3": "BWA",
+   "name": "Botswana",
+   "continent": "Africa",
+   "aliases": [
+    "Botswana",
+    "Republic of Botswana"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BY",
+   "alpha3": "BLR",
+   "name": "Belarus",
+   "continent": "Europe",
+   "aliases": [
+    "Belarus",
+    "Republic of Belarus"
+   ],
+   "cities": []
+  },
+  {
+   "code": "BZ",
+   "alpha3": "BLZ",
+   "name": "Belize",
+   "continent": "North America",
+   "aliases": [
+    "Belize"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CA",
+   "alpha3": "CAN",
+   "name": "Canada",
+   "continent": "North America",
+   "aliases": [
+    "Canada"
+   ],
+   "cities": [
+    "Toronto",
+    "Vancouver",
+    "Montreal",
+    "Montréal",
+    "Ottawa",
+    "Calgary",
+    "Waterloo",
+    "Edmonton",
+    "Quebec",
+    "Ontario",
+    "British Columbia",
+    "Alberta"
+   ]
+  },
+  {
+   "code": "CC",
+   "alpha3": "CCK",
+   "name": "Cocos (Keeling) Islands",
+   "continent": "Asia",
+   "aliases": [
+    "Cocos (Keeling) Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CD",
+   "alpha3": "COD",
+   "name": "Congo, The Democratic Republic of the",
+   "continent": "Africa",
+   "aliases": [
+    "Congo, The Democratic Republic of the",
+    "Congo-Kinshasa",
+    "DR Congo"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CF",
+   "alpha3": "CAF",
+   "name": "Central African Republic",
+   "continent": "Africa",
+   "aliases": [
+    "Central African Republic"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CG",
+   "alpha3": "COG",
+   "name": "Congo",
+   "continent": "Africa",
+   "aliases": [
+    "Congo",
+    "Congo-Brazzaville",
+    "Republic of the Congo"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CH",
+   "alpha3": "CHE",
+   "name": "Switzerland",
+   "continent": "Europe",
+   "aliases": [
+    "Schweiz",
+    "Suisse",
+    "Svizzera",
+    "Swiss",
+    "Swiss Confederation",
+    "Switzerland"
+   ],
+   "cities": [
+    "Zurich",
+    "Zürich",
+    "Geneva",
+    "Genève",
+    "Basel",
+    "Lausanne",
+    "Bern",
+    "Lugano",
+    "Zug"
+   ]
+  },
+  {
+   "code": "CI",
+   "alpha3": "CIV",
+   "name": "Côte d'Ivoire",
+   "continent": "Africa",
+   "aliases": [
+    "Côte d'Ivoire",
+    "Ivory Coast",
+    "Republic of Côte d'Ivoire"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CK",
+   "alpha3": "COK",
+   "name": "Cook Islands",
+   "continent": "Oceania",
+   "aliases": [
+    "Cook Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CL",
+   "alpha3": "CHL",
+   "name": "Chile",
+   "continent": "South America",
+   "aliases": [
+    "Chile",
+    "Republic of Chile"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CM",
+   "alpha3": "CMR",
+   "name": "Cameroon",
+   "continent": "Africa",
+   "aliases": [
+    "Cameroon",
+    "Republic of Cameroon"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CN",
+   "alpha3": "CHN",
+   "name": "China",
+   "continent": "Asia",
+   "aliases": [
+    "China",
+    "PRC",
+    "People's Republic of China"
+   ],
+   "cities": [
+    "Beijing",
+    "Shanghai",
+    "Shenzhen",
+    "Hangzhou"
+   ]
+  },
+  {
+   "code": "CO",
+   "alpha3": "COL",
+   "name": "Colombia",
+   "continent": "South America",
+   "aliases": [
+    "Colombia",
+    "Republic of Colombia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CR",
+   "alpha3": "CRI",
+   "name": "Costa Rica",
+   "continent": "North America",
+   "aliases": [
+    "Costa Rica",
+    "Republic of Costa Rica"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CU",
+   "alpha3": "CUB",
+   "name": "Cuba",
+   "continent": "North America",
+   "aliases": [
+    "Cuba",
+    "Republic of Cuba"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CV",
+   "alpha3": "CPV",
+   "name": "Cabo Verde",
+   "continent": "Africa",
+   "aliases": [
+    "Cabo Verde",
+    "Republic of Cabo Verde"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CW",
+   "alpha3": "CUW",
+   "name": "Curaçao",
+   "continent": "North America",
+   "aliases": [
+    "Curaçao"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CX",
+   "alpha3": "CXR",
+   "name": "Christmas Island",
+   "continent": "Asia",
+   "aliases": [
+    "Christmas Island"
+   ],
+   "cities": []
+  },
+  {
+   "code": "CY",
+   "alpha3": "CYP",
+   "name": "Cyprus",
+   "continent": "Asia",
+   "aliases": [
+    "Cyprus",
+    "Republic of Cyprus"
+   ],
+   "cities": [
+    "Nicosia",
+    "Limassol"
+   ]
+  },
+  {
+   "code": "CZ",
+   "alpha3": "CZE",
+   "name": "Czechia",
+   "continent": "Europe",
+   "aliases": [
+    "Czech Republic",
+    "Czechia",
+    "Česko",
+    "Česká republika"
+   ],
+   "cities": [
+    "Prague",
+    "Praha",
+    "Brno",
+    "Ostrava"
+   ]
+  },
+  {
+   "code": "DE",
+   "alpha3": "DEU",
+   "name": "Germany",
+   "continent": "Europe",
+   "aliases": [
+    "Deutschland",
+    "Federal Republic of Germany",
+    "Germany"
+   ],
+   "cities": [
+    "Berlin",
+    "Munich",
+    "München",
+    "Muenchen",
+    "Hamburg",
+    "Frankfurt",
+    "Cologne",
+    "Köln",
+    "Stuttgart",
+    "Düsseldorf",
+    "Dusseldorf",
+    "Dresden",
+    "Leipzig",
+    "Heidelberg",
+    "Karlsruhe",
+    "Darmstadt",
+    "Aachen",
+    "Bonn",
+    "Tübingen",
+    "Tuebingen",
+    "Freiburg",
+    "Hanover",
+    "Hannover",
+    "Nuremberg",
+    "Nürnberg",
+    "Bremen",
+    "Mannheim",
+    "Saarbrücken",
+    "Saarbruecken",
+    "Erlangen",
+    "Göttingen",
+    "Jena",
+    "Potsdam",
+    "Bavaria",
+    "Bayern"
+   ]
+  },
+  {
+   "code": "DJ",
+   "alpha3": "DJI",
+   "name": "Djibouti",
+   "continent": "Africa",
+   "aliases": [
+    "Djibouti",
+    "Republic of Djibouti"
+   ],
+   "cities": []
+  },
+  {
+   "code": "DK",
+   "alpha3": "DNK",
+   "name": "Denmark",
+   "continent": "Europe",
+   "aliases": [
+    "Danmark",
+    "Denmark",
+    "Kingdom of Denmark"
+   ],
+   "cities": [
+    "Copenhagen",
+    "København",
+    "Aarhus",
+    "Odense",
+    "Aalborg",
+    "Lyngby"
+   ]
+  },
+  {
+   "code": "DM",
+   "alpha3": "DMA",
+   "name": "Dominica",
+   "continent": "North America",
+   "aliases": [
+    "Commonwealth of Dominica",
+    "Dominica"
+   ],
+   "cities": []
+  },
+  {
+   "code": "DO",
+   "alpha3": "DOM",
+   "name": "Dominican Republic",
+   "continent": "North America",
+   "aliases": [
+    "Dominican Republic"
+   ],
+   "cities": []
+  },
+  {
+   "code": "DZ",
+   "alpha3": "DZA",
+   "name": "Algeria",
+   "continent": "Africa",
+   "aliases": [
+    "Algeria",
+    "People's Democratic Republic of Algeria"
+   ],
+   "cities": []
+  },
+  {
+   "code": "EC",
+   "alpha3": "ECU",
+   "name": "Ecuador",
+   "continent": "South America",
+   "aliases": [
+    "Ecuador",
+    "Republic of Ecuador"
+   ],
+   "cities": []
+  },
+  {
+   "code": "EE",
+   "alpha3": "EST",
+   "name": "Estonia",
+   "continent": "Europe",
+   "aliases": [
+    "Eesti",
+    "Estonia",
+    "Republic of Estonia"
+   ],
+   "cities": [
+    "Tallinn",
+    "Tartu"
+   ]
+  },
+  {
+   "code": "EG",
+   "alpha3": "EGY",
+   "name": "Egypt",
+   "continent": "Africa",
+   "aliases": [
+    "Arab Republic of Egypt",
+    "Egypt"
+   ],
+   "cities": [
+    "Cairo"
+   ]
+  },
+  {
+   "code": "EH",
+   "alpha3": "ESH",
+   "name": "Western Sahara",
+   "continent": "Africa",
+   "aliases": [
+    "Western Sahara"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ER",
+   "alpha3": "ERI",
+   "name": "Eritrea",
+   "continent": "Africa",
+   "aliases": [
+    "Eritrea",
+    "the State of Eritrea"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ES",
+   "alpha3": "ESP",
+   "name": "Spain",
+   "continent": "Europe",
+   "aliases": [
+    "Espana",
+    "España",
+    "Kingdom of Spain",
+    "Spain"
+   ],
+   "cities": [
+    "Madrid",
+    "Barcelona",
+    "Valencia",
+    "Seville",
+    "Sevilla",
+    "Bilbao",
+    "Málaga",
+    "Malaga",
+    "Granada",
+    "Zaragoza",
+    "San Sebastián"
+   ]
+  },
+  {
+   "code": "ET",
+   "alpha3": "ETH",
+   "name": "Ethiopia",
+   "continent": "Africa",
+   "aliases": [
+    "Ethiopia",
+    "Federal Democratic Republic of Ethiopia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "FI",
+   "alpha3": "FIN",
+   "name": "Finland",
+   "continent": "Europe",
+   "aliases": [
+    "Finland",
+    "Republic of Finland",
+    "Suomi"
+   ],
+   "cities": [
+    "Helsinki",
+    "Espoo",
+    "Tampere",
+    "Vantaa",
+    "Oulu",
+    "Turku",
+    "Jyväskylä",
+    "Jyvaskyla",
+    "Lahti",
+    "Kuopio",
+    "Lappeenranta",
+    "Joensuu",
+    "Vaasa",
+    "Pori",
+    "Rovaniemi",
+    "Otaniemi"
+   ]
+  },
+  {
+   "code": "FJ",
+   "alpha3": "FJI",
+   "name": "Fiji",
+   "continent": "Oceania",
+   "aliases": [
+    "Fiji",
+    "Republic of Fiji"
+   ],
+   "cities": []
+  },
+  {
+   "code": "FK",
+   "alpha3": "FLK",
+   "name": "Falkland Islands (Malvinas)",
+   "continent": "South America",
+   "aliases": [
+    "Falkland Islands (Malvinas)"
+   ],
+   "cities": []
+  },
+  {
+   "code": "FM",
+   "alpha3": "FSM",
+   "name": "Micronesia, Federated States of",
+   "continent": "Oceania",
+   "aliases": [
+    "Federated States of Micronesia",
+    "Micronesia",
+    "Micronesia, Federated States of"
+   ],
+   "cities": []
+  },
+  {
+   "code": "FO",
+   "alpha3": "FRO",
+   "name": "Faroe Islands",
+   "continent": "Europe",
+   "aliases": [
+    "Faroe Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "FR",
+   "alpha3": "FRA",
+   "name": "France",
+   "continent": "Europe",
+   "aliases": [
+    "France",
+    "French Republic"
+   ],
+   "cities": [
+    "Paris",
+    "Lyon",
+    "Marseille",
+    "Toulouse",
+    "Grenoble",
+    "Nice",
+    "Sophia Antipolis",
+    "Bordeaux",
+    "Lille",
+    "Nantes",
+    "Strasbourg",
+    "Montpellier",
+    "Rennes",
+    "Saclay"
+   ]
+  },
+  {
+   "code": "GA",
+   "alpha3": "GAB",
+   "name": "Gabon",
+   "continent": "Africa",
+   "aliases": [
+    "Gabon",
+    "Gabonese Republic"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GB",
+   "alpha3": "GBR",
+   "name": "United Kingdom",
+   "continent": "Europe",
+   "aliases": [
+    "Britain",
+    "England",
+    "Great Britain",
+    "Northern Ireland",
+    "Scotland",
+    "U.K.",
+    "UK",
+    "United Kingdom",
+    "United Kingdom of Great Britain and Northern Ireland",
+    "Wales"
+   ],
+   "cities": [
+    "London",
+    "Cambridge",
+    "Oxford",
+    "Manchester",
+    "Edinburgh",
+    "Glasgow",
+    "Bristol",
+    "Birmingham",
+    "Leeds",
+    "Sheffield",
+    "Belfast",
+    "Cardiff",
+    "Nottingham",
+    "Southampton",
+    "Liverpool",
+    "Newcastle",
+    "Reading",
+    "Guildford",
+    "Bath",
+    "York"
+   ]
+  },
+  {
+   "code": "GD",
+   "alpha3": "GRD",
+   "name": "Grenada",
+   "continent": "North America",
+   "aliases": [
+    "Grenada"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GE",
+   "alpha3": "GEO",
+   "name": "Georgia",
+   "continent": "Asia",
+   "aliases": [
+    "Georgia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GF",
+   "alpha3": "GUF",
+   "name": "French Guiana",
+   "continent": "South America",
+   "aliases": [
+    "French Guiana"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GG",
+   "alpha3": "GGY",
+   "name": "Guernsey",
+   "continent": "Europe",
+   "aliases": [
+    "Guernsey"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GH",
+   "alpha3": "GHA",
+   "name": "Ghana",
+   "continent": "Africa",
+   "aliases": [
+    "Ghana",
+    "Republic of Ghana"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GI",
+   "alpha3": "GIB",
+   "name": "Gibraltar",
+   "continent": "Europe",
+   "aliases": [
+    "Gibraltar"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GL",
+   "alpha3": "GRL",
+   "name": "Greenland",
+   "continent": "North America",
+   "aliases": [
+    "Greenland"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GM",
+   "alpha3": "GMB",
+   "name": "Gambia",
+   "continent": "Africa",
+   "aliases": [
+    "Gambia",
+    "Republic of the Gambia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GN",
+   "alpha3": "GIN",
+   "name": "Guinea",
+   "continent": "Africa",
+   "aliases": [
+    "Guinea",
+    "Republic of Guinea"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GP",
+   "alpha3": "GLP",
+   "name": "Guadeloupe",
+   "continent": "North America",
+   "aliases": [
+    "Guadeloupe"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GQ",
+   "alpha3": "GNQ",
+   "name": "Equatorial Guinea",
+   "continent": "Africa",
+   "aliases": [
+    "Equatorial Guinea",
+    "Republic of Equatorial Guinea"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GR",
+   "alpha3": "GRC",
+   "name": "Greece",
+   "continent": "Europe",
+   "aliases": [
+    "Greece",
+    "Hellas",
+    "Hellenic Republic",
+    "Ελλάδα"
+   ],
+   "cities": [
+    "Athens",
+    "Thessaloniki",
+    "Heraklion"
+   ]
+  },
+  {
+   "code": "GS",
+   "alpha3": "SGS",
+   "name": "South Georgia and the South Sandwich Islands",
+   "continent": "South America",
+   "aliases": [
+    "South Georgia and the South Sandwich Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GT",
+   "alpha3": "GTM",
+   "name": "Guatemala",
+   "continent": "North America",
+   "aliases": [
+    "Guatemala",
+    "Republic of Guatemala"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GU",
+   "alpha3": "GUM",
+   "name": "Guam",
+   "continent": "Oceania",
+   "aliases": [
+    "Guam"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GW",
+   "alpha3": "GNB",
+   "name": "Guinea-Bissau",
+   "continent": "Africa",
+   "aliases": [
+    "Guinea-Bissau",
+    "Republic of Guinea-Bissau"
+   ],
+   "cities": []
+  },
+  {
+   "code": "GY",
+   "alpha3": "GUY",
+   "name": "Guyana",
+   "continent": "South America",
+   "aliases": [
+    "Guyana",
+    "Republic of Guyana"
+   ],
+   "cities": []
+  },
+  {
+   "code": "HK",
+   "alpha3": "HKG",
+   "name": "Hong Kong",
+   "continent": "Asia",
+   "aliases": [
+    "Hong Kong",
+    "Hong Kong Special Administrative Region of China"
+   ],
+   "cities": []
+  },
+  {
+   "code": "HM",
+   "alpha3": "HMD",
+   "name": "Heard Island and McDonald Islands",
+   "continent": "Antarctica",
+   "aliases": [
+    "Heard Island and McDonald Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "HN",
+   "alpha3": "HND",
+   "name": "Honduras",
+   "continent": "North America",
+   "aliases": [
+    "Honduras",
+    "Republic of Honduras"
+   ],
+   "cities": []
+  },
+  {
+   "code": "HR",
+   "alpha3": "HRV",
+   "name": "Croatia",
+   "continent": "Europe",
+   "aliases": [
+    "Croatia",
+    "Hrvatska",
+    "Republic of Croatia"
+   ],
+   "cities": [
+    "Zagreb",
+    "Split"
+   ]
+  },
+  {
+   "code": "HT",
+   "alpha3": "HTI",
+   "name": "Haiti",
+   "continent": "North America",
+   "aliases": [
+    "Haiti",
+    "Republic of Haiti"
+   ],
+   "cities": []
+  },
+  {
+   "code": "HU",
+   "alpha3": "HUN",
+   "name": "Hungary",
+   "continent": "Europe",
+   "aliases": [
+    "Hungary",
+    "Magyarország"
+   ],
+   "cities": [
+    "Budapest",
+    "Debrecen",
+    "Szeged"
+   ]
+  },
+  {
+   "code": "ID",
+   "alpha3": "IDN",
+   "name": "Indonesia",
+   "continent": "Asia",
+   "aliases": [
+    "Indonesia",
+    "Republic of Indonesia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IE",
+   "alpha3": "IRL",
+   "name": "Ireland",
+   "continent": "Europe",
+   "aliases": [
+    "Ireland",
+    "Republic of Ireland",
+    "Éire"
+   ],
+   "cities": [
+    "Dublin",
+    "Cork",
+    "Galway",
+    "Limerick"
+   ]
+  },
+  {
+   "code": "IL",
+   "alpha3": "ISR",
+   "name": "Israel",
+   "continent": "Asia",
+   "aliases": [
+    "Israel",
+    "State of Israel"
+   ],
+   "cities": [
+    "Tel Aviv",
+    "Haifa"
+   ]
+  },
+  {
+   "code": "IM",
+   "alpha3": "IMN",
+   "name": "Isle of Man",
+   "continent": "Europe",
+   "aliases": [
+    "Isle of Man"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IN",
+   "alpha3": "IND",
+   "name": "India",
+   "continent": "Asia",
+   "aliases": [
+    "Bharat",
+    "India",
+    "Republic of India"
+   ],
+   "cities": [
+    "Bengaluru",
+    "Bangalore",
+    "Mumbai",
+    "Delhi",
+    "New Delhi",
+    "Hyderabad",
+    "Pune",
+    "Chennai",
+    "Kolkata",
+    "Gurgaon",
+    "Gurugram",
+    "Noida",
+    "Ahmedabad"
+   ]
+  },
+  {
+   "code": "IO",
+   "alpha3": "IOT",
+   "name": "British Indian Ocean Territory",
+   "continent": "Asia",
+   "aliases": [
+    "British Indian Ocean Territory"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IQ",
+   "alpha3": "IRQ",
+   "name": "Iraq",
+   "continent": "Asia",
+   "aliases": [
+    "Iraq",
+    "Republic of Iraq"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IR",
+   "alpha3": "IRN",
+   "name": "Iran",
+   "continent": "Asia",
+   "aliases": [
+    "Iran",
+    "Iran, Islamic Republic of",
+    "Islamic Republic of Iran"
+   ],
+   "cities": []
+  },
+  {
+   "code": "IS",
+   "alpha3": "ISL",
+   "name": "Iceland",
+   "continent": "Europe",
+   "aliases": [
+    "Iceland",
+    "Republic of Iceland",
+    "Ísland"
+   ],
+   "cities": [
+    "Reykjavik",
+    "Reykjavík"
+   ]
+  },
+  {
+   "code": "IT",
+   "alpha3": "ITA",
+   "name": "Italy",
+   "continent": "Europe",
+   "aliases": [
+    "Italia",
+    "Italian Republic",
+    "Italy"
+   ],
+   "cities": [
+    "Rome",
+    "Roma",
+    "Milan",
+    "Milano",
+    "Turin",
+    "Torino",
+    "Bologna",
+    "Florence",
+    "Firenze",
+    "Naples",
+    "Napoli",
+    "Pisa",
+    "Padua",
+    "Padova",
+    "Genoa",
+    "Genova",
+    "Trento",
+    "Trieste"
+   ]
+  },
+  {
+   "code": "JE",
+   "alpha3": "JEY",
+   "name": "Jersey",
+   "continent": "Europe",
+   "aliases": [
+    "Jersey"
+   ],
+   "cities": []
+  },
+  {
+   "code": "JM",
+   "alpha3": "JAM",
+   "name": "Jamaica",
+   "continent": "North America",
+   "aliases": [
+    "Jamaica"
+   ],
+   "cities": []
+  },
+  {
+   "code": "JO",
+   "alpha3": "JOR",
+   "name": "Jordan",
+   "continent": "Asia",
+   "aliases": [
+    "Hashemite Kingdom of Jordan",
+    "Jordan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "JP",
+   "alpha3": "JPN",
+   "name": "Japan",
+   "continent": "Asia",
+   "aliases": [
+    "Japan"
+   ],
+   "cities": [
+    "Tokyo",
+    "Osaka",
+    "Kyoto"
+   ]
+  },
+  {
+   "code": "KE",
+   "alpha3": "KEN",
+   "name": "Kenya",
+   "continent": "Africa",
+   "aliases": [
+    "Kenya",
+    "Republic of Kenya"
+   ],
+   "cities": [
+    "Nairobi"
+   ]
+  },
+  {
+   "code": "KG",
+   "alpha3": "KGZ",
+   "name": "Kyrgyzstan",
+   "continent": "Asia",
+   "aliases": [
+    "Kyrgyz Republic",
+    "Kyrgyzstan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KH",
+   "alpha3": "KHM",
+   "name": "Cambodia",
+   "continent": "Asia",
+   "aliases": [
+    "Cambodia",
+    "Kingdom of Cambodia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KI",
+   "alpha3": "KIR",
+   "name": "Kiribati",
+   "continent": "Oceania",
+   "aliases": [
+    "Kiribati",
+    "Republic of Kiribati"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KM",
+   "alpha3": "COM",
+   "name": "Comoros",
+   "continent": "Africa",
+   "aliases": [
+    "Comoros",
+    "Union of the Comoros"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KN",
+   "alpha3": "KNA",
+   "name": "Saint Kitts and Nevis",
+   "continent": "North America",
+   "aliases": [
+    "Saint Kitts and Nevis"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KP",
+   "alpha3": "PRK",
+   "name": "North Korea",
+   "continent": "Asia",
+   "aliases": [
+    "Democratic People's Republic of Korea",
+    "Korea, Democratic People's Republic of",
+    "North Korea"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KR",
+   "alpha3": "KOR",
+   "name": "South Korea",
+   "continent": "Asia",
+   "aliases": [
+    "Korea",
+    "Korea, Republic of",
+    "South Korea"
+   ],
+   "cities": [
+    "Seoul"
+   ]
+  },
+  {
+   "code": "KW",
+   "alpha3": "KWT",
+   "name": "Kuwait",
+   "continent": "Asia",
+   "aliases": [
+    "Kuwait",
+    "State of Kuwait"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KY",
+   "alpha3": "CYM",
+   "name": "Cayman Islands",
+   "continent": "North America",
+   "aliases": [
+    "Cayman Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "KZ",
+   "alpha3": "KAZ",
+   "name": "Kazakhstan",
+   "continent": "Asia",
+   "aliases": [
+    "Kazakhstan",
+    "Republic of Kazakhstan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LA",
+   "alpha3": "LAO",
+   "name": "Laos",
+   "continent": "Asia",
+   "aliases": [
+    "Lao People's Democratic Republic",
+    "Laos"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LB",
+   "alpha3": "LBN",
+   "name": "Lebanon",
+   "continent": "Asia",
+   "aliases": [
+    "Lebanese Republic",
+    "Lebanon"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LC",
+   "alpha3": "LCA",
+   "name": "Saint Lucia",
+   "continent": "North America",
+   "aliases": [
+    "Saint Lucia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LI",
+   "alpha3": "LIE",
+   "name": "Liechtenstein",
+   "continent": "Europe",
+   "aliases": [
+    "Liechtenstein",
+    "Principality of Liechtenstein"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LK",
+   "alpha3": "LKA",
+   "name": "Sri Lanka",
+   "continent": "Asia",
+   "aliases": [
+    "Democratic Socialist Republic of Sri Lanka",
+    "Sri Lanka"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LR",
+   "alpha3": "LBR",
+   "name": "Liberia",
+   "continent": "Africa",
+   "aliases": [
+    "Liberia",
+    "Republic of Liberia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LS",
+   "alpha3": "LSO",
+   "name": "Lesotho",
+   "continent": "Africa",
+   "aliases": [
+    "Kingdom of Lesotho",
+    "Lesotho"
+   ],
+   "cities": []
+  },
+  {
+   "code": "LT",
+   "alpha3": "LTU",
+   "name": "Lithuania",
+   "continent": "Europe",
+   "aliases": [
+    "Lietuva",
+    "Lithuania",
+    "Republic of Lithuania"
+   ],
+   "cities": [
+    "Vilnius",
+    "Kaunas"
+   ]
+  },
+  {
+   "code": "LU",
+   "alpha3": "LUX",
+   "name": "Luxembourg",
+   "continent": "Europe",
+   "aliases": [
+    "Grand Duchy of Luxembourg",
+    "Luxembourg",
+    "Luxemburg",
+    "Lëtzebuerg"
+   ],
+   "cities": [
+    "Luxembourg City",
+    "Esch-sur-Alzette"
+   ]
+  },
+  {
+   "code": "LV",
+   "alpha3": "LVA",
+   "name": "Latvia",
+   "continent": "Europe",
+   "aliases": [
+    "Latvia",
+    "Latvija",
+    "Republic of Latvia"
+   ],
+   "cities": [
+    "Riga"
+   ]
+  },
+  {
+   "code": "LY",
+   "alpha3": "LBY",
+   "name": "Libya",
+   "continent": "Africa",
+   "aliases": [
+    "Libya"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MA",
+   "alpha3": "MAR",
+   "name": "Morocco",
+   "continent": "Africa",
+   "aliases": [
+    "Kingdom of Morocco",
+    "Morocco"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MC",
+   "alpha3": "MCO",
+   "name": "Monaco",
+   "continent": "Europe",
+   "aliases": [
+    "Monaco",
+    "Principality of Monaco"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MD",
+   "alpha3": "MDA",
+   "name": "Moldova",
+   "continent": "Europe",
+   "aliases": [
+    "Moldova",
+    "Moldova, Republic of",
+    "Republic of Moldova"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ME",
+   "alpha3": "MNE",
+   "name": "Montenegro",
+   "continent": "Europe",
+   "aliases": [
+    "Montenegro"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MF",
+   "alpha3": "MAF",
+   "name": "Saint Martin (French part)",
+   "continent": "North America",
+   "aliases": [
+    "Saint Martin (French part)"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MG",
+   "alpha3": "MDG",
+   "name": "Madagascar",
+   "continent": "Africa",
+   "aliases": [
+    "Madagascar",
+    "Republic of Madagascar"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MH",
+   "alpha3": "MHL",
+   "name": "Marshall Islands",
+   "continent": "Oceania",
+   "aliases": [
+    "Marshall Islands",
+    "Republic of the Marshall Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MK",
+   "alpha3": "MKD",
+   "name": "North Macedonia",
+   "continent": "Europe",
+   "aliases": [
+    "Macedonia",
+    "North Macedonia",
+    "Republic of North Macedonia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ML",
+   "alpha3": "MLI",
+   "name": "Mali",
+   "continent": "Africa",
+   "aliases": [
+    "Mali",
+    "Republic of Mali"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MM",
+   "alpha3": "MMR",
+   "name": "Myanmar",
+   "continent": "Asia",
+   "aliases": [
+    "Myanmar",
+    "Republic of Myanmar"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MN",
+   "alpha3": "MNG",
+   "name": "Mongolia",
+   "continent": "Asia",
+   "aliases": [
+    "Mongolia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MO",
+   "alpha3": "MAC",
+   "name": "Macao",
+   "continent": "Asia",
+   "aliases": [
+    "Macao",
+    "Macao Special Administrative Region of China",
+    "Macau"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MP",
+   "alpha3": "MNP",
+   "name": "Northern Mariana Islands",
+   "continent": "Oceania",
+   "aliases": [
+    "Commonwealth of the Northern Mariana Islands",
+    "Northern Mariana Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MQ",
+   "alpha3": "MTQ",
+   "name": "Martinique",
+   "continent": "North America",
+   "aliases": [
+    "Martinique"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MR",
+   "alpha3": "MRT",
+   "name": "Mauritania",
+   "continent": "Africa",
+   "aliases": [
+    "Islamic Republic of Mauritania",
+    "Mauritania"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MS",
+   "alpha3": "MSR",
+   "name": "Montserrat",
+   "continent": "North America",
+   "aliases": [
+    "Montserrat"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MT",
+   "alpha3": "MLT",
+   "name": "Malta",
+   "continent": "Europe",
+   "aliases": [
+    "Malta",
+    "Republic of Malta"
+   ],
+   "cities": [
+    "Valletta"
+   ]
+  },
+  {
+   "code": "MU",
+   "alpha3": "MUS",
+   "name": "Mauritius",
+   "continent": "Africa",
+   "aliases": [
+    "Mauritius",
+    "Republic of Mauritius"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MV",
+   "alpha3": "MDV",
+   "name": "Maldives",
+   "continent": "Asia",
+   "aliases": [
+    "Maldives",
+    "Republic of Maldives"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MW",
+   "alpha3": "MWI",
+   "name": "Malawi",
+   "continent": "Africa",
+   "aliases": [
+    "Malawi",
+    "Republic of Malawi"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MX",
+   "alpha3": "MEX",
+   "name": "Mexico",
+   "continent": "North America",
+   "aliases": [
+    "Mexico",
+    "United Mexican States"
+   ],
+   "cities": [
+    "Mexico City",
+    "Guadalajara"
+   ]
+  },
+  {
+   "code": "MY",
+   "alpha3": "MYS",
+   "name": "Malaysia",
+   "continent": "Asia",
+   "aliases": [
+    "Malaysia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "MZ",
+   "alpha3": "MOZ",
+   "name": "Mozambique",
+   "continent": "Africa",
+   "aliases": [
+    "Mozambique",
+    "Republic of Mozambique"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NA",
+   "alpha3": "NAM",
+   "name": "Namibia",
+   "continent": "Africa",
+   "aliases": [
+    "Namibia",
+    "Republic of Namibia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NC",
+   "alpha3": "NCL",
+   "name": "New Caledonia",
+   "continent": "Oceania",
+   "aliases": [
+    "New Caledonia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NE",
+   "alpha3": "NER",
+   "name": "Niger",
+   "continent": "Africa",
+   "aliases": [
+    "Niger",
+    "Republic of the Niger"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NF",
+   "alpha3": "NFK",
+   "name": "Norfolk Island",
+   "continent": "Oceania",
+   "aliases": [
+    "Norfolk Island"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NG",
+   "alpha3": "NGA",
+   "name": "Nigeria",
+   "continent": "Africa",
+   "aliases": [
+    "Federal Republic of Nigeria",
+    "Nigeria"
+   ],
+   "cities": [
+    "Lagos"
+   ]
+  },
+  {
+   "code": "NI",
+   "alpha3": "NIC",
+   "name": "Nicaragua",
+   "continent": "North America",
+   "aliases": [
+    "Nicaragua",
+    "Republic of Nicaragua"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NL",
+   "alpha3": "NLD",
+   "name": "Netherlands",
+   "continent": "Europe",
+   "aliases": [
+    "Holland",
+    "Kingdom of the Netherlands",
+    "Nederland",
+    "Netherlands",
+    "The Netherlands"
+   ],
+   "cities": [
+    "Amsterdam",
+    "Rotterdam",
+    "The Hague",
+    "Den Haag",
+    "Utrecht",
+    "Eindhoven",
+    "Delft",
+    "Leiden",
+    "Groningen",
+    "Nijmegen",
+    "Enschede",
+    "Tilburg",
+    "Maastricht",
+    "Wageningen"
+   ]
+  },
+  {
+   "code": "NO",
+   "alpha3": "NOR",
+   "name": "Norway",
+   "continent": "Europe",
+   "aliases": [
+    "Kingdom of Norway",
+    "Noreg",
+    "Norge",
+    "Norway"
+   ],
+   "cities": [
+    "Oslo",
+    "Bergen",
+    "Trondheim",
+    "Stavanger",
+    "Tromsø",
+    "Tromso"
+   ]
+  },
+  {
+   "code": "NP",
+   "alpha3": "NPL",
+   "name": "Nepal",
+   "continent": "Asia",
+   "aliases": [
+    "Federal Democratic Republic of Nepal",
+    "Nepal"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NR",
+   "alpha3": "NRU",
+   "name": "Nauru",
+   "continent": "Oceania",
+   "aliases": [
+    "Nauru",
+    "Republic of Nauru"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NU",
+   "alpha3": "NIU",
+   "name": "Niue",
+   "continent": "Oceania",
+   "aliases": [
+    "Niue"
+   ],
+   "cities": []
+  },
+  {
+   "code": "NZ",
+   "alpha3": "NZL",
+   "name": "New Zealand",
+   "continent": "Oceania",
+   "aliases": [
+    "New Zealand"
+   ],
+   "cities": [
+    "Auckland",
+    "Wellington"
+   ]
+  },
+  {
+   "code": "OM",
+   "alpha3": "OMN",
+   "name": "Oman",
+   "continent": "Asia",
+   "aliases": [
+    "Oman",
+    "Sultanate of Oman"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PA",
+   "alpha3": "PAN",
+   "name": "Panama",
+   "continent": "North America",
+   "aliases": [
+    "Panama",
+    "Republic of Panama"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PE",
+   "alpha3": "PER",
+   "name": "Peru",
+   "continent": "South America",
+   "aliases": [
+    "Peru",
+    "Republic of Peru"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PF",
+   "alpha3": "PYF",
+   "name": "French Polynesia",
+   "continent": "Oceania",
+   "aliases": [
+    "French Polynesia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PG",
+   "alpha3": "PNG",
+   "name": "Papua New Guinea",
+   "continent": "Oceania",
+   "aliases": [
+    "Independent State of Papua New Guinea",
+    "Papua New Guinea"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PH",
+   "alpha3": "PHL",
+   "name": "Philippines",
+   "continent": "Asia",
+   "aliases": [
+    "Philippines",
+    "Republic of the Philippines"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PK",
+   "alpha3": "PAK",
+   "name": "Pakistan",
+   "continent": "Asia",
+   "aliases": [
+    "Islamic Republic of Pakistan",
+    "Pakistan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PL",
+   "alpha3": "POL",
+   "name": "Poland",
+   "continent": "Europe",
+   "aliases": [
+    "Poland",
+    "Polska",
+    "Republic of Poland"
+   ],
+   "cities": [
+    "Warsaw",
+    "Warszawa",
+    "Kraków",
+    "Krakow",
+    "Wrocław",
+    "Wroclaw",
+    "Gdańsk",
+    "Gdansk",
+    "Poznań",
+    "Poznan",
+    "Łódź",
+    "Lodz",
+    "Katowice"
+   ]
+  },
+  {
+   "code": "PM",
+   "alpha3": "SPM",
+   "name": "Saint Pierre and Miquelon",
+   "continent": "North America",
+   "aliases": [
+    "Saint Pierre and Miquelon"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PN",
+   "alpha3": "PCN",
+   "name": "Pitcairn",
+   "continent": "Oceania",
+   "aliases": [
+    "Pitcairn"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PR",
+   "alpha3": "PRI",
+   "name": "Puerto Rico",
+   "continent": "North America",
+   "aliases": [
+    "Puerto Rico"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PS",
+   "alpha3": "PSE",
+   "name": "Palestine, State of",
+   "continent": "Asia",
+   "aliases": [
+    "Palestine",
+    "Palestine, State of",
+    "the State of Palestine"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PT",
+   "alpha3": "PRT",
+   "name": "Portugal",
+   "continent": "Europe",
+   "aliases": [
+    "Portugal",
+    "Portuguese Republic"
+   ],
+   "cities": [
+    "Lisbon",
+    "Lisboa",
+    "Porto",
+    "Braga",
+    "Coimbra",
+    "Aveiro"
+   ]
+  },
+  {
+   "code": "PW",
+   "alpha3": "PLW",
+   "name": "Palau",
+   "continent": "Oceania",
+   "aliases": [
+    "Palau",
+    "Republic of Palau"
+   ],
+   "cities": []
+  },
+  {
+   "code": "PY",
+   "alpha3": "PRY",
+   "name": "Paraguay",
+   "continent": "South America",
+   "aliases": [
+    "Paraguay",
+    "Republic of Paraguay"
+   ],
+   "cities": []
+  },
+  {
+   "code": "QA",
+   "alpha3": "QAT",
+   "name": "Qatar",
+   "continent": "Asia",
+   "aliases": [
+    "Qatar",
+    "State of Qatar"
+   ],
+   "cities": []
+  },
+  {
+   "code": "RE",
+   "alpha3": "REU",
+   "name": "Réunion",
+   "continent": "Africa",
+   "aliases": [
+    "Réunion"
+   ],
+   "cities": []
+  },
+  {
+   "code": "RO",
+   "alpha3": "ROU",
+   "name": "Romania",
+   "continent": "Europe",
+   "aliases": [
+    "Romania",
+    "România"
+   ],
+   "cities": [
+    "Bucharest",
+    "București",
+    "Cluj-Napoca",
+    "Iași",
+    "Timișoara"
+   ]
+  },
+  {
+   "code": "RS",
+   "alpha3": "SRB",
+   "name": "Serbia",
+   "continent": "Europe",
+   "aliases": [
+    "Republic of Serbia",
+    "Serbia",
+    "Srbija"
+   ],
+   "cities": [
+    "Belgrade",
+    "Novi Sad"
+   ]
+  },
+  {
+   "code": "RU",
+   "alpha3": "RUS",
+   "name": "Russia",
+   "continent": "Europe",
+   "aliases": [
+    "Russia",
+    "Russian Federation"
+   ],
+   "cities": []
+  },
+  {
+   "code": "RW",
+   "alpha3": "RWA",
+   "name": "Rwanda",
+   "continent": "Africa",
+   "aliases": [
+    "Rwanda",
+    "Rwandese Republic"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SA",
+   "alpha3": "SAU",
+   "name": "Saudi Arabia",
+   "continent": "Asia",
+   "aliases": [
+    "Kingdom of Saudi Arabia",
+    "Saudi Arabia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SB",
+   "alpha3": "SLB",
+   "name": "Solomon Islands",
+   "continent": "Oceania",
+   "aliases": [
+    "Solomon Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SC",
+   "alpha3": "SYC",
+   "name": "Seychelles",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of Seychelles",
+    "Seychelles"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SD",
+   "alpha3": "SDN",
+   "name": "Sudan",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of the Sudan",
+    "Sudan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SE",
+   "alpha3": "SWE",
+   "name": "Sweden",
+   "continent": "Europe",
+   "aliases": [
+    "Kingdom of Sweden",
+    "Sverige",
+    "Sweden"
+   ],
+   "cities": [
+    "Stockholm",
+    "Gothenburg",
+    "Göteborg",
+    "Malmö",
+    "Malmo",
+    "Uppsala",
+    "Lund",
+    "Linköping",
+    "Linkoping",
+    "Umeå",
+    "Umea",
+    "Västerås",
+    "Örebro"
+   ]
+  },
+  {
+   "code": "SG",
+   "alpha3": "SGP",
+   "name": "Singapore",
+   "continent": "Asia",
+   "aliases": [
+    "Republic of Singapore",
+    "Singapore"
+   ],
+   "cities": [
+    "Singapore"
+   ]
+  },
+  {
+   "code": "SH",
+   "alpha3": "SHN",
+   "name": "Saint Helena, Ascension and Tristan da Cunha",
+   "continent": "Africa",
+   "aliases": [
+    "Saint Helena, Ascension and Tristan da Cunha"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SI",
+   "alpha3": "SVN",
+   "name": "Slovenia",
+   "continent": "Europe",
+   "aliases": [
+    "Republic of Slovenia",
+    "Slovenia",
+    "Slovenija"
+   ],
+   "cities": [
+    "Ljubljana"
+   ]
+  },
+  {
+   "code": "SJ",
+   "alpha3": "SJM",
+   "name": "Svalbard and Jan Mayen",
+   "continent": "Europe",
+   "aliases": [
+    "Svalbard and Jan Mayen"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SK",
+   "alpha3": "SVK",
+   "name": "Slovakia",
+   "continent": "Europe",
+   "aliases": [
+    "Slovak Republic",
+    "Slovakia",
+    "Slovensko"
+   ],
+   "cities": [
+    "Bratislava",
+    "Košice"
+   ]
+  },
+  {
+   "code": "SL",
+   "alpha3": "SLE",
+   "name": "Sierra Leone",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of Sierra Leone",
+    "Sierra Leone"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SM",
+   "alpha3": "SMR",
+   "name": "San Marino",
+   "continent": "Europe",
+   "aliases": [
+    "Republic of San Marino",
+    "San Marino"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SN",
+   "alpha3": "SEN",
+   "name": "Senegal",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of Senegal",
+    "Senegal"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SO",
+   "alpha3": "SOM",
+   "name": "Somalia",
+   "continent": "Africa",
+   "aliases": [
+    "Federal Republic of Somalia",
+    "Somalia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SR",
+   "alpha3": "SUR",
+   "name": "Suriname",
+   "continent": "South America",
+   "aliases": [
+    "Republic of Suriname",
+    "Suriname"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SS",
+   "alpha3": "SSD",
+   "name": "South Sudan",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of South Sudan",
+    "South Sudan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ST",
+   "alpha3": "STP",
+   "name": "Sao Tome and Principe",
+   "continent": "Africa",
+   "aliases": [
+    "Democratic Republic of Sao Tome and Principe",
+    "Sao Tome and Principe"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SV",
+   "alpha3": "SLV",
+   "name": "El Salvador",
+   "continent": "North America",
+   "aliases": [
+    "El Salvador",
+    "Republic of El Salvador"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SX",
+   "alpha3": "SXM",
+   "name": "Sint Maarten (Dutch part)",
+   "continent": "North America",
+   "aliases": [
+    "Sint Maarten (Dutch part)"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SY",
+   "alpha3": "SYR",
+   "name": "Syria",
+   "continent": "Asia",
+   "aliases": [
+    "Syria",
+    "Syrian Arab Republic"
+   ],
+   "cities": []
+  },
+  {
+   "code": "SZ",
+   "alpha3": "SWZ",
+   "name": "Eswatini",
+   "continent": "Africa",
+   "aliases": [
+    "Eswatini",
+    "Kingdom of Eswatini"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TC",
+   "alpha3": "TCA",
+   "name": "Turks and Caicos Islands",
+   "continent": "North America",
+   "aliases": [
+    "Turks and Caicos Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TD",
+   "alpha3": "TCD",
+   "name": "Chad",
+   "continent": "Africa",
+   "aliases": [
+    "Chad",
+    "Republic of Chad"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TF",
+   "alpha3": "ATF",
+   "name": "French Southern Territories",
+   "continent": "Antarctica",
+   "aliases": [
+    "French Southern Territories"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TG",
+   "alpha3": "TGO",
+   "name": "Togo",
+   "continent": "Africa",
+   "aliases": [
+    "Togo",
+    "Togolese Republic"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TH",
+   "alpha3": "THA",
+   "name": "Thailand",
+   "continent": "Asia",
+   "aliases": [
+    "Kingdom of Thailand",
+    "Thailand"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TJ",
+   "alpha3": "TJK",
+   "name": "Tajikistan",
+   "continent": "Asia",
+   "aliases": [
+    "Republic of Tajikistan",
+    "Tajikistan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TK",
+   "alpha3": "TKL",
+   "name": "Tokelau",
+   "continent": "Oceania",
+   "aliases": [
+    "Tokelau"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TL",
+   "alpha3": "TLS",
+   "name": "Timor-Leste",
+   "continent": "Asia",
+   "aliases": [
+    "Democratic Republic of Timor-Leste",
+    "Timor-Leste"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TM",
+   "alpha3": "TKM",
+   "name": "Turkmenistan",
+   "continent": "Asia",
+   "aliases": [
+    "Turkmenistan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TN",
+   "alpha3": "TUN",
+   "name": "Tunisia",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of Tunisia",
+    "Tunisia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TO",
+   "alpha3": "TON",
+   "name": "Tonga",
+   "continent": "Oceania",
+   "aliases": [
+    "Kingdom of Tonga",
+    "Tonga"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TR",
+   "alpha3": "TUR",
+   "name": "Türkiye",
+   "continent": "Asia",
+   "aliases": [
+    "Republic of Türkiye",
+    "Turkey",
+    "Turkiye",
+    "Türkiye"
+   ],
+   "cities": [
+    "Istanbul",
+    "Ankara",
+    "Izmir"
+   ]
+  },
+  {
+   "code": "TT",
+   "alpha3": "TTO",
+   "name": "Trinidad and Tobago",
+   "continent": "North America",
+   "aliases": [
+    "Republic of Trinidad and Tobago",
+    "Trinidad and Tobago"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TV",
+   "alpha3": "TUV",
+   "name": "Tuvalu",
+   "continent": "Oceania",
+   "aliases": [
+    "Tuvalu"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TW",
+   "alpha3": "TWN",
+   "name": "Taiwan",
+   "continent": "Asia",
+   "aliases": [
+    "Taiwan",
+    "Taiwan, Province of China"
+   ],
+   "cities": []
+  },
+  {
+   "code": "TZ",
+   "alpha3": "TZA",
+   "name": "Tanzania",
+   "continent": "Africa",
+   "aliases": [
+    "Tanzania",
+    "Tanzania, United Republic of",
+    "United Republic of Tanzania"
+   ],
+   "cities": []
+  },
+  {
+   "code": "UA",
+   "alpha3": "UKR",
+   "name": "Ukraine",
+   "continent": "Europe",
+   "aliases": [
+    "Ukraine",
+    "Україна"
+   ],
+   "cities": [
+    "Kyiv",
+    "Kiev",
+    "Lviv"
+   ]
+  },
+  {
+   "code": "UG",
+   "alpha3": "UGA",
+   "name": "Uganda",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of Uganda",
+    "Uganda"
+   ],
+   "cities": []
+  },
+  {
+   "code": "UM",
+   "alpha3": "UMI",
+   "name": "United States Minor Outlying Islands",
+   "continent": "Oceania",
+   "aliases": [
+    "United States Minor Outlying Islands"
+   ],
+   "cities": []
+  },
+  {
+   "code": "US",
+   "alpha3": "USA",
+   "name": "United States",
+   "continent": "North America",
+   "aliases": [
+    "U.S.",
+    "U.S.A.",
+    "USA",
+    "United States",
+    "United States of America"
+   ],
+   "cities": [
+    "New York",
+    "San Francisco",
+    "Seattle",
+    "Boston",
+    "Los Angeles",
+    "Austin",
+    "Chicago",
+    "Palo Alto",
+    "Mountain View",
+    "Menlo Park",
+    "Cupertino",
+    "San Jose",
+    "Sunnyvale",
+    "Redmond",
+    "Pittsburgh",
+    "Washington, DC",
+    "Atlanta",
+    "Denver",
+    "San Diego",
+    "Bay Area",
+    "Silicon Valley",
+    "California",
+    "Texas",
+    "Massachusetts"
+   ]
+  },
+  {
+   "code": "UY",
+   "alpha3": "URY",
+   "name": "Uruguay",
+   "continent": "South America",
+   "aliases": [
+    "Eastern Republic of Uruguay",
+    "Uruguay"
+   ],
+   "cities": []
+  },
+  {
+   "code": "UZ",
+   "alpha3": "UZB",
+   "name": "Uzbekistan",
+   "continent": "Asia",
+   "aliases": [
+    "Republic of Uzbekistan",
+    "Uzbekistan"
+   ],
+   "cities": []
+  },
+  {
+   "code": "VA",
+   "alpha3": "VAT",
+   "name": "Holy See (Vatican City State)",
+   "continent": "Europe",
+   "aliases": [
+    "Holy See",
+    "Holy See (Vatican City State)",
+    "Vatican"
+   ],
+   "cities": []
+  },
+  {
+   "code": "VC",
+   "alpha3": "VCT",
+   "name": "Saint Vincent and the Grenadines",
+   "continent": "North America",
+   "aliases": [
+    "Saint Vincent and the Grenadines"
+   ],
+   "cities": []
+  },
+  {
+   "code": "VE",
+   "alpha3": "VEN",
+   "name": "Venezuela",
+   "continent": "South America",
+   "aliases": [
+    "Bolivarian Republic of Venezuela",
+    "Venezuela",
+    "Venezuela, Bolivarian Republic of"
+   ],
+   "cities": []
+  },
+  {
+   "code": "VG",
+   "alpha3": "VGB",
+   "name": "Virgin Islands, British",
+   "continent": "North America",
+   "aliases": [
+    "British Virgin Islands",
+    "Virgin Islands, British"
+   ],
+   "cities": []
+  },
+  {
+   "code": "VI",
+   "alpha3": "VIR",
+   "name": "Virgin Islands, U.S.",
+   "continent": "North America",
+   "aliases": [
+    "Virgin Islands of the United States",
+    "Virgin Islands, U.S."
+   ],
+   "cities": []
+  },
+  {
+   "code": "VN",
+   "alpha3": "VNM",
+   "name": "Vietnam",
+   "continent": "Asia",
+   "aliases": [
+    "Socialist Republic of Viet Nam",
+    "Viet Nam",
+    "Vietnam"
+   ],
+   "cities": []
+  },
+  {
+   "code": "VU",
+   "alpha3": "VUT",
+   "name": "Vanuatu",
+   "continent": "Oceania",
+   "aliases": [
+    "Republic of Vanuatu",
+    "Vanuatu"
+   ],
+   "cities": []
+  },
+  {
+   "code": "WF",
+   "alpha3": "WLF",
+   "name": "Wallis and Futuna",
+   "continent": "Oceania",
+   "aliases": [
+    "Wallis and Futuna"
+   ],
+   "cities": []
+  },
+  {
+   "code": "WS",
+   "alpha3": "WSM",
+   "name": "Samoa",
+   "continent": "Oceania",
+   "aliases": [
+    "Independent State of Samoa",
+    "Samoa"
+   ],
+   "cities": []
+  },
+  {
+   "code": "YE",
+   "alpha3": "YEM",
+   "name": "Yemen",
+   "continent": "Asia",
+   "aliases": [
+    "Republic of Yemen",
+    "Yemen"
+   ],
+   "cities": []
+  },
+  {
+   "code": "YT",
+   "alpha3": "MYT",
+   "name": "Mayotte",
+   "continent": "Africa",
+   "aliases": [
+    "Mayotte"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ZA",
+   "alpha3": "ZAF",
+   "name": "South Africa",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of South Africa",
+    "South Africa"
+   ],
+   "cities": [
+    "Cape Town",
+    "Johannesburg"
+   ]
+  },
+  {
+   "code": "ZM",
+   "alpha3": "ZMB",
+   "name": "Zambia",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of Zambia",
+    "Zambia"
+   ],
+   "cities": []
+  },
+  {
+   "code": "ZW",
+   "alpha3": "ZWE",
+   "name": "Zimbabwe",
+   "continent": "Africa",
+   "aliases": [
+    "Republic of Zimbabwe",
+    "Zimbabwe"
+   ],
+   "cities": []
+  }
+ ],
+ "groups": {
+  "EU": {
+   "name": "European Union",
+   "codes": [
+    "AT",
+    "BE",
+    "BG",
+    "HR",
+    "CY",
+    "CZ",
+    "DK",
+    "EE",
+    "FI",
+    "FR",
+    "DE",
+    "GR",
+    "HU",
+    "IE",
+    "IT",
+    "LV",
+    "LT",
+    "LU",
+    "MT",
+    "NL",
+    "PL",
+    "PT",
+    "RO",
+    "SK",
+    "SI",
+    "ES",
+    "SE"
+   ]
+  },
+  "EEA": {
+   "name": "EU + Iceland, Liechtenstein, Norway",
+   "codes": [
+    "AT",
+    "BE",
+    "BG",
+    "HR",
+    "CY",
+    "CZ",
+    "DK",
+    "EE",
+    "FI",
+    "FR",
+    "DE",
+    "GR",
+    "HU",
+    "IE",
+    "IT",
+    "LV",
+    "LT",
+    "LU",
+    "MT",
+    "NL",
+    "PL",
+    "PT",
+    "RO",
+    "SK",
+    "SI",
+    "ES",
+    "SE",
+    "IS",
+    "LI",
+    "NO"
+   ]
+  },
+  "SCHENGEN": {
+   "name": "Schengen area",
+   "codes": [
+    "AT",
+    "BE",
+    "BG",
+    "CH",
+    "CZ",
+    "DE",
+    "DK",
+    "EE",
+    "ES",
+    "FI",
+    "FR",
+    "GR",
+    "HR",
+    "HU",
+    "IS",
+    "IT",
+    "LI",
+    "LT",
+    "LU",
+    "LV",
+    "MT",
+    "NL",
+    "NO",
+    "PL",
+    "PT",
+    "RO",
+    "SE",
+    "SI",
+    "SK"
+   ]
+  },
+  "NORDICS": {
+   "name": "Nordic countries",
+   "codes": [
+    "DK",
+    "FI",
+    "IS",
+    "NO",
+    "SE"
+   ]
+  },
+  "BALTICS": {
+   "name": "Baltic states",
+   "codes": [
+    "EE",
+    "LV",
+    "LT"
+   ]
+  },
+  "DACH": {
+   "name": "Germany, Austria, Switzerland",
+   "codes": [
+    "DE",
+    "AT",
+    "CH"
+   ]
+  },
+  "BENELUX": {
+   "name": "Belgium, Netherlands, Luxembourg",
+   "codes": [
+    "BE",
+    "NL",
+    "LU"
+   ]
+  },
+  "UKI": {
+   "name": "UK and Ireland",
+   "codes": [
+    "GB",
+    "IE"
+   ]
+  },
+  "IBERIA": {
+   "name": "Spain and Portugal",
+   "codes": [
+    "ES",
+    "PT"
+   ]
+  },
+  "EUROPE": {
+   "name": "Europe (whole continent)",
+   "codes": [
+    "AD",
+    "AL",
+    "AT",
+    "AX",
+    "BA",
+    "BE",
+    "BG",
+    "BY",
+    "CH",
+    "CZ",
+    "DE",
+    "DK",
+    "EE",
+    "ES",
+    "FI",
+    "FO",
+    "FR",
+    "GB",
+    "GG",
+    "GI",
+    "GR",
+    "HR",
+    "HU",
+    "IE",
+    "IM",
+    "IS",
+    "IT",
+    "JE",
+    "LI",
+    "LT",
+    "LU",
+    "LV",
+    "MC",
+    "MD",
+    "ME",
+    "MK",
+    "MT",
+    "NL",
+    "NO",
+    "PL",
+    "PT",
+    "RO",
+    "RS",
+    "RU",
+    "SE",
+    "SI",
+    "SJ",
+    "SK",
+    "SM",
+    "UA",
+    "VA"
+   ]
+  },
+  "AFRICA": {
+   "name": "Africa",
+   "codes": [
+    "AO",
+    "BF",
+    "BI",
+    "BJ",
+    "BW",
+    "CD",
+    "CF",
+    "CG",
+    "CI",
+    "CM",
+    "CV",
+    "DJ",
+    "DZ",
+    "EG",
+    "EH",
+    "ER",
+    "ET",
+    "GA",
+    "GH",
+    "GM",
+    "GN",
+    "GQ",
+    "GW",
+    "KE",
+    "KM",
+    "LR",
+    "LS",
+    "LY",
+    "MA",
+    "MG",
+    "ML",
+    "MR",
+    "MU",
+    "MW",
+    "MZ",
+    "NA",
+    "NE",
+    "NG",
+    "RE",
+    "RW",
+    "SC",
+    "SD",
+    "SH",
+    "SL",
+    "SN",
+    "SO",
+    "SS",
+    "ST",
+    "SZ",
+    "TD",
+    "TG",
+    "TN",
+    "TZ",
+    "UG",
+    "YT",
+    "ZA",
+    "ZM",
+    "ZW"
+   ]
+  },
+  "ASIA": {
+   "name": "Asia",
+   "codes": [
+    "AE",
+    "AF",
+    "AM",
+    "AZ",
+    "BD",
+    "BH",
+    "BN",
+    "BT",
+    "CC",
+    "CN",
+    "CX",
+    "CY",
+    "GE",
+    "HK",
+    "ID",
+    "IL",
+    "IN",
+    "IO",
+    "IQ",
+    "IR",
+    "JO",
+    "JP",
+    "KG",
+    "KH",
+    "KP",
+    "KR",
+    "KW",
+    "KZ",
+    "LA",
+    "LB",
+    "LK",
+    "MM",
+    "MN",
+    "MO",
+    "MV",
+    "MY",
+    "NP",
+    "OM",
+    "PH",
+    "PK",
+    "PS",
+    "QA",
+    "SA",
+    "SG",
+    "SY",
+    "TH",
+    "TJ",
+    "TL",
+    "TM",
+    "TR",
+    "TW",
+    "UZ",
+    "VN",
+    "YE"
+   ]
+  },
+  "NORTH_AMERICA": {
+   "name": "North America",
+   "codes": [
+    "AG",
+    "AI",
+    "AW",
+    "BB",
+    "BL",
+    "BM",
+    "BQ",
+    "BS",
+    "BZ",
+    "CA",
+    "CR",
+    "CU",
+    "CW",
+    "DM",
+    "DO",
+    "GD",
+    "GL",
+    "GP",
+    "GT",
+    "HN",
+    "HT",
+    "JM",
+    "KN",
+    "KY",
+    "LC",
+    "MF",
+    "MQ",
+    "MS",
+    "MX",
+    "NI",
+    "PA",
+    "PM",
+    "PR",
+    "SV",
+    "SX",
+    "TC",
+    "TT",
+    "US",
+    "VC",
+    "VG",
+    "VI"
+   ]
+  },
+  "SOUTH_AMERICA": {
+   "name": "South America",
+   "codes": [
+    "AR",
+    "BO",
+    "BR",
+    "CL",
+    "CO",
+    "EC",
+    "FK",
+    "GF",
+    "GS",
+    "GY",
+    "PE",
+    "PY",
+    "SR",
+    "UY",
+    "VE"
+   ]
+  },
+  "OCEANIA": {
+   "name": "Oceania",
+   "codes": [
+    "AS",
+    "AU",
+    "CK",
+    "FJ",
+    "FM",
+    "GU",
+    "KI",
+    "MH",
+    "MP",
+    "NC",
+    "NF",
+    "NR",
+    "NU",
+    "NZ",
+    "PF",
+    "PG",
+    "PN",
+    "PW",
+    "SB",
+    "TK",
+    "TO",
+    "TV",
+    "UM",
+    "VU",
+    "WF",
+    "WS"
+   ]
+  }
+ }
+}

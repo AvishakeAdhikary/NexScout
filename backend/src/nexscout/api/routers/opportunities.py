@@ -4,23 +4,34 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Response, status
 
 from nexscout.api.deps import CurrentActor, DbSession
 from nexscout.api.schemas import (
+    CountryGroupOut,
+    CountryOut,
     DedupReportIn,
     FactorOut,
+    GeoOut,
+    ManualSourceOut,
     MatchGapOut,
     MatchStatusIn,
     OpportunityOut,
     OpportunitySourceOut,
     RescoreOut,
     RunStartedOut,
+    SourceAddIn,
+    SourceAddOut,
+    SourceBulkIn,
     SourceConfigIn,
+    SourceImportIn,
+    SourceImportOut,
     SourceOut,
+    SourceTestOut,
     SyncIn,
 )
 from nexscout.application import opportunities as opps
+from nexscout.application import sources
 from nexscout.integrations.sources.registry import adapters
 
 router = APIRouter(tags=["opportunities"])
@@ -28,7 +39,17 @@ router = APIRouter(tags=["opportunities"])
 
 def _source_out(view: opps.SourceView) -> SourceOut:
     cap = view.adapter.capabilities
+    info, cfg = view.info, view.config
     return SourceOut(
+        origin=info.origin if info else "demo",
+        provider=info.provider if info else "",
+        category=info.category if info else "",
+        url=info.url if info else "",
+        countries=list(info.countries) if info else [],
+        last_status=cfg.last_status if cfg else None,
+        last_error=cfg.last_error if cfg else None,
+        last_count=cfg.last_count if cfg else None,
+        last_fetched_at=cfg.last_fetched_at if cfg else None,
         key=view.adapter.key,
         name=view.adapter.name,
         kinds=sorted(k.value for k in cap.kinds),
@@ -86,6 +107,70 @@ async def configure_source(
         db, actor, source_key, enabled=body.enabled, settings=body.settings
     )
     return _source_out(view)
+
+
+@router.post("/sources/bulk", response_model=dict[str, int])
+async def bulk_enable(body: SourceBulkIn, actor: CurrentActor, db: DbSession) -> dict[str, int]:
+    """Turn many sources on or off at once (e.g. every Finnish source)."""
+    return {"changed": await sources.set_enabled(db, actor, body.keys, body.enabled)}
+
+
+@router.post("/sources", response_model=SourceAddOut, status_code=status.HTTP_201_CREATED)
+async def add_source(body: SourceAddIn, actor: CurrentActor, db: DbSession) -> SourceAddOut:
+    """Add a source by address: a company's careers board, a job board, a feed, or a vacancies
+    page with JobPosting data. NexScout checks it can read it before saving."""
+    r = await sources.add_custom(
+        db, actor, url=body.url, name=body.name, kinds=body.kinds, countries=body.countries
+    )
+    return SourceAddOut(
+        key=r.key,
+        provider=r.provider,
+        name=r.name,
+        postings=r.postings,
+        already_in_catalog=r.already_in_catalog,
+    )
+
+
+@router.post("/sources/import", response_model=SourceImportOut)
+async def import_sources(
+    body: SourceImportIn, actor: CurrentActor, db: DbSession
+) -> SourceImportOut:
+    """Import a career-ops portals.yml."""
+    r = await sources.import_portals(db, actor, body.content)
+    return SourceImportOut(
+        enabled_catalog=r.enabled_catalog, added=r.added, unsupported=r.unsupported
+    )
+
+
+@router.get("/sources/manual", response_model=list[ManualSourceOut])
+async def manual_sources(actor: CurrentActor) -> list[ManualSourceOut]:
+    """Boards NexScout doesn't automate, and why (search those yourself)."""
+    return [ManualSourceOut(**m) for m in sources.manual_only()]
+
+
+@router.post("/sources/{source_key}/test", response_model=SourceTestOut)
+async def test_source(source_key: str, actor: CurrentActor, db: DbSession) -> SourceTestOut:
+    return SourceTestOut(**await sources.test_source(db, actor, source_key))
+
+
+@router.delete("/sources/{source_key}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_source(source_key: str, actor: CurrentActor, db: DbSession) -> Response:
+    await sources.delete_custom(db, actor, source_key)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/geo", response_model=GeoOut)
+async def geo_data() -> GeoOut:
+    """Every country (ISO 3166-1) and the groups people pick from (EU, Nordics, …)."""
+    from nexscout.domain.geo import countries, groups
+
+    return GeoOut(
+        countries=[
+            CountryOut(code=c.code, name=c.name, continent=c.continent)
+            for c in sorted(countries().values(), key=lambda c: c.name)
+        ],
+        groups=[CountryGroupOut(key=k, name=v[0], codes=list(v[1])) for k, v in groups().items()],
+    )
 
 
 @router.post(

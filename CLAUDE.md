@@ -48,6 +48,8 @@ uv run nexscout worker                        # background worker: uploads, sear
                                               # notification delivery (needed!)
 cd apps/web && npm run dev | lint | typecheck | test | build     # web :3000
 bash scripts/gen-contracts.sh                 # after changing API schemas
+uv run --project backend python scripts/build_catalog.py <career-ops checkout>  # (repo root) sources catalog
+uv run --project backend python scripts/record_source_fixtures.py [provider]  # re-record real responses
 cd apps/web && npm run e2e                    # Playwright: starts API :8100 + web :3200 against dev DB
 E2E_PROD=1 npx playwright test                # same journeys on a production build + production API
 ```

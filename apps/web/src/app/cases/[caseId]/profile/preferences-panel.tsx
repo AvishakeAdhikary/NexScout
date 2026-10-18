@@ -3,22 +3,25 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
+import { CountryPicker } from "@/components/country-picker";
 import { ErrorAlert } from "@/components/error-alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { relationshipsApi, type Preferences, type PreferencesOut } from "@/lib/api/client";
 
-type ListKey = "countries" | "cities" | "research_areas" | "job_titles" | "preferred_employers" |
-  "preferred_institutions";
+type ListKey = "cities" | "research_areas" | "job_titles" | "preferred_employers" |
+  "preferred_institutions" | "search_keywords" | "exclude_keywords" | "languages";
 
 const LIST_FIELDS: { key: ListKey; label: string }[] = [
-  { key: "countries", label: "Countries" },
+  { key: "search_keywords", label: "Search words (e.g. machine learning, computer vision)" },
+  { key: "exclude_keywords", label: "Leave out titles with (e.g. intern, java)" },
   { key: "cities", label: "Cities" },
   { key: "research_areas", label: "Research areas" },
   { key: "job_titles", label: "Job titles" },
   { key: "preferred_institutions", label: "Preferred universities" },
   { key: "preferred_employers", label: "Preferred employers" },
+  { key: "languages", label: "Languages you can work in (codes: en, de, fi)" },
 ];
 
 const split = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
@@ -95,9 +98,21 @@ function PreferencesForm({
         Preferences
       </h2>
       <p className="text-sm text-muted-foreground">
-        All optional. Separate multiple values with commas.
+        All optional. Separate multiple values with commas. Positions are matched against these,
+        and every gap is explained.
       </p>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
+        <CountryPicker
+          label="Countries to look in"
+          help="Empty means anywhere. Groups such as EU or Nordic countries include every member."
+          value={draft.countries ?? []}
+          onChange={(v) => set("countries", v)}
+        />
+        <CountryPicker
+          label="Countries to leave out"
+          value={draft.countries_exclude ?? []}
+          onChange={(v) => set("countries_exclude", v)}
+        />
         {LIST_FIELDS.map((f) => (
           <div key={f.key} className="flex flex-col gap-1">
             <Label htmlFor={`pref-${f.key}`}>{f.label}</Label>
@@ -157,17 +172,40 @@ function PreferencesForm({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <Label htmlFor="pref-funding">Need funding (PhD)?</Label>
+          <Label htmlFor="pref-funding">Funding (PhD and research)</Label>
           <select
             id="pref-funding"
             className="h-8 rounded-lg border bg-background px-2 text-sm"
-            value={tri(draft.funding_required)}
-            onChange={(e) => set("funding_required", fromTri(e.target.value))}
+            value={draft.funding_required ? "required" : (draft.funding ?? "any")}
+            onChange={(e) => {
+              set("funding", e.target.value as Preferences["funding"]);
+              set("funding_required", null);
+            }}
           >
-            <option value="">Not specified</option>
-            <option value="yes">Yes</option>
-            <option value="no">No</option>
+            <option value="any">Any</option>
+            <option value="preferred">Funded preferred</option>
+            <option value="required">Funded only</option>
           </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="pref-budget">Most you can spend up front (fees, deposits)</Label>
+          <div className="flex gap-2">
+            <Input
+              id="pref-budget"
+              type="number"
+              min={0}
+              value={draft.max_upfront_cost ?? ""}
+              onChange={(e) => set("max_upfront_cost", e.target.value === "" ? null : Number(e.target.value))}
+            />
+            <Input
+              aria-label="Budget currency"
+              className="w-24"
+              maxLength={3}
+              placeholder="INR"
+              value={draft.budget_currency ?? ""}
+              onChange={(e) => set("budget_currency", e.target.value.toUpperCase() || null)}
+            />
+          </div>
         </div>
         <details className="sm:col-span-2 rounded-lg border p-3">
           <summary className="cursor-pointer text-sm font-medium">
@@ -178,13 +216,10 @@ function PreferencesForm({
             check explicit requirements such as “must already be authorized to work in X”.
           </p>
           <div className="mt-2 flex flex-col gap-2">
-            <Label htmlFor="pref-auth">Countries where you are already authorized to work</Label>
-            <Input
-              id="pref-auth"
-              value={(draft.sensitive?.work_authorization ?? []).join(", ")}
-              onChange={(e) =>
-                set("sensitive", { ...draft.sensitive!, work_authorization: split(e.target.value) })
-              }
+            <CountryPicker
+              label="Countries where you are already authorized to work"
+              value={draft.sensitive?.work_authorization ?? []}
+              onChange={(v) => set("sensitive", { ...draft.sensitive!, work_authorization: v })}
             />
             <label className="flex items-center gap-2 text-sm">
               <input

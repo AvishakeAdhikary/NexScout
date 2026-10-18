@@ -1227,6 +1227,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/geo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Geo Data
+         * @description Every country (ISO 3166-1) and the groups people pick from (EU, Nordics, …).
+         */
+        get: operations["geo_data_api_v1_geo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me/delete": {
         parameters: {
             query?: never;
@@ -1515,6 +1535,71 @@ export interface paths {
         /** List Sources */
         get: operations["list_sources_api_v1_sources_get"];
         put?: never;
+        /**
+         * Add Source
+         * @description Add a source by address: a company's careers board, a job board, a feed, or a vacancies
+         *     page with JobPosting data. NexScout checks it can read it before saving.
+         */
+        post: operations["add_source_api_v1_sources_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bulk Enable
+         * @description Turn many sources on or off at once (e.g. every Finnish source).
+         */
+        post: operations["bulk_enable_api_v1_sources_bulk_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Sources
+         * @description Import a career-ops portals.yml.
+         */
+        post: operations["import_sources_api_v1_sources_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/manual": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Manual Sources
+         * @description Boards NexScout doesn't automate, and why (search those yourself).
+         */
+        get: operations["manual_sources_api_v1_sources_manual_get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1533,6 +1618,24 @@ export interface paths {
         /** Configure Source */
         put: operations["configure_source_api_v1_sources__source_key__put"];
         post?: never;
+        /** Delete Source */
+        delete: operations["delete_source_api_v1_sources__source_key__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sources/{source_key}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Source */
+        post: operations["test_source_api_v1_sources__source_key__test_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2205,6 +2308,24 @@ export interface components {
             /** Node */
             node?: string | null;
         };
+        /** CountryGroupOut */
+        CountryGroupOut: {
+            /** Codes */
+            codes: string[];
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+        };
+        /** CountryOut */
+        CountryOut: {
+            /** Code */
+            code: string;
+            /** Continent */
+            continent: string;
+            /** Name */
+            name: string;
+        };
         /** DecisionIn */
         DecisionIn: {
             /** Approve */
@@ -2638,6 +2759,13 @@ export interface components {
              */
             updated_at: string;
         };
+        /** GeoOut */
+        GeoOut: {
+            /** Countries */
+            countries: components["schemas"]["CountryOut"][];
+            /** Groups */
+            groups: components["schemas"]["CountryGroupOut"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -2686,6 +2814,17 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+            /** Timezone */
+            timezone?: string | null;
+        };
+        /** ManualSourceOut */
+        ManualSourceOut: {
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string;
+            /** Url */
+            url: string;
         };
         /** MatchGapOut */
         MatchGapOut: {
@@ -2887,6 +3026,8 @@ export interface components {
             consent?: string | null;
             /** Countries */
             countries?: string[] | null;
+            /** Countries Exclude */
+            countries_exclude?: string[] | null;
             /** Daily Submit Cap */
             daily_submit_cap?: number | null;
             /** Declarations */
@@ -2924,6 +3065,8 @@ export interface components {
             consented_at: string | null;
             /** Countries */
             countries: string[];
+            /** Countries Exclude */
+            countries_exclude: string[];
             /** Daily Submit Cap */
             daily_submit_cap: number;
             /** Declarations */
@@ -2965,24 +3108,40 @@ export interface components {
             accessibility_notes?: string | null;
             /** Application Horizon Days */
             application_horizon_days?: number | null;
+            /** Budget Currency */
+            budget_currency?: string | null;
             /** Cities */
             cities?: string[];
             /** Countries */
             countries?: string[];
+            /** Countries Exclude */
+            countries_exclude?: string[];
             /** Disciplines */
             disciplines?: string[];
             /** Earliest Start */
             earliest_start?: string | null;
             /** Employment Types */
             employment_types?: ("full_time" | "part_time" | "contract" | "internship" | "temporary" | "phd_position" | "postdoc" | "research_assistant" | "fellowship")[];
+            /** Exclude Keywords */
+            exclude_keywords?: string[];
             /** @default strict */
             experience_mode: components["schemas"]["ExperienceMode"];
+            /**
+             * Funding
+             * @default any
+             * @enum {string}
+             */
+            funding: "required" | "preferred" | "any";
             /** Funding Required */
             funding_required?: boolean | null;
             /** Industries */
             industries?: string[];
             /** Job Titles */
             job_titles?: string[];
+            /** Languages */
+            languages?: string[];
+            /** Max Upfront Cost */
+            max_upfront_cost?: number | null;
             /** Max Years Experience */
             max_years_experience?: number | null;
             /** Min Years Experience */
@@ -3007,6 +3166,8 @@ export interface components {
             salary_currency?: string | null;
             /** Salary Min */
             salary_min?: number | null;
+            /** Search Keywords */
+            search_keywords?: string[];
             /** Seniority */
             seniority?: components["schemas"]["Seniority"][];
             sensitive?: components["schemas"]["SensitiveAttributes"];
@@ -3152,6 +3313,8 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+            /** Timezone */
+            timezone?: string | null;
         };
         /** ReminderDoneIn */
         ReminderDoneIn: {
@@ -3442,6 +3605,40 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** SourceAddIn */
+        SourceAddIn: {
+            /** Countries */
+            countries?: string[];
+            /** Kinds */
+            kinds?: string[];
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /** Url */
+            url: string;
+        };
+        /** SourceAddOut */
+        SourceAddOut: {
+            /** Already In Catalog */
+            already_in_catalog: boolean;
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Postings */
+            postings: number;
+            /** Provider */
+            provider: string;
+        };
+        /** SourceBulkIn */
+        SourceBulkIn: {
+            /** Enabled */
+            enabled: boolean;
+            /** Keys */
+            keys: string[];
+        };
         /** SourceConfigIn */
         SourceConfigIn: {
             /** Enabled */
@@ -3451,10 +3648,33 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** SourceImportIn */
+        SourceImportIn: {
+            /** Content */
+            content: string;
+        };
+        /** SourceImportOut */
+        SourceImportOut: {
+            /** Added */
+            added: string[];
+            /** Enabled Catalog */
+            enabled_catalog: string[];
+            /** Unsupported */
+            unsupported: {
+                [key: string]: string;
+            }[];
+        };
         /** SourceOut */
         SourceOut: {
             /** Auth */
             auth: string;
+            /**
+             * Category
+             * @default
+             */
+            category: string;
+            /** Countries */
+            countries?: string[];
             /** Enabled */
             enabled: boolean;
             /** Incremental */
@@ -3465,12 +3685,30 @@ export interface components {
             key: string;
             /** Kinds */
             kinds: string[];
+            /** Last Count */
+            last_count?: number | null;
+            /** Last Error */
+            last_error?: string | null;
+            /** Last Fetched At */
+            last_fetched_at?: string | null;
+            /** Last Status */
+            last_status?: string | null;
             /** Limitations */
             limitations: string[];
             /** Name */
             name: string;
+            /**
+             * Origin
+             * @default demo
+             */
+            origin: string;
             /** Pagination */
             pagination: string;
+            /**
+             * Provider
+             * @default
+             */
+            provider: string;
             /** Rate Limit */
             rate_limit: string;
             /** Settings */
@@ -3479,6 +3717,22 @@ export interface components {
             };
             /** Terms */
             terms: string;
+            /**
+             * Url
+             * @default
+             */
+            url: string;
+        };
+        /** SourceTestOut */
+        SourceTestOut: {
+            /** Error */
+            error: string | null;
+            /** Ok */
+            ok: boolean;
+            /** Postings */
+            postings: number;
+            /** Sample */
+            sample: string[];
         };
         /** StatusIn */
         StatusIn: {
@@ -3619,6 +3873,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Timezone */
+            timezone: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -6766,6 +7022,26 @@ export interface operations {
             };
         };
     };
+    geo_data_api_v1_geo_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeoOut"];
+                };
+            };
+        };
+    };
     delete_account_api_v1_me_delete_post: {
         parameters: {
             query?: never;
@@ -7324,6 +7600,127 @@ export interface operations {
             };
         };
     };
+    add_source_api_v1_sources_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceAddIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceAddOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_enable_api_v1_sources_bulk_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceBulkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_sources_api_v1_sources_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceImportIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    manual_sources_api_v1_sources_manual_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualSourceOut"][];
+                };
+            };
+        };
+    };
     configure_source_api_v1_sources__source_key__put: {
         parameters: {
             query?: never;
@@ -7346,6 +7743,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_source_api_v1_sources__source_key__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_source_api_v1_sources__source_key__test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTestOut"];
                 };
             };
             /** @description Validation Error */

@@ -19,6 +19,7 @@ from nexscout.application.profile import profile_gaps
 from nexscout.config import Settings
 from nexscout.domain.chat import CAPABILITIES, classify
 from nexscout.domain.errors import DomainError
+from nexscout.domain.timezones import local_today
 from nexscout.infrastructure.db.models import (
     ApprovalRequest,
     ChatMessage,
@@ -28,6 +29,7 @@ from nexscout.infrastructure.db.models import (
     ProfileFact,
     ProviderConfig,
     Task,
+    User,
     WorkerHeartbeat,
     WorkflowRun,
 )
@@ -99,6 +101,12 @@ async def needs_you(s: AsyncSession, actor: Actor, case_id: uuid.UUID) -> list[d
     return items
 
 
+async def user_today(s: AsyncSession, actor: Actor, now: datetime | None = None) -> date:
+    """Today on the user's own calendar."""
+    tz = await s.scalar(select(User.timezone).where(User.id == actor.user_id))
+    return local_today(now or datetime.now(UTC), tz)
+
+
 async def upcoming(
     s: AsyncSession, actor: Actor, case_id: uuid.UUID, today: date
 ) -> list[dict[str, Any]]:
@@ -137,7 +145,7 @@ async def case_dashboard(
     s: AsyncSession, actor: Actor, case_id: uuid.UUID, now: datetime | None = None
 ) -> dict[str, Any]:
     await get_case(s, actor, case_id)
-    today = (now or datetime.now(UTC)).date()
+    today = await user_today(s, actor, now)
     apps = await list_applications(s, actor, case_id)
     by_status: dict[str, int] = {}
     for a in apps:
@@ -341,7 +349,7 @@ async def _answer(
             else f"{len(items)} thing(s) need you:\n" + "\n".join(f"- {i['title']}" for i in items)
         )
     if name == "deadlines":
-        items = await upcoming(s, actor, case_id, datetime.now(UTC).date())
+        items = await upcoming(s, actor, case_id, await user_today(s, actor))
         actions.extend(
             {"label": f"{i['date']}: {i['title']}", "href": i["href"]} for i in items[:8]
         )

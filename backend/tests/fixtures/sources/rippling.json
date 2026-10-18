@@ -1,0 +1,950 @@
+{
+ "provider": "rippling",
+ "entry": {
+  "name": "Rippling",
+  "url": "https://ats.rippling.com/rippling/jobs",
+  "config": {
+   "slug": "rippling",
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 641,
+ "responses": {
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=0&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "84d388b6-7656-434c-8862-0312eb6b97ac",
+      "name": "Business Operations Manager",
+      "url": "https://ats.rippling.com/rippling/jobs/84d388b6-7656-434c-8862-0312eb6b97ac",
+      "department": {
+       "name": "Bizops"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "84d388b6-7656-434c-8862-0312eb6b97ac",
+      "name": "Business Operations Manager",
+      "url": "https://ats.rippling.com/rippling/jobs/84d388b6-7656-434c-8862-0312eb6b97ac",
+      "department": {
+       "name": "Bizops"
+      },
+      "locations": [
+       {
+        "name": "New York, NY",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "New York",
+        "stateCode": "NY",
+        "city": "New York",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "13bf8b65-fb2d-4740-b0a4-34046e5529cc",
+      "name": "Director, Business Operations ",
+      "url": "https://ats.rippling.com/rippling/jobs/13bf8b65-fb2d-4740-b0a4-34046e5529cc",
+      "department": {
+       "name": "Bizops"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 0,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=1&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "77f68cc2-5bf9-4748-9643-aef46aa2ea53",
+      "name": "Senior Engineering Manager - Benefits Marketplace",
+      "url": "https://ats.rippling.com/rippling/jobs/77f68cc2-5bf9-4748-9643-aef46aa2ea53",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "Bangalore, India",
+        "country": "India",
+        "countryCode": "IN",
+        "state": "Karnataka",
+        "stateCode": "KA",
+        "city": "Bangalore",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "923ae087-7b5e-4846-84fe-9ff7d5eb8e38",
+      "name": "Senior Engineering Manager - Payments Experience",
+      "url": "https://ats.rippling.com/rippling/jobs/923ae087-7b5e-4846-84fe-9ff7d5eb8e38",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "233c1709-3a31-4944-a4c3-39cf396abec0",
+      "name": "Senior Engineering Manager - Platform",
+      "url": "https://ats.rippling.com/rippling/jobs/233c1709-3a31-4944-a4c3-39cf396abec0",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "Bangalore, India",
+        "country": "India",
+        "countryCode": "IN",
+        "state": "Karnataka",
+        "stateCode": "KA",
+        "city": "Bangalore",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 1,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=2&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "8c606ff9-0e19-4a0d-aa5b-9bf8271cb4d8",
+      "name": "Senior Software Engineer, Backend - Rippling AI",
+      "url": "https://ats.rippling.com/rippling/jobs/8c606ff9-0e19-4a0d-aa5b-9bf8271cb4d8",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "ac485804-a5a2-468e-9423-5b238cb6b910",
+      "name": "Senior Software Engineer, Backend Full Stack - Data Cloud",
+      "url": "https://ats.rippling.com/rippling/jobs/ac485804-a5a2-468e-9423-5b238cb6b910",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "ac485804-a5a2-468e-9423-5b238cb6b910",
+      "name": "Senior Software Engineer, Backend Full Stack - Data Cloud",
+      "url": "https://ats.rippling.com/rippling/jobs/ac485804-a5a2-468e-9423-5b238cb6b910",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "Seattle, WA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Washington",
+        "stateCode": "WA",
+        "city": "Seattle",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 2,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=3&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "4352b096-ed73-41a6-ae6c-a06301c36718",
+      "name": "Staff Full Stack Engineer (Frontend) - Time Products",
+      "url": "https://ats.rippling.com/rippling/jobs/4352b096-ed73-41a6-ae6c-a06301c36718",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "New York, NY",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "New York",
+        "stateCode": "NY",
+        "city": "New York",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "e0c33127-6db4-4750-882d-1fc255f0a630",
+      "name": "Staff Full Stack Software Engineer (Backend) - Agentic Talent Platform",
+      "url": "https://ats.rippling.com/rippling/jobs/e0c33127-6db4-4750-882d-1fc255f0a630",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "53eadfa7-eebb-4993-ac88-c42d75bb4e65",
+      "name": "Staff Full Stack Software Engineer (Backend) - Benefits",
+      "url": "https://ats.rippling.com/rippling/jobs/53eadfa7-eebb-4993-ac88-c42d75bb4e65",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "Seattle, WA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Washington",
+        "stateCode": "WA",
+        "city": "Seattle",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 3,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=4&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "e43f1aa9-4690-40ee-b147-a63e17a032b5",
+      "name": "Staff Software Engineer - Platform",
+      "url": "https://ats.rippling.com/rippling/jobs/e43f1aa9-4690-40ee-b147-a63e17a032b5",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "60a0478c-eb72-436c-abbb-f582146fffb5",
+      "name": "Staff Software Engineer - Rippling AI",
+      "url": "https://ats.rippling.com/rippling/jobs/60a0478c-eb72-436c-abbb-f582146fffb5",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "a85f4703-0d12-4148-adeb-075e78024248",
+      "name": "Staff Software Engineer - Rippling AI",
+      "url": "https://ats.rippling.com/rippling/jobs/a85f4703-0d12-4148-adeb-075e78024248",
+      "department": {
+       "name": "Engineering"
+      },
+      "locations": [
+       {
+        "name": "Bangalore, India",
+        "country": "India",
+        "countryCode": "IN",
+        "state": "Karnataka",
+        "stateCode": "KA",
+        "city": "Bangalore",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 4,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=5&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "394f96db-3538-4a1e-ab00-45eb48bb8ca2",
+      "name": "Manager, Implementation",
+      "url": "https://ats.rippling.com/rippling/jobs/394f96db-3538-4a1e-ab00-45eb48bb8ca2",
+      "department": {
+       "name": "Implementation"
+      },
+      "locations": [
+       {
+        "name": "Bangalore, India",
+        "country": "India",
+        "countryCode": "IN",
+        "state": "Karnataka",
+        "stateCode": "KA",
+        "city": "Bangalore",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "4bc32e30-67e0-42cf-bb75-ca5539b2c1a0",
+      "name": "Manager, Implementation (Benefits)",
+      "url": "https://ats.rippling.com/rippling/jobs/4bc32e30-67e0-42cf-bb75-ca5539b2c1a0",
+      "department": {
+       "name": "Implementation"
+      },
+      "locations": [
+       {
+        "name": "Remote (Seattle, WA)",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Washington",
+        "stateCode": "WA",
+        "city": "Seattle",
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "4bc32e30-67e0-42cf-bb75-ca5539b2c1a0",
+      "name": "Manager, Implementation (Benefits)",
+      "url": "https://ats.rippling.com/rippling/jobs/4bc32e30-67e0-42cf-bb75-ca5539b2c1a0",
+      "department": {
+       "name": "Implementation"
+      },
+      "locations": [
+       {
+        "name": "Remote (Phoenix, AZ)",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Arizona",
+        "stateCode": "AZ",
+        "city": "Phoenix",
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 5,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=6&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "73576032-7fb5-4d50-9c80-4f2327151f59",
+      "name": "Marketing Lead",
+      "url": "https://ats.rippling.com/rippling/jobs/73576032-7fb5-4d50-9c80-4f2327151f59",
+      "department": {
+       "name": "Marketing"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "c54eee63-f1dc-4861-a0e3-4f1c1d6d9074",
+      "name": "Private Equity Marketing Lead",
+      "url": "https://ats.rippling.com/rippling/jobs/c54eee63-f1dc-4861-a0e3-4f1c1d6d9074",
+      "department": {
+       "name": "Marketing"
+      },
+      "locations": [
+       {
+        "name": "New York, NY",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "New York",
+        "stateCode": "NY",
+        "city": "New York",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "c54eee63-f1dc-4861-a0e3-4f1c1d6d9074",
+      "name": "Private Equity Marketing Lead",
+      "url": "https://ats.rippling.com/rippling/jobs/c54eee63-f1dc-4861-a0e3-4f1c1d6d9074",
+      "department": {
+       "name": "Marketing"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 6,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=7&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "c3256131-5a3f-4a6b-ae48-182f3c535eef",
+      "name": "Managed Payroll Lead",
+      "url": "https://ats.rippling.com/rippling/jobs/c3256131-5a3f-4a6b-ae48-182f3c535eef",
+      "department": {
+       "name": "Operations"
+      },
+      "locations": [
+       {
+        "name": "Remote (United States)",
+        "country": "United States",
+        "countryCode": "US",
+        "state": null,
+        "stateCode": null,
+        "city": null,
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "1a39c140-2de6-425d-95ee-ba4caefef05c",
+      "name": "Managed Payroll Specialist ",
+      "url": "https://ats.rippling.com/rippling/jobs/1a39c140-2de6-425d-95ee-ba4caefef05c",
+      "department": {
+       "name": "Operations"
+      },
+      "locations": [
+       {
+        "name": "Remote",
+        "country": "United States",
+        "countryCode": "US",
+        "state": null,
+        "stateCode": null,
+        "city": null,
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "7817a32c-f934-4cfb-8b08-3e24f658fcde",
+      "name": "PEO Operations Analyst",
+      "url": "https://ats.rippling.com/rippling/jobs/7817a32c-f934-4cfb-8b08-3e24f658fcde",
+      "department": {
+       "name": "Operations"
+      },
+      "locations": [
+       {
+        "name": "Bangalore, India",
+        "country": "India",
+        "countryCode": "IN",
+        "state": "Karnataka",
+        "stateCode": "KA",
+        "city": "Bangalore",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 7,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=8&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "0889e2ac-a30c-43b7-8c8c-5312264416db",
+      "name": "Product Lead, Talent Products",
+      "url": "https://ats.rippling.com/rippling/jobs/0889e2ac-a30c-43b7-8c8c-5312264416db",
+      "department": {
+       "name": "Product"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "76af5c78-5db5-4104-8916-f3f216f1a607",
+      "name": "Product Lead, UI Platform ",
+      "url": "https://ats.rippling.com/rippling/jobs/76af5c78-5db5-4104-8916-f3f216f1a607",
+      "department": {
+       "name": "Product"
+      },
+      "locations": [
+       {
+        "name": "Bangalore, India",
+        "country": "India",
+        "countryCode": "IN",
+        "state": "Karnataka",
+        "stateCode": "KA",
+        "city": "Bangalore",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "e3620017-195f-4ea7-934c-f14669bf1136",
+      "name": "Product Lead, Workflow Studio",
+      "url": "https://ats.rippling.com/rippling/jobs/e3620017-195f-4ea7-934c-f14669bf1136",
+      "department": {
+       "name": "Product"
+      },
+      "locations": [
+       {
+        "name": "Seattle, WA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Washington",
+        "stateCode": "WA",
+        "city": "Seattle",
+        "workplaceType": "HYBRID"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 8,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=9&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "b81ad8f4-e2f6-449e-88ee-60bff5f07b84",
+      "name": "Account Executive - Germany",
+      "url": "https://ats.rippling.com/rippling/jobs/b81ad8f4-e2f6-449e-88ee-60bff5f07b84",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "Berlin",
+        "country": "Germany",
+        "countryCode": "DE",
+        "state": "",
+        "stateCode": null,
+        "city": "",
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "b81ad8f4-e2f6-449e-88ee-60bff5f07b84",
+      "name": "Account Executive - Germany",
+      "url": "https://ats.rippling.com/rippling/jobs/b81ad8f4-e2f6-449e-88ee-60bff5f07b84",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "Dublin, Ireland",
+        "country": "Ireland",
+        "countryCode": "IE",
+        "state": "Dublin",
+        "stateCode": "D",
+        "city": "Dublin 2",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "a1d75550-0c0d-43dd-acd1-1358f2d3b7b2",
+      "name": "Account Executive - New Logo Sales, NAMER (ESB)",
+      "url": "https://ats.rippling.com/rippling/jobs/a1d75550-0c0d-43dd-acd1-1358f2d3b7b2",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "Bangalore, India",
+        "country": "India",
+        "countryCode": "IN",
+        "state": "Karnataka",
+        "stateCode": "KA",
+        "city": "Bangalore",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 9,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=10&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "22fb5c03-5a69-413b-8c9c-86d51d9bcc82",
+      "name": "Account Manager- Strategic Accounts (Growth & Retention)",
+      "url": "https://ats.rippling.com/rippling/jobs/22fb5c03-5a69-413b-8c9c-86d51d9bcc82",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "Seattle, WA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Washington",
+        "stateCode": "WA",
+        "city": "Seattle",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "22fb5c03-5a69-413b-8c9c-86d51d9bcc82",
+      "name": "Account Manager- Strategic Accounts (Growth & Retention)",
+      "url": "https://ats.rippling.com/rippling/jobs/22fb5c03-5a69-413b-8c9c-86d51d9bcc82",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "76ddc3a2-7af4-4b44-beeb-27c8df0945c2",
+      "name": "Business Development Representative, Outbound (Arabic speaking)",
+      "url": "https://ats.rippling.com/rippling/jobs/76ddc3a2-7af4-4b44-beeb-27c8df0945c2",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "Dublin, Ireland",
+        "country": "Ireland",
+        "countryCode": "IE",
+        "state": "Dublin",
+        "stateCode": "D",
+        "city": "Dublin 2",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-GB"
+     }
+    ],
+    "page": 10,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=11&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "96601a74-e7b6-469d-8c69-6fdfd1c83bc0",
+      "name": "Expansion Account Executive, Accountant Channel (East Coast)",
+      "url": "https://ats.rippling.com/rippling/jobs/96601a74-e7b6-469d-8c69-6fdfd1c83bc0",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "AL",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Alabama",
+        "stateCode": "AL",
+        "city": null,
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "96601a74-e7b6-469d-8c69-6fdfd1c83bc0",
+      "name": "Expansion Account Executive, Accountant Channel (East Coast)",
+      "url": "https://ats.rippling.com/rippling/jobs/96601a74-e7b6-469d-8c69-6fdfd1c83bc0",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "New York, NY",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "New York",
+        "stateCode": "NY",
+        "city": "New York",
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "96601a74-e7b6-469d-8c69-6fdfd1c83bc0",
+      "name": "Expansion Account Executive, Accountant Channel (East Coast)",
+      "url": "https://ats.rippling.com/rippling/jobs/96601a74-e7b6-469d-8c69-6fdfd1c83bc0",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "PA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "Pennsylvania",
+        "stateCode": "PA",
+        "city": null,
+        "workplaceType": "REMOTE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 11,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  },
+  "GET https://ats.rippling.com/api/v2/board/rippling/jobs?page=12&pageSize=50": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "items": [
+     {
+      "id": "2f8943b6-d62b-415b-897e-933cb3ff6d8e",
+      "name": "Sales Development Representative, Outbound (English) ",
+      "url": "https://ats.rippling.com/rippling/jobs/2f8943b6-d62b-415b-897e-933cb3ff6d8e",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "Dublin, Ireland",
+        "country": "Ireland",
+        "countryCode": "IE",
+        "state": "Dublin",
+        "stateCode": "D",
+        "city": "Dublin 2",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-GB"
+     },
+     {
+      "id": "78054684-10a9-41f2-ad5b-8bc3648c25eb",
+      "name": "Sales Development Representative, Outbound (Hybrid - NYC)",
+      "url": "https://ats.rippling.com/rippling/jobs/78054684-10a9-41f2-ad5b-8bc3648c25eb",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "New York, NY",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "New York",
+        "stateCode": "NY",
+        "city": "New York",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     },
+     {
+      "id": "73afc4ce-82c6-42c2-858f-c3ce35d417c0",
+      "name": "Sales Development Representative, Outbound (Hybrid - SF) ",
+      "url": "https://ats.rippling.com/rippling/jobs/73afc4ce-82c6-42c2-858f-c3ce35d417c0",
+      "department": {
+       "name": "Sales"
+      },
+      "locations": [
+       {
+        "name": "San Francisco, CA",
+        "country": "United States",
+        "countryCode": "US",
+        "state": "California",
+        "stateCode": "CA",
+        "city": "San Francisco",
+        "workplaceType": "ON_SITE"
+       }
+      ],
+      "language": "en-US"
+     }
+    ],
+    "page": 12,
+    "pageSize": 50,
+    "totalItems": 641,
+    "totalPages": 13
+   }
+  }
+ }
+}

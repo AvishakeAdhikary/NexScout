@@ -191,11 +191,6 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
     mutationFn: () => opportunitiesApi.rescore(caseId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] }),
   });
-  const toggle = useMutation({
-    mutationFn: (args: { key: string; enabled: boolean; settings: Record<string, unknown> }) =>
-      opportunitiesApi.configureSource(args.key, args.enabled, args.settings),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sources"] }),
-  });
 
   const path = kase.data?.career_path;
   const pathOff =
@@ -204,9 +199,10 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
   const active = items.filter((o) => o.eligible && o.match_status !== "dismissed");
   const notFit = items.filter((o) => !o.eligible && o.match_status !== "dismissed");
   const dismissed = items.filter((o) => o.match_status === "dismissed");
-  const relevantSources = (sources.data ?? []).filter((s) =>
-    s.kinds.some((k) => (academic ? k !== "job" : k === "job")),
+  const enabledSources = (sources.data ?? []).filter(
+    (s) => s.enabled && s.kinds.some((k) => (academic ? k !== "job" : k === "job")),
   );
+  const noSources = sources.isSuccess && enabledSources.length === 0;
 
   return (
     <div className="flex max-w-4xl flex-col gap-5">
@@ -219,18 +215,30 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
           </AlertDescription>
         </Alert>
       )}
-      {relevantSources.some((s) => s.is_demo_data) && (
+      {noSources && (
+        <Alert>
+          <AlertTitle>No sources turned on</AlertTitle>
+          <AlertDescription>
+            Pick the job boards, company career pages or university portals to search in{" "}
+            <Link className="underline" href={`/cases/${caseId}/settings#sources-heading`}>
+              Settings → Where to look
+            </Link>
+            . You can also add any careers page by its address.
+          </AlertDescription>
+        </Alert>
+      )}
+      {enabledSources.some((s) => s.is_demo_data) && (
         <Alert>
           <AlertTitle>Demo data</AlertTitle>
           <AlertDescription>
-            Only built-in demo sources are connected right now. The results below are made-up
-            examples for trying NexScout out. <strong>They are not real postings.</strong>
+            Built-in demo sources are turned on. Their results are made-up examples for trying
+            NexScout out. <strong>They are not real postings.</strong>
           </AlertDescription>
         </Alert>
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={() => sync.mutate()} disabled={searching || !!pathOff}>
+        <Button onClick={() => sync.mutate()} disabled={searching || !!pathOff || noSources}>
           {searching ? "Searching…" : "Find opportunities"}
         </Button>
         <Button variant="outline" onClick={() => rescore.mutate()} disabled={rescore.isPending}>
@@ -299,43 +307,12 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
         </details>
       )}
 
-      <details className="rounded-lg border p-3">
-        <summary className="cursor-pointer font-medium">Sources</summary>
-        <ul className="mt-2 flex flex-col gap-3 text-sm">
-          {relevantSources.map((s) => (
-            <li key={s.key}>
-              <label className="flex items-center gap-2 font-medium">
-                <input
-                  type="checkbox"
-                  checked={s.enabled}
-                  onChange={(e) => toggle.mutate({ key: s.key, enabled: e.target.checked, settings: s.settings })}
-                />
-                {s.name}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {s.terms} Access: {s.auth}. Updates: {s.incremental}
-              </p>
-              {s.key === "demo_jobs_board_b" && (
-                <label className="mt-1 flex items-center gap-2 text-xs">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(s.settings.include_later_postings)}
-                    onChange={(e) =>
-                      toggle.mutate({
-                        key: s.key,
-                        enabled: s.enabled,
-                        settings: { ...s.settings, include_later_postings: e.target.checked },
-                      })
-                    }
-                  />
-                  Simulate newer postings (to try incremental updates)
-                </label>
-              )}
-            </li>
-          ))}
-        </ul>
-        <ErrorAlert error={toggle.error} />
-      </details>
+      <p className="text-sm text-muted-foreground">
+        Searching {enabledSources.length} source{enabledSources.length === 1 ? "" : "s"}.{" "}
+        <Link className="underline" href={`/cases/${caseId}/settings#sources-heading`}>
+          Choose where to look
+        </Link>
+      </p>
     </div>
   );
 }

@@ -7,7 +7,8 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
 |---|---|---|
 | LinkedIn, Google Scholar, ResearchGate data import | Not supported. Store the URL only, enter data by hand | No permitted public API. Scraping would violate terms/access controls |
 | ORCID, arXiv | Planned live adapters (M5, opt-in) | Public APIs exist |
-| Job boards | Fixture adapters only until a permitted API is configured | Terms vary per board |
+| Job boards, company career pages, university portals | 32 providers, 168 catalog entries, plus custom sources by URL (ADR-0015) | Only public APIs and feeds; see "Opportunity sources" below |
+| Duunitori, Työmarkkinatori, EURAXESS, EURES, Academic Positions, AcademicTransfer, FindAPhD, LinkedIn, Indeed, Glassdoor | Manual only: listed in Settings with a link | Terms or robots.txt forbid automation, or there's no public API (reasons shown per site) |
 | Malware scanning of uploads | Hook only | Needs ClamAV. Not bundled |
 | A2A | Not implemented (ADR-0007/0011) | No remote agent consumer yet |
 | MCP client (calling external MCP servers) | Not implemented (ADR-0011) | Nothing configured to verify against; needs an allowlist and approval design |
@@ -48,9 +49,30 @@ check their own setup with "Check connection" in Settings, which records the res
 - Reading runs on the background worker (isolated subprocess, 20 s cap). Without a running
   worker, uploads stay "Reading…".
 
+## Opportunity sources (M15, ADR-0015)
+- Catalog sources are **off until you turn them on** (Settings → Where to look). Demo sources
+  exist only when `NEXSCOUT_DEMO_DATA=1` (tests and E2E). Production builds never show them.
+- Every provider was checked live on 2026-10-18/19 and is replay-tested against trimmed real
+  responses. Third-party endpoints change without notice; a broken source shows its status and
+  error and doesn't stop the others. CI never calls third-party sites.
+- **Unsupported career-ops entries.** 61 upstream entries are listed as unsupported, each with
+  its reason. Most are `websearch` entries that need a paid search API, or are branded career
+  sites with no detectable ATS or feed. NexScout doesn't fake them.
+- Custom URLs work when NexScout can detect a known ATS, an ATS link on the page, a feed, or
+  schema.org `JobPosting` data. Otherwise adding fails with "not supported".
+- Workday searches run one query per search word (up to 4), so very broad Workday tenants
+  return only the matching subset.
+- Postings that state no country are kept and marked "location unknown". They're not guessed.
+
+## Countries, signals and budget (M15, ADR-0016)
+- Eligibility signals (sponsorship, work rights, languages, funding, fees) are read from fixed
+  phrases. Unusual wording reads as "not stated". Always check the posting itself.
+- Fees are converted with ECB daily reference rates, which are for information only. Real
+  amounts depend on your bank and the date.
+- Location matching knows every ISO country, plus aliases, local names and major
+  cities (323 of them). Other towns resolve only when the text also names the country.
+
 ## Mind map and opportunities (M3)
-- Only **demo fixture sources** exist. No live job or academic source is connected yet. Every
-  demo result is labelled in the UI.
 - Matching is deterministic and simple (keyword skill matching, years computed from dated
   entries, degree keywords). It doesn't understand synonyms beyond exact or normalized names.
 - When one catalog listing is seen on several sources, the most recently changed listing's
@@ -186,8 +208,8 @@ check their own setup with "Check connection" in Settings, which records the res
 - There's no automated E2E job in CI yet.
 
 ## Functional gaps
-All UI sections are built. What is demo-only or unverified is listed above: data sources,
-the application site, live AI providers, installers.
+All UI sections are built. What is unverified is listed above: application forms on real
+employer sites, live AI providers, installers.
 
 ## Unverified artifacts (exist but have not been executed)
 | Artifact | Why unverified | Verify by |

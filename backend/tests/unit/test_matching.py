@@ -120,7 +120,7 @@ def test_sensitive_attributes_ignored_without_opt_in() -> None:
     prefs = Preferences(sensitive={"work_authorization": ["Germany"], "veteran_status": "yes"})
     assert candidate(prefs).work_authorization == []
     prefs = Preferences(sensitive={"work_authorization": ["Germany"], "use_for_eligibility": True})
-    assert candidate(prefs).work_authorization == ["germany"]
+    assert candidate(prefs).work_authorization == ["DE"]  # ISO codes since M15
 
 
 def test_scores_are_deterministic() -> None:

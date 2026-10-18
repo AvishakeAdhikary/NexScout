@@ -56,12 +56,20 @@ async def _opps(client: httpx.AsyncClient, case_id: str, **params: Any) -> list[
 async def test_sources_are_declared_with_honest_capabilities(client: httpx.AsyncClient) -> None:
     await register(client)
     sources = (await client.get("/api/v1/sources")).json()
-    assert {s["key"] for s in sources} == {
+    demo = [s for s in sources if s["origin"] == "demo"]
+    assert {s["key"] for s in demo} == {
         "demo_jobs_board_a",
         "demo_jobs_board_b",
         "demo_academic_portal",
     }
-    assert all(s["is_demo_data"] and "not real" in s["terms"] for s in sources)
+    assert all(s["is_demo_data"] and "not real" in s["terms"] for s in demo)
+    # The real catalog is listed with its terms, and stays off until the user turns it on.
+    real = [s for s in sources if s["origin"] == "catalog"]
+    assert len(real) >= 150
+    assert not any(s["enabled"] or s["is_demo_data"] for s in real)
+    assert all(s["terms"] and s["provider"] for s in real)
+    keys = {s["key"] for s in real}
+    assert {"greenhouse:anthropic", "workinfinland:work-in-finland-business-finland"} <= keys
 
 
 async def test_sync_dedups_across_sources_and_keeps_distinct_requisitions(

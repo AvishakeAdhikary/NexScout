@@ -1,0 +1,284 @@
+{
+ "provider": "thehub",
+ "entry": {
+  "name": "The Hub",
+  "url": "",
+  "config": {
+   "max_pages": 1,
+   "countryCode": "FI"
+  }
+ },
+ "live_jobs": 15,
+ "responses": {
+  "GET https://thehub.io/api/v2/jobsandfeatured?page=1&countryCode=FI": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "jobs": {
+     "total": 188,
+     "limit": 15,
+     "page": 1,
+     "pages": 13,
+     "suggestions": {
+      "jobPositionTypes": {
+       "5b8e46b3853f039706b6ea71": 3,
+       "5b8e46b3853f039706b6ea73": 1,
+       "5b8e46b3853f039706b6ea70": 185
+      },
+      "jobRoles": {
+       "productmanagement": 11,
+       "datascience": 9,
+       "customersuccess": 12,
+       "other": 8,
+       "sales": 12,
+       "fullstackdeveloper": 15,
+       "projectmanagement": 20,
+       "marketing": 5,
+       "cxo": 2,
+       "engineer": 98,
+       "qualityassurance": 5,
+       "operations": 39,
+       "businessdevelopment": 7,
+       "backenddeveloper": 23,
+       "devops": 36,
+       "legal": 4,
+       "humanresources": 6,
+       "frontenddeveloper": 7,
+       "customerservice": 4,
+       "finance": 9,
+       "uxuidesigner": 2,
+       "analyst": 8,
+       "design": 4
+      },
+      "remote": 52,
+      "paid": 187
+     },
+     "docs": [
+      {
+       "id": "6ac8eb66dabe7d3207677d0f",
+       "key": "sales-development-representative-english-speaking",
+       "title": "Sales Development Representative",
+       "location": {
+        "country": "Finland",
+        "locality": "Helsinki",
+        "address": "Helsinki, Finland"
+       },
+       "isRemote": false,
+       "jobPositionTypes": [
+        "5b8e46b3853f039706b6ea70"
+       ],
+       "isFeatured": false,
+       "views": {
+        "week": 1464,
+        "total": 1464
+       },
+       "company": {
+        "id": "59ad854f8b7874f169f6aefb",
+        "key": "hoxhunt",
+        "name": "Hoxhunt",
+        "website": "https://www.hoxhunt.com",
+        "numberOfEmployees": "200+",
+        "video": "",
+        "founded": "2016",
+        "logoImage": {
+         "size": 72395,
+         "filetype": "image/png",
+         "originalname": "logo_shield_RGB.png",
+         "id": "69b2b07abf9f33245a11d4e3",
+         "path": "/files/s3/20260312122426-71548382e60d4d4b04b2187236cccc36.png"
+        }
+       },
+       "saved": false
+      },
+      {
+       "id": "6ac8fd604ef5cf32a80925c0",
+       "key": "associate-onboarding-manager",
+       "title": "Associate Onboarding Manager",
+       "location": {
+        "country": "Finland",
+        "locality": "Helsinki",
+        "address": "Helsinki, Finland"
+       },
+       "isRemote": false,
+       "jobPositionTypes": [
+        "5b8e46b3853f039706b6ea70"
+       ],
+       "isFeatured": false,
+       "views": {
+        "week": 1331,
+        "total": 1331
+       },
+       "company": {
+        "id": "59ad854f8b7874f169f6aefb",
+        "key": "hoxhunt",
+        "name": "Hoxhunt",
+        "website": "https://www.hoxhunt.com",
+        "numberOfEmployees": "200+",
+        "video": "",
+        "founded": "2016",
+        "logoImage": {
+         "size": 72395,
+         "filetype": "image/png",
+         "originalname": "logo_shield_RGB.png",
+         "id": "69b2b07abf9f33245a11d4e3",
+         "path": "/files/s3/20260312122426-71548382e60d4d4b04b2187236cccc36.png"
+        }
+       },
+       "saved": false
+      },
+      {
+       "id": "6ac980e9f97db3707b21cfa2",
+       "key": "verda-procurement-manager-8527623",
+       "title": "Procurement Manager",
+       "location": {
+        "country": "Finland",
+        "locality": "Helsinki",
+        "address": "Helsinki, Finland"
+       },
+       "isRemote": false,
+       "jobPositionTypes": [
+        "5b8e46b3853f039706b6ea70"
+       ],
+       "isFeatured": false,
+       "views": {
+        "week": 1234,
+        "total": 1234
+       },
+       "company": {
+        "id": "6a903ba1c274135e3cce2ffb",
+        "key": "verda",
+        "name": "Verda",
+        "website": "https://verda.com/",
+        "numberOfEmployees": "101-200",
+        "founded": "2020",
+        "logoImage": {
+         "size": 108479,
+         "filetype": "image/png",
+         "originalname": "Screenshot 2026-08-27 at 16.29.48.png",
+         "id": "6a903bd44f70165e593a9916",
+         "path": "/files/s3/20260827132956-ac7440982715233951cf74b214bec66a.png"
+        }
+       },
+       "saved": false
+      }
+     ]
+    },
+    "featuredJobs": {
+     "total": 3,
+     "limit": 15,
+     "page": 1,
+     "pages": 1,
+     "docs": [
+      {
+       "id": "6ab6bf1e5e3d63cd083155b8",
+       "key": "no-title-73418",
+       "title": "Food Quality Scaling Manager",
+       "location": {
+        "country": "Finland",
+        "locality": "Helsinki",
+        "address": "Helsinki, Finland"
+       },
+       "isRemote": false,
+       "jobPositionTypes": [
+        "5b8e46b3853f039706b6ea70"
+       ],
+       "isFeatured": true,
+       "views": {
+        "week": 1001,
+        "total": 1363
+       },
+       "company": {
+        "id": "6569d0048a8a354aa7dd3700",
+        "key": "rebl-eats-1",
+        "name": "Rebl Eats",
+        "website": "http://www.rebleats.com",
+        "numberOfEmployees": "11-50",
+        "founded": "2021",
+        "logoImage": {
+         "size": 124991,
+         "filetype": "image/png",
+         "originalname": "Logo black - profile picture and events.png",
+         "id": "6ab93aa6e75e50cdae9a1386",
+         "path": "/files/s3/20260927154750-257a81c32256a0a1bdb1c8efd0d7c197.png"
+        }
+       },
+       "saved": false
+      },
+      {
+       "id": "6aba4806b84a86d63df1d702",
+       "key": "country-manager-sweden-33",
+       "title": "Country Manager, Finland",
+       "location": {
+        "country": "Finland",
+        "locality": "Helsinki",
+        "address": "Helsinki, Finland"
+       },
+       "isRemote": false,
+       "jobPositionTypes": [
+        "5b8e46b3853f039706b6ea71"
+       ],
+       "isFeatured": true,
+       "views": {
+        "week": 972,
+        "total": 2597
+       },
+       "company": {
+        "id": "5b695ec67d2f0ce7742b982b",
+        "key": "onlinefundraising",
+        "name": "OnlineFundraising",
+        "website": "https://OnlineFundraising.dk",
+        "numberOfEmployees": "11-50",
+        "video": "",
+        "founded": "2015",
+        "logoImage": {
+         "size": 4054,
+         "filetype": "image/png",
+         "originalname": "fb-icon.png",
+         "id": "5d7e47395ea99e161ad3027a",
+         "path": "/files/s3/20220310210436-582b0c6ea7be14b672bb79152bd8e21e.png"
+        }
+       },
+       "saved": false
+      },
+      {
+       "id": "6acf78828b15eb001331e7c4",
+       "key": "no-title-99217",
+       "title": "Account Executive",
+       "location": {
+        "country": "Finland",
+        "locality": "Helsinki",
+        "address": "Helsinki, Finland"
+       },
+       "isRemote": false,
+       "jobPositionTypes": [
+        "5b8e46b3853f039706b6ea70"
+       ],
+       "isFeatured": true,
+       "views": {
+        "week": 252,
+        "total": 252
+       },
+       "company": {
+        "id": "6acf7876d1fcdcffbe842d5b",
+        "key": "sprintlyworks",
+        "name": "SprintlyWorks",
+        "website": "https://sprintlyworks.com/",
+        "numberOfEmployees": "11-50",
+        "founded": "2018",
+        "logoImage": {
+         "size": 10781,
+         "filetype": "image/jpeg",
+         "originalname": "strategy_co_global_logo.jpeg",
+         "id": "6acf7697e207e3ffe7472248",
+         "path": "/files/s3/20261014123327-ad9cd7e792dafbbeba7bab0f7e88edd0.jpeg"
+        }
+       },
+       "saved": false
+      }
+     ],
+     "randFeaturedIndex": 0
+    }
+   }
+  }
+ }
+}

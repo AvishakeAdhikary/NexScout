@@ -313,7 +313,21 @@ class Worker:
                 await self.maintenance_once()
             with contextlib.suppress(Exception):
                 await self.autopilot_once()
+            with contextlib.suppress(Exception):
+                await self.fx_once()
             await asyncio.sleep(self.settings.maintenance_interval_s)
+
+    async def fx_once(self) -> int:
+        """ECB reference rates for budget checks, at most once a day."""
+        from nexscout.infrastructure.fx import refresh
+
+        today = datetime.now(UTC).date()
+        if getattr(self, "_fx_day", None) == today:
+            return 0
+        async with self.system_sessions() as s, s.begin():
+            n = await refresh(s)
+        self._fx_day = today
+        return n
 
     async def autopilot_once(self) -> dict[str, int]:
         """Start due autopilot cycles, advance autopilot items, send the daily digest (M12)."""

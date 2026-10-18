@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { CountryPicker } from "@/components/country-picker";
 import { ErrorAlert } from "@/components/error-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -210,6 +211,8 @@ function PolicyForm({
 }) {
   const p = data.policy;
   const [auto, setAuto] = useState(p.auto_submit);
+  const [countries, setCountries] = useState<string[]>(p.countries);
+  const [excluded, setExcluded] = useState<string[]>(p.countries_exclude ?? []);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -226,7 +229,8 @@ function PolicyForm({
       daily_submit_cap: Number(f.get("daily_submit_cap")),
       per_org_cap: Number(f.get("per_org_cap")),
       kinds: ["job", "academic"].filter((k) => f.get(`kind-${k}`) === "on"),
-      countries: list(f.get("countries")),
+      countries,
+      countries_exclude: excluded,
       exclude_orgs: list(f.get("exclude_orgs")),
       doc_types: DOC_TYPES.map(([k]) => k).filter((k) => f.get(`doc-${k}`) === "on"),
       auto_submit: autoSubmit,
@@ -270,10 +274,8 @@ function PolicyForm({
         <label className="flex items-center gap-2"><input type="checkbox" name="kind-academic" defaultChecked={p.kinds.includes("academic")} /> PhD and academic</label>
       </fieldset>
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="ap-countries">Countries (codes, comma separated; empty = any)</Label>
-          <Input id="ap-countries" name="countries" defaultValue={p.countries.join(", ")} placeholder="DE, NL, GB" />
-        </div>
+        <CountryPicker label="Countries (empty = any)" value={countries} onChange={setCountries} />
+        <CountryPicker label="Never in these countries" value={excluded} onChange={setExcluded} />
         <div className="flex flex-col gap-1">
           <Label htmlFor="ap-exclude">Never apply to (comma separated)</Label>
           <Input id="ap-exclude" name="exclude_orgs" defaultValue={p.exclude_orgs.join(", ")} />

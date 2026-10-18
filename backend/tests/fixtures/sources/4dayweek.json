@@ -1,0 +1,138 @@
+{
+ "provider": "4dayweek",
+ "entry": {
+  "name": "4 Day Week",
+  "url": "",
+  "config": {
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 13,
+ "responses": {
+  "GET https://4dayweek.io/api/jobs?page=1": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "jobs": [
+     {
+      "id": "01a14674-cebc-773d-887b-277eb30251ba",
+      "title": "Senior Sales Manager, Agency & Advertising Sales",
+      "slug": "senior-sales-manager-agency-and-advertising-sales-at-clicktech-2d37bd7d",
+      "company_name": "ClickTech",
+      "company_id": "019b77e5-1d6e-7698-af3c-a397167c91e5",
+      "work_arrangement": "remote",
+      "locations": [
+       {
+        "city": "Nottingham",
+        "country": "United Kingdom",
+        "continent": "Europe",
+        "latitude": 52.9536,
+        "longitude": -1.15047,
+        "work_arrangement": "remote",
+        "is_primary": true
+       }
+      ],
+      "posted": 1792183423,
+      "inserted": "2026-10-16T20:43:42.652558Z",
+      "schedule_type": "4_day_week",
+      "salary": "£60k - £70k",
+      "salary_lower": 6000000,
+      "salary_upper": 7000000,
+      "salary_currency": "GBP",
+      "salary_period": "year",
+      "category": "sales",
+      "level": "senior",
+      "is_expired": false,
+      "company": {
+       "id": "019b77e5-1d6e-7698-af3c-a397167c91e5",
+       "name": "ClickTech",
+       "slug": "clicktech",
+       "logo_url": "https://media.4dayweek.io/files/1767278178337_609762bf26a8760d.jpg",
+       "hires_worldwide": false,
+       "inserted": "0001-01-01T00:00:00Z",
+       "updated": "0001-01-01T00:00:00Z"
+      },
+      "work_life_score": 94
+     },
+     {
+      "id": "01a144bf-e7e8-7fc5-933a-2e9546da1a5a",
+      "title": "Manager, Learner Services & Experiences",
+      "slug": "manager-learner-services-and-experiences-at-merit-america-f81c9a49",
+      "company_name": "Merit America",
+      "company_id": "019b77e3-5c9e-75c1-b7eb-3deb4af5f712",
+      "work_arrangement": "remote",
+      "locations": [
+       {
+        "country": "United States",
+        "continent": "North America",
+        "latitude": 39.83,
+        "longitude": -98.58,
+        "work_arrangement": "remote",
+        "is_primary": true
+       }
+      ],
+      "posted": 1792154790,
+      "inserted": "2026-10-16T12:46:29.863223Z",
+      "schedule_type": "4_day_week",
+      "category": "operations",
+      "level": "senior",
+      "is_expired": false,
+      "company": {
+       "id": "019b77e3-5c9e-75c1-b7eb-3deb4af5f712",
+       "name": "Merit America",
+       "slug": "merit-america",
+       "logo_url": "https://media.4dayweek.io/files/1767278192840_fa960446b4011418.jpg",
+       "hires_worldwide": false,
+       "inserted": "0001-01-01T00:00:00Z",
+       "updated": "0001-01-01T00:00:00Z"
+      },
+      "work_life_score": 94
+     },
+     {
+      "id": "01a14244-8327-7a42-8330-e94d74a02d81",
+      "title": "Product Designer",
+      "slug": "product-designer-at-creativex-50f467ab",
+      "company_name": "CreativeX",
+      "company_id": "019b777c-b9e2-784e-b819-474a5cc1398f",
+      "work_arrangement": "hybrid",
+      "locations": [
+       {
+        "city": "London",
+        "country": "United Kingdom",
+        "continent": "Europe",
+        "latitude": 51.50853,
+        "longitude": -0.12574,
+        "work_arrangement": "hybrid",
+        "is_primary": true
+       }
+      ],
+      "posted": 1792113149,
+      "inserted": "2026-10-16T01:12:28.711546Z",
+      "schedule_type": "4_day_week",
+      "category": "design",
+      "level": "mid",
+      "is_expired": false,
+      "company": {
+       "id": "019b777c-b9e2-784e-b819-474a5cc1398f",
+       "name": "CreativeX",
+       "slug": "creativex",
+       "logo_url": "https://media.4dayweek.io/files/1767278104738_3b83e063d30b71cf.jpg",
+       "hires_worldwide": false,
+       "inserted": "0001-01-01T00:00:00Z",
+       "updated": "0001-01-01T00:00:00Z"
+      },
+      "work_life_score": 91
+     }
+    ],
+    "total": 26912,
+    "page": 1,
+    "has_more": true,
+    "meta": {
+     "gated": false,
+     "hidden_fresh_count": 0,
+     "early_access_cutoff": "2026-10-16T22:09:19.53443315Z"
+    }
+   }
+  }
+ }
+}

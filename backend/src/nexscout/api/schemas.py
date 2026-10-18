@@ -21,17 +21,20 @@ class RegisterRequest(ApiModel):
     email: str = Field(max_length=320)
     password: str = Field(max_length=256)
     display_name: str = Field(max_length=120)
+    timezone: str | None = Field(default=None, max_length=64)  # browser's IANA zone
 
 
 class LoginRequest(ApiModel):
     email: str = Field(max_length=320)
     password: str = Field(max_length=256)
+    timezone: str | None = Field(default=None, max_length=64)
 
 
 class UserOut(ApiModel):
     id: uuid.UUID
     email: str
     display_name: str
+    timezone: str
 
 
 class SessionOut(ApiModel):
@@ -304,6 +307,75 @@ class SourceOut(ApiModel):
     incremental: str
     pagination: str
     limitations: list[str]
+    origin: str = "demo"  # catalog | custom | demo
+    provider: str = ""
+    category: str = ""
+    url: str = ""
+    countries: list[str] = Field(default_factory=list)
+    last_status: str | None = None
+    last_error: str | None = None
+    last_count: int | None = None
+    last_fetched_at: datetime | None = None
+
+
+class SourceBulkIn(ApiModel):
+    keys: list[str] = Field(min_length=1, max_length=500)
+    enabled: bool
+
+
+class SourceAddIn(ApiModel):
+    url: str = Field(min_length=8, max_length=2048)
+    name: str = Field(default="", max_length=200)
+    kinds: list[str] = Field(default_factory=lambda: ["job"], max_length=2)
+    countries: list[str] = Field(default_factory=list, max_length=50)
+
+
+class SourceAddOut(ApiModel):
+    key: str
+    provider: str
+    name: str
+    postings: int
+    already_in_catalog: bool
+
+
+class SourceTestOut(ApiModel):
+    ok: bool
+    error: str | None
+    postings: int
+    sample: list[str]
+
+
+class SourceImportIn(ApiModel):
+    content: str = Field(min_length=1, max_length=2_000_000)
+
+
+class SourceImportOut(ApiModel):
+    enabled_catalog: list[str]
+    added: list[str]
+    unsupported: list[dict[str, str]]
+
+
+class ManualSourceOut(ApiModel):
+    name: str
+    url: str
+    reason: str
+
+
+class CountryOut(ApiModel):
+    code: str
+    name: str
+    continent: str
+
+
+class CountryGroupOut(ApiModel):
+    key: str
+    name: str
+    codes: list[str]
+
+
+class GeoOut(ApiModel):
+    countries: list[CountryOut]
+    groups: list[CountryGroupOut]
 
 
 class SourceConfigIn(ApiModel):

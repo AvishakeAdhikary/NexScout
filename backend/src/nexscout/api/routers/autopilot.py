@@ -34,6 +34,7 @@ class PolicyOut(ApiModel):
     daily_submit_cap: int
     per_org_cap: int
     countries: list[str]
+    countries_exclude: list[str]
     kinds: list[str]
     exclude_orgs: list[str]
     doc_types: list[str]
@@ -74,7 +75,8 @@ class PolicyIn(ApiModel):
     max_new_per_run: int | None = None
     daily_submit_cap: int | None = None
     per_org_cap: int | None = None
-    countries: list[str] | None = Field(default=None, max_length=40)
+    countries: list[str] | None = Field(default=None, max_length=60)
+    countries_exclude: list[str] | None = Field(default=None, max_length=60)
     kinds: list[str] | None = Field(default=None, max_length=2)
     exclude_orgs: list[str] | None = Field(default=None, max_length=50)
     doc_types: list[str] | None = Field(default=None, max_length=5)
@@ -120,6 +122,7 @@ def _policy(row: AutopilotPolicy) -> PolicyOut:
         daily_submit_cap=row.daily_submit_cap,
         per_org_cap=row.per_org_cap,
         countries=list(row.countries or []),
+        countries_exclude=list(row.countries_exclude or []),
         kinds=list(row.kinds or []),
         exclude_orgs=list(row.exclude_orgs or []),
         doc_types=list(row.doc_types or []),

@@ -1,0 +1,91 @@
+{
+ "provider": "arbeitnow",
+ "entry": {
+  "name": "Arbeitnow",
+  "url": "",
+  "config": {
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 100,
+ "responses": {
+  "GET https://www.arbeitnow.com/api/job-board-api?page=1": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "data": [
+     {
+      "slug": "grafikdesigner-mode-siebdruck-augsburg-423328",
+      "company_name": "BEAHATER Clothing",
+      "title": "Grafikdesigner Mode & Siebdruck (m/w/d)",
+      "description": "<h2>Wir sind BEAHATER, ein Streetwear-Label aus Augsburg. Unsere Prints entstehen im Siebdruck, und dort entscheidet sich, ob ein Design auf dem Shirt sitzt. Wir suchen jemanden, der Designs für Mode druckfertig macht und den Siebdruck wirklich versteht.</h2><h2></h2><h2>Deine Aufgaben</h2><h2>Designs für Prints und Kollektionen druckfertig aufbauen</h2><h2>Farbauszüge, Raster und Passer für den Siebdruck vorbereiten</h2><h2>Siebe, Farben und Materialien mit der Druckerei abstimmen</h2><h2>Muster und Andrucke prüfen und freigeben</h2><h2>Druckdaten und Dateiablage sauber pflegen</h2><h2>Mit Produktion und Marketing an den Kollektionen arbeiten</h2><h2></h2><h2>Das bringst du mit</h2><h2>Erfahrung in Grafikdesign für Mode, idealerweise mit Siebdruck</h2><h2>Sicher mit Illustrator und Photoshop in der Druckvorstufe</h2><h2>Verständnis für Farben, Raster und Materialien auf Textil</h2><h2>Sorgfalt und Blick für Details</h2><h2>Bereitschaft, vor Ort in Augsburg zu arbeiten</h2><h2></h2><h2>Was du bekommst</h2><h2>16 bis 17 Euro pro Stunde</h2><h2>Mitarbeiter-Rabatt auf unsere Kollektionen</h2><h2>Eigene Designs auf echten Produkten sehen</h2><h2>Kurze Wege und schnelle Entscheidungen</h2><h2></h2><h2>Bewerbung</h2><h2>Zeig uns Arbeitsproben, am liebsten Prints oder Textilprojekte, und deinen Portfolio-Link. Bewirb dich hier über JOIN.Über BEAHATER Clothing</h2><p>Wir sind ein Streetwear-Label aus Augsburg mit einem kleinen, direkten Team im Bereich Retail Apparel and Fashion. Bei uns entstehen Kollektionen und Designs direkt vor Ort, wo wir Mode und Handwerk verbinden.</p><h2>Deine Aufgaben</h2><p>Du gestaltest neue Grafiken für unsere Streetwear-Kollektionen und setzt diese für den Siebdruck um. Dabei begleitest du den gesamten Prozess vom ersten Entwurf bis zum druckfertigen Motiv für Textilien.</p><h2>Deine ersten Monate bei BEAHATER Clothing</h2><p>In den ersten Wochen wirst du dich in unsere bestehenden Designlinien einfinden und erste eigene Siebdruckmotive für unsere kommenden Textilien entwerfen und umsetzen.</p><h2>Das bringst du mit</h2><p>Du bringst Erfahrung im Grafikdesign mit Schwerpunkt Mode und im praktischen Siebdruck mit. Wenn du nicht alle Anforderungen erfüllst, freuen wir uns trotzdem auf deine Bewerbung.</p><h2>Benefits und Arbeitsbedingungen</h2><p>Wir bieten dir flexible Arbeitszeiten, die sich an unsere gemeinsamen Abläufe anpassen. Zudem erhältst du Mitarbeiterrabatte auf unser gesamtes Sortiment.</p><h2>Vergütung</h2><p>Für diese Position gilt eine Vergütung von EUR 16–17 per hour.</p><h2>Über deine Bewerbung</h2><p>Diese Stelle ist als befristeter Arbeitsvertrag auf 12 Monate mit einer wöchentlichen Arbeitszeit von 40 Stunden und einer 6-monatigen Probezeit angelegt. Der Einstieg erfolgt am 01.01.2027 in Augsburg, wobei dir jährlich 24 Tage bezahlter Urlaub zustehen.</p><p></p><p>Find more <a href=\"https://www.arbeitnow.com/english-speaking-jobs\">English Speaking Jobs in Germany</a> on Arbeitnow</a>",
+      "remote": false,
+      "url": "https://www.arbeitnow.com/jobs/companies/beahater-clothing/grafikdesigner-mode-siebdruck-augsburg-423328",
+      "tags": [
+       "Graphic Arts and Communication Design"
+      ],
+      "job_types": [
+       "Befristeter arbeitsvertrag",
+       "berufserfahren"
+      ],
+      "location": "Augsburg",
+      "created_at": 1792357240
+     },
+     {
+      "slug": "tiktok-social-media-augsburg-196443",
+      "company_name": "BEAHATER Clothing",
+      "title": "TikTok & Social Media (m/w/d)",
+      "description": "<h2>Wir sind BEAHATER, ein Streetwear-Label aus Augsburg. Auf TikTok und Instagram passiert bei uns jeden Tag etwas. Wir suchen jemanden, der unserer Marke dort eine Stimme gibt: eigene Ideen, schnelle Schnitte, echte Streetwear. Befristet auf 12 Monate ab 01.01.2027, vor Ort in Augsburg.</h2><h2></h2><h2>Deine Aufgaben</h2><h2>TikToks und Reels von der Idee bis zum fertigen Schnitt umsetzen</h2><h2>Trends früh erkennen und in BEAHATER-Content übersetzen</h2><h2>Community und Kommentare im Blick behalten</h2><h2>Contentplan und Posting-Rhythmus führen</h2><h2>Kampagnen und Aktionen im Marketing mitplanen</h2><h2>Auswerten, was ankommt, und Formate weiterentwickeln</h2><h2></h2><h2>Das bringst du mit</h2><h2>Sicher im Umgang mit TikTok, Instagram und gängigen Schnittprogrammen</h2><h2>Gespür für Trends, Musik und kurze Geschichten</h2><h2>Streetwear-Gefühl und Lust, auch selbst vor der Kamera zu stehen</h2><h2>Eigeninitiative, Tempo und Zuverlässigkeit</h2><h2>Bereitschaft für regelmäßige Drehs vor Ort in Augsburg</h2><h2></h2><h2>Was du bekommst</h2><h2>14 bis 16 Euro pro Stunde</h2><h2>Mitarbeiter-Rabatt auf unsere Kollektionen</h2><h2>Flexible Zeiteinteilung</h2><h2>Kurze Wege und direkte Abstimmung mit dem Gründer</h2><h2></h2><h2>Bewerbung</h2><h2>Zeig uns zwei bis drei eigene Videos oder deinen Portfolio-Link. Sag uns kurz, welchen Content du für BEAHATER machen würdest. Bewirb dich hier über JOIN.Über BEAHATER ClothingWir sind BEAHATER, ein Streetwear-Label aus Augsburg. Auf TikTok und Instagram passiert bei uns jeden Tag etwas. Wir suchen jemanden, der unserer Marke dort eine Stimme gibt: eigene Ideen, schnelle Schnitte, echte Streetwear. Befristet auf 12 Monate ab 01.01.2027, vor Ort in Augsburg.</h2><p></p><p>Deine Aufgaben</p><p>TikToks und Reels von der Idee bis zum fertigen Schnitt umsetzen</p><p>Trends früh erkennen und in BEAHATER-Content übersetzen</p><p>Community und Kommentare im Blick behalten</p><p>Contentplan und Posting-Rhythmus führen</p><p>Kampagnen und Aktionen im Marketing mitplanen</p><p>Auswerten, was ankommt, und Formate weiterentwickeln</p><p></p><p>Das bringst du mit</p><p>Sicher im Umgang mit TikTok, Instagram und gängigen Schnittprogrammen</p><p>Gespür für Trends, Musik und kurze Geschichten</p><p>Streetwear-Gefühl und Lust, auch selbst vor der Kamera zu stehen</p><p>Eigeninitiative, Tempo und Zuverlässigkeit</p><p>Bereitschaft für regelmäßige Drehs vor Ort in Augsburg</p><p></p><p>Was du bekommst</p><p>14 bis 16 Euro pro Stunde</p><p>Mitarbeiter-Rabatt auf unsere Kollektionen</p><p>Flexible Zeiteinteilung</p><p>Kurze Wege und direkte Abstimmung mit dem Gründer</p><p></p><p>Bewerbung</p><p>Zeig uns zwei bis drei eigene Videos oder deinen Portfolio-Link. Sag uns kurz, welchen Content du für BEAHATER machen würdest. Bewirb dich hier über JOIN.</p><p>Wir sind BEAHATER, ein Streetwear-Label aus Augsburg, und gestalten Mode für unsere Community. Für unser kleines Team suchen wir zum 1. Januar 2027 eine engagierte Person für den Bereich TikTok und Social Media in Vollzeit mit 40 Wochenstunden. Die Stelle ist auf 12 Monate befristet und sieht eine Probezeit von 6 Monaten vor.</p><h2>Deine Aufgaben</h2><ul><li><p>Konzeption, Produktion und Schnitt von Videos für TikTok und weitere Social-Media-Kanäle</p></li><li><p>Inszenierung unserer Streetwear-Outfits und Produkte in zeitgemäßen Formaten</p></li><li><p>Planung und Veröffentlichung von Content passend zu unserer Marke</p></li></ul><h2>Das bringst du mit</h2><p>Du hast Erfahrung im Umgang mit TikTok und Social Media und weißt, welcher Content auf diesen Plattformen funktioniert. Wenn du die meisten dieser Anforderungen erfüllst, freuen wir uns auf deine Bewerbung, auch wenn du nicht jeden Punkt zu hundert Prozent abhaktst.</p><h2>Deine ersten Monate bei BEAHATER</h2><p>In den ersten Monaten wirst du dich in unsere Markenwelt einfinden und eigene Videoprojekte für unsere Kanäle umsetzen. Du übernahmst die Planung und den Dreh von TikToks und entwickelst Formate, die unsere Streetwear passend präsentieren.</p><h2>Deine Vorteile</h2><p>Bei uns erwarten dich Mitarbeiterrabatte auf unser Sortiment sowie flexible Arbeitszeiten für eine gute Organisation deines Arbeitstages.</p><h2>Vergütung</h2><p>Für diese Position gilt eine Vergütung von EUR 14–16 per hour.</p><p></p><p>Find <a href=\"https://www.arbeitnow.com\">Jobs in Germany</a> on Arbeitnow</a>",
+      "remote": false,
+      "url": "https://www.arbeitnow.com/jobs/companies/beahater-clothing/tiktok-social-media-augsburg-196443",
+      "tags": [
+       "Social Media Manager"
+      ],
+      "job_types": [
+       "Befristeter arbeitsvertrag",
+       "berufserfahren"
+      ],
+      "location": "Augsburg",
+      "created_at": 1792357240
+     },
+     {
+      "slug": "studentische-hilfskraft-governance-risk-compliance-berlin-415968",
+      "company_name": "Compliance Compass GmbH",
+      "title": "Studentische Hilfskraft (m/w/d) Governance, Risk & Compliance",
+      "description": "<h2>Compliance Compass GmbH</h2><p>Mit Compliance Compass machen wir aus Compliance ein echtes Steuerungsinstrument statt eines lästigen Pflichtprogramms. Unsere Plattform vereint mehrere aufeinander abgestimmte Frameworks aus der IT-Sicherheit – weitere Standards wie ISO 9001, der Cyber Resilience Act und der AI Act folgen in Kürze. Die Plattform verteilt Aufgaben automatisch und regelbasiert und generative KI erstellt Risikobewertungen und Notfallpläne, für die sonst externe Spezialist:innen nötig wären. So bleibt Compliance-Verantwortlichen mehr Zeit für Entscheidungen.</p><p>Dahinter steht ein junges Team mit kurzen Wegen, viel Gestaltungsspielraum und einer gemeinsamen Mission: Compliance beherrschbar zu machen.</p><h2>Ihre Aufgaben</h2><ul><li><p>Du testest neue Funktionen aus Sicht von Anwender:innen und gibst fundiertes</p></li></ul><p>Feedback an das Produktteam und unterstützt damit die Weiterentwicklung unserer</p><p>Plattform</p><ul><li><p>Du erstellst und pflegst Inhalte wie Vorlagen, Checklisten, Schulungsmaterialien</p></li></ul><p>und Wissensartikel</p><ul><li><p>Du unterstützt Vertrieb und Marketing bei Präsentationen, Fachbeiträgen und</p></li></ul><p>Marktrecherchen</p><ul><li><p>Du beobachtest regulatorische Entwicklungen und fasst relevante Neuerungen für</p></li></ul><p>das Team zusammen<br></p><h2>Das bringen Sie mit</h2><ul><li><p>Du studierst Wirtschaftsinformatik, Informationssicherheit, BWL oder einen</p></li></ul><p>vergleichbaren Studiengang</p><ul><li><p>Du interessierst Dich für Softwarelösungen, Informationssicherheit oder</p></li></ul><p>Regulierung und hattest idealerweise bereits erste Berührungspunkte durch</p><p>Praktika oder eigene Projekte</p><ul><li><p>Du arbeitest sorgfältig, selbstständig und behältst auch bei vielen Details den</p></li></ul><p>Überblick</p><ul><li><p>Du sprichst verhandlungssicher Deutsch und sehr gutes Englisch – weitere</p></li></ul><p>Fremdsprachen sind ein Plus</p><ul><li><p>Kenntnisse in Regelwerken wie beispielsweise NIS2, ISO 27001, AI Act sind ein Plus,</p></li></ul><p>aber keine Voraussetzung<br></p><h2>Vergütung</h2><p>Die Vergütung für diese Werkstudententätigkeit liegt bei EUR 18 pro Stunde.</p><h2>Vorteile</h2><ul><li><p>Du bekommst echte Verantwortung und direkten Einfluss auf ein Produkt, das am</p></li></ul><p>Markt eingesetzt wird</p><ul><li><p>Du bekommst tiefe Einblicke in hochregulierte Branchen und erlebst, wie</p></li></ul><p>Compliance in der Praxis funktioniert</p><ul><li><p>Du profitierst von flexiblen Arbeitszeiten, die sich nach Deinem Studium richten und</p></li></ul><p>von der Möglichkeit zum mobilen Arbeiten</p><ul><li><p>Du arbeitest in einem kleinen Team mit kurzen Entscheidungswegen und offener</p></li></ul><p>Feedbackkultur</p><ul><li><p>Wir begleiten Dich gern bei einer Abschlussarbeit oder Projektarbeit im GRC-Umfeld</p></li></ul><h2>Interesse?</h2><p>Nutzen Sie für Ihre Bewerbung den Button auf dieser Seite. Ein formelles Anschreiben brauchst Du nicht. Mehr über uns erfährst Du unter www.compliancecompass.de.</p><p>Find <a href=\"https://www.arbeitnow.com\">Jobs in Germany</a> on Arbeitnow</a>",
+      "remote": true,
+      "url": "https://www.arbeitnow.com/jobs/companies/compliance-compass-gmbh/studentische-hilfskraft-governance-risk-compliance-berlin-415968",
+      "tags": [
+       "Remote",
+       "Compliance",
+       "Security"
+      ],
+      "job_types": [
+       "Werkstudent",
+       "working student",
+       "hilfstätigkeit / student"
+      ],
+      "location": "Berlin",
+      "created_at": 1792353656
+     }
+    ],
+    "links": {
+     "first": "https://www.arbeitnow.com/api/job-board-api?page=1",
+     "last": null,
+     "prev": null,
+     "next": "https://www.arbeitnow.com/api/job-board-api?page=2"
+    },
+    "meta": {
+     "current_page": 1,
+     "current_page_url": "https://www.arbeitnow.com/api/job-board-api?page=1",
+     "from": 1,
+     "path": "https://www.arbeitnow.com/api/job-board-api",
+     "per_page": 300,
+     "to": 300,
+     "terms": "This is a free public API for jobs, please do not abuse. I would appreciate linking back to the site. By using the API, you agree to the terms of service present on Arbeitnow.com",
+     "info": "Jobs are updated every hour and order by the `created_at` timestamp. Use `?page=` to paginate. Read more information here: https://www.arbeitnow.com/blog/job-board-api"
+    }
+   }
+  }
+ }
+}

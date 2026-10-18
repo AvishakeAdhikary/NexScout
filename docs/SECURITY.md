@@ -102,6 +102,20 @@ prompts. Final submit needs an approval unless a narrow, explicit standing polic
   handed over (assisted mode). NexScout never clicks submit in assisted mode.
 - **Kill switch.** Available in the UI, through the API, and as STOP from a paired chat.
 
+## 5c. Opportunity sources (ADR-0015)
+- **Official endpoints only.** Each provider uses an endpoint the publisher offers publicly (an
+  ATS job API, a board's API or a feed). Sites whose terms or robots.txt forbid automation are
+  **manual only** and are never fetched. NexScout never works around a 403, a CAPTCHA or a
+  sign-in.
+- **One fetch path.** Every source request goes through `SafeFetcher`: an SSRF check with DNS
+  pinning, a private-address block, robots.txt for pages and feeds, per-host pacing, size caps
+  and an honest user agent. Each search has a request budget and page and posting caps.
+- **Custom URLs are untrusted.** A URL is checked for scheme and host before it is stored, and
+  checked again when it is fetched. Detection reads pages as data, and posting text is never
+  treated as instructions (§3).
+- **Ownership.** Custom sources are owned and protected by RLS. The IDOR sweep covers
+  `/sources/{key}`, `/sources/{key}/test` and the import route.
+
 ## 6. Supply chain
 Locked dependencies (`uv.lock`, `package-lock.json`). `pip-audit` and `npm audit` in CI. Secret scanning
 (detect-secrets) in CI. Development MCP servers are pinned and separate from runtime tools.

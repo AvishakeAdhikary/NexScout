@@ -43,6 +43,7 @@ from nexscout.config import Settings
 from nexscout.domain.drafting import PLACEHOLDER
 from nexscout.domain.errors import DomainError, ValidationFailed
 from nexscout.domain.forms import normalize_question
+from nexscout.domain.geo import normalize_list
 from nexscout.domain.opportunities import ACADEMIC_KINDS
 from nexscout.domain.policy import (
     AUTO_SUBMIT_CONSENT,
@@ -96,6 +97,7 @@ def to_policy(row: AutopilotPolicy) -> Policy:
         daily_submit_cap=row.daily_submit_cap,
         per_org_cap=row.per_org_cap,
         countries=tuple(row.countries or ()),
+        countries_exclude=tuple(row.countries_exclude or ()),
         kinds=tuple(row.kinds or ()),
         exclude_orgs=tuple(row.exclude_orgs or ()),
         auto_submit=row.auto_submit,
@@ -116,6 +118,7 @@ def _default(actor: Actor, case_id: uuid.UUID) -> AutopilotPolicy:
         daily_submit_cap=3,
         per_org_cap=1,
         countries=[],
+        countries_exclude=[],
         kinds=[],
         exclude_orgs=[],
         doc_types=[],
@@ -185,10 +188,14 @@ async def save_policy(
             if not lo <= value <= hi:
                 raise ValidationFailed(f"{key.replace('_', ' ')} must be between {lo} and {hi}.")
             setattr(row, key, value)
-    if changes.get("countries") is not None:
-        row.countries = [
-            c.upper() for c in _strings(changes["countries"], limit=40, length=60, what="countries")
-        ]
+    for field_name in ("countries", "countries_exclude"):
+        if changes.get(field_name) is not None:
+            codes, unknown = normalize_list(
+                _strings(changes[field_name], limit=60, length=60, what="countries")
+            )
+            if unknown:
+                raise ValidationFailed(f"Unknown countries: {', '.join(unknown)}.")
+            setattr(row, field_name, codes)
     if changes.get("kinds") is not None:
         kinds = _strings(changes["kinds"], limit=2, length=10, what="kinds")
         if set(kinds) - {"job", "academic"}:
@@ -395,7 +402,10 @@ async def shortlist_case(
                 fit=int(match.score),
                 eligible=bool(match.eligible),
                 open=opp.status == "open" and match.status not in ("dismissed", "hidden"),
-                country=opp.data.get("location_country"),
+                country=(opp.data.get("country_codes") or [None])[0]
+                or opp.data.get("location_country"),
+                countries=tuple(opp.data.get("country_codes") or ()),
+                remote_scope=opp.data.get("remote_scope"),
                 deadline=deadline,
                 already_tracked=opp.id in tracked,
             )

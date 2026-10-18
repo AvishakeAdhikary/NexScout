@@ -1,0 +1,118 @@
+{
+ "provider": "workday",
+ "entry": {
+  "name": "KONE",
+  "url": "https://kone.wd3.myworkdayjobs.com/en-US/Careers",
+  "config": {
+   "origin": "https://kone.wd3.myworkdayjobs.com",
+   "tenant": "kone",
+   "site": "Careers",
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 20,
+ "responses": {
+  "POST https://kone.wd3.myworkdayjobs.com/wday/cxs/kone/Careers/jobs": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "total": 902,
+    "jobPostings": [
+     {
+      "title": "MX - Tecnico de Mantenimiento para Los Cabos y zonas aledañas",
+      "externalPath": "/job/Monterrey/MX---Tecnico-de-Mantenimiento-para-Los-Cabos-y-zonas-aledaas_R0665585",
+      "locationsText": "Monterrey",
+      "postedOn": "Posted 2 Days Ago",
+      "bulletFields": [
+       "R0665585"
+      ]
+     },
+     {
+      "title": "MX - Tecnico de Mantenimiento Nocturno para CDMX y zonas aledañas",
+      "externalPath": "/job/Mexico-City/MX---Tecnico-de-Mantenimiento-Nocturno-para-CDMX-y-zonas-aledaas_R0665587",
+      "locationsText": "Mexico City",
+      "postedOn": "Posted 2 Days Ago",
+      "bulletFields": [
+       "R0665587"
+      ]
+     },
+     {
+      "title": "Key Account Manager",
+      "externalPath": "/job/Lisle-IL/Key-Account-Project-Manager_R0665376-1",
+      "locationsText": "Lisle IL",
+      "postedOn": "Posted 2 Days Ago",
+      "bulletFields": [
+       "R0665376"
+      ]
+     }
+    ],
+    "facets": [
+     {
+      "facetParameter": "Country",
+      "descriptor": "Location Country",
+      "values": [
+       {
+        "descriptor": "France",
+        "id": "54c5b6971ffb4bf0b116fe7651ec789a",
+        "count": 164
+       },
+       {
+        "descriptor": "China",
+        "id": "6cb77610a8a543aea2d6bc10457e35d4",
+        "count": 78
+       },
+       {
+        "descriptor": "Germany",
+        "id": "dcc5b7608d8644b3a93716604e78e995",
+        "count": 74
+       }
+      ]
+     },
+     {
+      "facetParameter": "jobFamilyGroup",
+      "descriptor": "Job Category",
+      "values": [
+       {
+        "descriptor": "Maintenance Operations",
+        "id": "c44b225df5b901cf4d2fcc0c4d15657b",
+        "count": 379
+       },
+       {
+        "descriptor": "Delivery Operations",
+        "id": "c44b225df5b901c3add0b00c4d15577b",
+        "count": 186
+       },
+       {
+        "descriptor": "Sales",
+        "id": "c44b225df5b901bc6b89ee0c4d15777b",
+        "count": 126
+       }
+      ]
+     },
+     {
+      "facetParameter": "workerSubType",
+      "descriptor": "Job Type",
+      "values": [
+       {
+        "descriptor": "Permanent employee",
+        "id": "c44b225df5b901ca7dcda876bf140f0e",
+        "count": 779
+       },
+       {
+        "descriptor": "Fixed Term employee (Fixed Term)",
+        "id": "c44b225df5b901152fbca576bf140e0e",
+        "count": 94
+       },
+       {
+        "descriptor": "Trainee (Fixed Term) (Trainee)",
+        "id": "c44b225df5b90150083f8f76bf140c0e",
+        "count": 26
+       }
+      ]
+     }
+    ],
+    "userAuthenticated": false
+   }
+  }
+ }
+}

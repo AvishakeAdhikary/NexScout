@@ -16,6 +16,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
+from nexscout.domain.fx import convert as fx_convert
+from nexscout.domain.geo import GeoResult, country_names, expand, in_area, resolve_location
 from nexscout.domain.opportunities import (
     ACADEMIC_KINDS,
     NormalizedOpportunity,
@@ -26,6 +28,7 @@ from nexscout.domain.opportunities import (
 )
 from nexscout.domain.preferences import ExperienceMode, Preferences
 from nexscout.domain.profile import PRESENT, Section
+from nexscout.domain.signals import read_signals
 
 DEGREE_LEVELS = {"high_school": 1, "associate": 2, "bachelor": 3, "master": 4, "phd": 5}
 _DEGREE_PATTERNS: list[tuple[str, str]] = [
@@ -64,7 +67,8 @@ class CandidateSummary:
     degrees: list[tuple[str, str]] = field(default_factory=list)  # (level, fact id)
     research_topics: list[tuple[str, str]] = field(default_factory=list)  # (text, fact id)
     preferences: Preferences = field(default_factory=Preferences)
-    work_authorization: list[str] = field(default_factory=list)  # only if user opted in
+    work_authorization: list[str] = field(default_factory=list)  # ISO codes; only if opted in
+    fx_rates: dict[str, float] = field(default_factory=dict)  # ECB: units per 1 EUR
 
 
 def summarize(
@@ -73,7 +77,9 @@ def summarize(
     """Build the matcher input from *accepted* facts only."""
     s = CandidateSummary(preferences=preferences)
     if preferences.sensitive.use_for_eligibility:
-        s.work_authorization = [c.lower() for c in preferences.sensitive.work_authorization]
+        from nexscout.domain.geo import normalize_list
+
+        s.work_authorization = normalize_list(preferences.sensitive.work_authorization)[0]
     for fid, section, data in facts:
         if section is Section.SKILL:
             s.skills.setdefault(str(data["name"]).lower(), fid)
@@ -170,6 +176,21 @@ class MatchResult:
 
 def _norm_skill(s: str) -> str:
     return re.sub(r"[^a-z0-9+#]", "", s.lower())
+
+
+def _opp_geo(opp: NormalizedOpportunity) -> GeoResult:
+    """Countries for a posting: stored codes, else resolved from its location fields."""
+    if opp.country_codes:
+        return GeoResult(list(opp.country_codes), opp.remote is Remote.REMOTE, opp.remote_scope)
+    text = " ; ".join(
+        x
+        for x in (opp.location_text, opp.location_city, opp.location_region, opp.location_country)
+        if x
+    )
+    found = resolve_location(text)
+    return GeoResult(
+        found.countries, found.remote or opp.remote is Remote.REMOTE, found.remote_scope
+    )
 
 
 def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> MatchResult:
@@ -304,26 +325,52 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
             )
         )
 
-    # --- Location (15)
-    countries = {c.lower() for c in prefs.countries}
+    # --- Location (15): ISO codes and groups, include and exclude lists
+    geo = _opp_geo(opp)
+    area_in = expand(prefs.countries)
+    area_out = expand(prefs.countries_exclude)
     cities = {c.lower() for c in prefs.cities}
-    opp_country = (opp.location_country or "").lower()
-    opp_city = (opp.location_city or "").lower()
-    if opp.remote is Remote.REMOTE and prefs.remote in ("any", "remote", "hybrid"):
-        factors.append(Factor("Location", 15, 15, "Remote role."))
-    elif not countries and not cities:
-        factors.append(Factor("Location", 15, 15, "You haven't set location preferences."))
-    elif (opp_city and opp_city in cities) or (opp_country and opp_country in countries):
-        where = opp.location_city or opp.location_country
-        factors.append(Factor("Location", 15, 15, f"{where} is in your preferred locations."))
+    where = (
+        opp.location_text
+        or ", ".join(x for x in (opp.location_city, opp.location_country) if x)
+        or "unknown location"
+    )
+    names = country_names(geo.countries)
+    if geo.countries and area_out and all(c in area_out for c in geo.countries):
+        eligible = False
+        factors.append(Factor("Location", 15, 0, f"{names} is on your excluded list."))
+        gaps.append(Gap("excluded_country", "blocker", f"In {names}, which you excluded."))
+    elif not area_in and not cities:
+        factors.append(Factor("Location", 15, 15, "You haven't limited the countries."))
+    elif (opp.location_city or "").lower() in cities and opp.location_city:
+        factors.append(Factor("Location", 15, 15, f"{opp.location_city} is a city you chose."))
+    elif area_in and (inside := in_area(geo, area_in)) is not None:
+        if inside:
+            label = names or ("Remote" if geo.remote else where)
+            factors.append(Factor("Location", 15, 15, f"{label} is in your chosen countries."))
+        else:
+            factors.append(
+                Factor("Location", 15, 0, f"{names or where} isn't in your chosen countries.")
+            )
+            gaps.append(
+                Gap(
+                    "outside_countries",
+                    "blocker",
+                    f"In {names or where}, outside the countries you chose.",
+                )
+            )
+            eligible = False
     else:
-        where = ", ".join(x for x in (opp.location_city, opp.location_country) if x) or "unknown"
-        factors.append(Factor("Location", 15, 0, f"Location ({where}) isn't in your preferences."))
+        factors.append(
+            Factor(
+                "Location", 15, 7, f"Location ({where}) couldn't be placed in a country; check it."
+            )
+        )
         gaps.append(
             Gap(
-                "location_outside_preferences",
+                "location_unknown",
                 "info",
-                f"Located in {where}, outside your preferred locations.",
+                f"The posting's location ({where}) doesn't name a country NexScout recognizes.",
             )
         )
     if prefs.remote == "remote" and opp.remote in (Remote.ONSITE,):
@@ -387,7 +434,11 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
                 f"Deadline in {(opp.closes_at - today).days} days ({opp.closes_at.isoformat()}).",
             )
         )
-    if prefs.needs_visa_sponsorship and opp.sponsorship is Sponsorship.NO:
+    sig = read_signals(opp.description)
+    sponsorship = opp.sponsorship
+    if sponsorship is Sponsorship.UNKNOWN and sig.sponsorship != "not_stated":
+        sponsorship = Sponsorship.YES if sig.sponsorship == "offered" else Sponsorship.NO
+    if prefs.needs_visa_sponsorship and sponsorship is Sponsorship.NO:
         pts = 0
         gaps.append(
             Gap(
@@ -398,7 +449,7 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
         )
         if mode is ExperienceMode.STRICT:
             eligible = False
-    elif prefs.needs_visa_sponsorship and opp.sponsorship is Sponsorship.UNKNOWN:
+    elif prefs.needs_visa_sponsorship and sponsorship is Sponsorship.UNKNOWN:
         gaps.append(
             Gap(
                 "sponsorship_unknown",
@@ -406,23 +457,91 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
                 "Visa sponsorship isn't mentioned. Check before applying.",
             )
         )
-    if prefs.funding_required and opp.kind in ACADEMIC_KINDS and not opp.funding:
-        gaps.append(Gap("funding_unknown", "info", "Funding isn't described for this position."))
-    if (
-        cand.work_authorization
-        and opp_country
-        and opp.sponsorship is Sponsorship.NO
-        and opp_country not in cand.work_authorization
-    ):
+    strict = mode is ExperienceMode.STRICT
+    authorized_here = bool(geo.countries) and all(
+        c in cand.work_authorization for c in geo.countries
+    )
+    if sig.authorization_required and not authorized_here:
+        pts = 0
         gaps.append(
             Gap(
                 "work_authorization",
-                "gap",
-                "Requires existing work authorization in this country (based on the "
-                "eligibility details you chose to share).",
+                "blocker" if strict else "gap",
+                f'Requires an existing right to work there ("{sig.quotes["authorization"]}").',
             )
         )
-    factors.append(Factor("Practicalities", 5, pts, "Deadline and sponsorship checks."))
+        if strict:
+            eligible = False
+    for lang in sig.languages_required:
+        if lang not in prefs.languages:
+            quote = sig.quotes.get(f"language:{lang}", lang)
+            gaps.append(
+                Gap(
+                    f"language_{lang}",
+                    "blocker" if strict else "gap",
+                    f'Asks for a language you haven\'t listed ("{quote}").',
+                )
+            )
+            if strict:
+                eligible = False
+    funding = prefs.funding if not prefs.funding_required else "required"
+    if opp.kind in ACADEMIC_KINDS and funding != "any":
+        if sig.funding == "unfunded":
+            gaps.append(
+                Gap(
+                    "unfunded",
+                    "blocker" if funding == "required" else "gap",
+                    f'Not funded ("{sig.quotes["funding"]}").',
+                )
+            )
+            if funding == "required":
+                eligible = False
+        elif sig.funding == "not_stated" and not opp.funding:
+            gaps.append(
+                Gap("funding_unknown", "info", "Funding isn't described for this position.")
+            )
+    if prefs.max_upfront_cost is not None and prefs.budget_currency:
+        total, unconverted = 0.0, []
+        for fee in sig.fees:
+            v = fx_convert(fee.amount, fee.currency, prefs.budget_currency, cand.fx_rates)
+            if v is None:
+                unconverted.append(fee.currency)
+            else:
+                total += v
+        if total > prefs.max_upfront_cost:
+            eligible = False
+            gaps.append(
+                Gap(
+                    "over_budget",
+                    "blocker",
+                    f"Stated fees are about {total:,.0f} {prefs.budget_currency}, above "
+                    f"your budget of {prefs.max_upfront_cost:,} {prefs.budget_currency}.",
+                )
+            )
+        elif unconverted:
+            gaps.append(
+                Gap(
+                    "cost_unconverted",
+                    "info",
+                    f"Fees in {', '.join(sorted(set(unconverted)))} couldn't be converted; check.",
+                )
+            )
+        elif not sig.fees and opp.kind in ACADEMIC_KINDS and sig.funding != "funded":
+            gaps.append(
+                Gap(
+                    "cost_not_stated",
+                    "info",
+                    "Costs and fees aren't stated; check them against your budget before applying.",
+                )
+            )
+    factors.append(
+        Factor(
+            "Practicalities",
+            5,
+            pts,
+            "Deadline, sponsorship, work rights, language, funding and cost checks.",
+        )
+    )
 
     score = round(sum(f.points for f in factors))
     return MatchResult(

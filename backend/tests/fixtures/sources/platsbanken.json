@@ -1,0 +1,555 @@
+{
+ "provider": "platsbanken",
+ "entry": {
+  "name": "Platsbanken",
+  "url": "",
+  "config": {
+   "keywords": [
+    "machine learning"
+   ],
+   "max_pages": 1
+  }
+ },
+ "live_jobs": 100,
+ "responses": {
+  "GET https://jobsearch.api.jobtechdev.se/search?q=machine+learning&limit=100&offset=0": {
+   "status": 200,
+   "kind": "json",
+   "body": {
+    "total": {
+     "value": 145
+    },
+    "positions": 165,
+    "query_time_in_millis": 5,
+    "result_time_in_millis": 87,
+    "stats": [],
+    "freetext_concepts": {
+     "skill": [
+      "machine learning"
+     ],
+     "occupation": [],
+     "trait": [],
+     "location": [],
+     "skill_must": [],
+     "occupation_must": [],
+     "trait_must": [],
+     "location_must": [],
+     "skill_must_not": [],
+     "occupation_must_not": [],
+     "trait_must_not": [],
+     "location_must_not": []
+    },
+    "hits": [
+     {
+      "relevance": 1.0,
+      "id": "31609557",
+      "external_id": null,
+      "original_id": null,
+      "label": [],
+      "webpage_url": "https://arbetsformedlingen.se/platsbanken/annonser/31609557",
+      "logo_url": "https://arbetsformedlingen.se/rest/employer-logo-api/api/v1/organisation/5594904012/logotyper/logo.png",
+      "headline": "Machine Learning Engineer",
+      "application_deadline": "2026-11-15T23:59:59",
+      "number_of_vacancies": 1,
+      "description": {
+       "text": "Hykmann Global Business Solutions AB is looking for an experienced Machine Learning Engineer / Data Scientist for an exciting opportunity focused on large-scale geospatial data, machine learning, and data quality improvement.\nTerm: 1 Year contract\nAre you passionate about building production-ready ML solutions that turn complex datasets into reliable, actionable insights? This role offers the opportunity to work across the entire machine learning lifecycle—from experimentation and model development to integration, deployment, and production-scale delivery.\nWe’re looking for someone who combines strong data science expertise with solid software engineering skills and a hands-on, ownership-driven mindset.\n🎯 About the Role\nYou will design, develop, and deploy machine learning systems to improve the quality and reliability of large-scale geospatial datasets. Your work will involve classical ML algorithms, NLP, anomaly detection, and large language models (LLMs) to extract structured information and identify data quality issues.\nYou will collaborate with cross-functional teams to transform analytical models into scalable, production-ready solutions.\n🔧 Key Responsibilities\nDesign, develop, evaluate, and deploy machine learning models.\nBuild and maintain scalable data pipelines and software solutions.\nApply machine learning and data science techniques to identify anomalies and improve data quality.\nDevelop classical ML and NLP models to extract structured information from complex datasets.\nWork with LLMs, prompting techniques, and agent-based workflows.\nTake end-to-end ownership of features and improvements, from experimentation to production deployment.\nIntegrate ML models into existing systems and production environments.\nCollaborate with engineering and data teams to deliver reliable, maintainable, and scalable solutions.\n✅ Must-Have Skills & Qualifications\nStrong programming skills with extensive hands-on experience in Python.\nProven experience in machine learning and data science, including classification, clustering, feature engineering, anomaly detection, and neural networks.\nPractical experience working with LLMs, including prompt engineering and agent-based workflows.\nSolid understanding of classical machine learning algorithms, such as SVM, Random Forest, Naive Bayes, and k-NN.\nExperience with ML frameworks and libraries, including PyTorch, TensorFlow, Keras, Scikit-learn, NumPy, and Pandas.\nStrong analytical thinking, problem-solving, and data interpretation skills.\nAbility to balance experimentation and innovation with practical delivery in existing systems.\nExcellent written and verbal communication skills.\nProactive approach, strong sense of ownership, and ability to adapt in a fast-paced technical environment.\n⭐ Nice-to-Have Skills\nExperience with Scala or Java.\nKnowledge of Natural Language Processing (NLP), information retrieval, or data mining.\nExperience with statistical modelling and predictive model development.\nFamiliarity with large-scale data processing and production-grade machine learning systems.\n👤 Our Ideal Candidate\nYou are a hands-on ML professional who enjoys solving complex data challenges and building solutions that deliver measurable results. You are comfortable moving between model experimentation, software engineering, and production deployment, and you take responsibility for the quality and success of your deliverables.\nYou value collaboration, continuous learning, and turning innovative ideas into practical, scalable solutions.\n📩 Interested in This Opportunity?\nIf your experience matches the requirements, send us your updated CV highlighting your Python expertise, machine learning projects, LLM experience, and production deployment capabilities.\nReady to take the next step?\nÖppen för alla\nVi fokuserar på din kompetens, inte dina övriga förutsättningar. Vi är öppna för att anpassa rollen eller arbetsplatsen efter dina behov.",
+       "text_formatted": "<p>Hykmann Global Business Solutions AB is looking for an experienced Machine Learning Engineer / Data Scientist for an exciting opportunity focused on large-scale geospatial data, machine learning, and data quality improvement.</p><p><strong>Term</strong>: 1 Year contract</p><p>Are you passionate about building production-ready ML solutions that turn complex datasets into reliable, actionable insights? This role offers the opportunity to work across the entire machine learning lifecycle—from experimentation and model development to integration, deployment, and production-scale delivery.</p><p>We’re looking for someone who combines strong data science expertise with solid software engineering skills and a hands-on, ownership-driven mindset.</p><p>🎯 <strong>About the Role</strong></p><p>You will design, develop, and deploy machine learning systems to improve the quality and reliability of large-scale geospatial datasets. Your work will involve classical ML algorithms, NLP, anomaly detection, and large language models (LLMs) to extract structured information and identify data quality issues.</p><p>You will collaborate with cross-functional teams to transform analytical models into scalable, production-ready solutions.</p><p>🔧 <strong>Key Responsibilities</strong></p><p>Design, develop, evaluate, and deploy machine learning models.</p><p>Build and maintain scalable data pipelines and software solutions.</p><p>Apply machine learning and data science techniques to identify anomalies and improve data quality.</p><p>Develop classical ML and NLP models to extract structured information from complex datasets.</p><p>Work with LLMs, prompting techniques, and agent-based workflows.</p><p>Take end-to-end ownership of features and improvements, from experimentation to production deployment.</p><p>Integrate ML models into existing systems and production environments.</p><p>Collaborate with engineering and data teams to deliver reliable, maintainable, and scalable solutions.</p><p>✅ <strong>Must-Have Skills &amp; Qualifications</strong></p><p>Strong programming skills with extensive hands-on experience in Python.</p><p>Proven experience in machine learning and data science, including classification, clustering, feature engineering, anomaly detection, and neural networks.</p><p>Practical experience working with LLMs, including prompt engineering and agent-based workflows.</p><p>Solid understanding of classical machine learning algorithms, such as SVM, Random Forest, Naive Bayes, and k-NN.</p><p>Experience with ML frameworks and libraries, including PyTorch, TensorFlow, Keras, Scikit-learn, NumPy, and Pandas.</p><p>Strong analytical thinking, problem-solving, and data interpretation skills.</p><p>Ability to balance experimentation and innovation with practical delivery in existing systems.</p><p>Excellent written and verbal communication skills.</p><p>Proactive approach, strong sense of ownership, and ability to adapt in a fast-paced technical environment.</p><p>⭐<strong> Nice-to-Have Skills</strong></p><p>Experience with Scala or Java.</p><p>Knowledge of Natural Language Processing (NLP), information retrieval, or data mining.</p><p>Experience with statistical modelling and predictive model development.</p><p>Familiarity with large-scale data processing and production-grade machine learning systems.</p><p>👤<strong> Our Ideal Candidate</strong></p><p>You are a hands-on ML professional who enjoys solving complex data challenges and building solutions that deliver measurable results. You are comfortable moving between model experimentation, software engineering, and production deployment, and you take responsibility for the quality and success of your deliverables.</p><p>You value collaboration, continuous learning, and turning innovative ideas into practical, scalable solutions.</p><p>📩 <strong>Interested in This Opportunity?</strong></p><p>If your experience matches the requirements, send us your updated CV highlighting your Python expertise, machine learning projects, LLM experience, and production deployment capabilities.</p><p>Ready to take the next step?</p><p id=\"oppenforalla\">Öppen för alla\nVi fokuserar på din kompetens, inte dina övriga förutsättningar. Vi är öppna för att anpassa rollen eller arbetsplatsen efter dina behov.</p>",
+       "company_information": null,
+       "needs": null,
+       "requirements": null,
+       "conditions": null
+      },
+      "employment_type": {
+       "concept_id": "sTu5_NBQ_udq",
+       "label": "Tidsbegränsad anställning",
+       "legacy_ams_taxonomy_id": null
+      },
+      "salary_type": {
+       "concept_id": "oG8G_9cW_nRf",
+       "label": "Fast månads- vecko- eller timlön",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "salary_description": null,
+      "duration": {
+       "concept_id": "9RGe_UxD_FZw",
+       "label": "12 månader – upp till 2 år",
+       "legacy_ams_taxonomy_id": "9"
+      },
+      "working_hours_type": {
+       "concept_id": "6YE1_gAC_R2G",
+       "label": "Heltid",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "scope_of_work": {
+       "min": 100,
+       "max": 100
+      },
+      "access": null,
+      "employer": {
+       "phone_number": null,
+       "email": null,
+       "url": "https://www.hykmann.com/careers",
+       "organization_number": "5594904012",
+       "name": "Hykmann Global Business Solutions AB",
+       "workplace": "Malmö"
+      },
+      "application_details": {
+       "information": null,
+       "reference": null,
+       "email": null,
+       "via_af": false,
+       "url": "https://www.hykmann.com/careers/jobs/6191963a-4d18-4ac8-a097-50d9b6a70567",
+       "other": null
+      },
+      "experience_required": true,
+      "access_to_own_car": false,
+      "driving_license_required": false,
+      "driving_license": null,
+      "occupation": {
+       "concept_id": "eTVL_hfE_Lyh",
+       "label": "Dataanalytiker",
+       "legacy_ams_taxonomy_id": "7786"
+      },
+      "occupation_group": {
+       "concept_id": "WX67_Pfb_WMN",
+       "label": "Marknadsanalytiker och marknadsförare m.fl.",
+       "legacy_ams_taxonomy_id": "2431"
+      },
+      "occupation_field": {
+       "concept_id": "RPTn_bxG_ExZ",
+       "label": "Försäljning, inköp, marknadsföring",
+       "legacy_ams_taxonomy_id": "5"
+      },
+      "workplace_model": {
+       "concept_id": "ZxwM_gtz_n61",
+       "label": "Arbete på plats"
+      },
+      "workplace_address": {
+       "municipality": "Malmö",
+       "municipality_code": "1280",
+       "municipality_concept_id": "oYPt_yRA_Smm",
+       "region": "Skåne län",
+       "region_code": "12",
+       "region_concept_id": "CaRE_1nn_cSU",
+       "country": "Sverige",
+       "country_code": "199",
+       "country_concept_id": "i46j_HmG_v64",
+       "street_address": null,
+       "postcode": "20001",
+       "city": "MALMÖ",
+       "coordinates": [
+        13.0450883,
+        55.6233612
+       ]
+      },
+      "workplace_addresses": [
+       {
+        "municipality": "Malmö",
+        "municipality_code": "1280",
+        "municipality_concept_id": "oYPt_yRA_Smm",
+        "region": "Skåne län",
+        "region_code": "12",
+        "region_concept_id": "CaRE_1nn_cSU",
+        "country": "Sverige",
+        "country_code": "199",
+        "country_concept_id": "i46j_HmG_v64",
+        "street_address": null,
+        "postcode": "20001",
+        "city": "MALMÖ",
+        "coordinates": [
+         13.0450883,
+         55.6233612
+        ]
+       }
+      ],
+      "must_have": {
+       "skills": [],
+       "languages": [],
+       "work_experiences": [
+        {
+         "weight": 10,
+         "concept_id": "eTVL_hfE_Lyh",
+         "label": "Dataanalytiker",
+         "legacy_ams_taxonomy_id": "7786"
+        }
+       ],
+       "education": [
+        {
+         "weight": 10,
+         "concept_id": "WFCz_teU_KFf",
+         "label": "Teknik och teknisk industri",
+         "legacy_ams_taxonomy_id": "15"
+        }
+       ],
+       "education_level": [
+        {
+         "weight": 10,
+         "concept_id": "SdS6_SLL_mRJ",
+         "label": "Forskarutbildning",
+         "legacy_ams_taxonomy_id": "7"
+        }
+       ]
+      },
+      "nice_to_have": {
+       "skills": [],
+       "languages": [
+        {
+         "weight": 5,
+         "concept_id": "zSLA_vw2_FXN",
+         "label": "Svenska",
+         "legacy_ams_taxonomy_id": "502"
+        },
+        {
+         "weight": 5,
+         "concept_id": "NVxJ_hLg_TYS",
+         "label": "Engelska",
+         "legacy_ams_taxonomy_id": "283"
+        }
+       ],
+       "work_experiences": [],
+       "education": [],
+       "education_level": []
+      },
+      "application_contacts": [],
+      "publication_date": "2026-10-16T23:22:20",
+      "last_publication_date": "2026-11-15T23:59:59",
+      "removed": false,
+      "removed_date": null,
+      "source_type": "VIA_ANNONSERA",
+      "timestamp": 1792312005732
+     },
+     {
+      "relevance": 1.0,
+      "id": "31570560",
+      "external_id": null,
+      "original_id": null,
+      "label": [],
+      "webpage_url": "https://arbetsformedlingen.se/platsbanken/annonser/31570560",
+      "logo_url": "https://arbetsformedlingen.se/rest/employer-logo-api/api/v1/organisation/5563226157/logotyper/logo.png",
+      "headline": "Machine Learning Engineer",
+      "application_deadline": "2026-11-12T23:59:59",
+      "number_of_vacancies": 1,
+      "description": {
+       "text": "RaySearch develops innovative software solutions to improve cancer care. Over 1200 clinics in more than 54 countries use RaySearch software to improve treatments and quality of life for patients. RaySearch was founded in 2000 and is listed on Nasdaq Stockholm. The headquarters is located in Stockholm, with subsidiaries in the US, Europe, Asia and Australia &amp; New Zealand. Today we are more than 485 employees with a common vision of improving cancer care with innovative software. Our great staff is crucial for our success and we offer a fantastic working environment in modern offices, flexibility and good opportunities for development. We believe in equal opportunities, value diversity and work actively to prevent discrimination.\nRaySearch is expanding in the field of machine learning and is looking for a Machine Learning Engineer with strong software engineering skills to join our head office in Stockholm. In this role, you will have the opportunity to innovate and develop software that improves the lives of cancer patients around the world, while building the infrastructure, services, and developer tooling that enable machine learning solutions in the ML department to move efficiently from experimentation to clinical products used in cancer treatment worldwide. \nAbout the job\nYou will be part of an agile team developing machine learning solutions for radiation oncology. Our work spans areas such as image segmentation, image synthesis, treatment planning, dose prediction, and other deep learning applications within medical imaging and radiation therapy. \nYou will \nYour day-to-day work will involve training, evaluating and operationalizing deep learning models. This includes analyzing results using clinical metrics and ensuring that predictions meet acceptance criteria. You will work with real clinical datasets and iterate closely with medical physicists and oncologists to validate model performance against clinical standards. \nThe role combines machine learning research, experimentation and software development:\nDevelop state-of-the-art deep learning methods for medical imaging and radiation therapy. \nWork on problems involving 2D and 3D medical images, anatomical structures, treatment data, and multimodal clinical information\nDesign experiments, define appropriate evaluation methods, and analyze model behavior. \nBuild and evaluate new architectures, training strategies, and research ideas and determine which approaches are worth bringing into our products\nWork with large clinical datasets and develop reliable pipelines for training, validation, evaluation, and inference \nCollaborate closely with medical physicists, oncologists, researchers, product owners, and software engineers\n\nYour profile \nYou are someone who genuinely loves both ML and software engineering. You read papers, get excited about new architectures and training techniques, and have expertise in implementing them. \nYou are autonomous and self-driven. Given a problem, you take ownership: you research the landscape, form a plan, and execute without needing to be guided through every step. You know when to dig deeper on your own and when to pull in a colleague. You are comfortable making decisions, and you communicate clearly about what you are doing and why. \nYou contribute to a positive team atmosphere and take responsibility for your work. Above all, you care about building software that makes a meaningful impact for healthcare professionals and their patients. \nExperience & skills \nRequierments \nM.Sc. in Computer Science, Machine Learning, or equivalent \nMinimum 4 years of professional experience in software development, machine learning, or a related field \nExcellent understanding of machine learning techniques and algorithms \nStrong programming skills in Python with emphasis on writing clean, maintainable, production-quality code \nSolid software engineering practices: version control, code review, testing, CI/CD \nExperience using deep learning frameworks such as PyTorch \nSolid knowledge of data structures, algorithms, statistics, and applied mathematics \nComfort working in large, collaborative code bases and contributing to shared architecture decisions \nExcellent spoken and written communication skills in English \n\nMeriting \nExperience with medical image segmentation, registration, image synthesis, reconstruction, representation learning, or multimodal imaging.  \nContributions to open source projects \nExperience working in regulated or safety-critical software environments (e.g., medical devices, automotive)\n\nOur Culture  \nAt RaySearch, we share a passion for innovation and the fight against cancer. Our team consists of dedicated experts who strive to deliver exceptional results through collaboration, attention to detail, and cutting-edge technology. We take pride in our role as a leader in cancer treatment, developing solutions that truly make a difference for patients worldwide.  \nOur Offer  \nWe offer a dynamic and inclusive work environment in Hagastaden, Stockholm’s Life Science Hub. Our modern office space includes an in-house gym, yoga classes, and social activities such as ping pong, table football, and after-work events. We also provide a fantastic lunch buffet, daily fika, and a stunning rooftop terrace with a 360-degree view of Stockholm. This comes with a competitive compensation and benefits package.  \nApplication  \nPlease apply for the position through the application form below. Selection and interviews will be ongoing. We do not accept applications via e-mail.",
+       "text_formatted": "<p><em>RaySearch develops innovative software solutions to improve cancer care. Over 1200 clinics in more than 54 countries use RaySearch software to improve treatments and quality of life for patients. RaySearch was founded in 2000 and is listed on Nasdaq Stockholm. The headquarters is located in Stockholm, with subsidiaries in the US, Europe, Asia and Australia &amp;amp; New Zealand. Today we are more than 485 employees with a common vision of improving cancer care with innovative software. Our great staff is crucial for our success and we offer a fantastic working environment in modern offices, flexibility and good opportunities for development. We believe in equal opportunities, value diversity and work actively to prevent discrimination.</em></p><p>RaySearch is expanding in the field of machine learning and is looking for a Machine Learning Engineer with strong software engineering skills to join our head office in Stockholm. In this role, you will have the opportunity to innovate and develop software that improves the lives of cancer patients around the world, while building the infrastructure, services, and developer tooling that enable machine learning solutions in the ML department to move efficiently from experimentation to clinical products used in cancer treatment worldwide. </p><p><strong>About the job</strong></p><p>You will be part of an agile team developing machine learning solutions for radiation oncology. Our work spans areas such as image segmentation, image synthesis, treatment planning, dose prediction, and other deep learning applications within medical imaging and radiation therapy. </p><p><strong>You will </strong></p><p>Your day-to-day work will involve training, evaluating and operationalizing deep learning models. This includes analyzing results using clinical metrics and ensuring that predictions meet acceptance criteria. You will work with real clinical datasets and iterate closely with medical physicists and oncologists to validate model performance against clinical standards. </p><p>The role combines machine learning research, experimentation and software development:</p><ul><li>Develop state-of-the-art deep learning methods for medical imaging and radiation therapy. </li><li>Work on problems involving 2D and 3D medical images, anatomical structures, treatment data, and multimodal clinical information</li><li>Design experiments, define appropriate evaluation methods, and analyze model behavior. </li><li>Build and evaluate new architectures, training strategies, and research ideas and determine which approaches are worth bringing into our products</li><li>Work with large clinical datasets and develop reliable pipelines for training, validation, evaluation, and inference </li><li>Collaborate closely with medical physicists, oncologists, researchers, product owners, and software engineers</li></ul><p><strong>Your profile </strong></p><p>You are someone who genuinely loves both ML and software engineering. You read papers, get excited about new architectures and training techniques, and have expertise in implementing them. </p><p>You are autonomous and self-driven. Given a problem, you take ownership: you research the landscape, form a plan, and execute without needing to be guided through every step. You know when to dig deeper on your own and when to pull in a colleague. You are comfortable making decisions, and you communicate clearly about what you are doing and why. </p><p>You contribute to a positive team atmosphere and take responsibility for your work. Above all, you care about building software that makes a meaningful impact for healthcare professionals and their patients. </p><p><strong>Experience &amp; skills </strong></p><p><strong>Requierments </strong></p><ul><li>M.Sc. in Computer Science, Machine Learning, or equivalent </li><li>Minimum 4 years of professional experience in software development, machine learning, or a related field </li><li>Excellent understanding of machine learning techniques and algorithms </li><li>Strong programming skills in Python with emphasis on writing clean, maintainable, production-quality code </li><li>Solid software engineering practices: version control, code review, testing, CI/CD </li><li>Experience using deep learning frameworks such as PyTorch </li><li>Solid knowledge of data structures, algorithms, statistics, and applied mathematics </li><li>Comfort working in large, collaborative code bases and contributing to shared architecture decisions </li><li>Excellent spoken and written communication skills in English </li></ul><p><strong>Meriting </strong></p><ul><li>Experience with medical image segmentation, registration, image synthesis, reconstruction, representation learning, or multimodal imaging.  </li><li>Contributions to open source projects </li><li>Experience working in regulated or safety-critical software environments (e.g., medical devices, automotive)</li></ul><p><strong>Our Culture  </strong></p><p>At RaySearch, we share a passion for innovation and the fight against cancer. Our team consists of dedicated experts who strive to deliver exceptional results through collaboration, attention to detail, and cutting-edge technology. We take pride in our role as a leader in cancer treatment, developing solutions that truly make a difference for patients worldwide.  </p><p><strong>Our Offer  </strong></p><p>We offer a dynamic and inclusive work environment in Hagastaden, Stockholm’s Life Science Hub. Our modern office space includes an in-house gym, yoga classes, and social activities such as ping pong, table football, and after-work events. We also provide a fantastic lunch buffet, daily fika, and a stunning rooftop terrace with a 360-degree view of Stockholm. This comes with a competitive compensation and benefits package.  </p><p><strong>Application  </strong></p><p>Please apply for the position through the application form below. Selection and interviews will be ongoing. We do not accept applications via e-mail.  </p>",
+       "company_information": null,
+       "needs": null,
+       "requirements": null,
+       "conditions": null
+      },
+      "employment_type": {
+       "concept_id": "PFZr_Syz_cUq",
+       "label": "Vanlig anställning",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "salary_type": {
+       "concept_id": "oG8G_9cW_nRf",
+       "label": "Fast månads- vecko- eller timlön",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "salary_description": null,
+      "duration": {
+       "concept_id": "a7uU_j21_mkL",
+       "label": "Tills vidare",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "working_hours_type": {
+       "concept_id": "6YE1_gAC_R2G",
+       "label": "Heltid",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "scope_of_work": {
+       "min": 100,
+       "max": 100
+      },
+      "access": null,
+      "employer": {
+       "phone_number": null,
+       "email": null,
+       "url": null,
+       "organization_number": "5563226157",
+       "name": "RaySearch Laboratories AB (publ)",
+       "workplace": "RaySearch Laboratories AB (publ)"
+      },
+      "application_details": {
+       "information": null,
+       "reference": null,
+       "email": null,
+       "via_af": false,
+       "url": "https://www.raysearchlabs.com/career/?jobid=319624&ref=platsbankenv2",
+       "other": null
+      },
+      "experience_required": true,
+      "access_to_own_car": false,
+      "driving_license_required": false,
+      "driving_license": null,
+      "occupation": {
+       "concept_id": "CQse_CRd_snw",
+       "label": "Civilingenjör, systemutveckling",
+       "legacy_ams_taxonomy_id": "6509"
+      },
+      "occupation_group": {
+       "concept_id": "DJh5_yyF_hEM",
+       "label": "Mjukvaru- och systemutvecklare m.fl.",
+       "legacy_ams_taxonomy_id": "2512"
+      },
+      "occupation_field": {
+       "concept_id": "apaJ_2ja_LuF",
+       "label": "Data/IT",
+       "legacy_ams_taxonomy_id": "3"
+      },
+      "workplace_model": {
+       "concept_id": null,
+       "label": null
+      },
+      "workplace_address": {
+       "municipality": "Stockholm",
+       "municipality_code": "0180",
+       "municipality_concept_id": "AvNB_uwa_6n6",
+       "region": "Stockholms län",
+       "region_code": "01",
+       "region_concept_id": "CifL_Rzy_Mku",
+       "country": "Sverige",
+       "country_code": "199",
+       "country_concept_id": "i46j_HmG_v64",
+       "street_address": "Eugeniavägen 18",
+       "postcode": "17164",
+       "city": "Stockholm",
+       "coordinates": [
+        18.027812150651066,
+        59.35413177954071
+       ]
+      },
+      "workplace_addresses": [
+       {
+        "municipality": "Stockholm",
+        "municipality_code": "0180",
+        "municipality_concept_id": "AvNB_uwa_6n6",
+        "region": "Stockholms län",
+        "region_code": "01",
+        "region_concept_id": "CifL_Rzy_Mku",
+        "country": "Sverige",
+        "country_code": "199",
+        "country_concept_id": "i46j_HmG_v64",
+        "street_address": "Eugeniavägen 18",
+        "postcode": "17164",
+        "city": "Stockholm",
+        "coordinates": [
+         18.027812150651066,
+         59.35413177954071
+        ]
+       }
+      ],
+      "must_have": {
+       "skills": [],
+       "languages": [],
+       "work_experiences": [],
+       "education": [],
+       "education_level": []
+      },
+      "nice_to_have": {
+       "skills": [],
+       "languages": [],
+       "work_experiences": [
+        {
+         "weight": 5,
+         "concept_id": "CQse_CRd_snw",
+         "label": "Civilingenjör, systemutveckling",
+         "legacy_ams_taxonomy_id": "6509"
+        }
+       ],
+       "education": [],
+       "education_level": []
+      },
+      "application_contacts": [],
+      "publication_date": "2026-10-08T11:18:17",
+      "last_publication_date": "2026-11-12T23:59:59",
+      "removed": false,
+      "removed_date": null,
+      "source_type": "VIA_JOBPOSTING",
+      "timestamp": 1791451097594
+     },
+     {
+      "relevance": 1.0,
+      "id": "31343756",
+      "external_id": null,
+      "original_id": null,
+      "label": [],
+      "webpage_url": "https://arbetsformedlingen.se/platsbanken/annonser/31343756",
+      "logo_url": "https://arbetsformedlingen.se/rest/employer-logo-api/api/v1/organisation/5591524029/logotyper/logo.png",
+      "headline": "Machine Learning Engineer ",
+      "application_deadline": "2027-02-11T23:59:59",
+      "number_of_vacancies": 4,
+      "description": {
+       "text": "Modulai works with fish, trains, clothes, money, pets, office spaces, sound sensors and much more. If there is data, we do ML (Machine Learning) on it. \nOur team consists of devoted ML engineers with strong track records from some of Sweden’s most successful startups. We work on project basis and take end-to-end responsibility. We love ML and we think that the best way for us to expand our knowledge is to be exposed to a diversified set of challenging and fun projects. \nMACHINE LEARNING ENGINEER \nAs a member of the ML-team you will be working with a broad range of problems with one common denominator – ML will be the key ingredient. The projects could be external as well as internal – and in all cases – delivery is central. \nYou will have to analyze the problem at hand, come up with a solution strategy and execute on it. This typically entails gaining an in-depth understanding of the challenge, understanding the available data and then re-formulating it as a ML problem. It requires openness, creativity and an eagerness to learn new methodology and exploring new terrains. \nWe frequently attack these problems as a team, meaning that you will have to be able to clearly explain your reasoning and code in order to engage the rest of us. \n\n\nOur Stack\nPython / R – standard open-source libraries\nScikit-learn and various specialized Python and R ML libraries\nLarge Language Model (LLM) frameworks such as LangChain/LlamaIndex, LangGraph, CrewAI\nCloud platforms such as AWS, GCP, and Azure\nCI/CD: DVC, Github Actions, Sagemaker/VertexAI/AzureML,\nRelational database management systems\nMLOps and LLMOps tools for model deployment and monitoring.\nSoftware engineering best practices, including testing, version control (Git), and containerization (Docker, Kubernetes)\nOrchestration: Airflow, AWS Step functions, etc Engineering/LLM/deployment: Kubernetes, docker, terraform\n\n\n\nResponsibilities\nAnalyzing and planning problems, solutions, and delivery with stakeholder managment, and communication with client\nPreprocessing, feature engineering, and dataset creation\nML and LLM model development, fine-tuning, and evaluation\nValidation of results and model interpretability\nBuilding and optimizing data pipelines and ML/LLM infrastructure\nDeveloping APIs and integrating ML models into production systems\nEnsuring scalability, monitoring, and performance optimization of deployed models\n\n\n\nBackground & Skills\nMSc or Ph.D. in a quantitative field\nExcellent understanding of a broad set of ML and deep learning algorithms, including LLMs\nStrong software development skills in Python and experience with software engineering best practices\nExperience deploying ML and LLM models into production environments\nA passion for lean, clean, and maintainable code\nThe desire to grow and to share insights with others\n\n\n\nHelpful Knowledge\nDeep learning frameworks and transformer-based architectures\nLLM fine-tuning, prompt engineering, and retrieval-augmented generation (RAG)\nData pipelining and ML/LLM infrastructure best practices\nDevOps experience, CI/CD, Kubernetes, and serverless architectures\nExperience with vector databases e.g (Pinecode, redis, and ElasticSearch) for LLM applications\n\n\n\nAbout Team Modulai\nAt Modulai we focus 100% on solving problems with machine learning (ML). We work in teams on a project basis. We work for clients, as part of the core team in startups where we have long-time engagement as well for large enterprises transforming ways of working.\nLearning and teamwork are central to how we work. Everyone in the team is or will soon be a full-stack ML engineer capable of scoping and developing end-to-end ML solutions. You should be able to do end-to-end machine learning products by yourself but actually, never do it because we always work in teams. If there is data, we will do ML on it!\nApply here: https://modulai.teamtailor.com/",
+       "text_formatted": "<p>Modulai works with fish, trains, clothes, money, pets, office spaces, sound sensors and much more. If there is data, <strong>we do ML (Machine Learning) on it</strong>. </p><p>Our team consists of devoted ML engineers with strong track records from some of Sweden’s most successful startups. We work on project basis and take end-to-end responsibility. We love ML and we think that the best way for us to expand our knowledge is to be exposed to a diversified set of challenging and fun projects. </p><p>MACHINE LEARNING ENGINEER </p><p>As a member of the ML-team you will be working with a broad range of problems with one common denominator – ML will be the key ingredient. The projects could be external as well as internal – and in all cases – delivery is central. </p><p>You will have to analyze the problem at hand, come up with a solution strategy and execute on it. This typically entails gaining an in-depth understanding of the challenge, understanding the available data and then re-formulating it as a ML problem. It requires openness, creativity and an eagerness to learn new methodology and exploring new terrains. </p><p>We frequently attack these problems as a team, meaning that you will have to be able to clearly explain your reasoning and code in order to engage the rest of us. </p><p><br></p><p>Our Stack</p><ul><li>Python / R – standard open-source libraries</li><li>Scikit-learn and various specialized Python and R ML libraries</li><li>Large Language Model (LLM) frameworks such as LangChain/LlamaIndex, LangGraph, CrewAI</li><li>Cloud platforms such as AWS, GCP, and Azure</li><li>CI/CD: DVC, Github Actions, Sagemaker/VertexAI/AzureML,</li><li>Relational database management systems</li><li>MLOps and LLMOps tools for model deployment and monitoring.</li><li>Software engineering best practices, including testing, version control (Git), and containerization (Docker, Kubernetes)</li><li>Orchestration: Airflow, AWS Step functions, etc Engineering/LLM/deployment: Kubernetes, docker, terraform</li></ul><p><br></p><p>Responsibilities</p><ul><li>Analyzing and planning problems, solutions, and delivery with stakeholder managment, and communication with client</li><li>Preprocessing, feature engineering, and dataset creation</li><li>ML and LLM model development, fine-tuning, and evaluation</li><li>Validation of results and model interpretability</li><li>Building and optimizing data pipelines and ML/LLM infrastructure</li><li>Developing APIs and integrating ML models into production systems</li><li>Ensuring scalability, monitoring, and performance optimization of deployed models</li></ul><p><br></p><p>Background &amp; Skills</p><ul><li>MSc or Ph.D. in a quantitative field</li><li>Excellent understanding of a broad set of ML and deep learning algorithms, including LLMs</li><li>Strong software development skills in Python and experience with software engineering best practices</li><li>Experience deploying ML and LLM models into production environments</li><li>A passion for lean, clean, and maintainable code</li><li>The desire to grow and to share insights with others</li></ul><p><br></p><p>Helpful Knowledge</p><ul><li>Deep learning frameworks and transformer-based architectures</li><li>LLM fine-tuning, prompt engineering, and retrieval-augmented generation (RAG)</li><li>Data pipelining and ML/LLM infrastructure best practices</li><li>DevOps experience, CI/CD, Kubernetes, and serverless architectures</li><li>Experience with vector databases e.g (Pinecode, redis, and ElasticSearch) for LLM applications</li></ul><p><br></p><p><strong>About Team Modulai</strong></p><p>At Modulai we focus 100% on solving problems with machine learning (ML). We work in teams on a project basis. We work for clients, as part of the core team in startups where we have long-time engagement as well for large enterprises transforming ways of working.</p><p>Learning and teamwork are central to how we work. Everyone in the team is or will soon be a full-stack ML engineer capable of scoping and developing end-to-end ML solutions. You should be able to do end-to-end machine learning products by yourself but actually, never do it because we always work in teams. If there is data, we will do ML on it!</p><p><strong>Apply here:</strong> https://modulai.teamtailor.com/</p>",
+       "company_information": null,
+       "needs": null,
+       "requirements": null,
+       "conditions": null
+      },
+      "employment_type": {
+       "concept_id": "kpPX_CNN_gDU",
+       "label": "Tillsvidareanställning (inkl. eventuell provanställning)",
+       "legacy_ams_taxonomy_id": null
+      },
+      "salary_type": {
+       "concept_id": "oG8G_9cW_nRf",
+       "label": "Fast månads- vecko- eller timlön",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "salary_description": null,
+      "duration": {
+       "concept_id": "a7uU_j21_mkL",
+       "label": "Tills vidare",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "working_hours_type": {
+       "concept_id": "6YE1_gAC_R2G",
+       "label": "Heltid",
+       "legacy_ams_taxonomy_id": "1"
+      },
+      "scope_of_work": {
+       "min": 100,
+       "max": 100
+      },
+      "access": null,
+      "employer": {
+       "phone_number": null,
+       "email": null,
+       "url": "www.modulai.io",
+       "organization_number": "5591524029",
+       "name": "Modulai AB",
+       "workplace": "Modulai AB"
+      },
+      "application_details": {
+       "information": null,
+       "reference": null,
+       "email": null,
+       "via_af": false,
+       "url": "https://modulai.teamtailor.com/jobs/1104520-machine-learning-engineer",
+       "other": null
+      },
+      "experience_required": true,
+      "access_to_own_car": false,
+      "driving_license_required": false,
+      "driving_license": null,
+      "occupation": {
+       "concept_id": "CQse_CRd_snw",
+       "label": "Civilingenjör, systemutveckling",
+       "legacy_ams_taxonomy_id": "6509"
+      },
+      "occupation_group": {
+       "concept_id": "DJh5_yyF_hEM",
+       "label": "Mjukvaru- och systemutvecklare m.fl.",
+       "legacy_ams_taxonomy_id": "2512"
+      },
+      "occupation_field": {
+       "concept_id": "apaJ_2ja_LuF",
+       "label": "Data/IT",
+       "legacy_ams_taxonomy_id": "3"
+      },
+      "workplace_model": {
+       "concept_id": null,
+       "label": null
+      },
+      "workplace_address": {
+       "municipality": "Stockholm",
+       "municipality_code": "0180",
+       "municipality_concept_id": "AvNB_uwa_6n6",
+       "region": "Stockholms län",
+       "region_code": "01",
+       "region_concept_id": "CifL_Rzy_Mku",
+       "country": "Sverige",
+       "country_code": "199",
+       "country_concept_id": "i46j_HmG_v64",
+       "street_address": "Långholmsgatan 27",
+       "postcode": "11733",
+       "city": "STOCKHOLM",
+       "coordinates": [
+        18.0343228061964,
+        59.3157804134475
+       ]
+      },
+      "workplace_addresses": [
+       {
+        "municipality": "Stockholm",
+        "municipality_code": "0180",
+        "municipality_concept_id": "AvNB_uwa_6n6",
+        "region": "Stockholms län",
+        "region_code": "01",
+        "region_concept_id": "CifL_Rzy_Mku",
+        "country": "Sverige",
+        "country_code": "199",
+        "country_concept_id": "i46j_HmG_v64",
+        "street_address": "Långholmsgatan 27",
+        "postcode": "11733",
+        "city": "STOCKHOLM",
+        "coordinates": [
+         18.0343228061964,
+         59.3157804134475
+        ]
+       }
+      ],
+      "must_have": {
+       "skills": [],
+       "languages": [
+        {
+         "weight": 10,
+         "concept_id": "NVxJ_hLg_TYS",
+         "label": "Engelska",
+         "legacy_ams_taxonomy_id": "283"
+        }
+       ],
+       "work_experiences": [],
+       "education": [],
+       "education_level": []
+      },
+      "nice_to_have": {
+       "skills": [],
+       "languages": [
+        {
+         "weight": 5,
+         "concept_id": "zSLA_vw2_FXN",
+         "label": "Svenska",
+         "legacy_ams_taxonomy_id": "502"
+        }
+       ],
+       "work_experiences": [
+        {
+         "weight": 5,
+         "concept_id": "CQse_CRd_snw",
+         "label": "Civilingenjör, systemutveckling",
+         "legacy_ams_taxonomy_id": "6509"
+        }
+       ],
+       "education": [
+        {
+         "weight": 5,
+         "concept_id": "SY6y_KKg_gQ5",
+         "label": "Matematik och övrig naturvetenskap",
+         "legacy_ams_taxonomy_id": "13"
+        }
+       ],
+       "education_level": [
+        {
+         "weight": 5,
+         "concept_id": "asZm_TEQ_Srk",
+         "label": "Eftergymnasial utbildning två år eller längre",
+         "legacy_ams_taxonomy_id": "6"
+        }
+       ]
+      },
+      "application_contacts": [],
+      "publication_date": "2026-08-21T00:00:00",
+      "last_publication_date": "2027-02-11T23:59:59",
+      "removed": false,
+      "removed_date": null,
+      "source_type": "VIA_ANNONSERA",
+      "timestamp": 1786525815679
+     }
+    ]
+   }
+  }
+ }
+}

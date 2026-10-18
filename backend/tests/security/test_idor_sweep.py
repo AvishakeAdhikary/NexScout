@@ -95,7 +95,16 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
             f"/api/v1/cases/{case_id}/answers", json={"question": "Salary?", "answer": "Mine"}
         )
     ).json()
+    custom = await client.post(
+        "/api/v1/sources/import",
+        json={
+            "content": "tracked_companies:\n  - name: Mine\n    careers_url: "
+            "https://jobs.lever.co/owner-only-board\n"
+        },
+    )
+    assert custom.status_code == 200, custom.text
     return {
+        "source_key": "custom:lever:owner-only-board",
         "answer_id": answer["id"],
         "channel_id": channel["id"],
         "token_id": token["id"],
@@ -246,6 +255,8 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("DELETE", f"/api/v1/answers/{ids['answer_id']}", None),
         ("POST", f"/api/v1/notifications/{note}/answer", {"answer": "x"}),
         ("POST", f"/api/v1/applications/{ap}/assist", None),
+        ("POST", f"/api/v1/sources/{ids['source_key']}/test", None),
+        ("DELETE", f"/api/v1/sources/{ids['source_key']}", None),
         ("GET", f"/api/v1/cases/{c}/events?once=true", None),
         ("POST", f"/api/v1/providers/{pv}/verify", None),
         ("DELETE", f"/api/v1/providers/{pv}", None),
@@ -325,6 +336,7 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "token_id",
             "channel_id",
             "answer_id",
+            "source_key",
         )
     }
     sentinel["app_version"] = "1"

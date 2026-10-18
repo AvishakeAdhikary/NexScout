@@ -67,6 +67,29 @@ The case dashboard shows a **Getting started** checklist until you're done.
 
 ## 3. Find and prepare
 
+- **Choose where to look** (Settings → Where to look). Nothing is searched until you pick
+  sources.
+  - Turn on job boards, company career pages and university portals from the list. Filter it
+    by country or type, or use "Turn on all shown".
+  - **Add any careers page by its address.** NexScout works out what kind of page it is and
+    shows how many positions it found. Examples: a company's Greenhouse or Lever page, a
+    university's vacancy feed, or Work in Finland.
+  - Already use career-ops? **Import your `portals.yml`.**
+  - Some well-known sites (for example Duunitori, EURAXESS and LinkedIn) don't allow automated
+    searching. They're listed with a link so you can search there yourself.
+  - Each source shows when it last worked and how many positions it had. Use **Check** to test
+    one.
+- **Tell NexScout what fits** (Profile → Preferences).
+  - **Countries to look in** and **Countries to leave out**: type a country, or choose a group
+    such as EU, Nordic countries or Europe.
+  - **Search words** (for example *machine learning, computer vision*) and words to leave out
+    (for example *intern*).
+  - If you need a visa, say so. NexScout looks for "visa sponsorship" or "work permit support"
+    in each posting and tells you what it found.
+  - **Funding** for PhDs: any, funded preferred, or funded only.
+  - **The most you can spend up front** (application fees, deposits), in your own currency,
+    for example 150000 INR. Fees in other currencies are converted with the European Central
+    Bank's daily rates.
 - **PhD Opportunities / Job Opportunities.** Press **Find opportunities**. Each position shows
   how well it fits you and what's missing. Duplicates from different sites are merged.
 - **Research and prepare.** NexScout reads the posting and its linked pages: requirements,
