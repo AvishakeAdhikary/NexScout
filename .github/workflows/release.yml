@@ -114,10 +114,24 @@ jobs:
       - name: Build the installer (unsigned)
         shell: bash # PowerShell would split the -c.extraMetadata.version=… argument
         run: npx electron-builder --win nsis --publish never "-c.extraMetadata.version=${{ needs.version.outputs.version }}"
+      - name: Check the update metadata matches the installer
+        shell: bash
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          ls release
+          test -f "release/NexScout-Setup-$VERSION.exe"
+          test -f "release/NexScout-Setup-$VERSION.exe.blockmap"
+          grep -q "^version: $VERSION" release/latest.yml
+          grep -q "path: NexScout-Setup-$VERSION.exe" release/latest.yml
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: apps/desktop/release/*.exe
+          # latest.yml + blockmap let installed apps update themselves (electron-updater).
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.exe.blockmap
+            apps/desktop/release/latest.yml
           retention-days: 7
 
   publish:
@@ -145,7 +159,10 @@ jobs:
           cp docs/USER_GUIDE.md "$root/docs/"
           cp LICENSE "$root/"
           zip -r "dist/nexscout-easy-$VERSION.zip" "$root"
-          for f in dist/*.exe; do mv "$f" "dist/NexScout-Setup-$VERSION.exe"; done
+          # The installer keeps its built name: latest.yml refers to it.
+          # Checksums: "Update NexScout" refuses a download that doesn't match.
+          (cd dist && sha256sum -- * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          ls -l dist
       - name: Release notes
         env:
           PREV: ${{ needs.version.outputs.previous }}
@@ -159,6 +176,10 @@ jobs:
             echo "**Easy install:** download \`nexscout-easy-$VERSION.zip\`, unzip, then double-click"
             echo "\`Start NexScout\` (needs [Docker Desktop](https://www.docker.com/products/docker-desktop/))."
             echo "See [the user guide](https://github.com/${{ github.repository }}/blob/v$VERSION/docs/USER_GUIDE.md)."
+            echo
+            echo "**Already installed?** The Windows app (2.3.0 or newer) updates itself and asks before"
+            echo "restarting. Easy install (2.3.0 or newer): double-click \`Update NexScout\`. Older"
+            echo "versions: install this one once by hand; your data is kept."
             echo
             echo "**Windows app:** \`NexScout-Setup-$VERSION.exe\` (not code-signed yet: Windows SmartScreen"
             echo "asks you to confirm with *More info → Run anyway*)."

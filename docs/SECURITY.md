@@ -116,6 +116,16 @@ prompts. Final submit needs an approval unless a narrow, explicit standing polic
 - **Ownership.** Custom sources are owned and protected by RLS. The IDOR sweep covers
   `/sources/{key}`, `/sources/{key}/test` and the import route.
 
+## 5d. Updates (ADR-0017)
+- Updates come only from this repository's GitHub releases over https. The desktop app checks
+  the sha512 in `latest.yml`. "Update NexScout" refuses a bundle that doesn't match the
+  release's `SHA256SUMS.txt`. Downgrades and prereleases are refused.
+- The version check sends nothing about the user. Its answer is untrusted: only a
+  version-shaped tag and a URL inside this repository are used. Signed-in users only, so
+  anonymous requests can't make the server call out. Off with `NEXSCOUT_UPDATE_CHECK=0`.
+- Image cleanup removes only `ghcr.io/*/nexscout-(backend|web)` images of other versions.
+- Still open: code signing, and protecting releases (a compromised `main` could ship an update).
+
 ## 6. Supply chain
 Locked dependencies (`uv.lock`, `package-lock.json`). `pip-audit` and `npm audit` in CI. Secret scanning
 (detect-secrets) in CI. Development MCP servers are pinned and separate from runtime tools.

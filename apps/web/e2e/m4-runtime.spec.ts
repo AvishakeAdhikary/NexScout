@@ -77,6 +77,15 @@ test("add a mock AI model, check it, and draft a labelled, cited summary", async
   await model.getByRole("button", { name: "Check connection" }).click();
   await expect(model.getByText(/^Working \(/)).toBeVisible({ timeout: 30_000 });
 
+  // Edit in place: no delete and re-add to fix a mistake.
+  await model.getByRole("button", { name: "Edit" }).click();
+  const edit = page.getByRole("form", { name: "Edit Test model" });
+  await edit.getByRole("textbox", { name: "Name" }).fill("Renamed model");
+  await edit.getByRole("button", { name: "Save changes" }).click();
+  const renamed = page.getByRole("listitem", { name: "Renamed model" });
+  await expect(renamed.getByText("Default", { exact: true })).toBeVisible();
+  await expect(edit).toBeHidden();
+
   // A key field for a real provider is write-only (password input).
   await page.getByRole("combobox", { name: "Type" }).selectOption("anthropic");
   await expect(page.getByLabel(/API key/)).toHaveAttribute("type", "password");

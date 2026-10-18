@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { providersApi, type ProviderIn, type ProviderOut } from "@/lib/api/client";
+import { providersApi, type ProviderIn, type ProviderOut, type ProviderPatch } from "@/lib/api/client";
 
 interface Preset {
   label: string;
@@ -87,8 +87,118 @@ const PRESETS: Record<string, Preset> = {
   },
 };
 
+/** Change a provider in place. The key is write-only: blank keeps it. */
+function EditProvider({ p, onDone }: { p: ProviderOut; onDone: () => void }) {
+  const queryClient = useQueryClient();
+  const save = useMutation({
+    mutationFn: (body: ProviderPatch) => providersApi.update(p.id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["providers"] });
+      onDone();
+    },
+  });
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const f = new FormData(form);
+    const get = (k: string) => String(f.get(k) ?? "").trim();
+    const num = (k: string) => (get(k) === "" ? null : Number(get(k)));
+    const body: ProviderPatch = {
+      version: p.version,
+      name: get("name"),
+      model: get("model"),
+      context_window: num("context_window") ?? p.context_window,
+      max_output_tokens: num("max_output_tokens") ?? p.max_output_tokens,
+      supports_json_schema: f.get("supports_json_schema") === "on",
+      input_cost_per_mtok: num("input_cost"),
+      output_cost_per_mtok: num("output_cost"),
+      clear_api_key: f.get("clear_api_key") === "on",
+    };
+    if (p.kind === "openai_compatible") body.base_url = get("base_url");
+    if (!body.clear_api_key && get("api_key")) body.api_key = get("api_key");
+    save.mutate(body);
+    // The key must not linger in the DOM after submit.
+    const key = form.elements.namedItem("api_key");
+    if (key instanceof HTMLInputElement) key.value = "";
+  }
+
+  const id = (k: string) => `edit-${p.id}-${k}`;
+  return (
+    <form onSubmit={submit} className="grid gap-3 rounded-md border bg-muted/30 p-3 sm:grid-cols-2"
+      aria-label={`Edit ${p.name}`}>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id("name")}>Name</Label>
+        <Input id={id("name")} name="name" defaultValue={p.name} required maxLength={100} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id("model")}>Model</Label>
+        <Input id={id("model")} name="model" defaultValue={p.model} required maxLength={200} />
+      </div>
+      {p.kind === "openai_compatible" && (
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          <Label htmlFor={id("base_url")}>Server address</Label>
+          <Input id={id("base_url")} name="base_url" defaultValue={p.base_url ?? ""} required maxLength={500} />
+          <p className="text-xs text-muted-foreground">
+            If you change the address, enter the API key again. A saved key is never sent to a
+            different server.
+          </p>
+        </div>
+      )}
+      {p.kind !== "mock" && (
+        <div className="flex flex-col gap-1 sm:col-span-2">
+          <Label htmlFor={id("api_key")}>New API key</Label>
+          <Input id={id("api_key")} name="api_key" type="password" autoComplete="off" maxLength={500}
+            placeholder={p.has_api_key ? "Leave blank to keep the saved key" : "Optional"} />
+          {p.has_api_key && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="clear_api_key" /> Remove the saved key
+            </label>
+          )}
+        </div>
+      )}
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id("context_window")}>Context window (tokens)</Label>
+        <Input id={id("context_window")} name="context_window" type="number" min={1024}
+          defaultValue={p.context_window} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id("max_output_tokens")}>Longest answer (tokens)</Label>
+        <Input id={id("max_output_tokens")} name="max_output_tokens" type="number" min={16}
+          defaultValue={p.max_output_tokens} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id("input_cost")}>Price per million input tokens (optional)</Label>
+        <Input id={id("input_cost")} name="input_cost" type="number" min={0} step="any"
+          defaultValue={p.input_cost_per_mtok ?? ""} />
+      </div>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id("output_cost")}>Price per million output tokens (optional)</Label>
+        <Input id={id("output_cost")} name="output_cost" type="number" min={0} step="any"
+          defaultValue={p.output_cost_per_mtok ?? ""} />
+      </div>
+      <label className="flex items-center gap-2 text-sm sm:col-span-2">
+        <input type="checkbox" name="supports_json_schema" defaultChecked={p.supports_json_schema} />
+        Supports structured JSON output
+      </label>
+      <div className="flex gap-2 sm:col-span-2">
+        <Button type="submit" size="sm" disabled={save.isPending}>
+          {save.isPending ? "Saving…" : "Save changes"}
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={onDone}>
+          Cancel
+        </Button>
+      </div>
+      <div className="sm:col-span-2">
+        <ErrorAlert error={save.error} />
+      </div>
+    </form>
+  );
+}
+
 function ProviderRow({ p }: { p: ProviderOut }) {
   const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["providers"] });
   const verify = useMutation({ mutationFn: () => providersApi.verify(p.id), onSettled: invalidate });
   const makeDefault = useMutation({
@@ -143,6 +253,9 @@ function ProviderRow({ p }: { p: ProviderOut }) {
           disabled={makeDefault.isPending}>
           {p.is_default ? "Stop using as default" : "Use as default"}
         </Button>
+        <Button size="sm" variant="outline" aria-expanded={editing} onClick={() => setEditing((x) => !x)}>
+          Edit
+        </Button>
         <Button
           size="sm"
           variant="outline"
@@ -154,6 +267,7 @@ function ProviderRow({ p }: { p: ProviderOut }) {
           Remove
         </Button>
       </div>
+      {editing && <EditProvider p={p} onDone={() => setEditing(false)} />}
       <ErrorAlert error={verify.error ?? makeDefault.error ?? remove.error} />
     </li>
   );

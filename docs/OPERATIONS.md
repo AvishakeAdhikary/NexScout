@@ -15,6 +15,7 @@ and checkpoints across tenants; give it to the worker only, never the api),
 (enables Secure cookies, disables debug, refuses to start without a master key), and
 `NEXSCOUT_STORAGE_DIR` or object-store settings. Set `NEXSCOUT_ALLOW_PRIVATE_PROVIDER_URLS=false`
 on shared servers so that user-supplied model URLs can't reach internal services.
+`NEXSCOUT_UPDATE_CHECK=0` stops the "update available" check against GitHub releases (ADR-0017).
 
 **Dev master key:** without `NEXSCOUT_MASTER_KEY`, a key is generated at
 `<storage_dir>/../master.key` (mode 600). The api and the worker must see the *same* file. In
@@ -52,6 +53,10 @@ If a reverse proxy sits in front, don't compress `text/event-stream`. The SSE en
 - Local mode turns on assisted mode (`NEXSCOUT_ASSISTED_BROWSER`), because the worker runs on
   the user's own screen.
 - To reset the app's mode, delete `<userData>/config.json`.
+- **Updates (ADR-0017).** The installed app checks GitHub releases at start, every 6 hours and
+  from the menu. It downloads in the background and asks before restarting. After an update
+  it deletes the updater cache, and in Easy mode it removes the older NexScout images. Log:
+  `<userData>/logs/updates.log`.
 
 ## Easy install without the desktop app (`easy/`)
 - `Start NexScout.cmd` (Windows), `Start NexScout.command` (macOS) and `start-nexscout.sh`
@@ -62,6 +67,10 @@ If a reverse proxy sits in front, don't compress `text/event-stream`. The SSE en
   where the pull fails, they build locally instead (`docker-compose.build.yml`).
 - They wait for the web app and open it.
 - Stop with `Stop NexScout.cmd` or `start-nexscout.sh stop`.
+- Update with `Update NexScout.cmd`, `Update NexScout.command` or `start-nexscout.sh update`.
+  The script verifies the new bundle against the release's `SHA256SUMS.txt`, replaces the
+  files (never `.env`), restarts, and removes the older NexScout images. Every start also
+  removes NexScout images whose version isn't the one the folder runs.
 - Only `127.0.0.1:${NEXSCOUT_PORT:-3000}` is published; the database has no published port.
 
 ## Releases (`.github/workflows/release.yml`)
@@ -74,6 +83,8 @@ If a reverse proxy sits in front, don't compress `text/event-stream`. The SSE en
     The backend image has `NEXSCOUT_VERSION` baked in.
   - The unsigned Windows installer, built on `windows-latest`.
   - `nexscout-easy-<version>.zip`, with the compose file pinned to that version.
+  - `latest.yml` and `NexScout-Setup-<version>.exe.blockmap` for in-app updates, and
+    `SHA256SUMS.txt` covering every asset.
   - A GitHub Release whose notes come from the commits since the previous tag.
 - **Package visibility:** in this repository the packages came out public; anonymous pulls were
   verified after v2.0.0. If a fork's packages are private, make them public (GitHub →

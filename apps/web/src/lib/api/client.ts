@@ -321,6 +321,7 @@ export type EventOut = S["EventOut"];
 export type RunDetailOut = S["RunDetailOut"];
 export type WorkflowOut = S["WorkflowOut"];
 export type ProviderOut = S["ProviderOut"];
+export type ProviderPatch = S["ProviderPatch"];
 export type ProviderIn = S["ProviderIn"];
 export type RunAction = "pause" | "resume" | "cancel" | "retry" | "rerun" | "skip";
 
@@ -365,9 +366,18 @@ export const channelsApi = {
   remove: (id: string) => api<void>(`/channels/${e(id)}`, { method: "DELETE" }),
 };
 
+// ------------------------------------------------------------------ M16: updates
+export type AppVersionOut = S["AppVersionOut"];
+
+export const updatesApi = {
+  version: () => api<AppVersionOut>("/version"),
+};
+
 export const providersApi = {
   list: () => api<ProviderOut[]>("/providers"),
   create: (body: ProviderIn) => api<ProviderOut>("/providers", { method: "POST", body }),
+  update: (id: string, body: ProviderPatch) =>
+    api<ProviderOut>(`/providers/${e(id)}`, { method: "PATCH", body }),
   remove: (id: string) => api<void>(`/providers/${e(id)}`, { method: "DELETE" }),
   verify: (id: string) =>
     api<Record<string, unknown>>(`/providers/${e(id)}/verify`, { method: "POST" }),

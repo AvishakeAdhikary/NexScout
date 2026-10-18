@@ -36,6 +36,7 @@ REQUIRE_DB = os.environ.get("NEXSCOUT_REQUIRE_DB") == "1"
 # The labelled demo sources and demo application site are test fixtures: on for every test
 # (a shipped install has them off). Set before any Settings is built.
 os.environ.setdefault("NEXSCOUT_DEMO_DATA", "1")
+os.environ.setdefault("NEXSCOUT_UPDATE_CHECK", "0")  # tests never call GitHub
 
 # Tables truncated between tests (children first is not needed with CASCADE).
 DATA_TABLES = (
@@ -74,6 +75,7 @@ def make_settings(**overrides: Any) -> Settings:
         "log_level": "WARNING",
         "db_pool_size": 5,
         "demo_data": True,
+        "update_check": False,
     }
     base.update(overrides)
     return Settings(**base)

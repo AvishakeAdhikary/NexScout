@@ -13,6 +13,7 @@ const PROD = process.env.E2E_PROD === "1";
 const backendEnv: Record<string, string> = {
   NEXSCOUT_FIXTURE_SITE_ORIGIN: `http://127.0.0.1:${API_PORT}`,
   NEXSCOUT_DEMO_DATA: "1",
+  NEXSCOUT_UPDATE_CHECK: "0", // E2E never calls GitHub
   ...(PROD
     ? {
         NEXSCOUT_ENV: "production",

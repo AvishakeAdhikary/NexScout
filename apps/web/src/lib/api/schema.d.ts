@@ -1436,7 +1436,8 @@ export interface paths {
         delete: operations["delete_provider_api_v1_providers__provider_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update Provider */
+        patch: operations["update_provider_api_v1_providers__provider_id__patch"];
         trace?: never;
     };
     "/api/v1/providers/{provider_id}/verify": {
@@ -1642,6 +1643,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/version": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Version */
+        get: operations["get_version_api_v1_version_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflows": {
         parameters: {
             query?: never;
@@ -1826,6 +1844,19 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** AppVersionOut */
+        AppVersionOut: {
+            /** Checked At */
+            checked_at: string | null;
+            /** Current */
+            current: string;
+            /** Latest */
+            latest: string | null;
+            /** Update Available */
+            update_available: boolean;
+            /** Url */
+            url: string | null;
         };
         /** ApplicationDetailOut */
         ApplicationDetailOut: {
@@ -3268,6 +3299,42 @@ export interface components {
             output_cost_per_mtok: number | null;
             /** Supports Json Schema */
             supports_json_schema: boolean;
+            /** Version */
+            version: number;
+        };
+        /**
+         * ProviderPatch
+         * @description Only the fields sent are changed. The key is write-only: send `api_key` to replace it,
+         *     `clear_api_key` to remove it, or neither to keep it.
+         */
+        ProviderPatch: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Base Url */
+            base_url?: string | null;
+            /**
+             * Clear Api Key
+             * @default false
+             */
+            clear_api_key: boolean;
+            /** Context Window */
+            context_window?: number | null;
+            /** Input Cost Per Mtok */
+            input_cost_per_mtok?: number | null;
+            /** Is Default */
+            is_default?: boolean | null;
+            /** Kind */
+            kind?: string | null;
+            /** Max Output Tokens */
+            max_output_tokens?: number | null;
+            /** Model */
+            model?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Output Cost Per Mtok */
+            output_cost_per_mtok?: number | null;
+            /** Supports Json Schema */
+            supports_json_schema?: boolean | null;
             /** Version */
             version: number;
         };
@@ -7388,6 +7455,41 @@ export interface operations {
             };
         };
     };
+    update_provider_api_v1_providers__provider_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     verify_api_v1_providers__provider_id__verify_post: {
         parameters: {
             query?: never;
@@ -7812,6 +7914,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_version_api_v1_version_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppVersionOut"];
                 };
             };
         };

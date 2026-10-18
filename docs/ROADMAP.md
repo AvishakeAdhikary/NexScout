@@ -4,9 +4,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-19
-- **Current milestone:** M16 provider editing + auto-update (next). M14 ✅ (commit 411dc55) and M15 ✅ (real
-  sources, countries, signals, budget, user time zone) are committed and released together as v2.2.0. Then M17
-  real-world run. M0–M13 ✅ (v2.0.0, v2.1.0 released).
+- **Current milestone:** M17 real-world run (next). M16 ✅ (provider editing, self-update, update notice;
+  released as v2.3.0, the first version that can update itself). M14 + M15 ✅ released as v2.2.0 (CI 39175343754,
+  Release 39175729406). M0–M13 ✅.
 - **Why (user feedback on v2.1.0, 2026-10-18):** the shipped app had only demo sources and the demo application
   site (Easy/desktop ran with NEXSCOUT_ENV unset = development); no real or custom job sources; countries were free
   text (autopilot asked for codes, data had names, so its filter matched nothing); AI providers could not be
@@ -310,14 +310,29 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     and the dashboard; `tzdata` is now a direct dependency so Linux images have zone data.
   - Desktop `tsconfig.json`: `module`/`moduleResolution` `node16` (node10 is deprecated and is removed in
     TypeScript 7); still emits CommonJS for Electron; verified with TypeScript 6.0.3.
+- **M16 (✅):**
+  - `PATCH /providers/{id}` + Settings → AI models → Edit. Partial update with version check. The key is
+    write-only (blank = keep, new = replace, `clear_api_key` = remove). **The stored key never follows a changed
+    destination:** a new address or type needs the key entered again. A changed model/address/type/key resets
+    verification. Audit lists field names only. IDOR sweep covers PATCH.
+  - Desktop self-update (ADR-0017): electron-updater 6.8.9 (pinned; published 2026-06-05), `publish: github`,
+    artifact `NexScout-Setup-${version}.exe`; release uploads exe + blockmap + `latest.yml` (checked in the job).
+    `src/updates.ts`: check after 10 s, every 6 h, menu "Check for updates…", Restart now/Later, updater cache
+    `pending` removed after a version change. Easy mode removes older NexScout images after `up -d`
+    (`staleImages`, tested).
+  - Easy zip: `Update NexScout.cmd/.command`, `start-nexscout.sh update`: latest tag → download → verify against
+    the release's new `SHA256SUMS.txt` → replace files (never `.env`) → re-run → remove old images.
+  - `GET /api/v1/version` (signed-in; 6 h cache, 15 min retry; untrusted answer validated) + web banner (hidden in
+    the desktop app, dismissible per version). `NEXSCOUT_UPDATE_CHECK=0` in tests/E2E. Live parse checked once:
+    `Release(version='2.2.0', …/tag/v2.2.0)`.
+  - Found while building: a bash heredoc ate the backslashes in a Windows path test (memory rule: use Write/Edit);
+    `VersionOut` schema name collided with the documents schema (renamed `AppVersionOut`).
 - **Still open (need keys or other platforms):** live AI provider and channel verification with real
   credentials (NVIDIA NIM in M17); real application portals; code signing; macOS/Linux installers.
 - **Next exact steps:**
-  1. Confirm CI and the v2.2.0 release (`gh run list`, `gh release view v2.2.0`).
-  2. M16: `PATCH /providers/{id}` (name, model, base_url, default, key keep/replace/clear, version check,
-     re-verify, audit) + Edit form + IDOR coverage; electron-updater (`latest.yml` + blockmap in the release,
-     check at start and every 6 h, Restart to update, cache cleanup); Easy mode pull + prune old images;
-     `GET /api/v1/version` + update banner; easy scripts `-Update`; ADR-0017; USER_GUIDE.
+  1. Confirm CI and the v2.3.0 release assets (exe, blockmap, latest.yml, zip, SHA256SUMS.txt).
+  2. Verify updating for real once v2.4.0 exists: install v2.3.0 → the app finds 2.4.0, downloads, restarts into
+     2.4.0, updater cache cleared; Easy zip 2.3.0 → Update NexScout → 2.4.0, checksum checked, old images gone.
   3. M17: `scripts/real_world_run.py` (reads `NEXSCOUT_REAL_RUN_DIR`, writes to a scratch folder, nothing
      personal in git) against a production-mode stack; NVIDIA NIM key only via env var → provider API; the user
      approves submissions in the app; fix everything found; sanitized evidence here.
@@ -389,6 +404,11 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-19 | M15: `uv run pytest` | **422 passed** in 187 s (incl. 3 new time-zone tests: UTC+14 vs UTC-11 reminders, login follows zone, zone validation) |
 | 2026-10-19 | M15: web typecheck, lint, vitest 12/12; desktop tests 5/5 | passed |
 | 2026-10-19 | M15: `npx playwright test` and `E2E_PROD=1 npx playwright test` | **15/15** and **15/15** (first run: 2 failures, both real bugs: picker ranking and UTC reminders; fixed) |
+| 2026-10-19 | CI 39175343754 + Release 39175729406 on ee9ce94 | CI 7/7 jobs green (backend, web, desktop, security, e2e dev, e2e prod); **v2.2.0** published: `NexScout-Setup-2.2.0.exe` (112 MB), `nexscout-easy-2.2.0.zip` |
+| 2026-10-19 | M16: `uv run pytest`; ruff, format, mypy | **431 passed**; clean (144 files) |
+| 2026-10-19 | M16: web typecheck, lint, vitest 12/12; desktop `npm test` | passed; desktop **7/7** (stale-image filter, updater cache path per OS) |
+| 2026-10-19 | M16: `npx playwright test`, `E2E_PROD=1 npx playwright test` | **16/16** and **16/16** (new: provider edit in m4, update banner + dismiss in m16-updates) |
+| 2026-10-19 | M16: local `electron-builder --win nsis --publish never -c.extraMetadata.version=2.99.0` | `NexScout-Setup-2.99.0.exe` + `.blockmap` + `latest.yml` (`path: NexScout-Setup-2.99.0.exe`, sha512); `resources/app-update.yml` provider github, `updaterCacheDirName: nexscout-desktop-updater` |
 | 2026-10-17 | M12: web tsc, eslint, vitest 12/12; desktop tests 3/3; `npx playwright test` | passed; **14/14 E2E** incl. new journey (consent shown → autopilot on → run → the placeholder question appears instead of a guess → answered → saved answer listed → Stop everything → off) |
 
 ---
@@ -414,7 +434,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M13 | Releases and easy install | ✅ (v2.0.0 released; Windows paths verified, macOS/Linux scripts not run) | Every green main push gets a minor-bump tag and release; non-technical users can install and start NexScout with a double-click |
 | M14 | Production defaults and error sweep | ✅ | Shipped builds have no demo data, production settings, runtime API origin; no raw exception text reaches users; E2E fails on any page/console error or API 5xx in dev and production builds |
 | M15 | Real sources, countries, signals, budget | ✅ (providers checked live 2026-10-18/19; endpoints can drift) | Real postings from catalog and custom sources with health; ISO include/exclude everywhere; sponsorship/language/funding/fee signals explained; budget in the user's currency |
-| M16 | Provider editing and auto-update | ⬜ | Providers editable without re-adding; installed desktop app updates itself and removes old installers and images; web shows when an update exists |
+| M16 | Provider editing and auto-update | ✅ (update path verified once v2.4.0 exists, see Checkpoint) | Providers editable without re-adding; installed desktop app updates itself and removes old installers and images; web shows when an update exists |
 | M17 | Real-world run | ⬜ | The user's real CV and preferences run end to end on a production-mode stack with real sources and a live AI provider; every error found is fixed |
 
 ## Deferred / open items

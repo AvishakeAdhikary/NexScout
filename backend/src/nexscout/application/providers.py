@@ -10,6 +10,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select, update
@@ -227,6 +228,123 @@ async def create_provider(
         request_id=actor.request_id,
         meta={"kind": data.kind, "has_key": bool(secret)},
     )
+    await session.refresh(cfg)
+    return cfg
+
+
+class ProviderUpdate(BaseModel):
+    """A change to a provider. Fields left out stay as they are.
+
+    `api_key` replaces the stored key and `clear_api_key` removes it. The stored key is never
+    sent to a different destination: changing the server address or the provider type needs
+    the key entered again (a stolen session can't redirect the user's key to another server).
+    """
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    version: int
+    name: str | None = None
+    kind: str | None = None
+    model: str | None = None
+    base_url: str | None = None
+    api_key: str | None = None
+    clear_api_key: bool = False
+    context_window: int | None = None
+    max_output_tokens: int | None = None
+    supports_json_schema: bool | None = None
+    is_default: bool | None = None
+    input_cost_per_mtok: float | None = None
+    output_cost_per_mtok: float | None = None
+
+
+_EDITABLE = (
+    "name",
+    "kind",
+    "model",
+    "base_url",
+    "context_window",
+    "max_output_tokens",
+    "supports_json_schema",
+    "is_default",
+    "input_cost_per_mtok",
+    "output_cost_per_mtok",
+)
+_NULLABLE = frozenset({"base_url", "input_cost_per_mtok", "output_cost_per_mtok"})
+
+
+def _destination(kind: str, base_url: str | None) -> tuple[str, str]:
+    if not base_url:
+        return kind, ""
+    u = urlsplit(base_url)
+    return kind, f"{u.scheme}://{(u.hostname or '').lower()}:{u.port or ''}"
+
+
+async def update_provider(
+    session: AsyncSession,
+    settings: Settings,
+    actor: Actor,
+    provider_id: uuid.UUID,
+    data: ProviderUpdate,
+) -> ProviderConfig:
+    cfg = await _get(session, actor, provider_id)
+    if cfg.version != data.version:
+        raise ConcurrencyConflict("This provider was changed elsewhere. Reload and try again.")
+    if data.api_key is not None and data.clear_api_key:
+        raise ValidationFailed("Either enter a new key or remove the key, not both.")
+    # Sent fields replace stored ones; null only clears the fields that may be empty.
+    sent = {
+        f
+        for f in data.model_fields_set & set(_EDITABLE)
+        if getattr(data, f) is not None or f in _NULLABLE
+    }
+    merged = ProviderInput(
+        **{f: getattr(data if f in sent else cfg, f) for f in _EDITABLE},
+        api_key=data.api_key or None,
+    )
+    base_url, leaves = _validate(merged, settings)
+    values: dict[str, Any] = {f: getattr(merged, f) for f in _EDITABLE} | {"base_url": base_url}
+    new_key = bool(data.api_key)
+    moved = _destination(merged.kind, base_url) != _destination(cfg.kind, cfg.base_url)
+    if moved and cfg.secret_id is not None and not new_key and not data.clear_api_key:
+        raise ValidationFailed(
+            "You changed where requests go. Enter the API key again (or remove it) so your "
+            "stored key is never sent to a different server."
+        )
+    changed = sorted(f for f in _EDITABLE if values[f] != getattr(cfg, f))
+    if new_key or data.clear_api_key:
+        old = await session.get(Secret, cfg.secret_id) if cfg.secret_id else None
+        cfg.secret_id = None
+        if data.api_key:
+            cfg.secret_id = (await _store_key(session, settings, actor, data.api_key)).id
+        if old is not None:
+            await session.delete(old)
+        changed.append("api_key")
+    if values["is_default"] and not cfg.is_default:
+        await session.execute(
+            update(ProviderConfig)
+            .where(ProviderConfig.owner_user_id == actor.user_id, ProviderConfig.id != cfg.id)
+            .values(is_default=False)
+        )
+    for f, v in values.items():
+        setattr(cfg, f, v)
+    cfg.data_leaves_device = leaves
+    # A different model, address, type or key needs a fresh connection check.
+    if {"kind", "model", "base_url", "api_key"} & set(changed):
+        cfg.last_verified_at = None
+        cfg.last_verification = {}
+    if changed:
+        cfg.version += 1
+        record_audit(
+            session,
+            "provider.updated",
+            actor_user_id=actor.user_id,
+            target_type="provider",
+            target_id=cfg.id,
+            ip=actor.ip,
+            request_id=actor.request_id,
+            meta={"fields": changed},  # names only, never values
+        )
+    await session.flush()
     await session.refresh(cfg)
     return cfg
 

@@ -259,6 +259,7 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("DELETE", f"/api/v1/sources/{ids['source_key']}", None),
         ("GET", f"/api/v1/cases/{c}/events?once=true", None),
         ("POST", f"/api/v1/providers/{pv}/verify", None),
+        ("PATCH", f"/api/v1/providers/{pv}", {"version": 1, "name": "Stolen"}),
         ("DELETE", f"/api/v1/providers/{pv}", None),
     ]
 

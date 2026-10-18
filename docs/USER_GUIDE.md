@@ -59,9 +59,10 @@ and reminders keep running. Your data is kept between runs.
 4. **Check your profile.** Accept, edit or reject each suggestion. *Only confirmed entries are
    ever used*, and private entries never leave your profile.
 5. Optional: **choose an AI model** (Settings → AI models). You need one for letters and
-   statements. Use your own key (OpenAI, Anthropic, Gemini), or a free model on your computer
-   (Ollama, LM Studio). NexScout asks before your data goes to an online AI. Resumes and CVs
-   are built **without** AI.
+   statements. Use your own key (OpenAI, Anthropic, Gemini, or any OpenAI-compatible service
+   such as NVIDIA NIM), or a free model on your computer (Ollama, LM Studio). NexScout asks
+   before your data goes to an online AI. Resumes and CVs are built **without** AI.
+   Made a typo? **Edit** fixes the name, model, address or key in place.
 
 The case dashboard shows a **Getting started** checklist until you're done.
 
@@ -170,14 +171,26 @@ NexScout is built so that using it doesn't break any site's rules for you:
 You are still responsible for what you submit, so read what NexScout prepared. That's why
 approvals show you everything first.
 
-## 8. Your data
+## 8. Keeping NexScout up to date
+
+- **Windows app (2.3.0 or newer):** updates itself. When a new version is downloaded, you're
+  asked to restart. Choose *Later* and it updates the next time you close NexScout. Menu →
+  NexScout → *Check for updates…* checks right away.
+- **Easy install (2.3.0 or newer):** NexScout shows a notice when there's a new version.
+  Double-click **Update NexScout** in your NexScout folder. It downloads the new version,
+  checks it isn't damaged, keeps your data and your `.env` file, starts the new version and
+  removes the old one.
+- **2.2.0 or older:** download the newest version from the GitHub releases page once and
+  install it over the old one. Your data is kept.
+
+## 9. Your data
 
 - Everything stays on your computer (or your own server). Your saved keys and tokens are
   encrypted.
 - **Account → Download my data** gives you everything as a .zip file.
 - **Account → Delete my account** removes everything permanently.
 
-## 9. Something isn't working?
+## 10. Something isn't working?
 
 | Problem | Try this |
 |---|---|

@@ -166,6 +166,10 @@ An LLM is never asked whether a safety rule may be skipped.
     (`scripts/record_source_fixtures.py <provider>`) and a replay test. CI never calls third-party sites.
 - **"Today" is the user's day.** Anything date-only the user sees (reminders falling due, upcoming
   deadlines) uses `domain/timezones.local_today(now, users.timezone)`, never the server's or UTC date.
+- **Updates (ADR-0017)** come only from this repository's GitHub releases. Release assets keep
+  their built names (`latest.yml` must match), and every asset is listed in `SHA256SUMS.txt`.
+  Cleanup removes only NexScout's own images and the updater cache. Tests never call GitHub
+  (`NEXSCOUT_UPDATE_CHECK=0`).
 - **Money is compared in one currency** via `domain/fx.convert` and the stored ECB rates. A missing rate
   is reported ("couldn't be converted"), never assumed.
 ### TypeScript / web

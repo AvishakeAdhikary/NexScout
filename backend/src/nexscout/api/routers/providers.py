@@ -51,6 +51,25 @@ class ProviderOut(ApiModel):
     version: int
 
 
+class ProviderPatch(ApiModel):
+    """Only the fields sent are changed. The key is write-only: send `api_key` to replace it,
+    `clear_api_key` to remove it, or neither to keep it."""
+
+    version: int
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    kind: str | None = Field(default=None, pattern="^(openai_compatible|anthropic|gemini|mock)$")
+    model: str | None = Field(default=None, min_length=1, max_length=200)
+    base_url: str | None = Field(default=None, max_length=500)
+    api_key: str | None = Field(default=None, max_length=500)
+    clear_api_key: bool = False
+    context_window: int | None = None
+    max_output_tokens: int | None = None
+    supports_json_schema: bool | None = None
+    is_default: bool | None = None
+    input_cost_per_mtok: float | None = Field(default=None, ge=0)
+    output_cost_per_mtok: float | None = Field(default=None, ge=0)
+
+
 class DefaultIn(ApiModel):
     provider_id: uuid.UUID | None
 
@@ -94,6 +113,19 @@ async def create_provider(
 async def set_default(body: DefaultIn, actor: CurrentActor, db: DbSession) -> Response:
     await prov.set_default(db, actor, body.provider_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.patch("/{provider_id}", response_model=ProviderOut)
+async def update_provider(
+    provider_id: uuid.UUID,
+    body: ProviderPatch,
+    actor: CurrentActor,
+    db: DbSession,
+    settings: SettingsDep,
+) -> ProviderOut:
+    data = prov.ProviderUpdate(**body.model_dump(exclude_unset=True))
+    cfg = await prov.update_provider(db, settings, actor, provider_id, data)
+    return await _out(db, cfg)
 
 
 @router.delete("/{provider_id}", status_code=status.HTTP_204_NO_CONTENT)

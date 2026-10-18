@@ -22,8 +22,10 @@ import {
   isAppNavigation,
   isSafeExternal,
   parseConfig,
+  staleImages,
   type DesktopConfig,
 } from "./policy";
+import { checkForUpdatesNow, startUpdates } from "./updates";
 
 const SMOKE = process.argv.includes("--smoke");
 const children: ChildProcess[] = [];
@@ -250,7 +252,28 @@ async function startEasy(config: DesktopConfig): Promise<string | null> {
   if (code !== 0) {
     return `NexScout's containers didn't start (code ${code}). Check that you're online. Log: ${logFile("easy")}`;
   }
+  removeOldImages(docker, env.NEXSCOUT_VERSION ?? "latest");
   return null;
+}
+
+/** After an update, delete the previous versions' NexScout images (and dangling layers). */
+function removeOldImages(docker: string, keepTag: string): void {
+  if (!app.isPackaged) return;
+  const listed = spawnSync(
+    docker,
+    ["images", "--filter", "reference=ghcr.io/*/nexscout-*", "--format", "{{.Repository}}:{{.Tag}}"],
+    { windowsHide: true, encoding: "utf-8", timeout: 30_000 },
+  );
+  if (listed.status !== 0) return;
+  const old = staleImages(listed.stdout.split(/\r?\n/), keepTag);
+  const out = createWriteStream(logFile("easy"), { flags: "a" });
+  for (const ref of old) {
+    // Fails harmlessly for an image a container still uses.
+    const r = spawnSync(docker, ["rmi", ref], { windowsHide: true, timeout: 60_000 });
+    out.write(`--- removed old image ${ref}: ${r.status === 0 ? "ok" : "kept (in use)"}\n`);
+  }
+  if (old.length) spawnSync(docker, ["image", "prune", "-f"], { windowsHide: true, timeout: 120_000 });
+  out.end();
 }
 
 async function stopEasy(): Promise<void> {
@@ -387,6 +410,8 @@ function setMenu(): void {
               { type: "separator" as const },
             ]
           : []),
+        { label: "Check for updates…", click: () => checkForUpdatesNow() },
+        { type: "separator" as const },
         { role: "reload" as const },
         { role: "toggleDevTools" as const, visible: !app.isPackaged },
         { role: "quit" as const, label: "Close window (keeps working in the background)" },
@@ -404,6 +429,7 @@ void app.whenReady().then(async () => {
   const config = smokeUrl ? parseConfig({ mode: "remote", remoteUrl: smokeUrl }) : loadConfig();
   if (config) await openApp(config);
   else openSetup();
+  startUpdates(() => mainWindow);
 });
 
 app.on("window-all-closed", () => app.quit());

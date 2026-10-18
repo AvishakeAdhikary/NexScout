@@ -4,6 +4,18 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.3.0
+- **M16: edit AI models and automatic updates.**
+  - Edit an AI model in place (Settings → AI models → Edit). Change its name, model, address,
+    limits or key without removing and adding it again. The key is never sent to a changed
+    server address unless it's entered again.
+  - The Windows app updates itself from GitHub releases: it checks every 6 hours, downloads
+    in the background, asks before restarting, and cleans up downloaded installers.
+  - Easy mode removes old NexScout images after updating.
+  - The Easy zip has **Update NexScout** scripts, with checksums verified against
+    `SHA256SUMS.txt`.
+  - An "update available" notice in the web app (`GET /api/v1/version`).
+
 ## v2.2.0
 - **M15: real sources.**
   - Demo data is gone from shipped builds. NexScout now reads real positions through 32

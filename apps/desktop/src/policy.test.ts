@@ -9,6 +9,8 @@ import {
   isSafeExternal,
   parseConfig,
   safeHttpUrl,
+  staleImages,
+  updaterCacheDir,
 } from "./policy";
 
 describe("desktop policy", () => {
@@ -73,5 +75,34 @@ describe("desktop policy", () => {
       "C:\\Users\\a\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe",
     ]);
     expect(dockerCandidates("darwin", {})).toContain("/Applications/Docker.app/Contents/Resources/bin/docker");
+  });
+});
+
+describe("update cleanup", () => {
+  it("removes only older NexScout images", () => {
+    const lines = [
+      "ghcr.io/avishakeadhikary/nexscout-backend:2.1.0",
+      "ghcr.io/avishakeadhikary/nexscout-backend:2.2.0",
+      "ghcr.io/avishakeadhikary/nexscout-web:2.1.0",
+      "ghcr.io/avishakeadhikary/nexscout-web:<none>",
+      "postgres:17-alpine",
+      "ghcr.io/someone/other-backend:1.0.0",
+      "localhost:5000/nexscout-web:1.0.0",
+    ];
+    expect(staleImages(lines, "2.2.0")).toEqual([
+      "ghcr.io/avishakeadhikary/nexscout-backend:2.1.0",
+      "ghcr.io/avishakeadhikary/nexscout-web:2.1.0",
+    ]);
+    expect(staleImages(lines, "latest")).toEqual([]); // development builds keep everything
+  });
+
+  it("finds the updater cache per platform", () => {
+    expect(updaterCacheDir("win32", { LOCALAPPDATA: "C:\\Users\\a\\AppData\\Local" }, "C:\\Users\\a")).toBe(
+      "C:\\Users\\a\\AppData\\Local\\nexscout-desktop-updater",
+    );
+    expect(updaterCacheDir("win32", {}, "C:\\Users\\a")).toBe(
+      "C:\\Users\\a\\AppData\\Local\\nexscout-desktop-updater",
+    );
+    expect(updaterCacheDir("linux", {}, "/home/a")).toBe("/home/a/.cache/nexscout-desktop-updater");
   });
 });

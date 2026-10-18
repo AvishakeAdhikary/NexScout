@@ -70,6 +70,12 @@ class Settings(BaseSettings):
     # Research: read public pages linked from listings (SSRF-safe, robots.txt respected).
     research_fetch_enabled: bool = True
 
+    # Update check: compare this version with the latest public GitHub release (cached 6 h).
+    update_check: bool = True
+    update_repo: str = Field(
+        default="AvishakeAdhikary/NexScout", pattern=r"^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}$"
+    )
+
     # Demo data (labelled demo sources and the demo application site at /fixture-site) is for
     # tests, E2E and developer demos only. It is OFF unless NEXSCOUT_DEMO_DATA=1, so a shipped
     # install never shows demo listings.

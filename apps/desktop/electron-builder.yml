@@ -18,6 +18,16 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
+  # No spaces: GitHub would rename the asset and break the name in latest.yml.
+  artifactName: NexScout-Setup-${version}.${ext}
+# In-app updates (src/updates.ts) read latest.yml from this repository's GitHub releases. The
+# release workflow builds with --publish never and uploads latest.yml, the installer and its
+# blockmap itself.
+publish:
+  provider: github
+  owner: AvishakeAdhikary
+  repo: NexScout
+  releaseType: release
 mac:
   target: [dmg]
   category: public.app-category.productivity

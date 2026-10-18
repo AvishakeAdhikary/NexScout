@@ -29,6 +29,7 @@ from nexscout.api.routers import (
     research,
     runs,
     tracking,
+    updates,
 )
 from nexscout.config import Settings, get_settings
 from nexscout.infrastructure.db.engine import build_engine, build_sessionmaker
@@ -87,6 +88,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         tracking,
         channels,
         autopilot,
+        updates,
     ):
         app.include_router(module.router, prefix=API_PREFIX)
     if settings.fixture_site_on:

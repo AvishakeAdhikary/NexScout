@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Logo } from "@/components/logo";
 import { NotificationBell } from "@/components/notification-bell";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UpdateBanner } from "@/components/update-banner";
 import { Button } from "@/components/ui/button";
 import { authApi } from "@/lib/api/client";
 import { useMe } from "@/lib/hooks";
@@ -52,6 +53,7 @@ export function TopBar() {
           </Button>
         </div>
       </div>
+      {me.data && <UpdateBanner />}
     </header>
   );
 }

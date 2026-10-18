@@ -1,5 +1,7 @@
 // Pure, testable security and configuration rules for the desktop shell.
 
+import { posix, win32 } from "node:path";
+
 export type Mode = "easy" | "remote" | "local";
 
 export interface DesktopConfig {
@@ -120,4 +122,37 @@ export function easyEnv(opts: {
     // Released apps use the matching images; a development build uses the newest release.
     NEXSCOUT_VERSION: /^\d+\.\d+\.\d+$/.test(opts.version) && opts.version !== "0.1.0" ? opts.version : "latest",
   };
+}
+
+// --- Updates and cleanup ---------------------------------------------------------------------
+
+const NEXSCOUT_IMAGE = /^ghcr\.io\/[a-z0-9-]+\/nexscout-(backend|web)$/;
+
+/**
+ * NexScout images to remove after an update: every tag of our own images except the one now
+ * in use. Lines are `repository:tag` from `docker images`. Other images are never touched.
+ */
+export function staleImages(lines: string[], keepTag: string): string[] {
+  if (!/^\d+\.\d+\.\d+$/.test(keepTag)) return []; // a development build: leave them alone
+  return lines
+    .map((l) => l.trim())
+    .filter((l) => {
+      const i = l.lastIndexOf(":");
+      if (i <= 0) return false;
+      const repo = l.slice(0, i);
+      const tag = l.slice(i + 1);
+      return NEXSCOUT_IMAGE.test(repo) && tag !== keepTag && tag !== "<none>";
+    });
+}
+
+/** Where electron-updater keeps downloaded installers (`<package name>-updater`). */
+export function updaterCacheDir(
+  platform: NodeJS.Platform,
+  env: Record<string, string | undefined>,
+  home: string,
+): string | null {
+  const name = "nexscout-desktop-updater"; // package.json "name" + "-updater"
+  if (platform === "win32") return win32.join(env.LOCALAPPDATA ?? win32.join(home, "AppData", "Local"), name);
+  if (platform === "darwin") return posix.join(home, "Library", "Caches", name);
+  return posix.join(env.XDG_CACHE_HOME ?? posix.join(home, ".cache"), name);
 }
