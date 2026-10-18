@@ -3,8 +3,42 @@
 Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed and passed) · ⛔ blocked
 
 ## Checkpoint (update at the end of every session)
-- **Date:** 2026-10-17
-- **Current milestone:** none open. M0–M13 ✅. Release **v2.0.0** is published (https://github.com/AvishakeAdhikary/NexScout/releases/tag/v2.0.0); every later green push to `main` releases the next minor version.
+- **Date:** 2026-10-18
+- **Current milestone:** M14 production defaults + error sweep (🟨). Then M15 real sources/countries, M16 provider
+  editing + auto-update, M17 real-world run. M0–M13 ✅ (v2.0.0, v2.1.0 released).
+- **Why (user feedback on v2.1.0, 2026-10-18):** the shipped app had only demo sources and the demo application
+  site (Easy/desktop ran with NEXSCOUT_ENV unset = development); no real or custom job sources; countries were free
+  text (autopilot asked for codes, data had names, so its filter matched nothing); AI providers could not be
+  edited; no in-app update; users saw raw Python errors ("'X' object has no attribute 'y'") because worker
+  failures are stored as `Type: message` and shown verbatim; desktop local mode's /api rewrite was fixed at build
+  time. The user wants career-ops' sources (github.com/career-ops-hq/career-ops, MIT, ~110 providers) and more,
+  incl. custom sources and unknown EU boards (Duunitori, Work in Finland, Jobs in Finland), ISO country
+  include/exclude lists, and a real-world run with their CV (outside the repo, `NEXSCOUT_REAL_RUN_DIR`) for
+  Europe AI/ML/CV jobs + PhDs: visa sponsorship needed, funding preferred, total upfront budget INR 1.5 lakh.
+- **User decisions (2026-10-18):** live run goes to submission, but the user approves each submission in the
+  app (never approved on their behalf); go through the actual career-ops boards online (port from their real
+  provider code, pinned SHA); AI = NVIDIA NIM (OpenAI-compatible, integrate.api.nvidia.com/v1) with the user's
+  key entered at runtime only (never in repo/docs/logs; user advised to rotate it); updates = desktop
+  electron-updater + Docker image pull with cleanup of old installers/images.
+- **Plan M14–M17** (full plan text: see the session plan; summary):
+  - M14: `demo_data_enabled` (default off; tests set NEXSCOUT_DEMO_DATA=1) gates fixture sources + demo site;
+    Easy/desktop/Docker run NEXSCOUT_ENV=production; cookie_secure auto (https only); runtime /api proxy in
+    `apps/web/src/proxy.ts`; `user_message(exc)` for all user-visible run errors; guard fixes
+    (document-format, setup.js, profile_summary, browser_apply url); E2E fixture failing on console/page errors
+    and /api 5xx; crawl spec over every route; production-build E2E in CI.
+  - M15: port career-ops providers (ATS: greenhouse, lever, ashby, workable, smartrecruiters, recruitee, personio,
+    teamtailor, breezy, pinpoint, rippling, workday, jobvite, bamboohr; boards: arbeitnow, thehub, landing.jobs,
+    justjoin, nofluffjobs, solidjobs, platsbanken, arbeitsagentur, remotive, remoteok, himalayas, jobicy,
+    workingnomads, wwr, 4dayweek; academic: euraxess, jobs.ac.uk, varbi...; generic RSS/Atom + JSON-LD
+    JobPosting; detect(url)); catalog.yaml (100+); custom_sources table + API + Settings → Sources UI; import
+    career-ops portals.yml; ISO 3166 data + groups, resolve_location, country include/exclude; preferences
+    (sponsorship, authorized countries, max upfront cost + currency, funding); signals (sponsorship, language,
+    citizenship, funding, fees); ECB FX rates.
+  - M16: PATCH /providers/{id} + edit UI; electron-updater (latest.yml/blockmap in release), periodic check,
+    restart to update, updater cache cleanup, Easy-mode image pull + prune; GET /version + update banner;
+    easy scripts `-Update`.
+  - M17: scripts/real_world_run.py against production-mode stack with the user's files; fix every error found;
+    sanitized evidence here.
 - **Done so far:**
   - M0: all §2.2 docs + ADR-0001…0012.
   - M1: auth (argon2id, hashed opaque sessions, CSRF, DB rate limiting), cases with optimistic
