@@ -4,6 +4,11 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.7.0
+- AI drafts use the model's own answer limit (Settings → AI models → Edit), up to half its
+  context window. The fixed cap of 8192 meant raising the limit did nothing, though the
+  message said to raise it.
+
 ## v2.6.0
 - AI drafts allow up to about 9 minutes for a long answer from a model that thinks first
   (they timed out at 2 minutes in the real run). When the model server is slow or unreachable,

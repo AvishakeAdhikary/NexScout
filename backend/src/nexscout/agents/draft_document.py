@@ -316,9 +316,10 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         )
     provider = resolved.provider
     caps = provider.capabilities
-    # Room for the answer, and for the thinking of models that reason first (M17: a 2048 cap
-    # left a reasoning model no room to answer). Never more than the provider allows.
-    out_tokens = min(8192, caps.max_output_tokens)
+    # The model's own answer limit (Settings -> AI models), which also has to hold the thinking
+    # of models that reason first (M17: fixed caps of 2048 and 8192 cut answers off). Half the
+    # context window at most, so the profile and posting still fit.
+    out_tokens = min(caps.max_output_tokens, caps.context_window // 2)
     system = SYSTEM_PROMPT.format(sections=", ".join(spec.sections)) + _format_guidance(
         doc_type, state.get("format") or {}
     )

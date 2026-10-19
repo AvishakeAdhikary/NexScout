@@ -394,6 +394,10 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 - On 2.5.0 the truncation was gone, but long AI drafts hit the 120 s request timeout and were
   reported as "a database or network hiccup". Drafts now get `max(120, max_tokens/15)` s, and a
   model timeout says which limit was hit (v2.6.0).
+- On 2.6.0 most AI drafts succeeded. One cover letter still ran out of room at 8192: with 101
+  profile entries, Nemotron sometimes reasons longer. The agent's own 8192 cap made the advice
+  "raise Longest answer" useless. Drafts now use the provider's limit, up to half the context
+  window (v2.7.0).
 - **Still open (need keys or other platforms):** live AI provider and channel verification with real
   credentials (NVIDIA NIM in M17); real application portals; code signing; macOS/Linux installers.
 - **Next exact steps:**

@@ -108,7 +108,7 @@ def _truncated(req: CompletionRequest, calls: list[CompletionResult]) -> OutputT
     return OutputTruncated(
         f"The model ran out of room for its answer (its limit is {req.max_tokens} tokens; "
         'models that think first use part of it). Raise "Longest answer" for this model in '
-        "Settings → AI models → Edit (for example to 8192), or choose another model.",
+        "Settings → AI models → Edit (for example to double it), or choose another model.",
         calls,
     )
 
