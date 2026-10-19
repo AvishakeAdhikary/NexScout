@@ -114,7 +114,9 @@ class Api:
                             },
                         )
                     continue
-                return dict(d)  # anything else waits for the person
+                if pending:
+                    return dict(d)  # anything else waits for the person
+                # Just decided: the worker hasn't resumed the run yet.
             time.sleep(3)
         raise TimeoutError(f"run {run_id} still running after {timeout_s:.0f} s")
 

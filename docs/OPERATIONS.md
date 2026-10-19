@@ -67,6 +67,10 @@ If a reverse proxy sits in front, don't compress `text/event-stream`. The SSE en
   where the pull fails, they build locally instead (`docker-compose.build.yml`).
 - They wait for the web app and open it.
 - Stop with `Stop NexScout.cmd` or `start-nexscout.sh stop`.
+- The desktop app's Easy mode and this folder both run Compose project `nexscout-easy` (same
+  volumes) but each has its own keys. Each launcher refuses to start over a stack that another
+  install started, using the containers' `com.docker.compose.project.config_files` label, as
+  long as that install's folder still exists. Use one install per computer.
 - Update with `Update NexScout.cmd`, `Update NexScout.command` or `start-nexscout.sh update`.
   The script verifies the new bundle against the release's `SHA256SUMS.txt`, replaces the
   files (never `.env`), restarts, and removes the older NexScout images. Every start also

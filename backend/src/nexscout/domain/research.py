@@ -254,6 +254,46 @@ def _supervisors(text: str, links: list[tuple[str, str]]) -> list[Finding]:
     return list(found.values())
 
 
+def _job_terms(text: str) -> list[Finding]:
+    """What a job posting says about experience, visas, work rights, languages and relocation
+    (the same vocabularies matching uses), each quoting the sentence it came from."""
+    from nexscout.domain.requirements import LANGUAGE_NAMES, min_years
+    from nexscout.domain.signals import (
+        AUTHORIZATION_REQUIRED,
+        RELOCATION,
+        SPONSOR_NEGATIVE,
+        SPONSOR_POSITIVE,
+        required_languages,
+    )
+
+    out: list[Finding] = []
+    for sent in sentences(text):
+        low = " ".join(sent.lower().split())
+        years, _ = min_years(sent)
+        if years is not None:
+            out.append(Finding(FindingKind.OTHER, "experience", f"Asks for {years:g}+ years", sent))
+        if any(p in low for p in SPONSOR_NEGATIVE):
+            out.append(
+                Finding(FindingKind.OTHER, "visa", "No visa sponsorship", sent, {"offered": False})
+            )
+        elif any(p in low for p in SPONSOR_POSITIVE):
+            out.append(
+                Finding(FindingKind.OTHER, "visa", "Visa support offered", sent, {"offered": True})
+            )
+        if any(p in low for p in AUTHORIZATION_REQUIRED):
+            out.append(
+                Finding(FindingKind.OTHER, "work_authorization", "Needs existing work rights", sent)
+            )
+        if any(p in low for p in RELOCATION):
+            out.append(Finding(FindingKind.OTHER, "relocation", "Relocation support", sent))
+        for lang in required_languages(low):
+            name = LANGUAGE_NAMES.get(lang, lang)
+            out.append(
+                Finding(FindingKind.OTHER, "language", f"Needs {name}", sent, {"language": lang})
+            )
+    return out
+
+
 def extract_findings(text: str, links: list[tuple[str, str]] | None = None) -> list[Finding]:
     """All rule-based findings in `text` (deduplicated by kind/field/quote)."""
     findings: list[Finding] = []
@@ -290,6 +330,7 @@ def extract_findings(text: str, links: list[tuple[str, str]] | None = None) -> l
             findings.append(Finding(FindingKind.FUNDING, "funding", sent[:200], sent, {}, "medium"))
     findings.extend(_documents(text))
     findings.extend(_supervisors(text, links or []))
+    findings.extend(_job_terms(text))
     seen: set[tuple[str, str, str]] = set()
     unique: list[Finding] = []
     for f in findings:

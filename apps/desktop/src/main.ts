@@ -22,6 +22,7 @@ import {
   isAppNavigation,
   isSafeExternal,
   parseConfig,
+  foreignEasyStack,
   staleImages,
   type DesktopConfig,
 } from "./policy";
@@ -246,6 +247,20 @@ async function startEasy(config: DesktopConfig): Promise<string | null> {
     return "NexScout's Easy mode runs inside Docker Desktop, which isn't installed or didn't start. The download page is open: install it, start it once, then open NexScout again.";
   }
   mkdirSync(join(app.getPath("userData"), "logs"), { recursive: true });
+  const listed = spawnSync(
+    docker,
+    ["ps", "-a", "--filter", "label=com.docker.compose.project=nexscout-easy",
+      "--format", '{{.Label "com.docker.compose.project.config_files"}}'],
+    { windowsHide: true, encoding: "utf-8", timeout: 30_000 },
+  );
+  const other = foreignEasyStack(
+    listed.status === 0 ? listed.stdout.split(/\r?\n/) : [],
+    easyCompose(),
+    existsSync,
+  );
+  if (other) {
+    return `Another NexScout is already set up on this computer (${other}), with its own keys. Use that one, or stop and remove it first (in its folder: docker compose down). Your data in it is kept.`;
+  }
   const env = easyEnvironment(config);
   await compose(docker, ["pull"], env, "easy");
   const code = await compose(docker, ["up", "-d", "--remove-orphans"], env, "easy");

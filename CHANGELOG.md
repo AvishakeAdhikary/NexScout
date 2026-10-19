@@ -4,6 +4,28 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.5.0
+- **M17, continued.**
+  - The desktop app and the Easy zip no longer take over each other's Docker stack. That
+    would have left saved keys unreadable. Each now refuses, with a message saying which
+    install is running.
+  - "Research and prepare" on job postings now lists what the posting says about
+    experience, visas, work rights, languages and relocation, each quoting its sentence.
+  - A language written as "a plus", "nice to have" or "von Vorteil" is no longer treated as
+    required.
+  - **AI-written documents work with reasoning models.**
+    - Drafts may use up to 8192 answer tokens, within the model's limit. They were capped at
+      2048, and a thinking model (NVIDIA Nemotron) ran out of room before writing its answer.
+    - A cut-off answer now says how to fix it ("raise Longest answer"). It is no longer
+      reported as "didn't have the expected structure".
+    - Tokens used by failed attempts are recorded.
+    - New AI models default to a 4096-token answer limit.
+- **Verified for real:**
+  - The installed 2.3.0 Windows app updated itself to 2.4.0. It downloaded 971 KB
+    (differential), installed on quit and cleaned the updater cache.
+  - "Update NexScout" took a 2.3.0 zip install to 2.4.0: checksum verified, keys kept, old
+    images removed.
+
 ## v2.4.0
 - **M17: fixes from a real run.** One person's real CV and preferences went through the
   released v2.3.0 stack against 180 live sources.

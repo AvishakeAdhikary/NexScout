@@ -118,7 +118,7 @@ class ProviderInput(BaseModel):
     base_url: str | None = None
     api_key: str | None = None
     context_window: int = 8192
-    max_output_tokens: int = 1024
+    max_output_tokens: int = 4096
     supports_json_schema: bool = False
     is_default: bool = False
     input_cost_per_mtok: float | None = None

@@ -58,7 +58,12 @@ from nexscout.infrastructure.db.models import (
     ResearchFinding,
     User,
 )
-from nexscout.infrastructure.llm.base import CompletionRequest, Message
+from nexscout.infrastructure.llm.base import (
+    CompletionRequest,
+    CompletionResult,
+    Message,
+    OutputInvalid,
+)
 from nexscout.infrastructure.llm.mock import mock_handler
 from nexscout.infrastructure.llm.structured import structured
 from nexscout.infrastructure.render import (
@@ -311,7 +316,9 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         )
     provider = resolved.provider
     caps = provider.capabilities
-    out_tokens = min(2048, caps.max_output_tokens)
+    # Room for the answer, and for the thinking of models that reason first (M17: a 2048 cap
+    # left a reasoning model no room to answer). Never more than the provider allows.
+    out_tokens = min(8192, caps.max_output_tokens)
     system = SYSTEM_PROMPT.format(sections=", ".join(spec.sections)) + _format_guidance(
         doc_type, state.get("format") or {}
     )
@@ -376,11 +383,19 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             "contact": state.get("contact"),
         },
     )
-    res = await structured(provider, request, DraftDocument)
-    async with ctx.tenant() as s:
-        for call in res.calls:
-            await record_usage(s, ctx.owner_user_id, ctx.run_id, call, PURPOSE, caps)
-    await ctx.add_tokens(sum(c.usage.input_tokens + c.usage.output_tokens for c in res.calls))
+
+    async def record(calls: list[CompletionResult]) -> None:
+        async with ctx.tenant() as s:
+            for call in calls:
+                await record_usage(s, ctx.owner_user_id, ctx.run_id, call, PURPOSE, caps)
+        await ctx.add_tokens(sum(c.usage.input_tokens + c.usage.output_tokens for c in calls))
+
+    try:
+        res = await structured(provider, request, DraftDocument)
+    except OutputInvalid as exc:
+        await record(exc.calls)  # the tokens were used even though the answer was unusable
+        raise
+    await record(res.calls)
     return {
         "draft": res.value.model_dump(),
         "model": {"name": resolved.name, "is_mock": any(c.is_mock for c in res.calls)},

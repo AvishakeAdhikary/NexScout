@@ -4809,7 +4809,7 @@
             "type": "string"
           },
           "max_output_tokens": {
-            "default": 1024,
+            "default": 4096,
             "title": "Max Output Tokens",
             "type": "integer"
           },
@@ -6097,8 +6097,15 @@
             "type": "string"
           },
           "postings": {
-            "title": "Postings",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postings"
           },
           "provider": {
             "title": "Provider",

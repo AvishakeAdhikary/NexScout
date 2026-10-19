@@ -227,6 +227,32 @@ def _find(text: str, phrases: tuple[str, ...]) -> str | None:
     return None
 
 
+# Words that make a language a bonus, not a requirement ("fluent German is a plus").
+_OPTIONAL = re.compile(
+    r"\b(a plus|nice[- ]to[- ]have|an advantage|advantageous|beneficial|bonus|"
+    r"preferred|desirable|is an asset|not required|not a requirement|not necessary|helpful|"
+    r"von vorteil|wünschenswert|meriterande|en fördel|eduksi|un atout|een pluspunt)\b",
+    re.I,
+)
+
+
+def required_languages(low: str) -> dict[str, str]:
+    """Languages a (lowercased, whitespace-collapsed) text requires: language code -> the
+    phrase. A mention next to "a plus", "nice to have", "not required"... doesn't count."""
+    out: dict[str, str] = {}
+    for lang, phrases in LANGUAGE_REQUIRED.items():
+        for p in phrases:
+            for m in re.finditer(re.escape(p), low):
+                end = low.find(".", m.end())
+                sentence = low[max(0, low.rfind(".", 0, m.start()) + 1) : end if end > 0 else None]
+                if not _OPTIONAL.search(sentence):
+                    out.setdefault(lang, p)
+                    break
+            if lang in out:
+                break
+    return out
+
+
 def _amount(raw: str) -> float | None:
     s = raw.replace(" ", "")
     if re.fullmatch(r"\d{1,3}([.,]\d{3})+", s):  # 1.234.567 / 1,234,567
@@ -253,10 +279,9 @@ def read_signals(text: str | None) -> Signals:
         out.authorization_required, out.quotes["authorization"] = True, q
     if (q := _find(low, RELOCATION)) is not None:
         out.relocation, out.quotes["relocation"] = True, q
-    for lang, phrases in LANGUAGE_REQUIRED.items():
-        if (q := _find(low, phrases)) is not None:
-            out.languages_required.append(lang)
-            out.quotes[f"language:{lang}"] = q
+    for lang, q in required_languages(low).items():
+        out.languages_required.append(lang)
+        out.quotes[f"language:{lang}"] = q
     if (q := _find(low, UNFUNDED)) is not None:
         out.funding, out.quotes["funding"] = "unfunded", q
     elif (q := _find(low, FUNDED)) is not None:

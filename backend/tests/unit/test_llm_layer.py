@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import uuid
 from typing import Any
@@ -21,9 +22,11 @@ from nexscout.agents.profile_summary import verify_sentences
 from nexscout.domain.errors import ValidationFailed
 from nexscout.infrastructure.llm.base import (
     CompletionRequest,
+    CompletionResult,
     Message,
     ModelCapabilities,
     OutputInvalid,
+    OutputTruncated,
     ProviderAuthError,
     ProviderBadRequest,
     ProviderUnavailable,
@@ -72,6 +75,31 @@ async def test_structured_gives_up_after_repair() -> None:
     provider = MockProvider(script=["not json at all", '{"answer": 1, "score": "x", "z": 0}'])
     with pytest.raises(OutputInvalid):
         await structured(provider, _req(), Out)
+
+
+async def test_structured_gives_up_after_repair_and_keeps_the_calls() -> None:
+    provider = MockProvider(script=["nope", "still nope"])
+    with pytest.raises(OutputInvalid) as err:
+        await structured(provider, _req(), Out)
+    assert len(err.value.calls) == 2  # both used tokens: callers record them
+
+
+async def test_cut_off_answer_says_how_to_fix_it_and_is_not_repaired() -> None:
+    """M17 real run: a reasoning model spent its 2048-token limit thinking, so the JSON answer
+    was cut off and the user only saw "didn't have the expected structure"."""
+
+    class CutOff(MockProvider):
+        async def complete(self, request: CompletionRequest) -> CompletionResult:
+            r = await super().complete(request)
+            return dataclasses.replace(r, finish_reason="length")
+
+    provider = CutOff(script=['{"answer": "a long ans'])
+    with pytest.raises(OutputTruncated) as err:
+        await structured(provider, dataclasses.replace(_req(), max_tokens=2048), Out)
+    assert "2048" in str(err.value)
+    assert "Longest answer" in str(err.value)
+    assert len(provider.requests) == 1  # a repair would be cut off the same way
+    assert len(err.value.calls) == 1
 
 
 async def test_structured_falls_back_to_instructions_without_native_schema() -> None:

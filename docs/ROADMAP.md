@@ -360,6 +360,37 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
        feed).
   - NIM: `/v1/models` lists 81 models, but several return 404 for this key. The harness probes
     them; `nvidia/nemotron-3-super-120b-a12b` answered valid JSON in 4.3 s.
+- **M17 (continued, v2.4.0 → v2.5.0):**
+  - **Desktop self-update verified for real:**
+    - The installed 2.3.0 (silent per-user install of the released exe, checksum checked)
+      found 2.4.0.
+    - It downloaded it differentially: 971 KB of 109 MB via the blockmap.
+    - It installed on quit (`--updated /S`; exe now 2.4.0.0).
+    - On the next start it logged "updated 2.3.0 -> 2.4.0; removed downloaded installers"
+      (`pending` gone).
+    - The test install was uninstalled afterwards.
+  - **Easy-zip update verified for real:** `start-nexscout.ps1 -Update` in the 2.3.0 bundle
+    downloaded the 2.4.0 zip, verified it against `SHA256SUMS.txt`, replaced the files (the
+    compose now pins 2.4.0; `.env` kept), restarted on port 3300, and removed the 2.3.0 images.
+    The NIM key sealed under the zip's master key still decrypts (Check connection ok).
+  - Found while testing the updater: the desktop app's Easy mode **took over the zip's stack**
+    (same Compose project `nexscout-easy`, different keys). Both launchers now refuse a stack
+    another existing install started (`foreignEasyStack`, tested).
+  - Re-sync on 2.4.0: 186 sources in 229 s, 1,764 kept. PhD research: 3–12 quoted findings per
+    position.
+  - Job research found 0–1 findings (the rules were PhD-only). It now lists experience, visa,
+    work rights, languages and relocation, each quoting its sentence.
+  - "Fluent German is a plus" was read as required. Optional cues are now handled (EN, DE, SV,
+    FI, FR, NL).
+  - **AI drafts all failed** with `OutputInvalid` ("Expecting value"): the draft agent capped
+    answers at 2048 tokens and Nemotron spent most of them reasoning (reproduced:
+    `finish_reason=length`, 1564 reasoning tokens). The fix: up to 8192 within the provider
+    limit, a clear `OutputTruncated` message, no futile repair, failed calls recorded in usage,
+    and new providers default to a 4096 limit.
+  - Resumes and academic CVs (no AI) were built. Applications were refused with "A chosen
+    document still has placeholders": only **contact details** are missing (the CV reader
+    doesn't turn contact data into profile entries). The person adds them once, then
+    approves each submission in the app.
 - **Still open (need keys or other platforms):** live AI provider and channel verification with real
   credentials (NVIDIA NIM in M17); real application portals; code signing; macOS/Linux installers.
 - **Next exact steps:**

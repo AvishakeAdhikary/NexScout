@@ -3245,7 +3245,7 @@ export interface components {
             kind: string;
             /**
              * Max Output Tokens
-             * @default 1024
+             * @default 4096
              */
             max_output_tokens: number;
             /** Model */
@@ -3695,7 +3695,7 @@ export interface components {
             /** Name */
             name: string;
             /** Postings */
-            postings: number;
+            postings: number | null;
             /** Provider */
             provider: string;
         };

@@ -156,3 +156,26 @@ export function updaterCacheDir(
   if (platform === "darwin") return posix.join(home, "Library", "Caches", name);
   return posix.join(env.XDG_CACHE_HOME ?? posix.join(home, ".cache"), name);
 }
+
+const samePath = (a: string, b: string) =>
+  a.trim().replace(/\\/g, "/").toLowerCase() === b.trim().replace(/\\/g, "/").toLowerCase();
+
+/**
+ * The desktop app's Easy mode and the Easy zip both run Compose project "nexscout-easy" (same
+ * compose file, same volumes) but each has its own keys. Starting one over the other would
+ * leave the stored keys unreadable. `configFiles` are the compose-file labels of the project's
+ * existing containers; returns the other install's compose file if it is still there (a folder
+ * that was moved or deleted no longer counts: its keys moved or went with it).
+ */
+export function foreignEasyStack(
+  configFiles: string[],
+  ours: string,
+  exists: (path: string) => boolean,
+): string | null {
+  for (const label of configFiles) {
+    for (const file of label.split(",")) {
+      if (file.trim() && !samePath(file, ours) && exists(file.trim())) return file.trim();
+    }
+  }
+  return null;
+}

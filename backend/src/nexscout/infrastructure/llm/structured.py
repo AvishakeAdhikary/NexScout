@@ -14,11 +14,13 @@ from typing import Any
 from pydantic import BaseModel, ValidationError
 
 from nexscout.infrastructure.llm.base import (
+    TRUNCATED,
     CompletionRequest,
     CompletionResult,
     LLMProvider,
     Message,
     OutputInvalid,
+    OutputTruncated,
 )
 
 _FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
@@ -73,6 +75,8 @@ async def structured[T: BaseModel](
     error = _validate(result.text, output)
     if isinstance(error, BaseModel):
         return StructuredResult(error, calls)
+    if result.finish_reason in TRUNCATED:
+        raise _truncated(req, calls)  # a repair would be cut off the same way
 
     # One repair attempt: show the model its output and the validation errors.
     repair = replace(
@@ -93,7 +97,20 @@ async def structured[T: BaseModel](
     second = _validate(result.text, output)
     if isinstance(second, BaseModel):
         return StructuredResult(second, calls)
-    raise OutputInvalid(f"The model's answer didn't have the expected structure ({second[:300]}).")
+    if result.finish_reason in TRUNCATED:
+        raise _truncated(req, calls)
+    raise OutputInvalid(
+        f"The model's answer didn't have the expected structure ({second[:300]}).", calls
+    )
+
+
+def _truncated(req: CompletionRequest, calls: list[CompletionResult]) -> OutputTruncated:
+    return OutputTruncated(
+        f"The model ran out of room for its answer (its limit is {req.max_tokens} tokens; "
+        'models that think first use part of it). Raise "Longest answer" for this model in '
+        "Settings → AI models → Edit (for example to 8192), or choose another model.",
+        calls,
+    )
 
 
 def _validate[T: BaseModel](text: str, output: type[T]) -> T | str:

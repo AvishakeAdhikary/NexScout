@@ -89,7 +89,23 @@ class ProviderRefusal(ProviderError):
 
 
 class OutputInvalid(ProviderError):
-    """The model's output didn't match the required schema, even after a repair attempt."""
+    """The model's output didn't match the required schema, even after a repair attempt.
+
+    `calls` are the completions made on the way: their tokens were used (and may cost money)
+    even though the answer was unusable, so callers record them."""
+
+    def __init__(self, message: str, calls: list[CompletionResult] | None = None) -> None:
+        super().__init__(message)
+        self.calls: list[CompletionResult] = list(calls or [])
+
+
+class OutputTruncated(OutputInvalid):
+    """The model hit its output limit before finishing the answer (common with reasoning
+    models, whose thinking counts against the same limit)."""
+
+
+# How providers say "stopped at the output limit".
+TRUNCATED = frozenset({"length", "max_tokens", "MAX_TOKENS"})
 
 
 def estimate_cost(caps: ModelCapabilities, usage: Usage) -> float | None:

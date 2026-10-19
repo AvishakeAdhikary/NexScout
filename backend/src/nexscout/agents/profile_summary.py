@@ -33,7 +33,12 @@ from nexscout.application.providers import record_usage, resolve_provider
 from nexscout.domain.profile import FactStatus, ReviewState
 from nexscout.domain.profile import Section as FactSection
 from nexscout.infrastructure.db.models import ProfileFact
-from nexscout.infrastructure.llm.base import CompletionRequest, Message
+from nexscout.infrastructure.llm.base import (
+    CompletionRequest,
+    CompletionResult,
+    Message,
+    OutputInvalid,
+)
 from nexscout.infrastructure.llm.mock import mock_handler
 from nexscout.infrastructure.llm.structured import structured
 
@@ -127,7 +132,7 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         )
     provider = resolved.provider
     caps = provider.capabilities
-    out_tokens = min(1024, caps.max_output_tokens)
+    out_tokens = min(4096, caps.max_output_tokens)  # short answer; reasoning models think first
     built = build_context(
         [
             Section(
@@ -155,11 +160,19 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         purpose=PURPOSE,
         mock_inputs={"facts": [f for f in state["facts"] if f["id"] in included]},
     )
-    res = await structured(provider, request, SummaryDraft)
-    async with ctx.tenant() as s:
-        for call in res.calls:
-            await record_usage(s, ctx.owner_user_id, ctx.run_id, call, PURPOSE, caps)
-    await ctx.add_tokens(sum(c.usage.input_tokens + c.usage.output_tokens for c in res.calls))
+
+    async def record(calls: list[CompletionResult]) -> None:
+        async with ctx.tenant() as s:
+            for call in calls:
+                await record_usage(s, ctx.owner_user_id, ctx.run_id, call, PURPOSE, caps)
+        await ctx.add_tokens(sum(c.usage.input_tokens + c.usage.output_tokens for c in calls))
+
+    try:
+        res = await structured(provider, request, SummaryDraft)
+    except OutputInvalid as exc:
+        await record(exc.calls)  # the tokens were used even though the answer was unusable
+        raise
+    await record(res.calls)
     return {
         "draft": [x.model_dump() for x in res.value.sentences],
         "model": {"name": resolved.name, "is_mock": any(c.is_mock for c in res.calls)},

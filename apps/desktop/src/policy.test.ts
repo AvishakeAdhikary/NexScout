@@ -8,6 +8,7 @@ import {
   isAppNavigation,
   isSafeExternal,
   parseConfig,
+  foreignEasyStack,
   safeHttpUrl,
   staleImages,
   updaterCacheDir,
@@ -104,5 +105,15 @@ describe("update cleanup", () => {
       "C:\\Users\\a\\AppData\\Local\\nexscout-desktop-updater",
     );
     expect(updaterCacheDir("linux", {}, "/home/a")).toBe("/home/a/.cache/nexscout-desktop-updater");
+  });
+
+  it("refuses to take over an Easy stack another install started", () => {
+    const ours = "C:\\Program Files\\NexScout\\resources\\easy\\docker-compose.yml";
+    const zip = "C:\\Users\\a\\NexScout-2.3.0\\easy\\docker-compose.yml";
+    const there = (p: string) => p === zip;
+    expect(foreignEasyStack([], ours, there)).toBeNull(); // nothing running
+    expect(foreignEasyStack([ours.toLowerCase().replace(/\\/g, "/")], ours, there)).toBeNull();
+    expect(foreignEasyStack([zip], ours, there)).toBe(zip);
+    expect(foreignEasyStack(["C:\\gone\\docker-compose.yml"], ours, there)).toBeNull(); // moved
   });
 });

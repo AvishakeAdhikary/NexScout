@@ -118,3 +118,26 @@ def test_university_names_in_any_language_are_one_employer() -> None:
     assert normalize_org("Lunds universitet") == normalize_org("Lund University")
     assert normalize_org("Spotify AB") == normalize_org("Spotify")
     assert normalize_org("Wolt Oy") == "wolt"
+
+
+def test_a_language_that_is_a_plus_is_not_required() -> None:
+    from nexscout.domain.research import extract_findings
+    from nexscout.domain.signals import read_signals
+
+    assert read_signals("Fluent German is a plus but not required.").languages_required == []
+    assert read_signals("Sehr gute Deutschkenntnisse sind von Vorteil.").languages_required == []
+    assert read_signals("Fluent Finnish is required. A licence is a plus.").languages_required == [
+        "fi"
+    ]
+    found = {
+        (f.field, f.summary)
+        for f in extract_findings(
+            "You have 3+ years of experience with PyTorch. We offer visa sponsorship and a "
+            "relocation package. Fluent German is a plus but not required."
+        )
+    }
+    assert found == {
+        ("experience", "Asks for 3+ years"),
+        ("visa", "Visa support offered"),
+        ("relocation", "Relocation support"),
+    }

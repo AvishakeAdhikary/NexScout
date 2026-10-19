@@ -299,7 +299,7 @@ function AddProvider() {
       base_url: get("base_url") || null,
       api_key: get("api_key") || null,
       context_window: num("context_window") ?? preset.contextWindow,
-      max_output_tokens: num("max_output_tokens") ?? 1024,
+      max_output_tokens: num("max_output_tokens") ?? 4096,
       supports_json_schema: f.get("supports_json_schema") === "on",
       is_default: f.get("is_default") === "on",
       input_cost_per_mtok: num("input_cost"),
@@ -369,7 +369,7 @@ function AddProvider() {
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="prov-out">Max output (tokens)</Label>
-          <Input id="prov-out" name="max_output_tokens" type="number" min={64} defaultValue={1024} />
+          <Input id="prov-out" name="max_output_tokens" type="number" min={64} defaultValue={4096} />
         </div>
         {preset.kind !== "mock" && (
           <>

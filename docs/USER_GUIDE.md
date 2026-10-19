@@ -197,6 +197,7 @@ approvals show you everything first.
 | "Docker Desktop is needed" | Install Docker Desktop, open it once, wait for *Engine running*, then start NexScout again. |
 | The first start takes long | The first start downloads about 2 GB. Later starts take seconds. |
 | The browser says "can't reach this page" | Wait a minute and reload: NexScout is still starting. |
+| "Another NexScout is already set up on this computer" | You have both the Windows app and the zip version. Keep using the one named in the message, or stop and remove it first (`docker compose down` in its `easy` folder keeps your data). |
 | A port is already in use | Edit `NEXSCOUT_PORT` in `easy/.env` (for example 3100), then start again and open that port. |
 | Letters say "Mock text, not written by AI" | You haven't chosen an AI model yet (Settings → AI models). |
 | A Telegram or Discord test fails | Check the token. On Discord, share a server with your bot. |

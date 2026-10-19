@@ -99,6 +99,20 @@ function Update-Bundle {
     return $true
 }
 
+# The desktop app's Easy mode uses the same Docker project with its own keys. Starting this
+# folder over it would leave stored keys unreadable, so another live install is refused.
+function Foreign-Stack([string]$docker) {
+    $ours = (Join-Path $PSScriptRoot "docker-compose.yml").Replace('\', '/').ToLowerInvariant()
+    $labels = & $docker ps -a --filter "label=com.docker.compose.project=nexscout-easy" --format '{{.Label "com.docker.compose.project.config_files"}}' 2>$null
+    foreach ($label in $labels) {
+        foreach ($f in ("$label" -split ',')) {
+            $f = $f.Trim()
+            if ($f -and $f.Replace('\', '/').ToLowerInvariant() -ne $ours -and (Test-Path -LiteralPath $f)) { return $f }
+        }
+    }
+    return $null
+}
+
 # Free disk space: remove NexScout images other than the version this folder runs.
 function Remove-OldImages([string]$docker) {
     $keep = Bundle-Version
@@ -172,6 +186,11 @@ if ($Port -gt 0) { $env:NEXSCOUT_PORT = "$Port" }
 $portLine = (Get-Content -LiteralPath $envFile | Where-Object { $_ -match '^NEXSCOUT_PORT=' }) -replace '^NEXSCOUT_PORT=', ''
 $webPort = if ($env:NEXSCOUT_PORT) { $env:NEXSCOUT_PORT } elseif ($portLine) { $portLine } else { "3000" }
 $env:NEXSCOUT_PUBLIC_WEB_URL = "http://localhost:$webPort"
+
+$other = Foreign-Stack $docker
+if ($other) {
+    Fail "Another NexScout is already set up on this computer ($other), with its own keys. Use that one, or stop and remove it first (in its folder: docker compose down). Your data in it is kept."
+}
 
 Say "Downloading and starting NexScout (the first time takes a few minutes)..."
 & $docker @compose --env-file $envFile pull

@@ -24,7 +24,7 @@ class ProviderIn(ApiModel):
     base_url: str | None = Field(default=None, max_length=500)
     api_key: str | None = Field(default=None, max_length=500)
     context_window: int = 8192
-    max_output_tokens: int = 1024
+    max_output_tokens: int = 4096
     supports_json_schema: bool = False
     is_default: bool = False
     input_cost_per_mtok: float | None = Field(default=None, ge=0)

@@ -60,6 +60,22 @@ update_bundle() {
   return 0
 }
 
+# The desktop app's Easy mode uses the same Docker project with its own keys. Starting this
+# folder over it would leave stored keys unreadable, so another live install is refused.
+foreign_stack() {
+  local ours f
+  ours="$(printf '%s' "$PWD/docker-compose.yml" | tr 'A-Z\\' 'a-z/')"
+  docker ps -a --filter "label=com.docker.compose.project=nexscout-easy" \
+    --format '{{.Label "com.docker.compose.project.config_files"}}' 2>/dev/null | tr ',' '\n' |
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      if [ "$(printf '%s' "$f" | tr 'A-Z\\' 'a-z/')" != "$ours" ] && [ -f "$f" ]; then
+        printf '%s\n' "$f"
+        break
+      fi
+    done
+}
+
 # Free disk space: remove NexScout images other than the version this folder runs.
 remove_old_images() {
   local keep img
@@ -108,6 +124,9 @@ fi
 PORT="$(grep -E '^NEXSCOUT_PORT=' "$ENV_FILE" | cut -d= -f2)"
 PORT="${PORT:-3000}"
 export NEXSCOUT_PUBLIC_WEB_URL="http://localhost:$PORT"
+
+OTHER="$(foreign_stack)"
+[ -z "$OTHER" ] || fail "Another NexScout is already set up on this computer ($OTHER), with its own keys. Use that one, or stop and remove it first (in its folder: docker compose down). Your data in it is kept."
 
 say "Downloading and starting NexScout (the first time takes a few minutes)..."
 if docker compose -f docker-compose.yml --env-file "$ENV_FILE" pull; then
