@@ -4,9 +4,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-19
-- **Current milestone:** M17 real-world run (next). M16 ✅ (provider editing, self-update, update notice;
-  released as v2.3.0, the first version that can update itself). M14 + M15 ✅ released as v2.2.0 (CI 39175343754,
-  Release 39175729406). M0–M13 ✅.
+- **Current milestone:** M14–M17 ✅ (v2.2.0 → v2.7.0, 2026-10-19). Remaining steps belong to the user (see
+  Next exact steps). M16: provider editing, self-update, update notice (v2.3.0 is the first version that can update
+  itself). M14 + M15 released as v2.2.0. M0–M13 ✅.
 - **Why (user feedback on v2.1.0, 2026-10-18):** the shipped app had only demo sources and the demo application
   site (Easy/desktop ran with NEXSCOUT_ENV unset = development); no real or custom job sources; countries were free
   text (autopilot asked for codes, data had names, so its filter matched nothing); AI providers could not be
@@ -397,19 +397,25 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 - On 2.6.0 most AI drafts succeeded. One cover letter still ran out of room at 8192: with 101
   profile entries, Nemotron sometimes reasons longer. The agent's own 8192 cap made the advice
   "raise Longest answer" useless. Drafts now use the provider's limit, up to half the context
-  window (v2.7.0).
-- **Still open (need keys or other platforms):** live AI provider and channel verification with real
-  credentials (NVIDIA NIM in M17); real application portals; code signing; macOS/Linux installers.
-- **Next exact steps:**
-  1. Confirm CI and the v2.3.0 release assets (exe, blockmap, latest.yml, zip, SHA256SUMS.txt).
-  2. Verify updating for real once v2.4.0 exists: install v2.3.0 → the app finds 2.4.0, downloads, restarts into
-     2.4.0, updater cache cleared; Easy zip 2.3.0 → Update NexScout → 2.4.0, checksum checked, old images gone.
-  3. M17 (remaining): on the v2.4.0 stack, re-run sync, research, provider (NIM via env var),
-     draft, apply (the user approves submissions in the app); then the updater test (install 2.3.0
-     silently → it finds 2.4.0+ → quit installs it → version and cache checked → uninstall).
-  4. M17 (original plan): `scripts/real_world_run.py` (reads `NEXSCOUT_REAL_RUN_DIR`, writes to a scratch folder, nothing
-     personal in git) against a production-mode stack; NVIDIA NIM key only via env var → provider API; the user
-     approves submissions in the app; fix everything found; sanitized evidence here.
+  window, and providers gain "Skip the model's thinking" (both in v2.7.0, commit 827c608).
+- **Final verification on the released v2.7.0** (4th real `Update NexScout`, 2.6.0 → 2.7.0, old images removed):
+  "Skip the model's thinking" on (through the Edit API), and **all 10 documents were built**: 3 cover letters and
+  2 statements of purpose by NIM (real text, cited, about 70 s each; only contact-detail placeholders left), plus
+  3 resumes and 2 academic CVs without AI. CI was green on every push (7/7 jobs), and releases v2.2.0–v2.7.0 were
+  published with exe, blockmap, latest.yml, easy zip and SHA256SUMS.txt.
+- **Still open:** real application portals (forms differ per employer); code signing; macOS/Linux installers;
+  live notification channels.
+- **Next exact steps (the user's):**
+  1. **Rotate the NVIDIA NIM key** (it was pasted in chat). Then use Settings → AI models → Edit to enter the new
+     one (keep "Skip the model's thinking" ticked for Nemotron).
+  2. In the real-run case, add contact details once: replace the `[[PLACEHOLDER: contact details …]]` line in each
+     drafted document, or answer it once on the Autopilot page. Then start the applications and approve each
+     submission yourself.
+  3. Review the matches (report in the scratch output folder; the app shows the same, with reasons).
+- **Next exact steps (engineering):**
+  1. Port `successfactors`, `gem`, `wttj` providers (career-ops entries reported unsupported).
+  2. University portals without feeds (DTU, TU Delft, ETH, EPFL, TUM, Helsinki): only with a public API or feed.
+  3. Desktop app ↔ Easy zip: consider separate Compose project names with a data migration (now guarded).
   4. Later: live-verify one notification channel; macOS/Linux scripts and installers; upgrade GitHub Actions
      before the Node 20 runtime removal.
 
@@ -509,7 +515,7 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M14 | Production defaults and error sweep | ✅ | Shipped builds have no demo data, production settings, runtime API origin; no raw exception text reaches users; E2E fails on any page/console error or API 5xx in dev and production builds |
 | M15 | Real sources, countries, signals, budget | ✅ (providers checked live 2026-10-18/19; endpoints can drift) | Real postings from catalog and custom sources with health; ISO include/exclude everywhere; sponsorship/language/funding/fee signals explained; budget in the user's currency |
 | M16 | Provider editing and auto-update | ✅ (update path verified once v2.4.0 exists, see Checkpoint) | Providers editable without re-adding; installed desktop app updates itself and removes old installers and images; web shows when an update exists |
-| M17 | Real-world run | ⬜ | The user's real CV and preferences run end to end on a production-mode stack with real sources and a live AI provider; every error found is fixed |
+| M17 | Real-world run | ✅ (real CV, 186 live sources, NIM drafting; submissions left to the user by design) | The user's real CV and preferences run end to end on a production-mode stack with real sources and a live AI provider; every error found is fixed |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

@@ -4,14 +4,12 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
-## v2.8.0
+## v2.7.0
 - **Skip the model's thinking** (Settings → AI models, OpenAI-compatible servers). Reasoning
   models on NVIDIA NIM or vLLM can answer without thinking first. In the real run, Nemotron
   spent its whole answer budget reasoning; with this setting it used 0 reasoning tokens and the
   answer was complete. The setting is off by default, because servers that don't know it
   (OpenAI's own API) reject the request.
-
-## v2.7.0
 - AI drafts use the model's own answer limit (Settings → AI models → Edit), up to half its
   context window. The fixed cap of 8192 meant raising the limit did nothing, though the
   message said to raise it.
