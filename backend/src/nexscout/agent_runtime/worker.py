@@ -597,8 +597,14 @@ class Worker:
         except UncertainOutcome as exc:
             await self._set_run(run.id, RunStatus.FAILED, event="run_failed", error=str(exc)[:1000])
             await self._finish(task, "failed", str(exc))
-        except TRANSIENT_ERRORS:
-            msg = "A temporary problem (a database or network hiccup)"
+        except TRANSIENT_ERRORS as exc:
+            # The model server's own words when it was the model ("didn't answer in time"),
+            # else a plain description; never Python internals.
+            msg = (
+                user_message(exc).rstrip(".")
+                if isinstance(exc, ProviderUnavailable)
+                else "A temporary problem (a database or network hiccup)"
+            )
             if task.attempt < task.max_attempts:
                 delay = queue.backoff_s(task.attempt) + random.uniform(0, 2)  # noqa: S311
                 await self._set_run(

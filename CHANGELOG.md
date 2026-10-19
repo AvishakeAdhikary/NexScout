@@ -4,6 +4,12 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.6.0
+- AI drafts allow up to about 9 minutes for a long answer from a model that thinks first
+  (they timed out at 2 minutes in the real run). When the model server is slow or unreachable,
+  the run says so ("The model server didn't answer within 546 s"); it no longer says
+  "a database or network hiccup".
+
 ## v2.5.0
 - **M17, continued.**
   - The desktop app and the Easy zip no longer take over each other's Docker stack. That

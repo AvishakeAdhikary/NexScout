@@ -183,6 +183,21 @@ async def test_openai_compatible_error_mapping(status: int, error: type[Exceptio
         await p.complete(_req())
 
 
+async def test_a_slow_model_says_so() -> None:
+    def slow(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("slow", request=request)
+
+    p = OpenAICompatibleProvider(
+        base_url="http://localhost:1/v1",
+        model="m",
+        api_key=None,
+        capabilities=NO_SCHEMA,
+        transport=httpx.MockTransport(slow),
+    )
+    with pytest.raises(ProviderUnavailable, match="didn't answer within 120 s"):
+        await p.complete(_req())
+
+
 # ----------------------------------------------------------------------- context builder
 def test_context_respects_budget_and_priorities() -> None:
     lines = [f"item {i} " + "x" * 50 for i in range(100)]

@@ -372,6 +372,8 @@ async def draft(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         messages=[Message("user", built.text + f"\n\nWrite the {spec.label.lower()} now.")],
         system=system,
         max_tokens=out_tokens,
+        # A long answer from a model that reasons first can take minutes (M17 real run).
+        timeout_s=max(120.0, out_tokens / 15),
         temperature=0.3,
         purpose=PURPOSE,
         mock_inputs={

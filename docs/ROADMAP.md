@@ -391,6 +391,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     document still has placeholders": only **contact details** are missing (the CV reader
     doesn't turn contact data into profile entries). The person adds them once, then
     approves each submission in the app.
+- On 2.5.0 the truncation was gone, but long AI drafts hit the 120 s request timeout and were
+  reported as "a database or network hiccup". Drafts now get `max(120, max_tokens/15)` s, and a
+  model timeout says which limit was hit (v2.6.0).
 - **Still open (need keys or other platforms):** live AI provider and channel verification with real
   credentials (NVIDIA NIM in M17); real application portals; code signing; macOS/Linux installers.
 - **Next exact steps:**

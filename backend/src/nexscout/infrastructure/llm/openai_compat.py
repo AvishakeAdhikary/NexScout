@@ -89,10 +89,12 @@ class OpenAICompatibleProvider:
                 resp = await client.post(
                     f"{self._base_url}/chat/completions", json=body, headers=headers
                 )
-        except (httpx.TimeoutException, httpx.NetworkError) as exc:
+        except httpx.TimeoutException as exc:
             raise ProviderUnavailable(
-                f"Couldn't reach the model server ({type(exc).__name__})."
+                f"The model server didn't answer within {request.timeout_s:.0f} s."
             ) from exc
+        except httpx.NetworkError as exc:
+            raise ProviderUnavailable("Couldn't reach the model server (network error).") from exc
         if resp.status_code in (401, 403):
             raise ProviderAuthError("The model server rejected the API key.")
         if resp.status_code == 429 or resp.status_code >= 500:
