@@ -62,7 +62,9 @@ and reminders keep running. Your data is kept between runs.
    statements. Use your own key (OpenAI, Anthropic, Gemini, or any OpenAI-compatible service
    such as NVIDIA NIM), or a free model on your computer (Ollama, LM Studio). NexScout asks
    before your data goes to an online AI. Resumes and CVs are built **without** AI.
-   Made a typo? **Edit** fixes the name, model, address or key in place.
+   Made a typo? **Edit** fixes the name, model, address or key in place. If a model "ran out of
+   room for its answer", tick **Skip the model's thinking** (NVIDIA NIM) or raise **Longest
+   answer**.
 
 The case dashboard shows a **Getting started** checklist until you're done.
 

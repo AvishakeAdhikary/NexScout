@@ -92,6 +92,8 @@ opportunity links.
 - **users** gains timezone (IANA name reported by the browser at sign-in, default UTC). The
   worker's system role may read only `users(id, timezone)`, so date-only reminders fall due on
   the user's own calendar day.
+- **provider_configs** gains `skip_thinking` (migration 0014): OpenAI-compatible reasoning models
+  are asked to answer without thinking (`chat_template_kwargs.enable_thinking=false`).
 - Preferences (`case_preferences` JSON) gain countries_exclude, funding
   (`required`/`preferred`/`any`), languages (ISO 639-1), max_upfront_cost and budget_currency,
   search_keywords and exclude_keywords. Countries are stored as ISO 3166-1 alpha-2 codes or

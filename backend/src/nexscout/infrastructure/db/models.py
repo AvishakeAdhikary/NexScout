@@ -886,6 +886,10 @@ class ProviderConfig(IdMixin, TimestampMixin, Base):
     supports_json_schema: Mapped[bool] = mapped_column(nullable=False, default=False)
     data_leaves_device: Mapped[bool] = mapped_column(nullable=False, default=True)
     is_default: Mapped[bool] = mapped_column(nullable=False, default=False)
+    # OpenAI-compatible reasoning models (NVIDIA NIM, vLLM): answer without thinking first.
+    skip_thinking: Mapped[bool] = mapped_column(
+        nullable=False, default=False, server_default=text("false")
+    )
     input_cost_per_mtok: Mapped[float | None] = mapped_column()
     output_cost_per_mtok: Mapped[float | None] = mapped_column()
     last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -111,6 +111,7 @@ function EditProvider({ p, onDone }: { p: ProviderOut; onDone: () => void }) {
       context_window: num("context_window") ?? p.context_window,
       max_output_tokens: num("max_output_tokens") ?? p.max_output_tokens,
       supports_json_schema: f.get("supports_json_schema") === "on",
+      skip_thinking: p.kind === "openai_compatible" ? f.get("skip_thinking") === "on" : null,
       input_cost_per_mtok: num("input_cost"),
       output_cost_per_mtok: num("output_cost"),
       clear_api_key: f.get("clear_api_key") === "on",
@@ -181,6 +182,12 @@ function EditProvider({ p, onDone }: { p: ProviderOut; onDone: () => void }) {
         <input type="checkbox" name="supports_json_schema" defaultChecked={p.supports_json_schema} />
         Supports structured JSON output
       </label>
+      {p.kind === "openai_compatible" && (
+        <label className="flex items-center gap-2 text-sm sm:col-span-2">
+          <input type="checkbox" name="skip_thinking" defaultChecked={p.skip_thinking} />
+          Skip the model&apos;s thinking (for reasoning models on NVIDIA NIM or vLLM: faster, and leaves room for the answer)
+        </label>
+      )}
       <div className="flex gap-2 sm:col-span-2">
         <Button type="submit" size="sm" disabled={save.isPending}>
           {save.isPending ? "Saving…" : "Save changes"}
@@ -301,6 +308,7 @@ function AddProvider() {
       context_window: num("context_window") ?? preset.contextWindow,
       max_output_tokens: num("max_output_tokens") ?? 4096,
       supports_json_schema: f.get("supports_json_schema") === "on",
+      skip_thinking: preset.kind === "openai_compatible" && f.get("skip_thinking") === "on",
       is_default: f.get("is_default") === "on",
       input_cost_per_mtok: num("input_cost"),
       output_cost_per_mtok: num("output_cost"),
@@ -387,6 +395,12 @@ function AddProvider() {
           <input type="checkbox" name="supports_json_schema" defaultChecked={preset.jsonSchema} />
           Supports structured (JSON schema) output
         </label>
+        {preset.kind === "openai_compatible" && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="skip_thinking" />
+            Skip the model&apos;s thinking (for reasoning models on NVIDIA NIM or vLLM: faster, and leaves room for the answer)
+          </label>
+        )}
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="is_default" />
           Use as my default

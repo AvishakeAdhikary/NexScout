@@ -29,6 +29,7 @@ class ProviderIn(ApiModel):
     is_default: bool = False
     input_cost_per_mtok: float | None = Field(default=None, ge=0)
     output_cost_per_mtok: float | None = Field(default=None, ge=0)
+    skip_thinking: bool = False  # OpenAI-compatible reasoning models only
 
 
 class ProviderOut(ApiModel):
@@ -48,6 +49,7 @@ class ProviderOut(ApiModel):
     output_cost_per_mtok: float | None
     last_verified_at: datetime | None
     last_verification: dict[str, Any]
+    skip_thinking: bool
     version: int
 
 
@@ -68,6 +70,7 @@ class ProviderPatch(ApiModel):
     is_default: bool | None = None
     input_cost_per_mtok: float | None = Field(default=None, ge=0)
     output_cost_per_mtok: float | None = Field(default=None, ge=0)
+    skip_thinking: bool | None = None
 
 
 class DefaultIn(ApiModel):
@@ -92,6 +95,7 @@ async def _out(db: DbSession, cfg: ProviderConfig) -> ProviderOut:
         output_cost_per_mtok=cfg.output_cost_per_mtok,
         last_verified_at=cfg.last_verified_at,
         last_verification=cfg.last_verification,
+        skip_thinking=cfg.skip_thinking,
         version=cfg.version,
     )
 

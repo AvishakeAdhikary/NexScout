@@ -15,7 +15,7 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
 | MCP server | Read-only, stdio only (`nexscout mcp`) | No HTTP transport; no write tools by design |
 | macOS / Linux desktop builds | Not built (configs exist) | macOS needs a Mac to build and sign; Linux AppImage wasn't built on this host |
 | Windows installer signing | Unsigned (`NotSigned`) | No code-signing certificate configured; SmartScreen will warn. In-app updates check the sha512 in `latest.yml` but can't check a publisher signature (ADR-0017) |
-| NVIDIA NIM model list | `/v1/models` lists models your key may not be able to call (HTTP 404 "Function not found for account") | Pick one that **Check connection** confirms |
+| NVIDIA NIM model list | `/v1/models` lists models your key may not be able to call (HTTP 404 "Function not found for account") | Pick one that **Check connection** confirms. Reasoning models (Nemotron) can use their whole answer limit thinking: tick **Skip the model's thinking** or raise **Longest answer** |
 | In-app updates | Windows app 2.3.0+ and Easy zip 2.3.0+ only | 2.2.0 and older have no updater: install the new version once by hand. macOS/Linux desktop builds aren't produced |
 | Self-contained desktop bundle | Not provided | The desktop app is a shell: local mode needs a NexScout checkout, Postgres, uv and Node (ADR-0011) |
 

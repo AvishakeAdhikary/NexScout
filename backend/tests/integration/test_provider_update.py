@@ -142,3 +142,20 @@ async def test_edit_validation_and_default(client: httpx.AsyncClient) -> None:
     assert r.json()["is_default"] is True
     listed = {x["id"]: x for x in (await client.get("/api/v1/providers")).json()}
     assert listed[mock["id"]]["is_default"] is False  # only one default
+
+
+async def test_skip_thinking_is_kept_and_editable(client: httpx.AsyncClient) -> None:
+    await register(client)
+    p = (await client.post("/api/v1/providers", json={**REMOTE, "skip_thinking": True})).json()
+    assert p["skip_thinking"] is True
+    off = await client.patch(
+        f"/api/v1/providers/{p['id']}", json={"version": p["version"], "skip_thinking": False}
+    )
+    assert off.json()["skip_thinking"] is False
+    mock = (
+        await client.post(
+            "/api/v1/providers",
+            json={"name": "M", "kind": "mock", "model": "m", "skip_thinking": True},
+        )
+    ).json()
+    assert mock["skip_thinking"] is False  # only meaningful for OpenAI-compatible servers

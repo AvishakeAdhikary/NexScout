@@ -39,8 +39,10 @@ class OpenAICompatibleProvider:
         display_name: str = "",
         transport: httpx.AsyncBaseTransport | None = None,
         allow_private: bool = True,
+        skip_thinking: bool = False,
     ) -> None:
         self._base_url = base_url.rstrip("/")
+        self._skip_thinking = skip_thinking
         self._api_key = api_key
         self._transport = transport
         self._allow_private = allow_private
@@ -58,6 +60,11 @@ class OpenAICompatibleProvider:
             "messages": messages,
             "max_tokens": request.max_tokens,
         }
+        if self._skip_thinking:
+            # Chat-template switch understood by NVIDIA NIM and vLLM reasoning models (M17: a
+            # thinking model spent its whole answer budget reasoning). Opt-in per provider:
+            # servers that don't know the field (OpenAI's own API) reject it.
+            body["chat_template_kwargs"] = {"enable_thinking": False}
         if request.temperature is not None:
             body["temperature"] = request.temperature
         if request.json_schema is not None:

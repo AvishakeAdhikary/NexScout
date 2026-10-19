@@ -77,6 +77,7 @@ def build_provider(
             capabilities=caps,
             display_name=cfg.name,
             allow_private=allow_private,
+            skip_thinking=cfg.skip_thinking,
         )
     if not api_key:
         raise ValidationFailed(f"“{cfg.name}” needs an API key.")
@@ -123,6 +124,7 @@ class ProviderInput(BaseModel):
     is_default: bool = False
     input_cost_per_mtok: float | None = None
     output_cost_per_mtok: float | None = None
+    skip_thinking: bool = False
 
 
 def _validate(data: ProviderInput, settings: Settings) -> tuple[str | None, bool]:
@@ -215,6 +217,7 @@ async def create_provider(
         is_default=data.is_default,
         input_cost_per_mtok=data.input_cost_per_mtok,
         output_cost_per_mtok=data.output_cost_per_mtok,
+        skip_thinking=data.skip_thinking and data.kind == "openai_compatible",
     )
     session.add(cfg)
     await session.flush()
@@ -255,6 +258,7 @@ class ProviderUpdate(BaseModel):
     is_default: bool | None = None
     input_cost_per_mtok: float | None = None
     output_cost_per_mtok: float | None = None
+    skip_thinking: bool | None = None
 
 
 _EDITABLE = (
@@ -268,6 +272,7 @@ _EDITABLE = (
     "is_default",
     "input_cost_per_mtok",
     "output_cost_per_mtok",
+    "skip_thinking",
 )
 _NULLABLE = frozenset({"base_url", "input_cost_per_mtok", "output_cost_per_mtok"})
 

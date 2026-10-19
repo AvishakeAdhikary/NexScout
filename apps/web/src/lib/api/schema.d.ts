@@ -3255,6 +3255,11 @@ export interface components {
             /** Output Cost Per Mtok */
             output_cost_per_mtok?: number | null;
             /**
+             * Skip Thinking
+             * @default false
+             */
+            skip_thinking: boolean;
+            /**
              * Supports Json Schema
              * @default false
              */
@@ -3297,6 +3302,8 @@ export interface components {
             name: string;
             /** Output Cost Per Mtok */
             output_cost_per_mtok: number | null;
+            /** Skip Thinking */
+            skip_thinking: boolean;
             /** Supports Json Schema */
             supports_json_schema: boolean;
             /** Version */
@@ -3333,6 +3340,8 @@ export interface components {
             name?: string | null;
             /** Output Cost Per Mtok */
             output_cost_per_mtok?: number | null;
+            /** Skip Thinking */
+            skip_thinking?: boolean | null;
             /** Supports Json Schema */
             supports_json_schema?: boolean | null;
             /** Version */

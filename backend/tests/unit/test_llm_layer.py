@@ -160,6 +160,22 @@ async def test_openai_compatible_request_and_usage() -> None:
     assert seen[0].headers["authorization"] == "Bearer sk-test-key"
     assert sent["messages"][0] == {"role": "system", "content": "sys"}
     assert sent["response_format"]["json_schema"]["name"] == "Ping"
+    assert "chat_template_kwargs" not in sent  # unknown to many servers: off unless chosen
+
+
+async def test_skip_thinking_is_sent_only_when_chosen() -> None:
+    seen: list[httpx.Request] = []
+    body = {"choices": [{"message": {"content": "{}"}, "finish_reason": "stop"}], "usage": {}}
+    p = OpenAICompatibleProvider(
+        base_url="https://integrate.api.example.com/v1",
+        model="reasoner",
+        api_key="k",
+        capabilities=NO_SCHEMA,
+        transport=_transport(200, body, seen),
+        skip_thinking=True,
+    )
+    await p.complete(_req())
+    assert json.loads(seen[0].content)["chat_template_kwargs"] == {"enable_thinking": False}
 
 
 @pytest.mark.parametrize(

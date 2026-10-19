@@ -4837,6 +4837,11 @@
             ],
             "title": "Output Cost Per Mtok"
           },
+          "skip_thinking": {
+            "default": false,
+            "title": "Skip Thinking",
+            "type": "boolean"
+          },
           "supports_json_schema": {
             "default": false,
             "title": "Supports Json Schema",
@@ -4952,6 +4957,10 @@
             ],
             "title": "Output Cost Per Mtok"
           },
+          "skip_thinking": {
+            "title": "Skip Thinking",
+            "type": "boolean"
+          },
           "supports_json_schema": {
             "title": "Supports Json Schema",
             "type": "boolean"
@@ -4978,6 +4987,7 @@
           "output_cost_per_mtok",
           "last_verified_at",
           "last_verification",
+          "skip_thinking",
           "version"
         ],
         "title": "ProviderOut",
@@ -5110,6 +5120,17 @@
               }
             ],
             "title": "Output Cost Per Mtok"
+          },
+          "skip_thinking": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skip Thinking"
           },
           "supports_json_schema": {
             "anyOf": [
