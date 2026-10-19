@@ -28,6 +28,7 @@ from nexscout.domain.opportunities import (
 )
 from nexscout.domain.preferences import ExperienceMode, Preferences
 from nexscout.domain.profile import PRESENT, Section
+from nexscout.domain.requirements import LANGUAGE_NAMES, read_requirements, skills_in
 from nexscout.domain.signals import read_signals
 
 DEGREE_LEVELS = {"high_school": 1, "associate": 2, "bachelor": 3, "master": 4, "phd": 5}
@@ -200,10 +201,46 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
     gaps: list[Gap] = []
     eligible = True
     skills_by_norm = {_norm_skill(k): fid for k, fid in cand.skills.items()}
+    req = read_requirements(opp.title, opp.description)
+    # The candidate's skills in the vocabulary's names too ("LLM fine-tuning" -> LLMs,
+    # Fine-tuning), so a posting's wording and the profile's wording meet.
+    for k, fid in cand.skills.items():
+        for canon in skills_in(k):
+            skills_by_norm.setdefault(_norm_skill(canon), fid)
 
     # --- Skills (35)
     required = [s for s in opp.required_skills if s.strip()]
-    if required:
+    mentioned = (
+        skills_in(f"{opp.title}\n{opp.description}", extra=list(cand.skills))
+        if not required and opp.description
+        else []
+    )
+    if not required and len(mentioned) >= 2:
+        hits = [
+            (s, skills_by_norm[_norm_skill(s)])
+            for s in mentioned
+            if _norm_skill(s) in skills_by_norm
+        ]
+        missing = [s for s in mentioned if _norm_skill(s) not in skills_by_norm]
+        factors.append(
+            Factor(
+                "Skills",
+                35,
+                35 * (0.3 + 0.7 * len(hits) / len(mentioned)),
+                f"The posting mentions {len(mentioned)} skills; you list {len(hits)}"
+                + (f": {', '.join(s for s, _ in hits[:8])}." if hits else "."),
+                list(dict.fromkeys(fid for _, fid in hits)),
+            )
+        )
+        if missing:
+            gaps.append(
+                Gap(
+                    "missing_skills",
+                    "gap",
+                    f"Mentioned in the posting, not on your profile: {', '.join(missing[:8])}.",
+                )
+            )
+    elif required:
         hits = [
             (s, skills_by_norm[_norm_skill(s)])
             for s in required
@@ -243,8 +280,31 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
     exp_entries = cand.employment + (cand.research if opp.kind in ACADEMIC_KINDS else [])
     years, complete = years_of_experience(exp_entries, today)
     need = opp.experience_min_years
+    asked = ""
+    if need is None and req.min_years is not None:
+        need, asked = req.min_years, f' ("{req.years_quote}")'
     exp_ids = [e.fact_id for e in exp_entries]
-    if need is None:
+    if need is None and req.seniority == "senior" and opp.kind not in ACADEMIC_KINDS:
+        enough = years >= 5
+        factors.append(
+            Factor(
+                "Experience",
+                20,
+                20 if enough else 20 * max(0.4, years / 5),
+                f"The title says {req.seniority_word}; such roles usually expect about 5 years.",
+                exp_ids,
+            )
+        )
+        if not enough:
+            gaps.append(
+                Gap(
+                    "senior_title",
+                    "gap",
+                    f"The title says {req.seniority_word}: usually about 5+ years. You have "
+                    f"about {years:g}.",
+                )
+            )
+    elif need is None:
         factors.append(
             Factor(
                 "Experience",
@@ -260,7 +320,7 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
                 "Experience",
                 20,
                 20,
-                f"About {years:g} years of experience; {need:g}+ requested.",
+                f"About {years:g} years of experience; {need:g}+ requested{asked}.",
                 exp_ids,
             )
         )
@@ -273,8 +333,8 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
                 Gap(
                     "experience_below_minimum",
                     "blocker",
-                    f"Asks for {need:g}+ years; you have about {years:g}.{note} Hidden "
-                    "in strict mode. Switch to flexible mode to see stretch roles.",
+                    f"Asks for {need:g}+ years{asked}; you have about {years:g}.{note} "
+                    "Hidden in strict mode. Switch to flexible mode to see stretch roles.",
                 )
             )
         else:
@@ -282,8 +342,8 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
                 Gap(
                     "experience_below_minimum",
                     "gap",
-                    f"Stretch role: asks for {need:g}+ years, you have about {years:g} "
-                    f"({short:g} short).{note}",
+                    f"Stretch role: asks for {need:g}+ years{asked}, you have about "
+                    f"{years:g} ({short:g} short).{note}",
                 )
             )
         factors.append(
@@ -299,12 +359,26 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
     # --- Education (10)
     best = max((DEGREE_LEVELS[lvl] for lvl, _ in cand.degrees), default=0)
     best_ids = [fid for lvl, fid in cand.degrees if DEGREE_LEVELS[lvl] == best]
-    req_level = (opp.education_level or "").lower() or None
+    req_level = (opp.education_level or "").lower() or ("phd" if req.needs_doctorate else None)
     if req_level and req_level in DEGREE_LEVELS:
         if best >= DEGREE_LEVELS[req_level]:
             factors.append(
                 Factor("Education", 10, 10, f"Meets the {req_level} requirement.", best_ids)
             )
+        elif req.needs_doctorate and not opp.education_level:
+            # A postdoc is for people who already hold a doctorate.
+            factors.append(Factor("Education", 10, 0, "A postdoc needs a doctorate.", []))
+            known = bool(cand.degrees)
+            gaps.append(
+                Gap(
+                    "doctorate_required",
+                    "blocker" if known else "gap",
+                    "A postdoc position needs a completed doctorate"
+                    + (", which isn't on your profile." if known else "; add your degrees."),
+                )
+            )
+            if known:
+                eligible = False
         else:
             factors.append(Factor("Education", 10, 0, f"Requires a {req_level} degree.", []))
             gaps.append(
@@ -443,12 +517,12 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
         gaps.append(
             Gap(
                 "no_sponsorship",
-                "blocker" if mode is ExperienceMode.STRICT else "gap",
-                "The posting says it doesn't offer visa sponsorship, which you need.",
+                "blocker",
+                "The posting says it doesn't offer visa sponsorship, which you need"
+                + (f' ("{sig.quotes["sponsorship"]}").' if "sponsorship" in sig.quotes else "."),
             )
         )
-        if mode is ExperienceMode.STRICT:
-            eligible = False
+        eligible = False  # flexible mode stretches experience, never visa rules
     elif prefs.needs_visa_sponsorship and sponsorship is Sponsorship.UNKNOWN:
         gaps.append(
             Gap(
@@ -472,18 +546,39 @@ def match(opp: NormalizedOpportunity, cand: CandidateSummary, today: date) -> Ma
         )
         if strict:
             eligible = False
-    for lang in sig.languages_required:
-        if lang not in prefs.languages:
-            quote = sig.quotes.get(f"language:{lang}", lang)
+    # Languages are a hard requirement, not a stretch: flexible mode widens experience only.
+    # Checked only once the person has listed the languages they work in.
+    written = req.language
+    needed = list(sig.languages_required)
+    if written and written != "en" and written not in needed:
+        needed.append(written)
+    for lang in needed:
+        if lang in prefs.languages:
+            continue
+        name = LANGUAGE_NAMES.get(lang, lang)
+        why = (
+            f'Asks for {name} ("{sig.quotes[f"language:{lang}"]}")'
+            if f"language:{lang}" in sig.quotes
+            else f"Written in {name}, so the job most likely needs {name}"
+        )
+        if not prefs.languages:
             gaps.append(
                 Gap(
                     f"language_{lang}",
-                    "blocker" if strict else "gap",
-                    f'Asks for a language you haven\'t listed ("{quote}").',
+                    "info",
+                    f"{why}. Add the languages you work in (Preferences) to check this.",
                 )
             )
-            if strict:
-                eligible = False
+            continue
+        eligible = False
+        gaps.append(
+            Gap(
+                f"language_{lang}",
+                "blocker",
+                f"{why}, which isn't in your languages. Add it to your languages if you can "
+                "work in it.",
+            )
+        )
     funding = prefs.funding if not prefs.funding_required else "required"
     if opp.kind in ACADEMIC_KINDS and funding != "any":
         if sig.funding == "unfunded":

@@ -15,6 +15,7 @@ Kept current. Anything not listed as verified here should be assumed **not** to 
 | MCP server | Read-only, stdio only (`nexscout mcp`) | No HTTP transport; no write tools by design |
 | macOS / Linux desktop builds | Not built (configs exist) | macOS needs a Mac to build and sign; Linux AppImage wasn't built on this host |
 | Windows installer signing | Unsigned (`NotSigned`) | No code-signing certificate configured; SmartScreen will warn. In-app updates check the sha512 in `latest.yml` but can't check a publisher signature (ADR-0017) |
+| NVIDIA NIM model list | `/v1/models` lists models your key may not be able to call (HTTP 404 "Function not found for account") | Pick one that **Check connection** confirms |
 | In-app updates | Windows app 2.3.0+ and Easy zip 2.3.0+ only | 2.2.0 and older have no updater: install the new version once by hand. macOS/Linux desktop builds aren't produced |
 | Self-contained desktop bundle | Not provided | The desktop app is a shell: local mode needs a NexScout checkout, Postgres, uv and Node (ADR-0011) |
 
@@ -66,6 +67,15 @@ check their own setup with "Check connection" in Settings, which records the res
 - Postings that state no country are kept and marked "location unknown". They're not guessed.
 
 ## Countries, signals and budget (M15, ADR-0016)
+- Skills, years of experience, seniority and the posting's language are read from the
+  posting text with fixed vocabularies and patterns (`domain/requirements.py`). A skill the
+  vocabulary doesn't know counts only if it is on your profile. A posting written in two
+  languages isn't assigned to either. Some sources list jobs without a description (No Fluff
+  Jobs, Bundesagentur für Arbeit, Work in Finland): for those, only the title is read.
+- Many large universities (DTU, TU Delft, ETH, EPFL, TUM, Copenhagen, Helsinki) publish
+  vacancies on their own portals, with no feed or public API. They can't be added yet; their
+  pages are listed as "not supported" when you try. Several Finnish universities' feeds are
+  disallowed by robots.txt and are respected.
 - Eligibility signals (sponsorship, work rights, languages, funding, fees) are read from fixed
   phrases. Unusual wording reads as "not stated". Always check the posting itself.
 - Fees are converted with ECB daily reference rates, which are for information only. Real

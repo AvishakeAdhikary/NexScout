@@ -19,6 +19,58 @@ entries:
   - job
   category: academic
   origin: nexscout
+- key: varbi:halmstad-university
+  provider: varbi
+  name: Halmstad University
+  url: https://hh.varbi.com
+  config:
+    feed: https://hh.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
+- key: varbi:j-nk-ping-university
+  provider: varbi
+  name: Jönköping University
+  url: https://ju.varbi.com
+  config:
+    feed: https://ju.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
+- key: varbi:karlstad-university
+  provider: varbi
+  name: Karlstad University
+  url: https://kau.varbi.com
+  config:
+    feed: https://kau.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
+- key: varbi:karolinska-institutet
+  provider: varbi
+  name: Karolinska Institutet
+  url: https://ki.varbi.com
+  config:
+    feed: https://ki.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
 - key: varbi:kth-royal-institute-of-technology
   provider: varbi
   name: KTH Royal Institute of Technology
@@ -32,12 +84,77 @@ entries:
   - job
   category: academic
   origin: nexscout
+- key: varbi:lule-university-of-technology
+  provider: varbi
+  name: Luleå University of Technology
+  url: https://ltu.varbi.com
+  config:
+    feed: https://ltu.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
 - key: varbi:lund-university
   provider: varbi
   name: Lund University
   url: https://lu.varbi.com
   config:
     feed: https://lu.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
+- key: varbi:mid-sweden-university
+  provider: varbi
+  name: Mid Sweden University
+  url: https://miun.varbi.com
+  config:
+    feed: https://miun.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
+- key: varbi:stockholm-university
+  provider: varbi
+  name: Stockholm University
+  url: https://su.varbi.com
+  config:
+    feed: https://su.varbi.com/en/what:rssfeed/
+  countries:
+  - SE
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
+- key: feed:tampere-university
+  provider: feed
+  name: Tampere University
+  url: https://tuni.rekrytointi.com/paikat/?o=A_RSS&jgid=1
+  config:
+    feed: https://tuni.rekrytointi.com/paikat/?o=A_RSS&jgid=1
+  countries:
+  - FI
+  kinds:
+  - phd
+  - job
+  category: academic
+  origin: nexscout
+- key: varbi:ume-university
+  provider: varbi
+  name: Umeå University
+  url: https://umu.varbi.com
+  config:
+    feed: https://umu.varbi.com/en/what:rssfeed/
   countries:
   - SE
   kinds:
@@ -182,23 +299,13 @@ entries:
   - job
   category: board
   origin: nexscout
-- key: justjoin:just-join-it-poland
-  provider: justjoin
-  name: Just Join IT (Poland)
-  url: ''
-  config: {}
-  countries:
-  - PL
-  kinds:
-  - job
-  category: board
-  origin: nexscout
 - key: justjoin:justjoin.it
   provider: justjoin
   name: JustJoin.it
   url: https://justjoin.it/job-offers/all-locations
   config: {}
-  countries: []
+  countries:
+  - PL
   kinds:
   - job
   category: board
@@ -214,23 +321,13 @@ entries:
   - job
   category: board
   origin: nexscout
-- key: nofluffjobs:no-fluff-jobs-poland-cee
-  provider: nofluffjobs
-  name: No Fluff Jobs (Poland & CEE)
-  url: ''
-  config: {}
-  countries:
-  - PL
-  kinds:
-  - job
-  category: board
-  origin: nexscout
 - key: nofluffjobs:nofluffjobs
   provider: nofluffjobs
   name: NoFluffJobs
   url: https://nofluffjobs.com/pl
   config: {}
-  countries: []
+  countries:
+  - PL
   kinds:
   - job
   category: board
@@ -315,7 +412,8 @@ entries:
   url: https://solid.jobs/public-api/offers/it?campaign=career-ops
   config:
     division: it
-  countries: []
+  countries:
+  - PL
   kinds:
   - job
   category: board
@@ -450,17 +548,6 @@ entries:
   url: https://job-boards.greenhouse.io/abnormalsecurity
   config:
     slug: abnormalsecurity
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
-- key: greenhouse:ada
-  provider: greenhouse
-  name: Ada
-  url: https://job-boards.greenhouse.io/ada
-  config:
-    slug: ada
   countries: []
   kinds:
   - job
@@ -627,7 +714,8 @@ entries:
   url: https://jobs.bosch.com
   config:
     slug: BoschGroup
-  countries: []
+  countries:
+  - DE
   kinds:
   - job
   category: company
@@ -660,7 +748,8 @@ entries:
   url: https://job-boards.greenhouse.io/celonis
   config:
     slug: celonis
-  countries: []
+  countries:
+  - DE
   kinds:
   - job
   category: company
@@ -693,18 +782,6 @@ entries:
   url: https://job-boards.greenhouse.io/clara
   config:
     slug: clara
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
-- key: lever:clarity-ai
-  provider: lever
-  name: Clarity AI
-  url: https://jobs.lever.co/clarity-ai
-  config:
-    slug: clarity-ai
-    eu: false
   countries: []
   kinds:
   - job
@@ -839,7 +916,10 @@ entries:
   url: https://jobs.ashbyhq.com/DeepL
   config:
     slug: DeepL
-  countries: []
+  countries:
+  - DE
+  - GB
+  - NL
   kinds:
   - job
   category: company
@@ -947,25 +1027,15 @@ entries:
   - job
   category: company
   origin: career-ops
-- key: lever:getir
-  provider: lever
-  name: Getir
-  url: https://jobs.lever.co/getir
-  config:
-    slug: getir
-    eu: false
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
 - key: greenhouse:getyourguide
   provider: greenhouse
   name: GetYourGuide
   url: https://job-boards.greenhouse.io/getyourguide
   config:
     slug: getyourguide
-  countries: []
+  countries:
+  - CH
+  - DE
   kinds:
   - job
   category: company
@@ -1020,18 +1090,10 @@ entries:
   url: https://job-boards.greenhouse.io/helsing
   config:
     slug: helsing
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
-- key: greenhouse:hightouch
-  provider: greenhouse
-  name: Hightouch
-  url: https://job-boards.greenhouse.io/hightouch
-  config:
-    slug: hightouch
-  countries: []
+  countries:
+  - DE
+  - FR
+  - GB
   kinds:
   - job
   category: company
@@ -1065,7 +1127,8 @@ entries:
   url: https://apply.workable.com/huggingface/
   config:
     slug: huggingface
-  countries: []
+  countries:
+  - FR
   kinds:
   - job
   category: company
@@ -1217,17 +1280,6 @@ entries:
   - job
   category: company
   origin: career-ops
-- key: ashby:lindy
-  provider: ashby
-  name: Lindy
-  url: https://jobs.ashbyhq.com/lindy
-  config:
-    slug: lindy
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
 - key: ashby:lovable
   provider: ashby
   name: Lovable
@@ -1279,7 +1331,8 @@ entries:
   url: https://job-boards.greenhouse.io/n26
   config:
     slug: n26
-  countries: []
+  countries:
+  - DE
   kinds:
   - job
   category: company
@@ -1524,35 +1577,12 @@ entries:
   - job
   category: company
   origin: career-ops
-- key: greenhouse:runwayml
-  provider: greenhouse
-  name: Runway
-  url: https://job-boards.greenhouse.io/runwayml
-  config:
-    slug: runwayml
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
 - key: greenhouse:safariai
   provider: greenhouse
   name: Safari AI
   url: https://job-boards.greenhouse.io/safariai
   config:
     slug: safariai
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
-- key: lever:sanctuary
-  provider: lever
-  name: Sanctuary AI
-  url: https://jobs.lever.co/sanctuary
-  config:
-    slug: sanctuary
-    eu: false
   countries: []
   kinds:
   - job
@@ -1643,7 +1673,8 @@ entries:
   config:
     slug: spotify
     eu: false
-  countries: []
+  countries:
+  - SE
   kinds:
   - job
   category: company
@@ -1687,7 +1718,8 @@ entries:
   url: https://jobs.ashbyhq.com/synthesia
   config:
     slug: synthesia
-  countries: []
+  countries:
+  - GB
   kinds:
   - job
   category: company
@@ -1698,17 +1730,6 @@ entries:
   url: https://www.talkdesk.com/careers
   config:
     slug: talkdesk2
-  countries: []
-  kinds:
-  - job
-  category: company
-  origin: career-ops
-- key: greenhouse:templafy
-  provider: greenhouse
-  name: Templafy
-  url: https://job-boards.greenhouse.io/templafy
-  config:
-    slug: templafy
   countries: []
   kinds:
   - job
@@ -1798,7 +1819,8 @@ entries:
   url: https://jobs.ashbyhq.com/wayve
   config:
     slug: wayve
-  countries: []
+  countries:
+  - GB
   kinds:
   - job
   category: company
@@ -1916,6 +1938,10 @@ manual_only:
   url: https://www.glassdoor.com
   reason: Glassdoor's terms prohibit automated access.
 unsupported:
+- name: Ada
+  url: https://job-boards.greenhouse.io/ada
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: Aiven
   url: https://aiven.io/careers
   reason: Listed for web search only upstream; no public board API found.
@@ -1940,6 +1966,10 @@ unsupported:
 - name: CARIAD (Volkswagen)
   url: https://jobs.volkswagen-group.com/cariad
   reason: Provider 'successfactors' isn't ported to NexScout yet.
+- name: Clarity AI
+  url: https://jobs.lever.co/clarity-ai
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: Clark College (Faculty)
   url: https://www.schooljobs.com/careers/clarkcollege/facultypositions
   reason: Provider 'unknown' isn't ported to NexScout yet.
@@ -1973,6 +2003,10 @@ unsupported:
 - name: Genesys
   url: https://www.genesys.com/careers
   reason: Listed for web search only upstream; no public board API found.
+- name: Getir
+  url: https://jobs.lever.co/getir
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: Glints Indonesia
   url: ''
   reason: Board provider 'glints' isn't ported to NexScout yet.
@@ -1982,6 +2016,10 @@ unsupported:
 - name: Hepsiburada
   url: https://www.hepsiburada.com/kariyer
   reason: Listed for web search only upstream; no public board API found.
+- name: Hightouch
+  url: https://job-boards.greenhouse.io/hightouch
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: Insider
   url: https://useinsider.com/careers
   reason: Listed for web search only upstream; no public board API found.
@@ -2003,6 +2041,10 @@ unsupported:
 - name: Langfuse
   url: https://langfuse.com/careers
   reason: Listed for web search only upstream; no public board API found.
+- name: Lindy
+  url: https://jobs.ashbyhq.com/lindy
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: LivePerson
   url: https://liveperson.com/company/careers
   reason: Listed for web search only upstream; no public board API found.
@@ -2048,12 +2090,20 @@ unsupported:
 - name: Ridgefield School District
   url: https://jobs.redroverk12.com/org/1651
   reason: Provider 'unknown' isn't ported to NexScout yet.
+- name: Runway
+  url: https://job-boards.greenhouse.io/runwayml
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: Sahibinden.com
   url: https://www.sahibinden.com/kariyer
   reason: Listed for web search only upstream; no public board API found.
 - name: Salesforce
   url: https://careers.salesforce.com
   reason: Listed for web search only upstream; no public board API found.
+- name: Sanctuary AI
+  url: https://jobs.lever.co/sanctuary
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: Shiji Group
   url: https://shijigroup.zohorecruit.com/jobs/Careers
   reason: Provider 'unknown' isn't ported to NexScout yet.
@@ -2066,6 +2116,10 @@ unsupported:
 - name: Telegram @jobforjunior
   url: ''
   reason: Board provider 'telegram-channel' isn't ported to NexScout yet.
+- name: Templafy
+  url: https://job-boards.greenhouse.io/templafy
+  reason: The board wasn't found when checked on 2026-10-19 (the company may have moved to another job
+    system).
 - name: The University of Hong Kong
   url: https://careers.pageuppeople.com/932/cw/en/listing/
   reason: Provider 'unknown' isn't ported to NexScout yet.

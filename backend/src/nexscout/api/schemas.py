@@ -334,7 +334,7 @@ class SourceAddOut(ApiModel):
     key: str
     provider: str
     name: str
-    postings: int
+    postings: int | None  # null when not read now (already in the catalog)
     already_in_catalog: bool
 
 

@@ -60,7 +60,7 @@ class SiteVerdict:
     host: str
 
 
-def _matches(host: str, domain: str) -> bool:
+def host_matches(host: str, domain: str) -> bool:
     return host == domain or host.endswith("." + domain)
 
 
@@ -83,7 +83,7 @@ def site_verdict(
     if demo_origin and url.lower().startswith(demo_origin.lower().rstrip("/") + "/"):
         return SiteVerdict("auto", "NexScout's labelled demo application site.", host)
     for domain, why in MANUAL_ONLY.items():
-        if _matches(host, domain):
+        if host_matches(host, domain):
             return SiteVerdict("manual", f"{why} Apply on the site yourself.", host)
     if robots_allows is False:
         return SiteVerdict(
@@ -95,7 +95,7 @@ def site_verdict(
         return SiteVerdict(
             "approval", "Couldn't read the site's robots.txt, so a person checks.", host
         )
-    if any(_matches(host, d) for d in ATS_HOSTS) and not allow_ats_auto:
+    if any(host_matches(host, d) for d in ATS_HOSTS) and not allow_ats_auto:
         return SiteVerdict(
             "approval", "An employer's application portal: a person approves each submission.", host
         )

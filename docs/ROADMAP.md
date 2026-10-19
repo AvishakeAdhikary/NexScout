@@ -327,13 +327,49 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
     `Release(version='2.2.0', …/tag/v2.2.0)`.
   - Found while building: a bash heredoc ate the backslashes in a Windows path test (memory rule: use Write/Edit);
     `VersionOut` schema name collided with the documents schema (renamed `AppVersionOut`).
+- **M17 (🟨 in progress) real-world run** (`scripts/real_world_run.py`, personal data only in
+  `NEXSCOUT_REAL_RUN_DIR` and a scratch output folder):
+  - Stack: the **released v2.3.0 Easy bundle**, downloaded with `gh release download`, checksum
+    verified (`sha256sum -c`), started with its own script on port 3300. Production mode confirmed
+    (`NEXSCOUT_ENV=production`; `/fixture-site/` and `/api/docs` 404 from the API). The start
+    script removed the old 2.0.0 images (live check of the cleanup).
+  - Setup: account, case "Europe: AI/ML/CV (jobs + PhD)", CV read into 101 entries (each quoting
+    the CV, accepted), preferences: Europe, sponsorship needed, English, funding preferred,
+    150000 INR upfront, flexible experience.
+  - Sources: 168 catalog sources on; the user's `portals.yml` import: 91 catalog entries on,
+    12 added, 19 unsupported with reasons (web-search entries, providers not ported: gem,
+    successfactors, wttj). "Jobs in Finland" detected as Work in Finland.
+  - Sync: 180 sources in 130 s, 2,316 postings kept, 19,923 dropped by country and keyword
+    filters, 17 sources failed with HTTP 404 (8 catalog entries, 9 from the user's own file).
+  - Found and fixed:
+    1. Duunitori (manual-only) was fetched when added by URL. Manual-only sites are now
+       refused before any request (add and import).
+    2. The import ignored the 300-source cap.
+    3. The catalog shipped dead and duplicate entries. Builder `--verify` and dedup fixed this:
+       167 entries.
+    4. **Every match scored 82.** Real postings have no structured skills or experience.
+       `domain/requirements.py` now reads skills, years, seniority, language and postdoc from
+       the text. Score SD 4.8 → 9.1; top results are relevant (Hugging Face, Photoroom, Wayve,
+       Faculty).
+    5. Refused sponsorship was only a gap in flexible mode; it is now a blocker.
+    6. Swedish/German/French-only postings stayed eligible for an English-only user. They are
+       now blockers (96 jobs).
+    7. A postdoc was listed for someone with no doctorate.
+    8. "Lunds universitet" and "Lund University" were duplicates.
+    9. Only 17 PhD postings: added 8 Swedish universities (Varbi) and Tampere (rekrytointi
+       feed).
+  - NIM: `/v1/models` lists 81 models, but several return 404 for this key. The harness probes
+    them; `nvidia/nemotron-3-super-120b-a12b` answered valid JSON in 4.3 s.
 - **Still open (need keys or other platforms):** live AI provider and channel verification with real
   credentials (NVIDIA NIM in M17); real application portals; code signing; macOS/Linux installers.
 - **Next exact steps:**
   1. Confirm CI and the v2.3.0 release assets (exe, blockmap, latest.yml, zip, SHA256SUMS.txt).
   2. Verify updating for real once v2.4.0 exists: install v2.3.0 → the app finds 2.4.0, downloads, restarts into
      2.4.0, updater cache cleared; Easy zip 2.3.0 → Update NexScout → 2.4.0, checksum checked, old images gone.
-  3. M17: `scripts/real_world_run.py` (reads `NEXSCOUT_REAL_RUN_DIR`, writes to a scratch folder, nothing
+  3. M17 (remaining): on the v2.4.0 stack, re-run sync, research, provider (NIM via env var),
+     draft, apply (the user approves submissions in the app); then the updater test (install 2.3.0
+     silently → it finds 2.4.0+ → quit installs it → version and cache checked → uninstall).
+  4. M17 (original plan): `scripts/real_world_run.py` (reads `NEXSCOUT_REAL_RUN_DIR`, writes to a scratch folder, nothing
      personal in git) against a production-mode stack; NVIDIA NIM key only via env var → provider API; the user
      approves submissions in the app; fix everything found; sanitized evidence here.
   4. Later: live-verify one notification channel; macOS/Linux scripts and installers; upgrade GitHub Actions

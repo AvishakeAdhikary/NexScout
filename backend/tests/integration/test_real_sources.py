@@ -191,3 +191,37 @@ tracked_companies:
     assert "custom:lever:someco" not in theirs
     assert (await other_client.delete("/api/v1/sources/custom:lever:someco")).status_code == 404
     assert (await client.delete("/api/v1/sources/custom:lever:someco")).status_code == 204
+
+
+async def test_manual_only_sites_are_never_fetched_and_import_is_capped(
+    client: httpx.AsyncClient, fake_catalog: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await register(client)
+
+    async def no_network(*_: Any, **__: Any) -> Any:
+        raise AssertionError("a manual-only site must not be fetched")
+
+    monkeypatch.setattr(sources_app, "probe", no_network)
+    refused = await client.post("/api/v1/sources", json={"url": "https://duunitori.fi/tyopaikat"})
+    assert refused.status_code == 422
+    assert "Duunitori" in refused.json()["detail"]
+    assert "automated" in refused.json()["detail"]
+
+    monkeypatch.setattr(sources_app, "MAX_CUSTOM", 1)
+    portals = """
+tracked_companies:
+  - name: Linked
+    careers_url: https://www.linkedin.com/company/acme/jobs
+  - name: First
+    careers_url: https://jobs.lever.co/first
+  - name: Second
+    careers_url: https://jobs.lever.co/second
+"""
+    rep = (await client.post("/api/v1/sources/import", json={"content": portals})).json()
+    assert rep["added"] == ["First"]
+    reasons = {u["name"]: u["reason"] for u in rep["unsupported"]}
+    assert "LinkedIn" in reasons["Linked"]
+    assert "up to 1 sources" in reasons["Second"]
+    # Importing the same file again uses no extra room.
+    again = (await client.post("/api/v1/sources/import", json={"content": portals})).json()
+    assert again["added"] == ["First"]

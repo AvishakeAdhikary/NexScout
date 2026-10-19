@@ -1,6 +1,11 @@
 """Build backend/src/nexscout/integrations/sources/catalog.yaml (run when updating the catalog).
 
-    uv run --project backend python scripts/build_catalog.py <career-ops checkout>
+    uv run --project backend python scripts/build_catalog.py <career-ops checkout> \
+        [--discover] [--verify]
+
+--discover (live) finds the ATS board behind branded careers pages; --verify (live) reads every
+entry once and moves boards that no longer exist to `unsupported`, so the catalog never ships
+dead entries. Release catalogs are built with both.
 
 Inputs:
 - career-ops' templates/portals.example.yml (MIT) at the commit in UPSTREAM_SHA: every
@@ -59,6 +64,17 @@ EU_ADDITIONS = [
     ("Uppsala University", "https://uu.varbi.com", ["SE"], ["phd", "job"]),
     ("Lund University", "https://lu.varbi.com", ["SE"], ["phd", "job"]),
     ("KTH Royal Institute of Technology", "https://kth.varbi.com", ["SE"], ["phd", "job"]),
+    # Checked live on 2026-10-19 (each returned postings, except Luleå with none open that day).
+    ("Stockholm University", "https://su.varbi.com", ["SE"], ["phd", "job"]),
+    ("Karolinska Institutet", "https://ki.varbi.com", ["SE"], ["phd", "job"]),
+    ("Umeå University", "https://umu.varbi.com", ["SE"], ["phd", "job"]),
+    ("Karlstad University", "https://kau.varbi.com", ["SE"], ["phd", "job"]),
+    ("Mid Sweden University", "https://miun.varbi.com", ["SE"], ["phd", "job"]),
+    ("Halmstad University", "https://hh.varbi.com", ["SE"], ["phd", "job"]),
+    ("Jönköping University", "https://ju.varbi.com", ["SE"], ["phd", "job"]),
+    ("Luleå University of Technology", "https://ltu.varbi.com", ["SE"], ["phd", "job"]),
+    ("Tampere University", "https://tuni.rekrytointi.com/paikat/?o=A_RSS&jgid=1", ["FI"],
+     ["phd", "job"]),
 ]
 
 BOARDS = [
@@ -141,16 +157,66 @@ def _discover(rows: list[dict[str, object]]) -> dict[str, tuple[str, dict[str, o
         loop.close()
 
 
+def _verify(entries: dict[str, dict[str, object]]) -> dict[str, str]:
+    """Live (only with --verify): read every entry once; boards that no longer exist (HTTP 404,
+    usually a company that moved to another job system) are dropped with a dated reason.
+    Other failures (timeouts, 5xx) are printed and kept: they're usually temporary."""
+    if "--verify" not in sys.argv:
+        return {}
+    import asyncio
+    from datetime import date
+
+    from nexscout.integrations.sources.core import Entry, Http, SourceError
+
+    async def run() -> dict[str, str]:
+        gone: dict[str, str] = {}
+        sem = asyncio.Semaphore(6)
+
+        async def one(key: str, e: dict[str, object]) -> None:
+            entry = Entry(key=key, provider=str(e["provider"]), name=str(e["name"]),
+                          url=str(e["url"]), config=dict(e["config"]))  # type: ignore[arg-type]
+            async with sem:
+                try:
+                    jobs = await PROVIDERS[entry.provider].fetch(Http(), entry)
+                    print(f"  ok   {key}: {len(jobs)}")
+                except SourceError as exc:
+                    print(f"  FAIL {key}: {exc}")
+                    if "doesn't exist" in str(exc):
+                        gone[key] = (f"The board wasn't found when checked on {date.today()} "
+                                     "(the company may have moved to another job system).")
+                except Exception as exc:  # noqa: BLE001 - report and keep
+                    print(f"  ERR  {key}: {type(exc).__name__}: {str(exc)[:80]}")
+
+        await asyncio.gather(*(one(k, e) for k, e in entries.items()))
+        return gone
+
+    loop = asyncio.SelectorEventLoop() if sys.platform == "win32" else asyncio.new_event_loop()
+    try:
+        return loop.run_until_complete(run())
+    finally:
+        loop.close()
+
+
 def main(upstream: Path) -> None:
     data = yaml.safe_load((upstream / "templates/portals.example.yml").read_text(encoding="utf-8"))
     entries: dict[str, dict[str, object]] = {}
     unsupported: list[dict[str, str]] = []
 
+    by_identity: dict[tuple[str, str, str], str] = {}
+
     def add(name: str, provider: str, url: str, cfg: dict[str, object], countries: list[str],
             kinds: list[str], category: str, origin: str) -> None:
         key = key_for(provider, name, cfg)
-        if key in entries:
+        # One entry per board actually fetched: a fixed board (Just Join IT, No Fluff Jobs...)
+        # is the same feed whatever URL lists it; the others are told apart by config or URL.
+        fixed = bool(getattr(PROVIDERS[provider], "fixed", ()))
+        ident = (provider, repr(sorted(cfg.items())), "" if fixed or cfg else url.rstrip("/"))
+        if key in entries or ident in by_identity:
+            same = entries[by_identity.get(ident, key)]
+            same["countries"] = sorted({*same["countries"], *countries})  # type: ignore[misc]
+            same["kinds"] = sorted({*same["kinds"], *kinds})  # type: ignore[misc]
             return
+        by_identity[ident] = key
         entries[key] = {"key": key, "provider": provider, "name": name, "url": url,
                         "config": cfg, "countries": countries, "kinds": kinds,
                         "category": category, "origin": origin}
@@ -191,6 +257,9 @@ def main(upstream: Path) -> None:
         add(name, pid, url, cfg, countries, kinds, cat, "nexscout")
     for pid, name, countries, kinds, cfg in BOARDS:
         add(name, pid, "", cfg, countries, kinds, "board", "nexscout")
+    for key, why in _verify(entries).items():
+        e = entries.pop(key)
+        unsupported.append({"name": str(e["name"]), "url": str(e["url"]), "reason": why})
     doc = {
         "upstream": {"project": "career-ops (MIT)", "url": "https://github.com/career-ops-hq/career-ops",
                      "commit": UPSTREAM_SHA},

@@ -4,6 +4,22 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.4.0
+- **M17: fixes from a real run.** One person's real CV and preferences went through the
+  released v2.3.0 stack against 180 live sources.
+  - Matching reads the posting text: skills mentioned, years asked for (quoted), "Senior"
+    titles, the language the posting is written in, and postdocs needing a doctorate. Scores
+    now separate postings: on that run, the spread doubled.
+  - Refused visa sponsorship and a language you don't list are hard no's in every mode.
+  - Sites that forbid automation (for example Duunitori) are refused before any request when
+    added by URL or imported.
+  - Imports respect the 300-source limit.
+  - "Lunds universitet" and "Lund University" (and "X AB"/"X Oy") count as one employer.
+    Mind-map positions saved for such organisations are reset once.
+  - The catalog is verified live when it is built: dead boards are removed with the reason,
+    duplicates are merged, and it adds 8 more Swedish universities and Tampere University.
+  - Feeds named in the query string (`?format=rss`) are recognised.
+
 ## v2.3.0
 - **M16: edit AI models and automatic updates.**
   - Edit an AI model in place (Settings → AI models → Edit). Change its name, model, address,

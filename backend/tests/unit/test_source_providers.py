@@ -90,6 +90,11 @@ def test_recordings_cover_every_provider_used_in_the_catalog() -> None:
             "feed",
             {"feed": "https://example.org/careers/feed.rss"},
         ),
+        (  # Finnish universities' recruitment system: the feed is named in the query
+            "https://tuni.rekrytointi.com/paikat/?o=A_RSS&jgid=1",
+            "feed",
+            {"feed": "https://tuni.rekrytointi.com/paikat/?o=A_RSS&jgid=1"},
+        ),
     ],
 )
 def test_detects_provider_from_a_pasted_address(url: str, provider: str, config: dict) -> None:
@@ -120,9 +125,16 @@ def test_catalog_is_consistent() -> None:
     assert data["upstream"]["commit"]
     keys = [e["key"] for e in data["entries"]]
     assert len(keys) == len(set(keys)) >= 150
+    fetched: set[tuple[str, str, str]] = set()
     for e in data["entries"]:
         assert e["provider"] in PROVIDERS, e
         assert all(len(c) == 2 for c in e["countries"]), e
+        # Each board is fetched once: no two entries read the same thing.
+        fixed = bool(getattr(PROVIDERS[e["provider"]], "fixed", ()))
+        cfg = repr(sorted((e.get("config") or {}).items()))
+        ident = (e["provider"], cfg, "" if fixed or e.get("config") else e["url"].rstrip("/"))
+        assert ident not in fetched, e["key"]
+        fetched.add(ident)
     reasons = {m["name"]: m["reason"] for m in data["manual_only"]}
     assert "robots.txt" in reasons["EURAXESS (EU research jobs)"]
     assert "403" in reasons["Duunitori (Finland)"]

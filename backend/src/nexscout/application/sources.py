@@ -19,6 +19,7 @@ from nexscout.application.actor import Actor
 from nexscout.application.audit import record_audit
 from nexscout.domain.errors import NotFound, ValidationFailed
 from nexscout.domain.geo import normalize_list
+from nexscout.domain.site_policy import MANUAL_ONLY, host_matches, host_of
 from nexscout.infrastructure.db.models import CustomSource, SourceConfig
 from nexscout.infrastructure.security.urls import check_outbound_url
 from nexscout.integrations.sources.base import SourceAdapter, SourceQuery, SourceSettings
@@ -147,8 +148,33 @@ class AddResult:
     key: str
     provider: str
     name: str
-    postings: int
+    postings: int | None  # None: not read now (already in the catalog)
     already_in_catalog: bool = False
+
+
+def manual_reason(url: str) -> str | None:
+    """Why NexScout must not read this site, if it's one that forbids automation. Checked
+    before any request is made."""
+    host = host_of(url)
+    if not host:
+        return None
+    for m in manual_only():
+        if host_matches(host, host_of(m["url"])):
+            return f"{m['name']} doesn't allow automated searching. {m['reason']}"
+    for domain, why in MANUAL_ONLY.items():
+        if host_matches(host, domain):
+            return f"{why} Search and apply on the site yourself."
+    return None
+
+
+async def _custom_count(session: AsyncSession, actor: Actor) -> int:
+    return len(
+        list(
+            await session.scalars(
+                select(CustomSource.id).where(CustomSource.owner_user_id == actor.user_id)
+            )
+        )
+    )
 
 
 async def add_custom(
@@ -168,6 +194,8 @@ async def add_custom(
     codes, unknown = normalize_list(countries)
     if unknown:
         raise ValidationFailed(f"Unknown countries: {', '.join(unknown)}")
+    if (why := manual_reason(url)) is not None:
+        raise ValidationFailed(why)
     # Already in the catalog? Turn that one on instead of duplicating it.
     found = detect_provider(url)
     if found is not None:
@@ -175,15 +203,8 @@ async def add_custom(
         for key, e in catalog_entries().items():
             if e.provider == pid and e.config == cfg:
                 await set_enabled(session, actor, [key], True)
-                return AddResult(key, pid, e.name, 0, already_in_catalog=True)
-    total = len(
-        list(
-            await session.scalars(
-                select(CustomSource.id).where(CustomSource.owner_user_id == actor.user_id)
-            )
-        )
-    )
-    if total >= MAX_CUSTOM:
+                return AddResult(key, pid, e.name, None, already_in_catalog=True)
+    if await _custom_count(session, actor) >= MAX_CUSTOM:
         raise ValidationFailed(f"You can add up to {MAX_CUSTOM} sources.")
     try:
         pid, cfg, n = await probe(url, name)
@@ -316,12 +337,21 @@ async def import_portals(session: AsyncSession, actor: Actor, text: str) -> Impo
     if len(rows) > 1000:
         raise ValidationFailed("At most 1000 entries per import.")
     to_enable: list[str] = []
+    owned = set(
+        await session.scalars(
+            select(CustomSource.key).where(CustomSource.owner_user_id == actor.user_id)
+        )
+    )
+    room = MAX_CUSTOM - len(owned)
     for e in rows:
         if not isinstance(e, dict) or e.get("enabled") is False:
             continue
         name = str(e.get("name") or "").strip()[:200]
         url = str(e.get("careers_url") or e.get("api") or "").strip()
         pid = str(e.get("provider") or "")
+        if (why := manual_reason(url)) is not None:
+            report.unsupported.append({"name": name, "url": url, "reason": why})
+            continue
         if pid and pid in PROVIDERS and not PROVIDERS[pid].detect(url):
             cfg: dict[str, Any] = dict(e.get(pid) or {}) if isinstance(e.get(pid), dict) else {}
             if pid == "getro" and e.get("getro_collection"):
@@ -350,6 +380,15 @@ async def import_portals(session: AsyncSession, actor: Actor, text: str) -> Impo
             report.enabled_catalog.append(name)
             continue
         key = _custom_key(pid, cfg, url or name)
+        if key in owned:  # imported before: just turn it on, no new room needed
+            to_enable.append(key)
+            report.added.append(name)
+            continue
+        if room <= 0:
+            report.unsupported.append(
+                {"name": name, "url": url, "reason": f"You can add up to {MAX_CUSTOM} sources."}
+            )
+            continue
         await session.execute(
             insert(CustomSource)
             .values(
@@ -365,6 +404,8 @@ async def import_portals(session: AsyncSession, actor: Actor, text: str) -> Impo
             )
             .on_conflict_do_nothing(constraint="uq_custom_sources_owner_key")
         )
+        owned.add(key)
+        room -= 1
         to_enable.append(key)
         report.added.append(name)
     if to_enable:

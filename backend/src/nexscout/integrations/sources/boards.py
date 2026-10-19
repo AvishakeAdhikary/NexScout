@@ -542,7 +542,12 @@ class GenericFeed:
     def detect(self, url: str) -> dict[str, Any] | None:
         return (
             {"feed": url}
-            if re.search(r"(\.rss|\.xml|/rss|/feed|/atom)(\?|$|/)", url or "", re.I)
+            if re.search(
+                r"(\.rss|\.xml|/rss|/feed|/atom)(\?|$|/)"  # in the path
+                r"|[?&][a-z_]*=[^&#]*\b(?:a_)?(rss|atom)\b",  # or a query (?format=rss, ?o=A_RSS)
+                url or "",
+                re.I,
+            )
             else None
         )
 

@@ -72,10 +72,25 @@ class MindMap:
     edges: list[Edge] = field(default_factory=list)
 
 
+_UNIVERSITY = re.compile(
+    r"\b(universit(?:y|et|ät|aet|é|e|à|a|eit|y of)|yliopisto|uniwersytet|universidad)\b"
+)
+
+
 def normalize_org(name: str) -> str:
-    """Key for grouping organization mentions (case/punctuation/legal-suffix insensitive)."""
+    """Key for grouping organization mentions: case, punctuation and legal forms ignored, and
+    "university" in any language one word ("Lunds universitet" = "Lund University")."""
     n = re.sub(r"[^\w\s]", " ", name.lower())
-    n = re.sub(r"\b(the|inc|ltd|llc|gmbh|plc|corp|corporation|co|ag|sa|bv|limited)\b", " ", n)
+    n = re.sub(
+        r"\b(the|inc|ltd|llc|gmbh|plc|corp|corporation|co|kg|ag|sa|sas|sarl|bv|nv|limited"
+        r"|ab|oy|oyj|as|asa|aps|spa|srl|publ)\b",
+        " ",
+        n,
+    )
+    if _UNIVERSITY.search(n):
+        n = _UNIVERSITY.sub("university", n)
+        # Scandinavian genitive before "university": "lunds" -> "lund", "göteborgs" -> "göteborg".
+        n = re.sub(r"\b(\w{3,}?)s (university)\b", r"\1 \2", n)
     return re.sub(r"\s+", " ", n).strip()
 
 
