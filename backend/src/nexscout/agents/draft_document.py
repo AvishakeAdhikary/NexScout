@@ -118,13 +118,20 @@ def _uuid(value: Any) -> uuid.UUID | None:
     return uuid.UUID(str(value)) if value else None
 
 
-def _fact_row(f: ProfileFact) -> dict[str, Any]:
-    return {
+def _fact_row(f: ProfileFact, labels: dict[str, str] | None = None) -> dict[str, Any]:
+    """One profile entry for the model. Links become readable ("part_of": the job a project
+    was done in), so the model can say "VisionDesk, built at Lumen Robotics"."""
+    data = {k: v for k, v in f.data.items() if k != "related_fact_ids"}
+    row: dict[str, Any] = {
         "id": str(f.id),
         "section": f.section,
         "label": fact_label(FactSection(f.section), f.data),
-        "data": f.data,
+        "data": data,
     }
+    part_of = [labels[x] for x in f.data.get("related_fact_ids") or [] if labels and x in labels]
+    if part_of:
+        row["part_of"] = part_of
+    return row
 
 
 def _affiliation_row(a: Affiliation) -> dict[str, Any]:
@@ -231,10 +238,11 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
         f"Using {len(facts)} confirmed, shareable profile entries"
         + (f" and {len(findings)} research finding(s)." if opp_id else "."),
     )
+    labels = {str(f.id): fact_label(FactSection(f.section), f.data) for f in facts}
     return {
         "doc_type": doc_type.value,
         "name": name or "",
-        "facts": [_fact_row(f) for f in facts],
+        "facts": [_fact_row(f, labels) for f in facts],
         "findings": [_finding_row(f) for f in findings] + relations,
         "opportunity": opportunity,
         "listing": listing,

@@ -9,7 +9,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, File, Form, Request, Response, UploadFile, status
 
 from nexscout.api.deps import CurrentActor, DbSession, ObjectStoreDep, SettingsDep
-from nexscout.api.schemas import DocumentOut, DocumentTextOut, UploadOut
+from nexscout.api.schemas import DocumentOut, DocumentTextOut, RereadOut, UploadOut
 from nexscout.application import documents
 from nexscout.application.documents import DocumentPurpose
 from nexscout.domain.errors import ValidationFailed
@@ -98,3 +98,11 @@ async def delete_document(
         db, actor, store, document_id, delete_pending_facts=delete_pending_facts
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/documents/{document_id}/reread", response_model=RereadOut)
+async def reread_document(document_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> RereadOut:
+    """Read the document again with the current reader. Only its pending, unedited entries are
+    replaced; accepted, rejected and edited entries are kept."""
+    result = await documents.reread_document(db, actor, document_id)
+    return RereadOut(**result)

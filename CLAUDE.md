@@ -50,6 +50,9 @@ cd apps/web && npm run dev | lint | typecheck | test | build     # web :3000
 bash scripts/gen-contracts.sh                 # after changing API schemas
 uv run --project backend python scripts/build_catalog.py <career-ops checkout>  # (repo root) sources catalog
 uv run --project backend python scripts/record_source_fixtures.py [provider]  # re-record real responses
+uv run nexscout export-case --email E [--case NAME] [--out F]   # operator: case → .nexscout file
+uv run nexscout import-case --email E --file F                   # operator: .nexscout → new case
+uv run nexscout reread-documents --email E [--case NAME]         # re-read CVs/letters (pending only)
 cd apps/web && npm run e2e                    # Playwright: starts API :8100 + web :3200 against dev DB
 E2E_PROD=1 npx playwright test                # same journeys on a production build + production API
 ```

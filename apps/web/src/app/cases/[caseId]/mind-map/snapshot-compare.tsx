@@ -20,6 +20,14 @@ export function SnapshotCompare({ caseId }: { caseId: string }) {
     mutationFn: () => factsApi.snapshot(caseId, "Saved from the mind map"),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["snapshots", caseId] }),
   });
+  const remove = useMutation({
+    mutationFn: (number: number) => factsApi.deleteSnapshot(caseId, number),
+    onSuccess: (_d, number) => {
+      if (from === number) setFrom("");
+      if (to === number) setTo("");
+      queryClient.invalidateQueries({ queryKey: ["snapshots", caseId] });
+    },
+  });
   const diff = useQuery({
     queryKey: ["snapshot-diff", caseId, from, to],
     queryFn: () => mindmapApi.compare(caseId, Number(from), Number(to)),
@@ -64,7 +72,34 @@ export function SnapshotCompare({ caseId }: { caseId: string }) {
           </>
         )}
       </div>
-      <ErrorAlert error={save.error ?? diff.error} />
+      {options.length > 0 && (
+        <details className="mt-3">
+          <summary className="cursor-pointer text-sm">Saved snapshots ({options.length})</summary>
+          <ul className="mt-2 flex flex-col gap-1 text-sm">
+            {options.map((snap) => (
+              <li key={snap.id} className="flex items-center justify-between gap-2 rounded-md border px-2 py-1">
+                <span>
+                  #{snap.number} · {new Date(snap.created_at).toLocaleString()} · {snap.fact_count} entries
+                  {snap.reason ? ` · ${snap.reason}` : ""}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`Delete snapshot ${snap.number}`}
+                  disabled={remove.isPending}
+                  onClick={() => {
+                    if (window.confirm(`Delete snapshot #${snap.number}? Your profile isn't changed.`))
+                      remove.mutate(snap.number);
+                  }}
+                >
+                  Delete
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      <ErrorAlert error={save.error ?? remove.error ?? diff.error} />
       {diff.data && (
         <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3" aria-live="polite">
           {(

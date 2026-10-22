@@ -61,7 +61,8 @@ class Node:
 class Edge:
     source: str
     target: str
-    kind: str  # "has_section" | "has_entry" | "at_organization" | "followed_by" | "mentions_skill"
+    # "has_section" | "has_entry" | "at_organization" | "followed_by" | "mentions_skill" | "part_of"
+    kind: str
     derived: bool = False
     basis: str | None = None
 
@@ -165,6 +166,13 @@ def build_mindmap(facts: list[FactInput], candidate_label: str) -> MindMap:
                         basis=f"Named in this entry as “{org_name.strip()}”.",
                     )
                 )
+    # Entries the user linked ("this project was part of that job"): stated, not derived.
+    present = {f.id for f in facts}
+    for f in facts:
+        for target in f.data.get("related_fact_ids") or []:
+            if target in present:
+                mm.edges.append(Edge(f"fact:{f.id}", f"fact:{target}", "part_of"))
+
     # Only show organization nodes that connect two or more entries; a single mention
     # adds no information beyond the entry itself.
     org_counts: dict[str, int] = {}

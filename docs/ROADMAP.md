@@ -3,8 +3,9 @@
 Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed and passed) · ⛔ blocked
 
 ## Checkpoint (update at the end of every session)
-- **Date:** 2026-10-19
-- **Current milestone:** M14–M17 ✅ (v2.2.0 → v2.7.0, 2026-10-19). Remaining steps belong to the user (see
+- **Date:** 2026-10-23
+- **Current milestone:** M18 ✅ (v2.9.0): portable profiles and CV reader v2. Next: M19 desktop shell, M20 scalable
+  lists, M21 agentic assistant (plan below, "Plan M18–M21"). Before that: M14–M17 ✅ (v2.2.0 → v2.7.0, 2026-10-19). Remaining steps belong to the user (see
   Next exact steps). M16: provider editing, self-update, update notice (v2.3.0 is the first version that can update
   itself). M14 + M15 released as v2.2.0. M0–M13 ✅.
 - **Why (user feedback on v2.1.0, 2026-10-18):** the shipped app had only demo sources and the demo application
@@ -403,6 +404,36 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   2 statements of purpose by NIM (real text, cited, about 70 s each; only contact-detail placeholders left), plus
   3 resumes and 2 academic CVs without AI. CI was green on every push (7/7 jobs), and releases v2.2.0–v2.7.0 were
   published with exe, blockmap, latest.yml, easy zip and SHA256SUMS.txt.
+- **Feedback on v2.8.0 (2026-10-22), 13 items.** Plan M18–M21, approved:
+  - **M18:** profile export/import, CV reader v2, letters, links, snapshot delete, auto-arrange, multi-select.
+  - **M19:** frameless window, tray (close-to-tray setting, default on), single instance, narrow IPC, Settings
+    "About & updates", breadcrumbs, Home, drag-and-drop.
+  - **M20:** paginated, virtualized opportunities; clear notifications and runs; performance on 5,000
+    opportunities.
+  - **M21:** agentic assistant (JSON tool protocol, allowlist, consent every conversation), AI skill discovery
+    with one approval dialog.
+  - **User decisions:** close hides to the tray, as a setting; assistant consent every conversation; the live
+    profile is copied for testing, then the live install is re-read (pending entries only).
+- **M18 (✅, v2.9.0):** see CHANGELOG v2.9.0 and ADR-0018.
+  - **Real-data verification** on a copy of the user's live case:
+    - Read through a local relay container, exported with `export-case`, imported into a dev account.
+    - The import matched the live case by section and state: 121 entries, 3 documents, 3 snapshots, the mind map
+      overrides (2 orphaned overrides skipped by design).
+    - Re-read the CV PDF and both letters: 45 new suggestions, 0 failing the quality check (no `**`, no split
+      brackets, no stray punctuation, no fragments).
+    - Each letter gives 1 reference. Projects link to the accepted job or degree. The edited PTS-style job is
+      not re-suggested.
+  - **Found and fixed on the real text:**
+    - A title, a blank line, then its date line (gave a project named "Independent").
+    - Links wrapped by the PDF, words broken at a hyphen, and a link on the line after a trailing `|`.
+    - Bare domains as project links.
+    - Citations split into authors, title and venue.
+    - Employer legal suffixes ignored in identity.
+    - Links point at existing entries, and degree links are chosen by date.
+    - A letter organization that wrapped into its parent group's name.
+  - **Leftovers:** 42 old suggestions came from a CV the user deleted while keeping its suggestions. They are
+    not removed automatically. Profile now shows "N suggestions came from a file you have since deleted" with
+    **Remove them**.
 - **Still open:** real application portals (forms differ per employer); code signing; macOS/Linux installers;
   live notification channels.
 - **Next exact steps (the user's):**
@@ -413,6 +444,12 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
      submission yourself.
   3. Review the matches (report in the scratch output folder; the app shows the same, with reasons).
 - **Next exact steps (engineering):**
+  0. **M18 follow-up:**
+     - After the user's desktop app updates to v2.9.0, run `reread-documents` on the live install (pending
+       entries only).
+     - Verify that accepted entries, the mind map and snapshots are unchanged (compare counts before and after).
+     - Stop the `nexscout-live-relay` container afterwards.
+     - Then M19 → M21 per the plan above.
   1. Port `successfactors`, `gem`, `wttj` providers (career-ops entries reported unsupported).
   2. University portals without feeds (DTU, TU Delft, ETH, EPFL, TUM, Helsinki): only with a public API or feed.
   3. Desktop app ↔ Easy zip: consider separate Compose project names with a data migration (now guarded).
@@ -492,6 +529,10 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-17 | M12: web tsc, eslint, vitest 12/12; desktop tests 3/3; `npx playwright test` | passed; **14/14 E2E** incl. new journey (consent shown → autopilot on → run → the placeholder question appears instead of a guess → answered → saved answer listed → Stop everything → off) |
 
 ---
+| 2026-10-23 | M18: `uv run ruff check . && ruff format --check . && mypy && pytest` | all passed: mypy 147 files, **467 passed** in 231 s |
+| 2026-10-23 | M18: web `typecheck`, `lint`, `test` | passed (vitest 12/12) |
+| 2026-10-23 | M18: `npx playwright test` (dev) | **18/18 passed**, incl. m18 export/import journey and leftover-suggestion removal |
+| 2026-10-23 | M18: real-data copy, `reread-documents` | CV: 43 suggestions, letters: 1 reference each; 0 of 45 new suggestions fail the quality check; links to accepted job/degree |
 
 ## Milestones
 Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
@@ -516,6 +557,10 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M15 | Real sources, countries, signals, budget | ✅ (providers checked live 2026-10-18/19; endpoints can drift) | Real postings from catalog and custom sources with health; ISO include/exclude everywhere; sponsorship/language/funding/fee signals explained; budget in the user's currency |
 | M16 | Provider editing and auto-update | ✅ (update path verified once v2.4.0 exists, see Checkpoint) | Providers editable without re-adding; installed desktop app updates itself and removes old installers and images; web shows when an update exists |
 | M17 | Real-world run | ✅ (real CV, 186 live sources, NIM drafting; submissions left to the user by design) | The user's real CV and preferences run end to end on a production-mode stack with real sources and a live AI provider; every error found is fixed |
+| M18 | Portable profile and better reading | ✅ | Export/import a case faithfully as a new case; CV reader v2 gives clean entries on the user's real CV (0 quality failures); letters give references; links, bulk actions, snapshot delete, auto-arrange |
+| M19 | Native desktop shell and navigation | ⬜ | Frameless title bar, tray with close-to-tray setting, single instance, origin-checked IPC, About & updates, breadcrumbs, drag-and-drop |
+| M20 | Scalable lists and housekeeping | ⬜ | Opportunities paged and virtualized (5,000 measured), clear notifications and runs |
+| M21 | Agentic assistant and AI skills | ⬜ | Tool-using assistant with allowlist and per-conversation consent; AI skill discovery with one approval dialog |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

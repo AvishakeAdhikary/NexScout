@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
-import { FactForm } from "@/components/fact-form";
+import { FactForm, type LinkOption } from "@/components/fact-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { factsApi, type FactOut } from "@/lib/api/client";
@@ -20,7 +20,22 @@ function summary(fact: FactOut): string[] {
     });
 }
 
-export function FactCard({ fact, caseId }: { fact: FactOut; caseId: string }) {
+export function FactCard({
+  fact,
+  caseId,
+  linkOptions = [],
+  labels = {},
+  selected,
+  onSelect,
+}: {
+  fact: FactOut;
+  caseId: string;
+  linkOptions?: LinkOption[];
+  /** id -> label, to show what this entry is part of. */
+  labels?: Record<string, string>;
+  selected?: boolean;
+  onSelect?: (selected: boolean) => void;
+}) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [showSource, setShowSource] = useState(false);
@@ -49,6 +64,7 @@ export function FactCard({ fact, caseId }: { fact: FactOut; caseId: string }) {
     is_mock?: boolean;
   };
   const description = (fact.data as Record<string, unknown>).description;
+  const partOf = ((fact.data as Record<string, unknown>).related_fact_ids as string[] | undefined) ?? [];
   const pending = fact.review_state === "pending";
 
   return (
@@ -57,9 +73,20 @@ export function FactCard({ fact, caseId }: { fact: FactOut; caseId: string }) {
       aria-labelledby={`fact-${fact.id}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <h4 id={`fact-${fact.id}`} className="font-medium">
-          {fact.label}
-        </h4>
+        <div className="flex items-start gap-2">
+          {onSelect && (
+            <input
+              type="checkbox"
+              className="mt-1"
+              aria-label={`Select ${fact.label}`}
+              checked={!!selected}
+              onChange={(e) => onSelect(e.target.checked)}
+            />
+          )}
+          <h4 id={`fact-${fact.id}`} className="font-medium">
+            {fact.label}
+          </h4>
+        </div>
         <div className="flex flex-wrap gap-1">
           <Badge variant="outline">{STATUS_LABELS[fact.status] ?? fact.status}</Badge>
           {meta.edited_by_user && <Badge variant="outline">Edited by you</Badge>}
@@ -79,6 +106,11 @@ export function FactCard({ fact, caseId }: { fact: FactOut; caseId: string }) {
               <li key={line}>{line}</li>
             ))}
           </ul>
+          {partOf.length > 0 && (
+            <p className="mt-1 text-sm">
+              Part of: {partOf.map((id) => labels[id] ?? "an entry that was deleted").join(", ")}
+            </p>
+          )}
           {typeof description === "string" && (
             <p className="mt-1 whitespace-pre-line text-sm">{description}</p>
           )}
@@ -94,6 +126,8 @@ export function FactCard({ fact, caseId }: { fact: FactOut; caseId: string }) {
           <FactForm
             section={fact.section}
             initial={fact.data as Record<string, unknown>}
+            linkOptions={linkOptions}
+            selfId={fact.id}
             submitLabel={pending ? "Save and accept" : "Save"}
             pending={update.isPending}
             onCancel={() => setEditing(false)}

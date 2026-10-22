@@ -1,3 +1,7 @@
+from pathlib import Path
+
+import pytest
+
 from nexscout.domain.cv_heuristics import (
     extract_facts,
     find_range,
@@ -5,8 +9,10 @@ from nexscout.domain.cv_heuristics import (
     split_sections,
     to_partial_date,
 )
-from nexscout.domain.profile import Section
+from nexscout.domain.profile import Section, fact_label
 from tests.fixtures.documents import ada_cv_text
+
+FIXTURES = Path(__file__).parent.parent / "fixtures" / "personas"
 
 
 def test_heading_detection() -> None:
@@ -103,3 +109,108 @@ def test_unparseable_entry_falls_back_to_other_with_warning() -> None:
 
 def test_no_headings_means_no_facts() -> None:
     assert extract_facts("Just a paragraph of prose with no structure.") == []
+
+
+# ------------------------------------------------------------------ v2 (M18, from a real CV)
+def _labels(facts: list) -> list[tuple[str, str]]:  # type: ignore[type-arg]
+    return [(f.section.value, fact_label(f.section, f.data)) for f in facts]
+
+
+def _read(name: str) -> str:
+    return (FIXTURES / name).read_text(encoding="utf-8")
+
+
+def test_markdown_and_its_pdf_text_read_the_same() -> None:
+    md = extract_facts(_read("rohan_cv.md"))
+    pdf = extract_facts(_read("rohan_cv_pdf.txt"))
+    assert _labels(md) == _labels(pdf)
+    jobs = _by(Section.EMPLOYMENT, md)
+    assert [(j["title"], j["organization"], j["location"]) for j in jobs] == [
+        ("Machine Learning Engineer", "Lumen Robotics", "Pune, India"),
+        ("Teaching Assistant", "Example Institute of Technology", "Pune, India"),
+    ]
+    assert "VisionDesk" in jobs[0]["description"]
+    edu = _by(Section.EDUCATION, pdf)[0]
+    assert edu["degree"] == "Master of Computer Applications (MCA)"
+    assert edu["location"] == "Pune, India"  # the wrapped school name isn't the place
+
+
+def test_no_markdown_or_split_brackets_in_any_field() -> None:
+    for name in ("rohan_cv.md", "rohan_cv_pdf.txt"):
+        facts = extract_facts(_read(name))
+        assert not any(f.section is Section.OTHER for f in facts), name
+        for f in facts:
+            for value in f.data.values():
+                text = str(value)
+                assert "**" not in text, (name, text)
+                assert "`" not in text, (name, text)
+                assert "](" not in text, (name, text)
+            label = fact_label(f.section, f.data)
+            assert label.count("(") == label.count(")"), label
+
+
+def test_skill_lists_split_only_at_the_top_level() -> None:
+    facts = extract_facts(_read("rohan_cv_pdf.txt"))
+    skills = {d["name"]: d.get("category") for d in _by(Section.SKILL, facts)}
+    assert {"JavaScript", "React.js", "Angular", "llama.cpp", "GGUF", "Express.js"} <= set(skills)
+    assert "Retrieval-Augmented Generation (RAG)" in skills  # an acronym stays with its name
+    assert "LoRA/QLoRA Fine-Tuning" in skills  # not split: it has spaces
+    assert "CI/CD Pipelines" in skills
+    assert skills["Python"] == "Programming"
+    assert skills["German"] == "Spoken languages"
+    assert {d["name"]: d.get("level") for d in _by(Section.SKILL, facts)}["Hindi"] == "Native"
+
+
+@pytest.mark.parametrize("name", ["rohan_cv.md", "rohan_cv_pdf.txt"])
+def test_projects_are_clean_and_linked_to_their_job(name: str) -> None:
+    facts = extract_facts(_read(name))
+    projects = [f for f in facts if f.section is Section.PROJECT]
+    # EdgeCam: the PDF text has a blank line between the name and its date line.
+    assert [p.data["name"] for p in projects] == [
+        "VisionDesk",
+        "Sign Language Reader (LSTM Model)",
+        "EdgeCam",
+        "Campus Bus Tracker",
+    ]
+    desk = projects[0]
+    assert desk.data["description"].startswith("Autonomous Inspection Kiosk")
+    assert desk.data["technologies"] == ["Python", "PyTorch", "ONNX", "Docker"]
+    assert [facts[i].data["organization"] for i in desk.related] == ["Lumen Robotics"]
+    assert projects[1].data["url"] == "https://github.com/rohan-example/sign-reader"
+    assert _by(Section.CERTIFICATION, facts)[0] == {
+        "name": "AWS Computer Vision: Getting Started with GluonCV",
+        "issuer": "Amazon Web Services",
+    }
+
+
+def test_v2_evidence_is_still_verbatim() -> None:
+    for name in ("rohan_cv.md", "rohan_cv_pdf.txt"):
+        text = _read(name)
+        for fact in extract_facts(text):
+            assert fact.excerpt == text[fact.start : fact.end][:1000]
+            assert fact.excerpt.strip()
+
+
+@pytest.mark.parametrize("name", ["rohan_cv.md", "rohan_cv_pdf.txt"])
+def test_citations_split_into_authors_title_and_venue(name: str) -> None:
+    pubs = _by(Section.PUBLICATION, extract_facts(_read(name)))
+    assert pubs[0]["title"] == "Vision Models for Factory Inspection: A Survey"
+    assert pubs[0]["authors"] == "R. Example, S. Sample"
+    assert pubs[0]["venue"] == "Edge Intelligence"
+    assert (pubs[0]["year"], pubs[0]["doi"]) == ("2025", "10.1234/example.2025.1")
+    assert pubs[1]["venue"] == "Proc. Example Conference on Vision"  # "Proc." isn't the end
+
+
+def test_a_link_and_a_title_wrapped_by_the_pdf_are_joined() -> None:
+    facts = extract_facts(_read("rohan_cv_pdf.txt"))
+    cam = next(f for f in facts if f.data.get("name") == "EdgeCam")
+    assert cam.data["url"] == "https://rohan-example.github.io/EdgeCam"
+    assert not cam.data["description"].startswith("EdgeCam")
+
+
+@pytest.mark.parametrize("name", ["rohan_cv.md", "rohan_cv_pdf.txt"])
+def test_a_project_at_university_links_to_that_degree(name: str) -> None:
+    facts = extract_facts(_read(name))
+    bus = next(f for f in facts if f.data.get("name") == "Campus Bus Tracker")
+    assert bus.data["url"] == "https://github.com/rohan-example/bus"
+    assert [facts[i].data["institution"] for i in bus.related] == ["Example University Pune"]

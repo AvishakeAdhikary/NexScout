@@ -150,6 +150,25 @@ export function toPayload(section: Section, values: Record<string, string>): Rec
   return out;
 }
 
+/** Sections an entry can be "part of" (roles and places), and sections that can link to them. */
+export const LINK_TARGETS: ReadonlySet<Section> = new Set<Section>([
+  "employment",
+  "education",
+  "research",
+  "volunteer",
+  "leadership",
+  "membership",
+]);
+export const LINKABLE_SOURCES: ReadonlySet<Section> = new Set<Section>([
+  "project",
+  "certification",
+  "award",
+  "publication",
+  "patent",
+  "skill",
+  "other",
+]);
+
 /** API data → form strings. */
 export function toFormValues(data: Record<string, unknown>): Record<string, string> {
   const out: Record<string, string> = {};

@@ -4,6 +4,35 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.9.0
+- **M18: your profile is portable and read properly.**
+  - **Export profile and Import a profile.** One case is moved as a `.nexscout` file: every
+    entry, the mind map layout, snapshots, relationships, answers and documents. Import always
+    creates a new case and checks the file thoroughly. Operators also get the CLI commands
+    `nexscout export-case`, `import-case` and `reread-documents`.
+  - **CV reader v2.**
+    - Markdown CVs and their PDF exports read the same: no stray `**`, and no "JavaScript
+      (React.js" split in two.
+    - Projects come with clean names and are linked to the job they were done in.
+    - Spoken languages are read with their level.
+    - Publications are split into title, authors and venue.
+    - Links and titles that a PDF wrapped onto the next line are joined back together.
+    - An entry you already have, or rejected, is never added again. That holds even after you
+      edited it, or wrote the employer's full legal name ("… Private Limited").
+    - A project links to the job or degree it was done in, including your own accepted
+      version of that job.
+  - **Leftover suggestions:** when you delete a file but keep its unreviewed suggestions, the
+    Profile page offers to remove them in one click.
+  - **Letters of recommendation** add the recommender as a private reference: name, position,
+    organisation, contact, and how they know you.
+  - **Read again** on a document replaces only unreviewed suggestions.
+  - **"Part of" links** between entries: a project in a job, a certificate from a study. They
+    show on the mind map and in drafts.
+  - **Profile:** tick or select-all entries to accept, reject, delete or make them private in
+    bulk.
+  - **Mind map:** Auto-arrange (left-to-right or top-to-bottom), and delete snapshots.
+  - **Documents:** drag-and-drop upload, several files at once.
+
 ## v2.7.0
 - **Skip the model's thinking** (Settings → AI models, OpenAI-compatible servers). Reasoning
   models on NVIDIA NIM or vLLM can answer without thinking first. In the real run, Nemotron

@@ -76,8 +76,18 @@ LongText = Annotated[str | None, Field(default=None, max_length=5000)]
 Url = Annotated[str | None, Field(default=None, max_length=2048)]
 
 
+_UUID = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+
+
 class FactData(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    # Entries this one belongs to (a project done in a job, a certificate earned there). Only
+    # employment/education/research/volunteer/leadership/membership entries of the same case
+    # (checked in application/profile.py). Shown on the mind map and to drafting.
+    related_fact_ids: list[Annotated[str, Field(pattern=_UUID)]] | None = Field(
+        default=None, max_length=5
+    )
 
 
 class _Dated(FactData):
@@ -249,6 +259,52 @@ def validate_fact_data(section: Section, data: dict[str, Any]) -> dict[str, Any]
         raise ValidationFailed(f"Invalid {section.value} entry: {details}") from exc
     dumped: dict[str, Any] = model.model_dump(mode="json", exclude_none=True)
     return dumped
+
+
+def _norm_key(value: Any) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", str(value or "").lower()).strip()
+
+
+# "Lumen Robotics Private Limited" is the same employer as "Lumen Robotics".
+_LEGAL_SUFFIX = re.compile(
+    r"(?:\s+(?:private|pvt|limited|ltd|inc|incorporated|llc|llp|plc|gmbh|ag|sa|corp|"
+    r"corporation|co|company))+$"
+)
+
+
+def _org_key(value: Any) -> str:
+    key = _norm_key(value)
+    return _LEGAL_SUFFIX.sub("", key) or key
+
+
+def identity_keys(section: Section, data: dict[str, Any]) -> set[tuple[str, ...]]:
+    """Keys that say "this is the same entry", even after the user edited its wording: a job
+    is the same organization from the same start date, a degree the same institution and
+    start, a project/certificate/skill the same name, a paper the same DOI or title."""
+    keys: set[tuple[str, ...]] = {(section.value, "label", _norm_key(fact_label(section, data)))}
+    start = str(data.get("start") or "")
+    match section:
+        case Section.EMPLOYMENT | Section.VOLUNTEER | Section.LEADERSHIP | Section.MEMBERSHIP:
+            org = _org_key(data.get("organization"))
+            if org and start:
+                keys.add((section.value, "org-start", org, start))
+        case Section.EDUCATION:
+            inst = _org_key(data.get("institution"))
+            if inst and start:
+                keys.add((section.value, "inst-start", inst, start))
+        case Section.PROJECT | Section.CERTIFICATION | Section.AWARD | Section.SKILL:
+            name = _norm_key(data.get("name"))
+            if name:
+                keys.add((section.value, "name", name))
+        case Section.PUBLICATION:
+            if data.get("doi"):
+                keys.add((section.value, "doi", str(data["doi"]).lower()))
+            title = _norm_key(data.get("title"))[:80]
+            if title:
+                keys.add((section.value, "title", title))
+        case _:
+            pass
+    return keys
 
 
 def fact_label(section: Section, data: dict[str, Any]) -> str:

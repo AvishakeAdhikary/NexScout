@@ -6,7 +6,7 @@ import re
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -112,6 +112,24 @@ async def clear_overrides(
         stmt = stmt.where(MindmapOverride.node_key == node_key)
     result = await session.execute(stmt)
     return int(result.rowcount or 0)  # type: ignore[attr-defined]
+
+
+async def reset_positions(session: AsyncSession, actor: Actor, case_id: uuid.UUID) -> int:
+    """Auto-arrange: forget saved node positions so the layout engine places every node.
+    Renamed and hidden nodes stay renamed and hidden; overrides left with nothing are removed."""
+    await get_case(session, actor, case_id)
+    owned = (MindmapOverride.case_id == case_id, MindmapOverride.owner_user_id == actor.user_id)
+    moved = await session.execute(
+        update(MindmapOverride)
+        .where(*owned, MindmapOverride.x.is_not(None) | MindmapOverride.y.is_not(None))
+        .values(x=None, y=None)
+    )
+    await session.execute(
+        delete(MindmapOverride).where(
+            *owned, MindmapOverride.label.is_(None), MindmapOverride.hidden.is_(False)
+        )
+    )
+    return int(moved.rowcount or 0)  # type: ignore[attr-defined]
 
 
 async def compare_snapshots(

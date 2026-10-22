@@ -1,0 +1,23 @@
+
+12,StationRoad,Example Town,Dist:Sample -000000,India.
+000-0000000 office@example-institute.edu
+Date: 10/01/2024
+TO WHOM IT MAY CONCERN
+
+LETTER OF RECOMMENDATION
+
+It gives me immense pleasure to recommend Rohan Example for his Doctoral programme whom I
+know since 2018 as my student of three years full time undergraduate degree programme BCA
+at Example Institute of Management and Technology.
+He was among the most diligent students of his batch and consistently helped his peers.
+I wish him all success for his future endeavours, and a bright life ahead.
+
+The recommendation letter is issued on the request of the student without any prejudice to rights and
+interest of the institution.
+
+
+Asha Sample, PhD (CSE)
+Professor and Principal | Example Institute of Management and Technology
+Department Chair | CSE and IT studies
+Example Knowledge Foundation | Example Town | India
+E-mail: asha.sample@example-institute.edu

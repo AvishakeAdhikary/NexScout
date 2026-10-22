@@ -19,6 +19,7 @@ export const EDGE_LABELS: Record<string, string> = {
   at_organization: "same organization",
   followed_by: "then",
   mentions_skill: "mentions skill",
+  part_of: "part of",
 };
 
 export function displayLabel(n: MindNodeOut): string {

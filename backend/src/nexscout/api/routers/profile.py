@@ -9,6 +9,8 @@ from fastapi import APIRouter, Response, status
 from nexscout.api.deps import CurrentActor, DbSession
 from nexscout.api.schemas import (
     EvidenceOut,
+    FactBulkIn,
+    FactBulkOut,
     FactCreate,
     FactMerge,
     FactOut,
@@ -135,6 +137,23 @@ async def create_snapshot(
         created_at=snap.created_at,
         fact_count=len(snap.facts),
     )
+
+
+@router.delete("/cases/{case_id}/snapshots/{number}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_snapshot(
+    case_id: uuid.UUID, number: int, actor: CurrentActor, db: DbSession
+) -> Response:
+    await profile.delete_snapshot(db, actor, case_id, number)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/cases/{case_id}/facts/bulk", response_model=FactBulkOut)
+async def bulk_facts(
+    case_id: uuid.UUID, body: FactBulkIn, actor: CurrentActor, db: DbSession
+) -> FactBulkOut:
+    """Accept, reject, delete, make private or shareable: many entries at once."""
+    changed = await profile.bulk_facts(db, actor, case_id, action=body.action, ids=body.ids)
+    return FactBulkOut(changed=changed)
 
 
 @router.get("/cases/{case_id}/snapshots", response_model=list[SnapshotOut])

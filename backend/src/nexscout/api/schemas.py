@@ -118,6 +118,27 @@ class FactReviewOut(ApiModel):
     changed: int
 
 
+class CaseImportOut(ApiModel):
+    case_id: uuid.UUID
+    case_name: str
+    counts: dict[str, int]
+    warnings: list[str]
+
+
+class FactBulkIn(ApiModel):
+    action: str = Field(pattern="^(accept|reject|delete|private|shareable)$")
+    ids: list[uuid.UUID] = Field(min_length=1, max_length=500)
+
+
+class FactBulkOut(ApiModel):
+    changed: int
+
+
+class RereadOut(ApiModel):
+    removed: int
+    created: int
+
+
 class FactMerge(ApiModel):
     keep_id: uuid.UUID
     merge_ids: list[uuid.UUID] = Field(min_length=1, max_length=20)

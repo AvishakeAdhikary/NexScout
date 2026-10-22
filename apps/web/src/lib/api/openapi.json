@@ -1335,6 +1335,20 @@
         "title": "AutopilotOut",
         "type": "object"
       },
+      "Body_import_profile_api_v1_cases_import_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_profile_api_v1_cases_import_post",
+        "type": "object"
+      },
       "Body_upload_api_v1_cases__case_id__documents_post": {
         "properties": {
           "file": {
@@ -1449,6 +1463,42 @@
           "name"
         ],
         "title": "CaseCreate",
+        "type": "object"
+      },
+      "CaseImportOut": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "format": "uuid",
+            "title": "Case Id",
+            "type": "string"
+          },
+          "case_name": {
+            "title": "Case Name",
+            "type": "string"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "case_id",
+          "case_name",
+          "counts",
+          "warnings"
+        ],
+        "title": "CaseImportOut",
         "type": "object"
       },
       "CaseOut": {
@@ -2636,6 +2686,46 @@
         ],
         "title": "ExperienceMode",
         "type": "string"
+      },
+      "FactBulkIn": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "pattern": "^(accept|reject|delete|private|shareable)$",
+            "title": "Action",
+            "type": "string"
+          },
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "action",
+          "ids"
+        ],
+        "title": "FactBulkIn",
+        "type": "object"
+      },
+      "FactBulkOut": {
+        "additionalProperties": false,
+        "properties": {
+          "changed": {
+            "title": "Changed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "changed"
+        ],
+        "title": "FactBulkOut",
+        "type": "object"
       },
       "FactCreate": {
         "additionalProperties": false,
@@ -5428,6 +5518,25 @@
         "title": "ReplyIn",
         "type": "object"
       },
+      "RereadOut": {
+        "additionalProperties": false,
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "integer"
+          },
+          "removed": {
+            "title": "Removed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "removed",
+          "created"
+        ],
+        "title": "RereadOut",
+        "type": "object"
+      },
       "RescoreOut": {
         "additionalProperties": false,
         "properties": {
@@ -7835,6 +7944,48 @@
         ]
       }
     },
+    "/api/v1/cases/import": {
+      "post": {
+        "description": "A `.nexscout` file becomes a new case (nothing existing is changed).",
+        "operationId": "import_profile_api_v1_cases_import_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_profile_api_v1_cases_import_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseImportOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Profile",
+        "tags": [
+          "cases"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}": {
       "delete": {
         "operationId": "delete_case_api_v1_cases__case_id__delete",
@@ -8931,6 +9082,58 @@
         ]
       }
     },
+    "/api/v1/cases/{case_id}/export": {
+      "get": {
+        "description": "This case's profile as a `.nexscout` file (entries, evidence, mind map, snapshots,\nrelationships, answers and, optionally, the original documents). No secrets.",
+        "operationId": "export_profile_api_v1_cases__case_id__export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "documents",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Documents",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Profile",
+        "tags": [
+          "cases"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/facts": {
       "get": {
         "operationId": "list_facts_api_v1_cases__case_id__facts_get",
@@ -9056,6 +9259,60 @@
           }
         },
         "summary": "Create Fact",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/facts/bulk": {
+      "post": {
+        "description": "Accept, reject, delete, make private or shareable: many entries at once.",
+        "operationId": "bulk_facts_api_v1_cases__case_id__facts_bulk_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FactBulkIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FactBulkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Bulk Facts",
         "tags": [
           "profile"
         ]
@@ -9320,6 +9577,43 @@
           }
         },
         "summary": "Get Mindmap",
+        "tags": [
+          "mind map"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/mindmap/layout/reset": {
+      "post": {
+        "description": "Auto-arrange: clears saved positions only (names and hidden nodes are kept).",
+        "operationId": "reset_layout_api_v1_cases__case_id__mindmap_layout_reset_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Layout",
         "tags": [
           "mind map"
         ]
@@ -10533,6 +10827,51 @@
         ]
       }
     },
+    "/api/v1/cases/{case_id}/snapshots/{number}": {
+      "delete": {
+        "operationId": "delete_snapshot_api_v1_cases__case_id__snapshots__number__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Snapshot",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/social-profiles": {
       "get": {
         "operationId": "list_links_api_v1_cases__case_id__social_profiles_get",
@@ -11122,6 +11461,50 @@
           }
         },
         "summary": "Download",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}/reread": {
+      "post": {
+        "description": "Read the document again with the current reader. Only its pending, unedited entries are\nreplaced; accepted, rejected and edited entries are kept.",
+        "operationId": "reread_document_api_v1_documents__document_id__reread_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RereadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reread Document",
         "tags": [
           "documents"
         ]

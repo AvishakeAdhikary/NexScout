@@ -1,0 +1,67 @@
+Rohan Example
+Machine Learning Engineer | Applied AI Engineer
+Location: Pune, India Email: rohan.example@example.com
+Phone: +91 00000 00000 GitHub: github.com/rohan-example
+Professional Summary
+Machine Learning Engineer building production retrieval and vision
+systems -- ﬁne-tuning models (LoRA/QLoRA, llama.cpp) and shipping
+them to the edge.
+Work Experience
+Machine Learning Engineer - Lumen Robotics
+June 2024 – Present | Pune, India
+•  Design and deploy VisionDesk, an inspection kiosk combining
+
+computer vision and on-device inference across three factories.
+•  Fine-tune vision-language models with PyTorch and LoRA.
+Teaching Assistant - Example Institute of
+Technology
+January 2023 – May 2024 | Pune, India
+•  Taught SQL and Python labs to 60+ students.
+Education
+Master of Computer Applications (MCA) - Example
+University Pune
+August 2021 – June 2023 | Pune, India Example School of Computing.
+8.10 CGPA, First Division.
+•  Relevant coursework: Machine Learning, Computer Vision,
+
+Databases.
+Skills
+•  Programming: Python, Java, JavaScript (React.js, Angular), C++,
+C, Flutter
+•  Machine Learning & AI: Deep Neural Networks, PyTorch,
+LoRA/QLoRA Fine-Tuning, Model Quantization (MXFP4, llama.cpp/
+GGUF), Retrieval-Augmented Generation (RAG), Computer Vision
+•  Other Tools: Git (CI/CD Pipelines), Docker, Node.js (Express.js)
+Certiﬁcations
+•  AWS Computer Vision: Getting Started with GluonCV -- Amazon
+Web Services
+•  Microsoft Certiﬁed: Data Analyst Associate (Power BI) -- Microsoft
+Projects
+VisionDesk -- Autonomous Inspection Kiosk
+June 2024 – Present | Lumen Robotics
+•  Built the defect detector and the kiosk's on-device inference
+service.
+•  Tech: Python, PyTorch, ONNX, Docker
+Sign Language Reader (LSTM Model)
+2021 | Independent | github.com/rohan-example/sign-reader
+•  Real-time sign recognition with MediaPipe keypoints and an LSTM.
+EdgeCam
+
+March 2025 – Present | Independent | rohan-example.github.io/
+EdgeCam
+•  Building an offline camera app that labels parts on the device.
+Campus Bus Tracker
+September 2022 – March 2023 | Example University Pune |
+github.com/rohan-example/bus
+•  Final-year project: live bus positions for students.
+Publications
+Google Scholar: 3 citations (2026).
+•  R. Example, S. Sample. Vision Models for Factory Inspection: A
+Survey. In Edge Intelligence, pp. 10–20. Example Press, 12 March
+2025. doi:10.1234/example.2025.1
+•  S. Sample, R. Example. Learning Sign Language from Keypoints. In
+Proc. Example Conference on Vision, 2022. doi:10.1234/example.2022.7
+Languages
+•  English: Full professional proﬁciency
+•  Hindi: Native
+•  German: Elementary

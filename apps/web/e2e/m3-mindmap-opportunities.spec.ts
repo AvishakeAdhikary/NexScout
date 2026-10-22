@@ -21,8 +21,8 @@ async function setup(page: Page): Promise<string> {
   await expect(page.getByRole("radio", { name: "PhD and employment" })).toBeChecked();
 
   await page.goto(`${base}/documents`);
-  await page.getByLabel("File").setInputFiles(CV);
-  await page.getByRole("button", { name: "Upload" }).click();
+  // The drop zone uploads as soon as a file is chosen.
+  await page.locator('input[type="file"]').setInputFiles(CV);
   await page.getByRole("link", { name: "Review them now" }).click();
   // Accept every section (wait for the queue to load first).
   const acceptButtons = page.locator("#review").getByRole("button", { name: /^Accept all \d+$/ });

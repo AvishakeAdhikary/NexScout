@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
+import { ProfileImport } from "@/components/profile-import";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -109,6 +110,8 @@ export default function CasesPage() {
           </form>
         </CardContent>
       </Card>
+
+      <ProfileImport />
     </main>
   );
 }

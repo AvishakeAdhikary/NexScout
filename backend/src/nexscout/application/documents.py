@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -20,9 +21,11 @@ from nexscout.application.audit import record_audit
 from nexscout.application.cases import get_case
 from nexscout.application.profile import new_fact
 from nexscout.domain.cv_heuristics import METHOD as HEURISTIC_METHOD
-from nexscout.domain.cv_heuristics import extract_facts
+from nexscout.domain.cv_heuristics import ExtractedFact, extract_facts
 from nexscout.domain.errors import NotFound, ValidationFailed
-from nexscout.domain.profile import FactStatus, ReviewState
+from nexscout.domain.letters import METHOD as LETTER_METHOD
+from nexscout.domain.letters import read_reference
+from nexscout.domain.profile import FactStatus, ReviewState, Section, identity_keys
 from nexscout.infrastructure.db.engine import bind_tenant
 from nexscout.infrastructure.db.models import Document, FactEvidence, ProfileFact
 from nexscout.infrastructure.ingestion.files import FileKind, sniff
@@ -49,9 +52,12 @@ class DocumentPurpose(StrEnum):
     OTHER = "other"
 
 
-# Only these purposes are mined for profile facts. Transcripts or recommendation letters are
-# stored as supporting documents, but their text isn't turned into claims about the candidate.
-EXTRACT_FROM: frozenset[DocumentPurpose] = frozenset({DocumentPurpose.CV, DocumentPurpose.RESUME})
+# Only these purposes are mined for profile entries. A recommendation letter yields one
+# reference entry (who recommends you, domain/letters.py); its praise is never turned into claims
+# about the candidate. Transcripts and the rest are stored as supporting documents.
+EXTRACT_FROM: frozenset[DocumentPurpose] = frozenset(
+    {DocumentPurpose.CV, DocumentPurpose.RESUME, DocumentPurpose.RECOMMENDATION_LETTER}
+)
 
 
 @dataclass(frozen=True)
@@ -151,41 +157,156 @@ async def save_extraction(
     )
     created = int(already or 0)
     if parsed and DocumentPurpose(doc.purpose) in EXTRACT_FROM and not already:
-        for extracted in extract_facts(parsed.text):
-            fact = new_fact(
-                owner_id,
-                doc.case_id,
-                extracted.section,
-                extracted.data,
-                status=FactStatus.EXTRACTED,
-                review_state=ReviewState.PENDING,
-                meta={
-                    "method": HEURISTIC_METHOD,
-                    "confidence": extracted.confidence,
-                    "warnings": extracted.warnings,
-                    "document_id": str(doc.id),
-                },
-            )
-            session.add(fact)
-            await session.flush()
-            session.add(
-                FactEvidence(
-                    owner_user_id=owner_id,
-                    fact_id=fact.id,
-                    document_id=doc.id,
-                    kind="document",
-                    method=HEURISTIC_METHOD,
-                    page=parsed.page_of(extracted.start),
-                    char_start=extracted.start,
-                    char_end=extracted.end,
-                    excerpt=extracted.excerpt,
-                )
-            )
-            created += 1
+        created = await _extract_into(session, owner_id, doc, parsed.text, parsed.page_of)
     if parsed and DocumentPurpose(doc.purpose) in EXTRACT_FROM:
-        doc.extraction_method = HEURISTIC_METHOD
+        doc.extraction_method = (
+            LETTER_METHOD
+            if doc.purpose == DocumentPurpose.RECOMMENDATION_LETTER
+            else HEURISTIC_METHOD
+        )
         doc.facts_extracted = created
     return created
+
+
+async def _extract_into(
+    session: AsyncSession,
+    owner_id: uuid.UUID,
+    doc: Document,
+    text: str,
+    page_of: Callable[[int], int | None],
+) -> int:
+    """Turn a document's text into pending entries with evidence. Entries the case already has
+    (any review state, so rejected ones aren't brought back) are skipped."""
+    # What the case already has, including the wording a user edited away (meta.original_data):
+    # identity key -> (that entry's id, its review state).
+    existing: dict[tuple[str, ...], tuple[uuid.UUID, str]] = {}
+    for fact_id, sec, data, fact_meta, state in (
+        await session.execute(
+            select(
+                ProfileFact.id,
+                ProfileFact.section,
+                ProfileFact.data,
+                ProfileFact.meta,
+                ProfileFact.review_state,
+            ).where(ProfileFact.owner_user_id == owner_id, ProfileFact.case_id == doc.case_id)
+        )
+    ).all():
+        section = Section(sec)
+        keys = identity_keys(section, data)
+        if isinstance(fact_meta.get("original_data"), dict):
+            keys |= identity_keys(section, fact_meta["original_data"])
+        for key in keys:
+            existing.setdefault(key, (fact_id, state))
+    # (entry, method, relationship quote) for each candidate entry.
+    rows: list[tuple[ExtractedFact, str, str | None]]
+    if doc.purpose == DocumentPurpose.RECOMMENDATION_LETTER:
+        ref = read_reference(text)
+        if ref is None:
+            return 0
+        letter = ExtractedFact(
+            Section.REFERENCE, dict(ref.data), ref.start, ref.end, ref.excerpt, ref.warnings
+        )
+        rows = [(letter, LETTER_METHOD, ref.relationship_quote)]
+    else:
+        rows = [(f, HEURISTIC_METHOD, None) for f in extract_facts(text)]
+    made: dict[int, ProfileFact] = {}
+    # Each candidate's entry: the new one, or the one the case already has (so a project still
+    # links to the job the user accepted and edited). Rejected entries are never link targets.
+    entry_of: dict[int, uuid.UUID] = {}
+    for i, (extracted, method, quote) in enumerate(rows):
+        keys = identity_keys(extracted.section, extracted.data)
+        if hit := next((existing[k] for k in keys if k in existing), None):
+            if hit[1] != ReviewState.REJECTED.value:
+                entry_of[i] = hit[0]
+            continue
+        meta: dict[str, object] = {
+            "method": method,
+            "confidence": extracted.confidence,
+            "warnings": extracted.warnings,
+            "document_id": str(doc.id),
+        }
+        if quote:
+            meta["relationship_quote"] = quote
+        fact = new_fact(
+            owner_id,
+            doc.case_id,
+            extracted.section,
+            extracted.data,
+            status=FactStatus.EXTRACTED,
+            review_state=ReviewState.PENDING,
+            meta=meta,
+        )
+        session.add(fact)
+        await session.flush()
+        session.add(
+            FactEvidence(
+                owner_user_id=owner_id,
+                fact_id=fact.id,
+                document_id=doc.id,
+                kind="document",
+                method=method,
+                page=page_of(extracted.start),
+                char_start=extracted.start,
+                char_end=extracted.end,
+                excerpt=extracted.excerpt,
+            )
+        )
+        for key in keys:
+            existing.setdefault(key, (fact.id, ReviewState.PENDING.value))
+        made[i] = fact
+        entry_of[i] = fact.id
+    # Links ("this project was done in that job"), on new entries only, still pending review.
+    for i, fact in made.items():
+        targets = [str(entry_of[j]) for j in rows[i][0].related if j in entry_of]
+        if targets:
+            fact.data = {**fact.data, "related_fact_ids": targets}
+    return len(made)
+
+
+async def reread_document(
+    session: AsyncSession, actor: Actor, document_id: uuid.UUID
+) -> dict[str, int]:
+    """Read a document again with the current reader. Only its pending, unedited entries are
+    replaced; anything the user accepted, rejected or edited stays exactly as it is."""
+    doc = await get_document(session, actor, document_id)
+    if not doc.text_content:
+        raise ValidationFailed("This document has no readable text to read again.")
+    if DocumentPurpose(doc.purpose) not in EXTRACT_FROM:
+        raise ValidationFailed(
+            "Entries are only read from CVs, résumés and recommendation letters."
+        )
+    pending = [
+        f
+        for f in await session.scalars(
+            select(ProfileFact).where(
+                ProfileFact.owner_user_id == actor.user_id,
+                ProfileFact.case_id == doc.case_id,
+                ProfileFact.review_state == ReviewState.PENDING.value,
+                ProfileFact.meta["document_id"].astext == str(doc.id),
+            )
+        )
+        if not f.meta.get("edited_by_user")
+    ]
+    for fact in pending:
+        await session.delete(fact)
+    await session.flush()
+    stored = ParsedText(doc.text_content, list(doc.page_starts or []))
+    created = await _extract_into(session, actor.user_id, doc, stored.text, stored.page_of)
+    doc.extraction_method = (
+        LETTER_METHOD if doc.purpose == DocumentPurpose.RECOMMENDATION_LETTER else HEURISTIC_METHOD
+    )
+    doc.facts_extracted = created
+    record_audit(
+        session,
+        "document.reread",
+        actor_user_id=actor.user_id,
+        target_type="document",
+        target_id=doc.id,
+        ip=actor.ip,
+        request_id=actor.request_id,
+        meta={"removed": len(pending), "created": created},
+    )
+    return {"removed": len(pending), "created": created}
 
 
 async def list_documents(session: AsyncSession, actor: Actor, case_id: uuid.UUID) -> list[Document]:

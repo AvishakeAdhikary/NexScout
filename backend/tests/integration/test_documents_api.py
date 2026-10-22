@@ -22,15 +22,17 @@ async def test_markdown_cv_upload_creates_pending_facts_with_evidence(
     assert raw.status_code == 201, raw.text
     assert raw.json()["document"]["parse_status"] == "pending"  # reading happens in the background
     assert raw.json()["run_id"]
-    body = await uploaded(client, case_id, ada_cv_text().encode(), "ada.md")
-    doc = body["document"]
+    doc = (await client.get(f"/api/v1/documents/{raw.json()['document']['id']}")).json()
     assert doc["parse_status"] == "parsed"
     assert doc["file_kind"] == "markdown"
-    assert doc["extraction_method"] == "heuristic_v1"
-    assert body["facts_created"] == doc["facts_extracted"] > 10
+    assert doc["extraction_method"] == "heuristic_v2"
+    assert doc["facts_extracted"] > 10
+    # The same CV again adds nothing: entries the case already has are never duplicated.
+    again = await uploaded(client, case_id, ada_cv_text().encode(), "ada.md")
+    assert again["facts_created"] == 0
 
     rows = [r for r in await facts(client, case_id) if r["meta"]["document_id"] == doc["id"]]
-    assert len(rows) == body["facts_created"]
+    assert len(rows) == doc["facts_extracted"]
     assert {r["review_state"] for r in rows} == {"pending"}
     assert {r["status"] for r in rows} == {"extracted"}
     assert all(r["evidence_count"] == 1 for r in rows)

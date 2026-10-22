@@ -6,6 +6,7 @@ from nexscout.domain.profile import (
     Section,
     fact_label,
     find_gaps,
+    identity_keys,
     validate_fact_data,
 )
 
@@ -89,3 +90,19 @@ def test_present_end_is_not_before_start() -> None:
         )
     ]
     assert not any(g.code == "end_before_start" for g in find_gaps(facts))
+
+
+def test_the_same_job_is_recognised_after_the_user_edits_it() -> None:
+    from_cv = {
+        "organization": "Example Analytics",
+        "title": "Machine Learning Engineer | Graduate Engineer",
+        "start": "2023-08",
+    }
+    edited = {
+        "organization": "Example Analytics Private Limited",
+        "title": "Machine Learning Engineer (Graduate Engineer)",
+        "start": "2023-08",
+    }
+    assert identity_keys(Section.EMPLOYMENT, from_cv) & identity_keys(Section.EMPLOYMENT, edited)
+    other = {**from_cv, "start": "2019-01"}
+    assert not identity_keys(Section.EMPLOYMENT, other) & identity_keys(Section.EMPLOYMENT, edited)

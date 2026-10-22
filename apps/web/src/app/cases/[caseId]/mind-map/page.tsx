@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,16 @@ const MindGraph = dynamic(() => import("./graph").then((m) => m.MindGraph), {
   ssr: false,
   loading: () => <p>Drawing your map…</p>,
 });
+
+const noSubscription = () => () => {};
+
+function storedDirection(): "RIGHT" | "DOWN" {
+  try {
+    return window.localStorage.getItem("nexscout.mindmap-direction") === "DOWN" ? "DOWN" : "RIGHT";
+  } catch {
+    return "RIGHT";
+  }
+}
 
 export default function MindMapPage() {
   const { caseId } = useParams<{ caseId: string }>();
@@ -44,6 +54,26 @@ export default function MindMapPage() {
     onSuccess: invalidate,
   });
   const resetAll = useMutation({ mutationFn: () => mindmapApi.resetAll(caseId), onSuccess: invalidate });
+  // The remembered direction is browser-only; the server render uses the default.
+  const stored = useSyncExternalStore(noSubscription, storedDirection, () => "RIGHT" as const);
+  const [chosen, setDirection] = useState<"RIGHT" | "DOWN" | null>(null);
+  const direction = chosen ?? stored;
+  const [arrangeNonce, setArrangeNonce] = useState(0);
+  const arrange = useMutation({
+    mutationFn: () => mindmapApi.autoArrange(caseId),
+    onSuccess: () => {
+      setArrangeNonce((n) => n + 1);
+      invalidate();
+    },
+  });
+  const changeDirection = (d: "RIGHT" | "DOWN") => {
+    setDirection(d);
+    try {
+      window.localStorage.setItem("nexscout.mindmap-direction", d);
+    } catch {
+      // remembered for this visit only
+    }
+  };
 
   const { nodes, edges } = useMemo(() => {
     const all = map.data?.nodes ?? [];
@@ -108,6 +138,26 @@ export default function MindMapPage() {
           <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
           Show hidden items
         </label>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="mm-direction">Layout</Label>
+          <select
+            id="mm-direction"
+            className="h-8 rounded-lg border bg-background px-2 text-sm"
+            value={direction}
+            onChange={(e) => changeDirection(e.target.value as "RIGHT" | "DOWN")}
+          >
+            <option value="RIGHT">Left to right</option>
+            <option value="DOWN">Top to bottom</option>
+          </select>
+        </div>
+        <Button
+          variant="outline"
+          disabled={arrange.isPending}
+          onClick={() => arrange.mutate()}
+          title="Place every item neatly again (your renames and hidden items stay)"
+        >
+          {arrange.isPending ? "Arranging…" : "Auto-arrange"}
+        </Button>
         <Button variant="ghost" onClick={() => invalidate()}>
           Regenerate
         </Button>
@@ -122,7 +172,7 @@ export default function MindMapPage() {
       </div>
 
       {map.isPending && <p>Loading…</p>}
-      <ErrorAlert error={map.error ?? saveNode.error ?? resetAll.error} />
+      <ErrorAlert error={map.error ?? saveNode.error ?? resetAll.error ?? arrange.error} />
       {map.data && factNodes.length === 0 && (
         <p className="rounded-md border border-dashed p-4 text-sm">
           Your map is empty because no profile entries are confirmed yet.{" "}
@@ -147,6 +197,8 @@ export default function MindMapPage() {
               edges={edges}
               selectedKey={selected}
               onSelect={setSelected}
+              direction={direction}
+              arrangeNonce={arrangeNonce}
               onMove={(key, x, y) => {
                 const node = map.data!.nodes.find((n) => n.key === key);
                 if (node) saveNode.mutate({ node, patch: { x, y } });

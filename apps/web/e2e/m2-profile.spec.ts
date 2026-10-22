@@ -35,8 +35,8 @@ test("upload a CV, review against the source, accept, and find it again", async 
   // Upload
   await page.goto(`${caseBase}/documents`);
   await expect(page.getByRole("heading", { name: "Documents", level: 1 })).toBeVisible();
-  await page.getByLabel("File").setInputFiles(CV);
-  await page.getByRole("button", { name: "Upload" }).click();
+  // The drop zone uploads as soon as a file is chosen.
+  await page.locator('input[type="file"]').setInputFiles(CV);
   await expect(page.getByText(/Found \d+ possible entries/)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("cell", { name: "ada_example_cv.md" })).toBeVisible();
   await page.getByRole("link", { name: "Review them now" }).click();

@@ -139,10 +139,19 @@ export const casesApi = {
     api<CaseOut>(`/cases/${encodeURIComponent(id)}`, { method: "PATCH", body }),
   remove: (id: string) =>
     api<void>(`/cases/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  /** The whole profile as a .nexscout file (a download link, not a fetch). */
+  exportUrl: (id: string, documents = true) =>
+    `/api/v1/cases/${encodeURIComponent(id)}/export?documents=${documents}`,
+  importProfile: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return api<CaseImportOut>("/cases/import", { method: "POST", body: form });
+  },
 };
 
 // ------------------------------------------------------------------ M2: profile & documents
 type S = components["schemas"];
+export type CaseImportOut = S["CaseImportOut"];
 export type FactOut = S["FactOut"];
 export type Section = FactOut["section"];
 export type ReviewState = FactOut["review_state"];
@@ -198,7 +207,13 @@ export const factsApi = {
   snapshots: (caseId: string) => api<SnapshotOut[]>(`${c(caseId)}/snapshots`),
   snapshot: (caseId: string, reason: string) =>
     api<SnapshotOut>(`${c(caseId)}/snapshots`, { method: "POST", body: { reason } }),
+  deleteSnapshot: (caseId: string, number: number) =>
+    api<void>(`${c(caseId)}/snapshots/${number}`, { method: "DELETE" }),
+  bulk: (caseId: string, action: FactBulkAction, ids: string[]) =>
+    api<{ changed: number }>(`${c(caseId)}/facts/bulk`, { method: "POST", body: { action, ids } }),
 };
+
+export type FactBulkAction = "accept" | "reject" | "delete" | "private" | "shareable";
 
 export const documentsApi = {
   list: (caseId: string) => api<DocumentOut[]>(`${c(caseId)}/documents`),
@@ -210,6 +225,8 @@ export const documentsApi = {
   },
   text: (id: string) => api<DocumentTextOut>(`/documents/${e(id)}/text`),
   contentUrl: (id: string) => `/api/v1/documents/${e(id)}/content`,
+  reread: (id: string) =>
+    api<{ removed: number; created: number }>(`/documents/${e(id)}/reread`, { method: "POST" }),
   remove: (id: string, deletePendingFacts: boolean) =>
     api<void>(`/documents/${e(id)}?delete_pending_facts=${deletePendingFacts}`, {
       method: "DELETE",
@@ -271,6 +288,9 @@ export const mindmapApi = {
   resetNode: (caseId: string, key: string) =>
     api<void>(`${c(caseId)}/mindmap/nodes/${e(key)}`, { method: "DELETE" }),
   resetAll: (caseId: string) => api<void>(`${c(caseId)}/mindmap/overrides`, { method: "DELETE" }),
+  /** Auto-arrange: forget saved positions (names and hidden nodes stay). */
+  autoArrange: (caseId: string) =>
+    api<void>(`${c(caseId)}/mindmap/layout/reset`, { method: "POST" }),
   compare: (caseId: string, from: number, to: number) =>
     api<SnapshotDiffOut>(`${c(caseId)}/snapshots/compare?from_number=${from}&to_number=${to}`),
 };

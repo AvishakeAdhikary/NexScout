@@ -129,6 +129,7 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
         "fact_version": str(fact["version"]),
         "aff_version": str(aff["version"]),
         "opp_version": str(opp["match_version"]),
+        "snapshot_number": "1",
     }
 
 
@@ -194,6 +195,9 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("POST", f"/api/v1/cases/{c}/snapshots", {}),
         ("GET", f"/api/v1/cases/{c}/snapshots", None),
         ("GET", f"/api/v1/cases/{c}/snapshots/compare?from_number=1&to_number=2", None),
+        ("DELETE", f"/api/v1/cases/{c}/snapshots/{ids['snapshot_number']}", None),
+        ("POST", f"/api/v1/cases/{c}/facts/bulk", {"action": "delete", "ids": [f]}),
+        ("GET", f"/api/v1/cases/{c}/export", None),
         ("GET", f"/api/v1/facts/{f}", None),
         ("PATCH", f"/api/v1/facts/{f}", {"version": int(ids["fact_version"]), "is_private": True}),
         ("DELETE", f"/api/v1/facts/{f}", None),
@@ -203,6 +207,7 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("GET", f"/api/v1/documents/{d}", None),
         ("GET", f"/api/v1/documents/{d}/text", None),
         ("GET", f"/api/v1/documents/{d}/content", None),
+        ("POST", f"/api/v1/documents/{d}/reread", None),
         ("DELETE", f"/api/v1/documents/{d}", None),
         ("GET", f"/api/v1/cases/{c}/preferences", None),
         ("PUT", f"/api/v1/cases/{c}/preferences", {"version": 0, "data": {}}),
@@ -225,6 +230,7 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("PUT", f"/api/v1/cases/{c}/mindmap/nodes/{n}", {"hidden": True}),
         ("DELETE", f"/api/v1/cases/{c}/mindmap/nodes/{n}", None),
         ("DELETE", f"/api/v1/cases/{c}/mindmap/overrides", None),
+        ("POST", f"/api/v1/cases/{c}/mindmap/layout/reset", None),
         ("POST", f"/api/v1/cases/{c}/opportunities/sync", {}),
         ("POST", f"/api/v1/cases/{c}/opportunities/rescore", None),
         ("GET", f"/api/v1/cases/{c}/opportunities", None),
@@ -341,7 +347,7 @@ def test_every_id_route_is_covered(app: Any) -> None:
         )
     }
     sentinel["app_version"] = "1"
-    sentinel.update({"version_number": "{number}", "fmt": "{fmt}"})
+    sentinel.update({"version_number": "{number}", "fmt": "{fmt}", "snapshot_number": "{number}"})
     sentinel.update({"fact_version": "1", "aff_version": "1", "opp_version": "1"})
     covered = {(m, _template(u)) for m, u, _ in _requests(sentinel)}
     exempt = {(m, _template(p)) for m, p in EXEMPT}

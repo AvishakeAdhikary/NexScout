@@ -25,7 +25,7 @@ import { EDGE_LABELS, STATUS_STYLE, displayLabel } from "./labels";
 const elk = new ELK();
 const NODE_W = 230;
 const NODE_H = 64;
-const LAYOUT_EDGES = new Set(["has_section", "has_entry", "at_organization"]);
+const LAYOUT_EDGES = new Set(["has_section", "has_entry", "at_organization", "part_of"]);
 
 type MindNodeData = { node: MindNodeOut; selected: boolean };
 
@@ -60,17 +60,23 @@ export function MindGraph({
   selectedKey,
   onSelect,
   onMove,
+  direction = "RIGHT",
+  arrangeNonce = 0,
 }: {
   nodes: MindNodeOut[];
   edges: MindEdgeOut[];
   selectedKey: string | null;
   onSelect: (key: string) => void;
   onMove: (key: string, x: number, y: number) => void;
+  /** Layout direction; changing it (or `arrangeNonce`) lays the map out again. */
+  direction?: "RIGHT" | "DOWN";
+  arrangeNonce?: number;
 }) {
   const [layout, setLayout] = useState<Record<string, { x: number; y: number }>>({});
   const layoutKey = useMemo(
-    () => nodes.map((n) => n.key).join("|") + "#" + edges.length,
-    [nodes, edges],
+    () =>
+      nodes.map((n) => n.key).join("|") + "#" + edges.length + "#" + direction + "#" + arrangeNonce,
+    [nodes, edges, direction, arrangeNonce],
   );
 
   useEffect(() => {
@@ -81,7 +87,7 @@ export function MindGraph({
         id: "root",
         layoutOptions: {
           "elk.algorithm": "layered",
-          "elk.direction": "RIGHT",
+          "elk.direction": direction,
           "elk.spacing.nodeNode": "18",
           "elk.layered.spacing.nodeNodeBetweenLayers": "70",
         },
@@ -119,7 +125,7 @@ export function MindGraph({
       id: `${e.kind}-${e.source}-${e.target}-${i}`,
       source: e.source,
       target: e.target,
-      label: e.derived ? EDGE_LABELS[e.kind] : undefined,
+      label: e.derived || e.kind === "part_of" ? EDGE_LABELS[e.kind] : undefined,
       animated: false,
       style: e.derived ? { strokeDasharray: "5 5" } : undefined,
       markerEnd: e.kind === "followed_by" ? { type: MarkerType.ArrowClosed } : undefined,

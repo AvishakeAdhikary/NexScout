@@ -170,6 +170,20 @@ An LLM is never asked whether a safety rule may be skipped.
   their built names (`latest.yml` must match), and every asset is listed in `SHA256SUMS.txt`.
   Cleanup removes only NexScout's own images and the updater cache. Tests never call GitHub
   (`NEXSCOUT_UPDATE_CHECK=0`).
+- **Reading documents (ADR-0018):**
+  - Field values never contain Markdown, ligatures or split brackets (`clean()`).
+  - Evidence spans always point at the original text, verbatim.
+  - The reader skips entries the case already has, in any review state. Same entry =
+    `domain/profile.identity_keys` (also matched against `meta.original_data`, so a user's edits
+    don't make it look new). Links found by the reader point at the case's existing entry.
+  - Reader output is never deleted on the user's behalf. Suggestions left behind by a deleted
+    file are offered for removal, and the user decides.
+  - A letter yields a reference only, never claims about the candidate.
+  - Every reader change gets a synthetic fixture in `tests/fixtures/personas` copying the real
+    layout. No personal data.
+- **Profile bundles stay backward-compatible.** `nexscout-profile/1` files must keep importing.
+  A new format needs an explicit upgrade step in `profile_bundle._open`. Import always creates
+  a new case, remaps every id and validates every value like manual entry.
 - **Money is compared in one currency** via `domain/fx.convert` and the stored ECB rates. A missing rate
   is reported ("couldn't be converted"), never assumed.
 ### TypeScript / web

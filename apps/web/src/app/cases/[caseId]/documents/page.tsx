@@ -3,10 +3,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useRef, useState, type FormEvent } from "react";
+import { useState } from "react";
 
 import { FormatPicker } from "@/components/document-format";
 import { ErrorAlert } from "@/components/error-alert";
+import { FileDropZone } from "@/components/file-drop-zone";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ import { useCaseEvents, useRun } from "@/lib/live";
 
 const PURPOSES: [string, string][] = [
   ["cv", "CV / résumé (entries will be imported for review)"],
+  ["recommendation_letter", "Letter of recommendation (the recommender is added as a reference)"],
   ["transcript", "Transcript"],
   ["degree_certificate", "Degree certificate"],
   ["statement_of_purpose", "Statement of purpose"],
@@ -22,7 +24,6 @@ const PURPOSES: [string, string][] = [
   ["research_statement", "Research statement"],
   ["research_proposal", "Research proposal"],
   ["cover_letter", "Cover letter"],
-  ["recommendation_letter", "Letter of recommendation"],
   ["writing_sample", "Writing sample"],
   ["publication", "Publication"],
   ["language_test", "Language test result"],
@@ -72,21 +73,44 @@ function ReadingStatus({ runId, caseId }: { runId: string; caseId: string }) {
   );
 }
 
+const READABLE = new Set(["cv", "resume", "recommendation_letter"]);
+
+interface UploadItem {
+  name: string;
+  runId?: string;
+  error?: unknown;
+}
+
 export default function DocumentsPage() {
   const { caseId } = useParams<{ caseId: string }>();
   const queryClient = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
   const [purpose, setPurpose] = useState("cv");
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
   useCaseEvents(caseId);
   const docs = useQuery({ queryKey: ["documents", caseId], queryFn: () => documentsApi.list(caseId) });
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["documents", caseId] });
+    queryClient.invalidateQueries({ queryKey: ["facts", caseId] });
+  };
 
   const uploadDoc = useMutation({
-    mutationFn: (file: File) => documentsApi.upload(caseId, file, purpose),
-    onSuccess: () => {
-      if (fileRef.current) fileRef.current.value = "";
-      queryClient.invalidateQueries({ queryKey: ["documents", caseId] });
-      queryClient.invalidateQueries({ queryKey: ["facts", caseId] });
+    // One file at a time, in order, each with its own status line.
+    mutationFn: async (files: File[]) => {
+      setUploads(files.map((f) => ({ name: f.name })));
+      for (const [i, file] of files.entries()) {
+        try {
+          const res = await documentsApi.upload(caseId, file, purpose);
+          setUploads((u) => u.map((x, j) => (j === i ? { ...x, runId: res.run_id } : x)));
+        } catch (error) {
+          setUploads((u) => u.map((x, j) => (j === i ? { ...x, error } : x)));
+        }
+      }
     },
+    onSettled: refresh,
+  });
+  const reread = useMutation({
+    mutationFn: (id: string) => documentsApi.reread(id),
+    onSuccess: refresh,
   });
   const remove = useMutation({
     mutationFn: ({ id, pending }: { id: string; pending: boolean }) =>
@@ -96,12 +120,6 @@ export default function DocumentsPage() {
       queryClient.invalidateQueries({ queryKey: ["facts", caseId] });
     },
   });
-
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    const file = fileRef.current?.files?.[0];
-    if (file) uploadDoc.mutate(file);
-  }
 
   function confirmDelete(doc: DocumentOut) {
     if (!window.confirm(`Delete “${doc.filename}”? The file will be removed permanently.`)) return;
@@ -124,7 +142,7 @@ export default function DocumentsPage() {
         </p>
       </header>
 
-      <form onSubmit={submit} className="flex flex-col gap-3 rounded-lg border p-4">
+      <section aria-label="Upload documents" className="flex flex-col gap-3 rounded-lg border p-4">
         <div className="flex flex-col gap-1">
           <Label htmlFor="doc-purpose">What is this document?</Label>
           <select
@@ -140,25 +158,30 @@ export default function DocumentsPage() {
             ))}
           </select>
         </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="doc-file">File</Label>
-          <input
-            id="doc-file"
-            ref={fileRef}
-            type="file"
-            required
-            accept=".pdf,.docx,.md,.markdown,.txt,application/pdf,text/plain,text/markdown"
-            className="text-sm"
-          />
-        </div>
-        <Button type="submit" disabled={uploadDoc.isPending} className="self-start">
-          {uploadDoc.isPending ? "Uploading…" : "Upload"}
-        </Button>
-        <div aria-live="polite">
-          {uploadDoc.data && <ReadingStatus runId={uploadDoc.data.run_id} caseId={caseId} />}
-        </div>
-        <ErrorAlert error={uploadDoc.error} title="Upload failed" />
-      </form>
+        <FileDropZone
+          label={uploadDoc.isPending ? "Uploading…" : "Add documents"}
+          hint="PDF, Word (.docx), Markdown or plain text, up to 15 MB each. Several at once is fine."
+          accept=".pdf,.docx,.md,.markdown,.txt"
+          multiple
+          maxBytes={15 * 1024 * 1024}
+          disabled={uploadDoc.isPending}
+          onFiles={(files) => uploadDoc.mutate(files)}
+        />
+        <ul aria-live="polite" className="flex flex-col gap-1">
+          {uploads.map((u, i) => (
+            <li key={`${u.name}-${i}`} className="text-sm">
+              <span className="font-medium">{u.name}: </span>
+              {u.error ? (
+                <ErrorAlert error={u.error} title="Upload failed" />
+              ) : u.runId ? (
+                <ReadingStatus runId={u.runId} caseId={caseId} />
+              ) : (
+                <span role="status">Uploading…</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section aria-labelledby="docs-heading">
         <h2 id="docs-heading" className="mb-2 text-xl font-semibold">
@@ -209,6 +232,17 @@ export default function DocumentsPage() {
                         <a className="underline" href={documentsApi.contentUrl(d.id)}>
                           Download
                         </a>
+                        {READABLE.has(d.purpose) && d.parse_status === "parsed" && (
+                          <button
+                            type="button"
+                            className="underline"
+                            disabled={reread.isPending}
+                            title="Read it again with the latest reader. Only entries you haven't reviewed are replaced."
+                            onClick={() => reread.mutate(d.id)}
+                          >
+                            Read again
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="underline"
@@ -224,7 +258,16 @@ export default function DocumentsPage() {
             </table>
           </div>
         )}
-        <ErrorAlert error={remove.error} />
+        {reread.data && (
+          <p role="status" className="mt-2 text-sm">
+            Read again: {reread.data.created} new entries to review
+            {reread.data.removed ? `, ${reread.data.removed} unreviewed entries replaced` : ""}.{" "}
+            <Link className="underline" href={`/cases/${caseId}/profile#review`}>
+              Review them
+            </Link>
+          </p>
+        )}
+        <ErrorAlert error={remove.error ?? reread.error} />
       </section>
       <ApplicationMaterials caseId={caseId} />
     </div>

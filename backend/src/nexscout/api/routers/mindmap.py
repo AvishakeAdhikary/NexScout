@@ -66,6 +66,13 @@ async def clear_all(case_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> R
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+@router.post("/cases/{case_id}/mindmap/layout/reset", status_code=status.HTTP_204_NO_CONTENT)
+async def reset_layout(case_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> Response:
+    """Auto-arrange: clears saved positions only (names and hidden nodes are kept)."""
+    await mindmap.reset_positions(db, actor, case_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.get("/cases/{case_id}/snapshots/compare", response_model=SnapshotDiffOut)
 async def compare(
     case_id: uuid.UUID, actor: CurrentActor, db: DbSession, from_number: int, to_number: int

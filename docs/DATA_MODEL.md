@@ -101,6 +101,15 @@ opportunity links.
 - The opportunity payload (`opportunities.data`) gains country_codes, location_text and
   remote_scope.
 
+### M18 Links and portability (no migration; ADR-0018)
+- `profile_facts.data.related_fact_ids` (optional, ≤5): this case's employment, education,
+  research, volunteer, leadership or membership entries this entry is part of. Validated in
+  `application/profile.check_links`, and removed from other entries when the target is deleted.
+- Document `extraction_method` is `heuristic_v2` (CVs) or `letter_v1` (recommendation letters).
+  Reference entries from letters keep `meta.relationship_quote`.
+- Bundle format `nexscout-profile/1` (`application/profile_bundle.py`); see ADR-0018 for the
+  contents and what's excluded.
+
 ## Migration policy
 - Forward-only in production. Each revision is tested by upgrading from the previous head with
   representative data (`tests/integration/test_migrations.py`).

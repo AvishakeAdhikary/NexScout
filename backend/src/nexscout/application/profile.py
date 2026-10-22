@@ -10,7 +10,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexscout.application.actor import Actor
@@ -118,6 +118,78 @@ def new_fact(
     )
 
 
+# Entries another entry can belong to ("part of"): roles and places, not skills or projects.
+LINK_TARGETS = frozenset(
+    {
+        Section.EMPLOYMENT,
+        Section.EDUCATION,
+        Section.RESEARCH,
+        Section.VOLUNTEER,
+        Section.LEADERSHIP,
+        Section.MEMBERSHIP,
+    }
+)
+BULK_ACTIONS = ("accept", "reject", "delete", "private", "shareable")
+MAX_BULK = 500
+
+
+async def check_links(
+    session: AsyncSession,
+    owner_user_id: uuid.UUID,
+    case_id: uuid.UUID,
+    data: dict[str, Any],
+    *,
+    self_id: uuid.UUID | None = None,
+) -> None:
+    """`related_fact_ids` may only name this case's role/place entries (never itself)."""
+    ids = data.get("related_fact_ids") or []
+    if not ids:
+        return
+    wanted = {uuid.UUID(x) for x in ids}
+    if self_id is not None and self_id in wanted:
+        raise ValidationFailed("An entry can't be part of itself.")
+    rows = (
+        await session.execute(
+            select(ProfileFact.id, ProfileFact.section).where(
+                ProfileFact.id.in_(wanted),
+                ProfileFact.case_id == case_id,
+                ProfileFact.owner_user_id == owner_user_id,
+            )
+        )
+    ).all()
+    found = {fid: Section(sec) for fid, sec in rows}
+    if set(found) != wanted:
+        raise ValidationFailed("A linked entry doesn't exist in this case.")
+    if any(sec not in LINK_TARGETS for sec in found.values()):
+        raise ValidationFailed(
+            "Entries can only be linked to a job, study, research, volunteer, leadership or "
+            "membership entry."
+        )
+
+
+async def _unlink(
+    session: AsyncSession, owner_user_id: uuid.UUID, case_id: uuid.UUID, gone: set[str]
+) -> None:
+    """Remove deleted entries from other entries' links."""
+    if not gone:
+        return
+    rows = await session.scalars(
+        select(ProfileFact).where(
+            ProfileFact.case_id == case_id,
+            ProfileFact.owner_user_id == owner_user_id,
+            ProfileFact.data.has_key("related_fact_ids"),
+        )
+    )
+    for f in rows:
+        links = [x for x in (f.data.get("related_fact_ids") or []) if x not in gone]
+        if links != f.data.get("related_fact_ids"):
+            data = {k: v for k, v in f.data.items() if k != "related_fact_ids"}
+            if links:
+                data["related_fact_ids"] = links
+            f.data = data
+            f.version += 1
+
+
 async def create_fact(
     session: AsyncSession,
     actor: Actor,
@@ -129,6 +201,7 @@ async def create_fact(
 ) -> ProfileFact:
     """Manual entry: the user is the source, so it is accepted immediately."""
     await get_case(session, actor, case_id)
+    await check_links(session, actor.user_id, case_id, data)
     fact = new_fact(
         actor.user_id,
         case_id,
@@ -175,6 +248,7 @@ async def update_fact(
     values: dict[str, Any] = {}
     if data is not None:
         clean = validate_fact_data(section, data)
+        await check_links(session, actor.user_id, fact.case_id, clean, self_id=fact.id)
         if clean != fact.data:
             values["data"] = clean
             values["label"] = fact_label(section, clean)[:300]
@@ -258,7 +332,10 @@ async def review_facts(
 
 async def delete_fact(session: AsyncSession, actor: Actor, fact_id: uuid.UUID) -> None:
     fact = await get_fact(session, actor, fact_id)
+    case_id = fact.case_id
     await session.delete(fact)
+    await session.flush()
+    await _unlink(session, actor.user_id, case_id, {str(fact_id)})
     record_audit(
         session,
         "fact.deleted",
@@ -381,6 +458,89 @@ async def create_snapshot(
         meta={"number": snap.number, "facts": len(accepted)},
     )
     return snap
+
+
+async def bulk_facts(
+    session: AsyncSession,
+    actor: Actor,
+    case_id: uuid.UUID,
+    *,
+    action: str,
+    ids: list[uuid.UUID],
+) -> int:
+    """Accept, reject, delete or change the privacy of many entries at once (this user's, in
+    this case only). Returns how many changed."""
+    await get_case(session, actor, case_id)
+    if action not in BULK_ACTIONS:
+        raise ValidationFailed("Unknown action.")
+    if not ids:
+        return 0
+    if len(ids) > MAX_BULK:
+        raise ValidationFailed(f"At most {MAX_BULK} entries at a time.")
+    if action in ("accept", "reject"):
+        return await review_facts(
+            session,
+            actor,
+            case_id,
+            accept=ids if action == "accept" else [],
+            reject=ids if action == "reject" else [],
+        )
+    owned = (
+        ProfileFact.id.in_(ids),
+        ProfileFact.case_id == case_id,
+        ProfileFact.owner_user_id == actor.user_id,
+    )
+    if action == "delete":
+        gone = {str(x) for x in await session.scalars(select(ProfileFact.id).where(*owned))}
+        if gone:
+            await session.execute(
+                delete(ProfileFact).where(ProfileFact.id.in_([uuid.UUID(x) for x in gone]))
+            )
+            await _unlink(session, actor.user_id, case_id, gone)
+        changed = len(gone)
+    else:
+        result = await session.execute(
+            update(ProfileFact)
+            .where(*owned, ProfileFact.is_private.is_(action == "shareable"))
+            .values(is_private=action == "private", version=ProfileFact.version + 1)
+        )
+        changed = result.rowcount or 0  # type: ignore[attr-defined]
+    record_audit(
+        session,
+        f"fact.bulk_{action}",
+        actor_user_id=actor.user_id,
+        target_type="case",
+        target_id=case_id,
+        ip=actor.ip,
+        request_id=actor.request_id,
+        meta={"requested": len(ids), "changed": changed},
+    )
+    return changed
+
+
+async def delete_snapshot(
+    session: AsyncSession, actor: Actor, case_id: uuid.UUID, number: int
+) -> None:
+    await get_case(session, actor, case_id)
+    result = await session.execute(
+        delete(ProfileSnapshot).where(
+            ProfileSnapshot.case_id == case_id,
+            ProfileSnapshot.owner_user_id == actor.user_id,
+            ProfileSnapshot.number == number,
+        )
+    )
+    if not result.rowcount:  # type: ignore[attr-defined]
+        raise NotFound("Snapshot not found.")
+    record_audit(
+        session,
+        "profile.snapshot_deleted",
+        actor_user_id=actor.user_id,
+        target_type="case",
+        target_id=case_id,
+        ip=actor.ip,
+        request_id=actor.request_id,
+        meta={"number": number},
+    )
 
 
 async def list_snapshots(

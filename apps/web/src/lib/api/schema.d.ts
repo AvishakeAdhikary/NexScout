@@ -288,6 +288,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cases/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Profile
+         * @description A `.nexscout` file becomes a new case (nothing existing is changed).
+         */
+        post: operations["import_profile_api_v1_cases_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}": {
         parameters: {
             query?: never;
@@ -522,6 +542,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Profile
+         * @description This case's profile as a `.nexscout` file (entries, evidence, mind map, snapshots,
+         *     relationships, answers and, optionally, the original documents). No secrets.
+         */
+        get: operations["export_profile_api_v1_cases__case_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/facts": {
         parameters: {
             query?: never;
@@ -534,6 +575,26 @@ export interface paths {
         put?: never;
         /** Create Fact */
         post: operations["create_fact_api_v1_cases__case_id__facts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/facts/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bulk Facts
+         * @description Accept, reject, delete, make private or shareable: many entries at once.
+         */
+        post: operations["bulk_facts_api_v1_cases__case_id__facts_bulk_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -603,6 +664,26 @@ export interface paths {
         get: operations["get_mindmap_api_v1_cases__case_id__mindmap_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/mindmap/layout/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Layout
+         * @description Auto-arrange: clears saved positions only (names and hidden nodes are kept).
+         */
+        post: operations["reset_layout_api_v1_cases__case_id__mindmap_layout_reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -894,6 +975,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/snapshots/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Snapshot */
+        delete: operations["delete_snapshot_api_v1_cases__case_id__snapshots__number__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/social-profiles": {
         parameters: {
             query?: never;
@@ -1082,6 +1180,27 @@ export interface paths {
         get: operations["download_api_v1_documents__document_id__content_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{document_id}/reread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reread Document
+         * @description Read the document again with the current reader. Only its pending, unedited entries are
+         *     replaced; accepted, rejected and edited entries are kept.
+         */
+        post: operations["reread_document_api_v1_documents__document_id__reread_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2129,6 +2248,11 @@ export interface components {
             manual_only_sites: string[];
             policy: components["schemas"]["PolicyOut"];
         };
+        /** Body_import_profile_api_v1_cases_import_post */
+        Body_import_profile_api_v1_cases_import_post: {
+            /** File */
+            file: string;
+        };
         /** Body_upload_api_v1_cases__case_id__documents_post */
         Body_upload_api_v1_cases__case_id__documents_post: {
             /** File */
@@ -2165,6 +2289,22 @@ export interface components {
             description?: string | null;
             /** Name */
             name: string;
+        };
+        /** CaseImportOut */
+        CaseImportOut: {
+            /**
+             * Case Id
+             * Format: uuid
+             */
+            case_id: string;
+            /** Case Name */
+            case_name: string;
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Warnings */
+            warnings: string[];
         };
         /** CaseOut */
         CaseOut: {
@@ -2545,6 +2685,18 @@ export interface components {
          * @enum {string}
          */
         ExperienceMode: "strict" | "flexible";
+        /** FactBulkIn */
+        FactBulkIn: {
+            /** Action */
+            action: string;
+            /** Ids */
+            ids: string[];
+        };
+        /** FactBulkOut */
+        FactBulkOut: {
+            /** Changed */
+            changed: number;
+        };
         /** FactCreate */
         FactCreate: {
             /** Data */
@@ -3443,6 +3595,13 @@ export interface components {
         ReplyIn: {
             /** Answer */
             answer: string;
+        };
+        /** RereadOut */
+        RereadOut: {
+            /** Created */
+            created: number;
+            /** Removed */
+            removed: number;
         };
         /** RescoreOut */
         RescoreOut: {
@@ -4619,6 +4778,39 @@ export interface operations {
             };
         };
     };
+    import_profile_api_v1_cases_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_profile_api_v1_cases_import_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseImportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_case_api_v1_cases__case_id__get: {
         parameters: {
             query?: never;
@@ -5315,6 +5507,39 @@ export interface operations {
             };
         };
     };
+    export_profile_api_v1_cases__case_id__export_get: {
+        parameters: {
+            query?: {
+                documents?: boolean;
+            };
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_facts_api_v1_cases__case_id__facts_get: {
         parameters: {
             query?: {
@@ -5371,6 +5596,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_facts_api_v1_cases__case_id__facts_bulk_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FactBulkIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactBulkOut"];
                 };
             };
             /** @description Validation Error */
@@ -5541,6 +5801,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MindMapOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_layout_api_v1_cases__case_id__mindmap_layout_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -6311,6 +6600,36 @@ export interface operations {
             };
         };
     };
+    delete_snapshot_api_v1_cases__case_id__snapshots__number__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+                number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_links_api_v1_cases__case_id__social_profiles_get: {
         parameters: {
             query?: never;
@@ -6733,6 +7052,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reread_document_api_v1_documents__document_id__reread_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RereadOut"];
                 };
             };
             /** @description Validation Error */

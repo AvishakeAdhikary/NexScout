@@ -54,6 +54,18 @@ there. Search keywords, preferences and match results live in owned tables. User
 only through their own `opportunity_matches`. User-configured private or authenticated sources must
 never write to the shared catalog (enforced when such adapters are added; see KNOWN_LIMITATIONS).
 
+## 3b. Profile import (ADR-0018)
+- A `.nexscout` file is untrusted input.
+- **Limits:** 100 MB file, 300 MB unpacked, 500 parts, `profile.json` ≤ 50 MB. Absolute, `..`
+  and drive-letter paths are refused.
+- **Validation:** every entry goes through the same schema as manual entry, and every document
+  through upload sniffing. Preferences, relationships, links and answers go through their own
+  use cases. Meta keys are allow-listed.
+- **Isolation:** import always creates a new case owned by the importer. Ids are regenerated,
+  so a file can't point at anyone else's rows.
+- Exports never contain secrets, AI providers, tokens, applications or runs.
+- `case.exported` and `case.imported` are audited.
+
 ## 4. Data protection
 - TLS in production (terminated at the proxy). Postgres connections use TLS when remote.
 - At rest: disk encryption at the infrastructure level, plus application-level AES-GCM for secrets and

@@ -54,10 +54,19 @@ and reminders keep running. Your data is kept between runs.
 1. **Create your account.** Your email and a password, only on your computer.
 2. **Create a case**, for example "PhD in machine learning" or "Data jobs in Germany". Choose
    what you're looking for: PhD, employment or both.
-3. **Add your CV** (Documents). NexScout suggests profile entries and shows exactly where in
-   your CV each one came from.
-4. **Check your profile.** Accept, edit or reject each suggestion. *Only confirmed entries are
-   ever used*, and private entries never leave your profile.
+3. **Add your CV** (Documents). Drop it on the page, or several files at once. NexScout
+   suggests profile entries and shows exactly where in your CV each one came from. Add your
+   **letters of recommendation** too: each recommender becomes a private reference entry.
+   Nothing a letter says about you is turned into a claim.
+4. **Check your profile.** Accept, edit or reject each suggestion. Tick several entries, or
+   **Select all** in a section, to accept, reject, delete or make them private in one go. *Only
+   confirmed entries are ever used*, and private entries never leave your profile.
+   - A project or certificate can be **part of** a job or study (Edit → Part of). NexScout
+     links them for you when your CV says so, and letters and statements mention them together.
+   - Got a better CV, or a newer NexScout? **Documents → Read again** replaces only the
+     suggestions you haven't reviewed. What you accepted, rejected or edited stays as it is.
+   - Deleted a file but kept its suggestions? The Profile page tells you, and **Remove them**
+     clears those suggestions in one go.
 5. Optional: **choose an AI model** (Settings → AI models). You need one for letters and
    statements. Use your own key (OpenAI, Anthropic, Gemini, or any OpenAI-compatible service
    such as NVIDIA NIM), or a free model on your computer (Ollama, LM Studio). NexScout asks
@@ -189,6 +198,12 @@ approvals show you everything first.
 
 - Everything stays on your computer (or your own server). Your saved keys and tokens are
   encrypted.
+- **My Profile → Export profile** saves one case as a `.nexscout` file: every entry, the mind
+  map, snapshots, relationships and your documents. **Your cases → Import a profile** turns that
+  file into a new case, on this computer or another one. Nothing existing is changed, and no
+  keys or passwords are ever in the file.
+- On the mind map, **Auto-arrange** places everything neatly again (your renames and hidden
+  items stay). Snapshots you no longer need can be deleted under **Saved snapshots**.
 - **Account → Download my data** gives you everything as a .zip file.
 - **Account → Delete my account** removes everything permanently.
 
