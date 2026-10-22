@@ -532,6 +532,8 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-23 | M18: `uv run ruff check . && ruff format --check . && mypy && pytest` | all passed: mypy 147 files, **467 passed** in 231 s |
 | 2026-10-23 | M18: web `typecheck`, `lint`, `test` | passed (vitest 12/12) |
 | 2026-10-23 | M18: `npx playwright test` (dev) | **18/18 passed**, incl. m18 export/import journey and leftover-suggestion removal |
+| 2026-10-23 | M18: `E2E_PROD=1 npx playwright test` | **18/18 passed** (production build + API) |
+| 2026-10-23 | M18 CI run 39842154910 | 5/6 jobs green; `security` failed on new advisories (pypdf 6.20.1: 4 CVEs, certifi 2026.7.22). Upgraded to pypdf 6.21.2 (floor `>=6.21.1`) and certifi 2026.10.19; `pip-audit` clean; 329 unit/document tests passed |
 | 2026-10-23 | M18: real-data copy, `reread-documents` | CV: 43 suggestions, letters: 1 reference each; 0 of 45 new suggestions fail the quality check; links to accepted job/degree |
 
 ## Milestones
