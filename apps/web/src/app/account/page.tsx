@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { AboutUpdates } from "@/components/about-updates";
 import { AccessTokens } from "@/components/access-tokens";
 import { ErrorAlert } from "@/components/error-alert";
 import { NotificationChannels } from "@/components/notification-channels";
@@ -49,6 +50,8 @@ export default function AccountPage() {
           Download my data
         </a>
       </section>
+
+      <AboutUpdates />
 
       <NotificationChannels />
 

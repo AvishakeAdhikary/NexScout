@@ -210,6 +210,12 @@ export const factsApi = {
     api<void>(`${c(caseId)}/snapshots/${number}`, { method: "DELETE" }),
   bulk: (caseId: string, action: FactBulkAction, ids: string[]) =>
     api<{ changed: number }>(`${c(caseId)}/facts/bulk`, { method: "POST", body: { action, ids } }),
+  /** Add the skills the user chose from a `skill_discovery` run (evidence comes from the run). */
+  addDiscoveredSkills: (caseId: string, runId: string, names: string[]) =>
+    api<FactOut[]>(`${c(caseId)}/facts/bulk-create`, {
+      method: "POST",
+      body: { run_id: runId, names },
+    }),
 };
 
 export type FactBulkAction = "accept" | "reject" | "delete" | "private" | "shareable";
@@ -312,6 +318,8 @@ export const sourcesApi = {
   geo: () => api<GeoOut>("/geo"),
 };
 
+export type OpportunityView = "matches" | "not_fit" | "dismissed";
+
 export const opportunitiesApi = {
   sources: () => api<SourceOut[]>("/sources"),
   configureSource: (key: string, enabled: boolean, settings: Record<string, unknown>) =>
@@ -322,6 +330,16 @@ export const opportunitiesApi = {
     api<{ rescored: number }>(`${c(caseId)}/opportunities/rescore`, { method: "POST" }),
   list: (caseId: string, academic: boolean) =>
     api<OpportunityOut[]>(`${c(caseId)}/opportunities?academic=${academic}`),
+  /** One page of a list (no descriptions); pass `next_cursor` back as `cursor`. */
+  page: (
+    caseId: string,
+    p: { academic: boolean; view: OpportunityView; q?: string; cursor?: string | null },
+  ) => {
+    const query = new URLSearchParams({ academic: String(p.academic), view: p.view, limit: "40" });
+    if (p.q) query.set("q", p.q);
+    if (p.cursor) query.set("cursor", p.cursor);
+    return api<S["OpportunityPageOut"]>(`${c(caseId)}/opportunities/page?${query}`);
+  },
   setStatus: (caseId: string, id: string, status: string, version: number) =>
     api<OpportunityOut>(`${c(caseId)}/opportunities/${e(id)}`, {
       method: "PATCH",
@@ -352,7 +370,11 @@ export const runsApi = {
   workflows: () => api<WorkflowOut[]>("/workflows"),
   start: (caseId: string, kind: string, params: Record<string, unknown> = {}) =>
     api<RunOut>(`${c(caseId)}/runs`, { method: "POST", body: { kind, params } }),
-  list: (caseId: string) => api<RunOut[]>(`${c(caseId)}/runs`),
+  list: (caseId: string, before?: string) =>
+    api<RunOut[]>(`${c(caseId)}/runs${before ? `?before=${e(before)}` : ""}`),
+  hide: (runId: string) => api<void>(`/runs/${e(runId)}/hide`, { method: "POST" }),
+  clearFinished: (caseId: string) =>
+    api<{ hidden: number }>(`${c(caseId)}/runs/clear-finished`, { method: "POST" }),
   get: (runId: string) => api<RunDetailOut>(`/runs/${e(runId)}`),
   control: (runId: string, action: RunAction, node?: string) =>
     api<RunOut>(`/runs/${e(runId)}/control`, {
@@ -564,8 +586,15 @@ export const autopilotApi = {
 };
 
 export const trackingApi = {
-  notifications: () => api<NotificationsOut>("/notifications"),
+  notifications: (before?: string) =>
+    api<NotificationsOut>(`/notifications${before ? `?before=${e(before)}` : ""}`),
   read: (id: string) => api<void>(`/notifications/${e(id)}/read`, { method: "POST" }),
+  removeNotification: (id: string) => api<void>(`/notifications/${e(id)}`, { method: "DELETE" }),
+  clearNotifications: (readOnly: boolean) =>
+    api<{ cleared: number }>("/notifications/clear", {
+      method: "POST",
+      body: { read_only: readOnly },
+    }),
   readAll: () => api<void>("/notifications/read-all", { method: "POST" }),
   reminders: (caseId: string) => api<ReminderOut[]>(`${c(caseId)}/reminders`),
   addReminder: (caseId: string, title: string, dueOn: string, applicationId?: string) =>
@@ -577,9 +606,27 @@ export const trackingApi = {
     api<ReminderOut>(`/reminders/${e(id)}`, { method: "PATCH", body: { done } }),
   dashboard: (caseId: string) => api<DashboardOut>(`${c(caseId)}/dashboard`),
   diagnostics: () => api<DiagnosticsOut>("/diagnostics"),
-  chatHistory: (caseId: string) => api<ChatMessageOut[]>(`${c(caseId)}/chat`),
-  chat: (caseId: string, message: string) =>
-    api<ChatMessageOut[]>(`${c(caseId)}/chat`, { method: "POST", body: { message } }),
+  chatHistory: (caseId: string, conversationId?: string) =>
+    api<ChatMessageOut[]>(
+      `${c(caseId)}/chat${conversationId ? `?conversation_id=${e(conversationId)}` : ""}`,
+    ),
+  /** The assistant without AI (rule-based, answered right away). */
+  chat: (caseId: string, message: string, conversationId?: string) =>
+    api<ChatMessageOut[]>(`${c(caseId)}/chat`, {
+      method: "POST",
+      body: { message, conversation_id: conversationId ?? null },
+    }),
+  conversation: (caseId: string) => api<S["ConversationOut"]>(`${c(caseId)}/chat/conversation`),
+  newConversation: (caseId: string) =>
+    api<S["ConversationOut"]>(`${c(caseId)}/chat/conversations`, { method: "POST" }),
+  clearConversation: (id: string) =>
+    api<void>(`/chat/conversations/${e(id)}`, { method: "DELETE" }),
+  /** The AI assistant: the reply is written in the background (follow `run_id`). */
+  chatAi: (caseId: string, message: string, conversationId: string, providerId?: string) =>
+    api<S["AiChatOut"]>(`${c(caseId)}/chat/ai`, {
+      method: "POST",
+      body: { message, conversation_id: conversationId, provider_id: providerId ?? null },
+    }),
   listApplications: (caseId: string, params: { status?: string; q?: string; sort?: string }) => {
     const qs = new URLSearchParams(
       Object.entries(params).filter(([, v]) => v) as [string, string][],

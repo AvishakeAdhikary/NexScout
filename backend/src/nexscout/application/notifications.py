@@ -10,7 +10,7 @@ import uuid
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -282,14 +282,15 @@ async def enforce_retention(s: AsyncSession, now: datetime) -> dict[str, int]:
 
 
 async def list_notifications(
-    s: AsyncSession, actor: Actor, *, limit: int = 50
+    s: AsyncSession, actor: Actor, *, limit: int = 50, before: datetime | None = None
 ) -> tuple[list[Notification], int]:
+    """Newest first; `before` pages back in time. The unread count covers everything."""
+    stmt = select(Notification).where(Notification.owner_user_id == actor.user_id)
+    if before is not None:
+        stmt = stmt.where(Notification.created_at < before)
     rows = list(
         await s.scalars(
-            select(Notification)
-            .where(Notification.owner_user_id == actor.user_id)
-            .order_by(Notification.created_at.desc())
-            .limit(limit)
+            stmt.order_by(Notification.created_at.desc()).limit(max(1, min(limit, 200)))
         )
     )
     unread = await s.scalar(
@@ -314,6 +315,26 @@ async def mark_read(s: AsyncSession, actor: Actor, notification_id: uuid.UUID | 
             raise NotFound("Notification not found.")
         stmt = stmt.where(Notification.id == notification_id)
     await s.execute(stmt.values(read_at=datetime.now(UTC)))
+
+
+async def delete_notification(s: AsyncSession, actor: Actor, notification_id: uuid.UUID) -> None:
+    """Remove one notification (and its delivery records). A chat reply to it is no longer
+    recognised; anything it pointed at (an approval, a question) is still in the app."""
+    result = await s.execute(
+        delete(Notification)
+        .where(Notification.id == notification_id, Notification.owner_user_id == actor.user_id)
+        .returning(Notification.id)
+    )
+    if result.scalar_one_or_none() is None:
+        raise NotFound("Notification not found.")
+
+
+async def clear_notifications(s: AsyncSession, actor: Actor, *, read_only: bool) -> int:
+    """Clear the read notifications, or all of them."""
+    stmt = delete(Notification).where(Notification.owner_user_id == actor.user_id)
+    if read_only:
+        stmt = stmt.where(Notification.read_at.is_not(None))
+    return len((await s.execute(stmt.returning(Notification.id))).all())
 
 
 async def list_reminders(

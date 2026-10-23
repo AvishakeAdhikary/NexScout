@@ -4,7 +4,8 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-23
-- **Current milestone:** v2.10.0 ✅ contact details + documents made ready for applying (user feedback on v2.9.0).
+- **Current milestone:** M19, M20, M21 ✅ (v2.11.0): every item of the v2.8.0 feedback plan is done. Before: v2.10.0 ✅
+  contact details + documents made ready for applying (user feedback on v2.9.0).
   M18 ✅ (v2.9.0): portable profiles and CV reader v2. Next: M19 desktop shell, M20 scalable
   lists, M21 agentic assistant (plan below, "Plan M18–M21"). Before that: M14–M17 ✅ (v2.2.0 → v2.7.0, 2026-10-19). Remaining steps belong to the user (see
   Next exact steps). M16: provider editing, self-update, update notice (v2.3.0 is the first version that can update
@@ -462,6 +463,45 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   - Contact details are in bundles (optional key) and the account export.
   - Prettier at the repo root, `eslint-config-prettier`, `npm run format` and `lint`, and a CI
     desktop lint. Both apps were reformatted once.
+- **M19 (✅, v2.11.0), desktop shell and navigation (ADR-0019):**
+  - No app menu. The page's top bar is the title bar: `titleBarOverlay` at 56 px, theme colours
+    over the bridge, `.desktop-titlebar` drag region, and a drag strip on the sign-in pages.
+  - Tray: Open, Check for updates, the close-to-tray checkbox (default on, `desktop-prefs.json`),
+    Stop background work, Quit. A first-close notice, and a single-instance lock.
+  - Narrow bridge with 8 calls, each origin-checked (`policy.isTrustedSender`, tested).
+  - Account → About & updates: live update status, Restart to update, tray setting, log folder.
+  - Web: Home link, "All cases", a case switcher that keeps the section, breadcrumbs, and
+    drag-and-drop for `portals.yml`.
+  - Smoke run (signed in, whole-window capture): one bar, native window controls at its right,
+    clear of "Sign out", no menu.
+- **M20 (✅, v2.11.0), scalable lists:**
+  - `GET …/opportunities/page` uses keyset paging (eligible, score, title, id) with view, search
+    and counts. List items carry no description.
+  - Web board: tabs, debounced search, `useInfiniteQuery`, `@tanstack/react-virtual`, and the
+    description loaded on open.
+  - Notifications: delete, clear read or all, and `before` paging.
+  - Runs: hide one finished run or clear all finished (`hidden_at`, migration 0016; records kept).
+  - The mind map was already lazy-loaded. React Query pauses polling in hidden tabs.
+  - **Measured** (`tests/system/test_opportunity_scale.py`, 5,000 opportunities with 4 KB
+    descriptions):
+
+    | Request | Time | Size |
+    |---|---|---|
+    | Old whole list | 0.95 s | 22.4 MB |
+    | First page | 40 ms | 23 KB |
+    | Page 21 | 49 ms | – |
+    | Search | 51 ms | – |
+
+    No extra index needed.
+- **M21 (✅, v2.11.0), AI assistant and AI skills (ADR-0020):**
+  - `assistant_turn` run: consent → converse (at most 6 steps, JSON tool calls, allow-list in
+    `domain/assistant_tools.py`, side-effect ledger for tools that start work) → save
+    (idempotent per run).
+  - `chat_conversations` (migration 0017), with consent once per conversation.
+  - `skill_discovery` run plus a verbatim-quote verifier. `facts/bulk-create` takes names only,
+    and evidence comes from the run.
+  - Web: Assistant with "Use AI", New conversation, Clear, and an inline consent card. My
+    Profile → Find my skills with AI, chosen in one `<dialog>`.
 - **Still open:** real application portals (forms differ per employer); code signing; macOS/Linux installers;
   live notification channels.
 - **Next exact steps (the user's):**
@@ -477,9 +517,11 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
        entries only).
      - Verify that accepted entries, the mind map and snapshots are unchanged (compare counts before and after).
      - Stop the `nexscout-live-relay` container afterwards.
-     - Then M19 → M21 per the plan above. The user asked again (2026-10-23) what's left: M19
-       desktop shell + navigation, M20 scalable lists + housekeeping, M21 agentic assistant + AI
-       skills.
+     - M19–M21 are done (v2.11.0).
+     - Next:
+       - Verify the desktop update path (the installed app updates to v2.11.0 through the tray
+         or About & updates).
+       - Then `reread-documents` on the live install.
   1. Port `successfactors`, `gem`, `wttj` providers (career-ops entries reported unsupported).
   2. University portals without feeds (DTU, TU Delft, ETH, EPFL, TUM, Helsinki): only with a public API or feed.
   3. Desktop app ↔ Easy zip: consider separate Compose project names with a data migration (now guarded).
@@ -567,6 +609,10 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-23 | v2.10: `ruff`, `mypy`, `pytest` | all passed: **480 passed** (incl. new system test: contact details fill resume + form, edited resume gets its PDF, unanswered placeholder stops the run, answer bank resumes it; IDOR sweep with contact + fill routes) |
 | 2026-10-23 | v2.10: web `lint` (ESLint + Prettier), `typecheck`, `test`; desktop `lint`, `test` | passed (12/12, 8/8) |
 | 2026-10-23 | v2.10: `npx playwright test` and `E2E_PROD=1 npx playwright test` | **19/19 passed** in both (new `m18-contact-documents`: CV suggestion → saved contact → resume with contact line → edited version without PDF → Fill in the form makes the PDF → approval shows name and phone → rejected; delete from the position page) |
+| 2026-10-23 | v2.11 (M19–M21): `ruff`, `mypy` (155 files), `pytest` | **497 passed** (new: opportunity paging + 5,000-row scale test, housekeeping, assistant tool loop/allow-list/consent per conversation, skill discovery verifier + bulk-create, IDOR sweep over every new route). Schema-drift test caught a missing model index (fixed) |
+| 2026-10-23 | v2.11: web `lint` (ESLint + Prettier), `typecheck`, vitest; desktop Prettier + vitest | passed (12/12; desktop 11/11 incl. bridge origin check) |
+| 2026-10-23 | v2.11: `npx playwright test` and `E2E_PROD=1 npx playwright test` | **22/22 passed** in both. New: m19-shell, m20-lists, m21-assistant. A first run failed m4/m8 (row buttons named with the item title broke title locators); fixed with `aria-describedby` |
+| 2026-10-23 | v2.11: desktop `--smoke` signed in (`NEXSCOUT_SMOKE_COOKIE`, `NEXSCOUT_SMOKE_SCREENSHOT`) | bridge = 8 calls + isDesktop/platform, tray created, no app menu, `titleBarOverlay`; whole-window capture shows a single bar with native controls clear of "Sign out" |
 | 2026-10-23 | M18: real-data copy, `reread-documents` | CV: 43 suggestions, letters: 1 reference each; 0 of 45 new suggestions fail the quality check; links to accepted job/degree |
 
 ## Milestones
@@ -593,9 +639,9 @@ Architecture: `docs/ARCHITECTURE.md`. Decisions: `docs/ARCHITECTURE_DECISIONS/`.
 | M16 | Provider editing and auto-update | ✅ (update path verified once v2.4.0 exists, see Checkpoint) | Providers editable without re-adding; installed desktop app updates itself and removes old installers and images; web shows when an update exists |
 | M17 | Real-world run | ✅ (real CV, 186 live sources, NIM drafting; submissions left to the user by design) | The user's real CV and preferences run end to end on a production-mode stack with real sources and a live AI provider; every error found is fixed |
 | M18 | Portable profile and better reading | ✅ | Export/import a case faithfully as a new case; CV reader v2 gives clean entries on the user's real CV (0 quality failures); letters give references; links, bulk actions, snapshot delete, auto-arrange |
-| M19 | Native desktop shell and navigation | ⬜ | Frameless title bar, tray with close-to-tray setting, single instance, origin-checked IPC, About & updates, breadcrumbs, drag-and-drop |
-| M20 | Scalable lists and housekeeping | ⬜ | Opportunities paged and virtualized (5,000 measured), clear notifications and runs |
-| M21 | Agentic assistant and AI skills | ⬜ | Tool-using assistant with allowlist and per-conversation consent; AI skill discovery with one approval dialog |
+| M19 | Native desktop shell and navigation | ✅ | Frameless title bar, tray with close-to-tray setting, single instance, origin-checked IPC, About & updates, breadcrumbs, drag-and-drop |
+| M20 | Scalable lists and housekeeping | ✅ | Opportunities paged and virtualized (5,000 measured), clear notifications and runs |
+| M21 | Agentic assistant and AI skills | ✅ | Tool-using assistant with allowlist and per-conversation consent; AI skill discovery with one approval dialog |
 
 ## Deferred / open items
 _(Each item: dependency, concrete plan, acceptance test.)_

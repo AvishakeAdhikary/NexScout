@@ -103,7 +103,9 @@ async def _seed_owner(client: httpx.AsyncClient, worker: Any) -> dict[str, str]:
         },
     )
     assert custom.status_code == 200, custom.text
+    conversation = (await client.get(f"/api/v1/cases/{case_id}/chat/conversation")).json()
     return {
+        "conversation_id": conversation["id"],
         "source_key": "custom:lever:owner-only-board",
         "answer_id": answer["id"],
         "channel_id": channel["id"],
@@ -151,6 +153,7 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
     return [
         ("DELETE", f"/api/v1/me/tokens/{ids['token_id']}", None),
         ("POST", f"/api/v1/notifications/{note}/read", None),
+        ("DELETE", f"/api/v1/notifications/{note}", None),
         ("GET", f"/api/v1/cases/{c}/reminders", None),
         ("POST", f"/api/v1/cases/{c}/reminders", {"title": "x", "due_on": "2026-01-01"}),
         ("PATCH", f"/api/v1/reminders/{rem}", {"done": True}),
@@ -158,6 +161,19 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("GET", f"/api/v1/cases/{c}/dashboard", None),
         ("GET", f"/api/v1/cases/{c}/chat", None),
         ("POST", f"/api/v1/cases/{c}/chat", {"message": "what needs me?"}),
+        ("GET", f"/api/v1/cases/{c}/chat/conversation", None),
+        ("POST", f"/api/v1/cases/{c}/chat/conversations", None),
+        (
+            "POST",
+            f"/api/v1/cases/{c}/chat/ai",
+            {"message": "hi", "conversation_id": ids["conversation_id"]},
+        ),
+        ("DELETE", f"/api/v1/chat/conversations/{ids['conversation_id']}", None),
+        (
+            "POST",
+            f"/api/v1/cases/{c}/facts/bulk-create",
+            {"run_id": ids["run_id"], "names": ["Python"]},
+        ),
         (
             "POST",
             f"/api/v1/cases/{c}/applications/bulk-status",
@@ -237,6 +253,7 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("POST", f"/api/v1/cases/{c}/opportunities/sync", {}),
         ("POST", f"/api/v1/cases/{c}/opportunities/rescore", None),
         ("GET", f"/api/v1/cases/{c}/opportunities", None),
+        ("GET", f"/api/v1/cases/{c}/opportunities/page", None),
         ("GET", f"/api/v1/cases/{c}/opportunities/{o}", None),
         (
             "PATCH",
@@ -248,6 +265,8 @@ def _requests(ids: dict[str, str]) -> list[tuple[str, str, dict[str, Any] | None
         ("GET", f"/api/v1/cases/{c}/runs", None),
         ("GET", f"/api/v1/runs/{r}", None),
         ("POST", f"/api/v1/runs/{r}/control", {"action": "cancel"}),
+        ("POST", f"/api/v1/runs/{r}/hide", None),
+        ("POST", f"/api/v1/cases/{c}/runs/clear-finished", None),
         ("GET", f"/api/v1/cases/{c}/approvals", None),
         ("GET", f"/api/v1/approvals/{apr}", None),
         ("POST", f"/api/v1/approvals/{apr}/decision", {"approve": True}),
@@ -347,6 +366,7 @@ def test_every_id_route_is_covered(app: Any) -> None:
             "channel_id",
             "answer_id",
             "source_key",
+            "conversation_id",
         )
     }
     sentinel["app_version"] = "1"

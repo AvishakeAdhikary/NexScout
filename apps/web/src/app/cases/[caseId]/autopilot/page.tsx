@@ -60,7 +60,10 @@ export default function AutopilotPage() {
     queryFn: () => autopilotApi.get(caseId),
     refetchInterval: 10_000,
   });
-  const notes = useQuery({ queryKey: ["notifications"], queryFn: trackingApi.notifications });
+  const notes = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => trackingApi.notifications(),
+  });
   const answers = useQuery({
     queryKey: ["answers", caseId],
     queryFn: () => autopilotApi.answers(caseId),

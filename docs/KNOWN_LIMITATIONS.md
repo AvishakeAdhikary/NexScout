@@ -141,8 +141,17 @@ check their own setup with "Check connection" in Settings, which records the res
   anyone else. There are no SMS or mobile push notifications.
 - Reminders and notifications are created by the worker's sweep. Without a running worker,
   nothing new appears.
-- The assistant is a fixed-menu, rule-based router in English (no LLM). It understands a small
-  set of requests and says so otherwise. It never submits, sends or approves anything.
+- Without an AI model (or with "Use AI" off), the assistant is a fixed-menu, rule-based router
+  in English. It understands a small set of requests and says so otherwise.
+- **With an AI model (M21):**
+  - Ten allow-listed tools. At most 6 tool steps per message.
+  - Replies arrive as a whole when the background run finishes; they aren't streamed word by
+    word.
+  - It can be wrong in wording; it can't act beyond its tools.
+  - With the built-in mock, replies are labelled "[Mock reply, not written by AI]".
+- The assistant never submits, sends, approves, pays or deletes anything.
+- **AI skill suggestions** read confirmed entries and CV documents only (not letters or
+  transcripts). A skill the text implies but never names isn't suggested.
 - Bulk changes cover manual statuses only (tracking, completed, rejected, withdrawn, cancelled,
   paused); each item is validated by the state machine.
 

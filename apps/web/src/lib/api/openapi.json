@@ -434,6 +434,59 @@
         "title": "AffiliationUpdate",
         "type": "object"
       },
+      "AiChatIn": {
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "format": "uuid",
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          }
+        },
+        "required": [
+          "message",
+          "conversation_id"
+        ],
+        "title": "AiChatIn",
+        "type": "object"
+      },
+      "AiChatOut": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/ChatMessageOut"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "run_id"
+        ],
+        "title": "AiChatOut",
+        "type": "object"
+      },
       "AnswerIn": {
         "additionalProperties": false,
         "properties": {
@@ -1951,6 +2004,18 @@
       "ChatIn": {
         "additionalProperties": false,
         "properties": {
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
           "message": {
             "maxLength": 2000,
             "minLength": 1,
@@ -1978,6 +2043,18 @@
           "content": {
             "title": "Content",
             "type": "string"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
           },
           "created_at": {
             "format": "date-time",
@@ -2014,6 +2091,32 @@
           "created_at"
         ],
         "title": "ChatMessageOut",
+        "type": "object"
+      },
+      "ClearIn": {
+        "additionalProperties": false,
+        "properties": {
+          "read_only": {
+            "default": true,
+            "title": "Read Only",
+            "type": "boolean"
+          }
+        },
+        "title": "ClearIn",
+        "type": "object"
+      },
+      "ClearedOut": {
+        "additionalProperties": false,
+        "properties": {
+          "cleared": {
+            "title": "Cleared",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cleared"
+        ],
+        "title": "ClearedOut",
         "type": "object"
       },
       "ContactDetails": {
@@ -2228,6 +2331,38 @@
           "action"
         ],
         "title": "ControlIn",
+        "type": "object"
+      },
+      "ConversationOut": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {
+            "format": "uuid",
+            "title": "Case Id",
+            "type": "string"
+          },
+          "consented": {
+            "title": "Consented",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "consented",
+          "created_at"
+        ],
+        "title": "ConversationOut",
         "type": "object"
       },
       "CountryGroupOut": {
@@ -3595,6 +3730,20 @@
         "title": "HealthOut",
         "type": "object"
       },
+      "HiddenOut": {
+        "additionalProperties": false,
+        "properties": {
+          "hidden": {
+            "title": "Hidden",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hidden"
+        ],
+        "title": "HiddenOut",
+        "type": "object"
+      },
       "ItemOut": {
         "additionalProperties": false,
         "properties": {
@@ -4156,6 +4305,12 @@
             "title": "Gaps",
             "type": "array"
           },
+          "has_description": {
+            "default": true,
+            "description": "False only in list pages, which leave the description out (fetch the opportunity to read it).",
+            "title": "Has Description",
+            "type": "boolean"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -4236,6 +4391,44 @@
           "matched_at"
         ],
         "title": "OpportunityOut",
+        "type": "object"
+      },
+      "OpportunityPageOut": {
+        "additionalProperties": false,
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "matches, not_fit, dismissed (same filters)",
+            "title": "Counts",
+            "type": "object"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunityOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "counts"
+        ],
+        "title": "OpportunityPageOut",
         "type": "object"
       },
       "OpportunitySourceOut": {
@@ -6208,6 +6401,32 @@
           "expires_at"
         ],
         "title": "SessionOut",
+        "type": "object"
+      },
+      "SkillsAddIn": {
+        "additionalProperties": false,
+        "properties": {
+          "names": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Names",
+            "type": "array"
+          },
+          "run_id": {
+            "description": "The `skill_discovery` run whose suggestions these are.",
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "names"
+        ],
+        "title": "SkillsAddIn",
         "type": "object"
       },
       "SnapshotCreate": {
@@ -8966,6 +9185,7 @@
     },
     "/api/v1/cases/{case_id}/chat": {
       "get": {
+        "description": "A conversation's messages (the current conversation unless one is named).",
         "operationId": "chat_history_api_v1_cases__case_id__chat_get",
         "parameters": [
           {
@@ -8976,6 +9196,23 @@
               "format": "uuid",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "conversation_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Conversation Id"
             }
           }
         ],
@@ -9011,6 +9248,7 @@
         ]
       },
       "post": {
+        "description": "The assistant without AI (rule-based, answered right away).",
         "operationId": "chat_api_v1_cases__case_id__chat_post",
         "parameters": [
           {
@@ -9061,6 +9299,148 @@
           }
         },
         "summary": "Chat",
+        "tags": [
+          "tracking"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/chat/ai": {
+      "post": {
+        "description": "Ask the AI assistant. The reply is written in the background; follow the run.",
+        "operationId": "chat_ai_api_v1_cases__case_id__chat_ai_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiChatIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiChatOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Chat Ai",
+        "tags": [
+          "tracking"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/chat/conversation": {
+      "get": {
+        "description": "The case's newest conversation (started on first use).",
+        "operationId": "current_conversation_api_v1_cases__case_id__chat_conversation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Current Conversation",
+        "tags": [
+          "tracking"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/chat/conversations": {
+      "post": {
+        "description": "Start over. An online AI model asks for consent again in the new conversation.",
+        "operationId": "new_conversation_api_v1_cases__case_id__chat_conversations_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "New Conversation",
         "tags": [
           "tracking"
         ]
@@ -9623,6 +10003,64 @@
         ]
       }
     },
+    "/api/v1/cases/{case_id}/facts/bulk-create": {
+      "post": {
+        "description": "Add the skills the user chose from an AI suggestion run (taken from the run's own\nverified result, with their quotes as evidence).",
+        "operationId": "add_discovered_skills_api_v1_cases__case_id__facts_bulk_create_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillsAddIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FactOut"
+                  },
+                  "title": "Response Add Discovered Skills Api V1 Cases  Case Id  Facts Bulk Create Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Discovered Skills",
+        "tags": [
+          "profile"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/facts/merge": {
       "post": {
         "operationId": "merge_facts_api_v1_cases__case_id__facts_merge_post",
@@ -10132,6 +10570,122 @@
           }
         },
         "summary": "List Opportunities",
+        "tags": [
+          "opportunities"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/opportunities/page": {
+      "get": {
+        "description": "One page of matches, \"not a fit right now\" or \"not interested\", with the count of each.\nPass `next_cursor` back as `cursor` for the next page.",
+        "operationId": "page_opportunities_api_v1_cases__case_id__opportunities_page_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "default": "matches",
+              "title": "View",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "academic",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Academic"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 1000,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunityPageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Page Opportunities",
         "tags": [
           "opportunities"
         ]
@@ -10888,6 +11442,35 @@
               "title": "Case Id",
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -10968,6 +11551,50 @@
           }
         },
         "summary": "Start Run",
+        "tags": [
+          "runs"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/runs/clear-finished": {
+      "post": {
+        "description": "Clear finished activity from the list. The runs' records are kept.",
+        "operationId": "clear_finished_api_v1_cases__case_id__runs_clear_finished_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiddenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Finished",
         "tags": [
           "runs"
         ]
@@ -11566,6 +12193,42 @@
         "summary": "Test",
         "tags": [
           "channels"
+        ]
+      }
+    },
+    "/api/v1/chat/conversations/{conversation_id}": {
+      "delete": {
+        "operationId": "clear_conversation_api_v1_chat_conversations__conversation_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Conversation",
+        "tags": [
+          "tracking"
         ]
       }
     },
@@ -12549,6 +13212,37 @@
     "/api/v1/notifications": {
       "get": {
         "operationId": "list_notifications_api_v1_notifications_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -12559,9 +13253,60 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "List Notifications",
+        "tags": [
+          "tracking"
+        ]
+      }
+    },
+    "/api/v1/notifications/clear": {
+      "post": {
+        "operationId": "clear_notifications_api_v1_notifications_clear_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClearIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearedOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Notifications",
         "tags": [
           "tracking"
         ]
@@ -12576,6 +13321,42 @@
           }
         },
         "summary": "Read All",
+        "tags": [
+          "tracking"
+        ]
+      }
+    },
+    "/api/v1/notifications/{notification_id}": {
+      "delete": {
+        "operationId": "delete_notification_api_v1_notifications__notification_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notification_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Notification Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Notification",
         "tags": [
           "tracking"
         ]
@@ -13072,6 +13853,42 @@
           }
         },
         "summary": "Control",
+        "tags": [
+          "runs"
+        ]
+      }
+    },
+    "/api/v1/runs/{run_id}/hide": {
+      "post": {
+        "operationId": "hide_run_api_v1_runs__run_id__hide_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Run Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Hide Run",
         "tags": [
           "runs"
         ]

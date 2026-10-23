@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Query, Response, status
 
 from nexscout.api.deps import CurrentActor, DbSession
 from nexscout.api.schemas import (
@@ -17,6 +17,7 @@ from nexscout.api.schemas import (
     MatchGapOut,
     MatchStatusIn,
     OpportunityOut,
+    OpportunityPageOut,
     OpportunitySourceOut,
     RescoreOut,
     RunStartedOut,
@@ -65,7 +66,7 @@ def _source_out(view: opps.SourceView) -> SourceOut:
     )
 
 
-def _opp_out(view: opps.OpportunityView) -> OpportunityOut:
+def _opp_out(view: opps.OpportunityView, *, brief: bool = False) -> OpportunityOut:
     registry = adapters()
     demo = bool(view.sources) and all(
         (a := registry.get(s.source_key)) is not None and a.capabilities.is_demo_data
@@ -78,7 +79,9 @@ def _opp_out(view: opps.OpportunityView) -> OpportunityOut:
         title=o.title,
         organization_name=o.organization_name,
         status=o.status,
-        data=o.data,
+        # A list page leaves the description (up to 50 KB each) out; the card fetches it.
+        data={k: v for k, v in o.data.items() if k != "description"} if brief else o.data,
+        has_description=bool(o.data.get("description")),
         is_demo_data=demo,
         first_seen_at=o.first_seen_at,
         last_seen_at=o.last_seen_at,
@@ -203,6 +206,29 @@ async def list_opportunities(
         db, actor, case_id, academic=academic, status=match_status
     )
     return [_opp_out(v) for v in views]
+
+
+@router.get("/cases/{case_id}/opportunities/page", response_model=OpportunityPageOut)
+async def page_opportunities(
+    case_id: uuid.UUID,
+    actor: CurrentActor,
+    db: DbSession,
+    view: str = "matches",
+    academic: bool | None = None,
+    q: str | None = Query(default=None, max_length=200),
+    limit: int = Query(default=50, ge=1, le=opps.MAX_PAGE),
+    cursor: str | None = Query(default=None, max_length=1000),
+) -> OpportunityPageOut:
+    """One page of matches, "not a fit right now" or "not interested", with the count of each.
+    Pass `next_cursor` back as `cursor` for the next page."""
+    page = await opps.page_opportunities(
+        db, actor, case_id, academic=academic, view=view, q=q, limit=limit, cursor=cursor
+    )
+    return OpportunityPageOut(
+        items=[_opp_out(v, brief=True) for v in page.items],
+        next_cursor=page.next_cursor,
+        counts=page.counts,
+    )
 
 
 @router.get("/cases/{case_id}/opportunities/{opportunity_id}", response_model=OpportunityOut)

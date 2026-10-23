@@ -18,10 +18,12 @@ from nexscout.api.schemas import (
     FactReviewOut,
     FactUpdate,
     GapOut,
+    SkillsAddIn,
     SnapshotCreate,
     SnapshotOut,
 )
 from nexscout.application import profile
+from nexscout.application import skill_discovery as skills_app
 from nexscout.domain.profile import ReviewState, Section
 from nexscout.infrastructure.db.models import ProfileFact
 
@@ -154,6 +156,22 @@ async def bulk_facts(
     """Accept, reject, delete, make private or shareable: many entries at once."""
     changed = await profile.bulk_facts(db, actor, case_id, action=body.action, ids=body.ids)
     return FactBulkOut(changed=changed)
+
+
+@router.post(
+    "/cases/{case_id}/facts/bulk-create",
+    response_model=list[FactOut],
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_discovered_skills(
+    case_id: uuid.UUID, body: SkillsAddIn, actor: CurrentActor, db: DbSession
+) -> list[FactOut]:
+    """Add the skills the user chose from an AI suggestion run (taken from the run's own
+    verified result, with their quotes as evidence)."""
+    facts = await skills_app.add_discovered_skills(
+        db, actor, case_id, run_id=body.run_id, names=body.names
+    )
+    return [_out(f, 1) for f in facts]
 
 
 @router.get("/cases/{case_id}/snapshots", response_model=list[SnapshotOut])

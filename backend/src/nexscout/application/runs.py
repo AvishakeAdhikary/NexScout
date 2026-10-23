@@ -37,6 +37,8 @@ MAX_PARAMS_BYTES = 10_000
 ALLOWED_PARAMS: dict[str, set[str]] = {
     "system_check": {"wait_s", "require_approval", "marker_file"},
     "profile_summary": {"provider_id"},
+    "skill_discovery": {"provider_id"},
+    "assistant_turn": {"conversation_id", "message_id", "provider_id"},
     "document_ingestion": {"document_id"},
     "opportunity_discovery": {"sources"},
     "phd_research": {"opportunity_id"},
@@ -204,17 +206,54 @@ async def start_run(
 
 
 async def list_runs(
-    session: AsyncSession, actor: Actor, case_id: uuid.UUID, limit: int = 50
+    session: AsyncSession,
+    actor: Actor,
+    case_id: uuid.UUID,
+    limit: int = 50,
+    before: datetime | None = None,
 ) -> list[WorkflowRun]:
+    """Newest first, without runs the user cleared. `before` pages back in time."""
     await get_case(session, actor, case_id)
+    stmt = select(WorkflowRun).where(
+        WorkflowRun.case_id == case_id,
+        WorkflowRun.owner_user_id == actor.user_id,
+        WorkflowRun.hidden_at.is_(None),
+    )
+    if before is not None:
+        stmt = stmt.where(WorkflowRun.created_at < before)
     return list(
         await session.scalars(
-            select(WorkflowRun)
-            .where(WorkflowRun.case_id == case_id, WorkflowRun.owner_user_id == actor.user_id)
-            .order_by(WorkflowRun.created_at.desc())
-            .limit(min(limit, 200))
+            stmt.order_by(WorkflowRun.created_at.desc()).limit(max(1, min(limit, 200)))
         )
     )
+
+
+FINISHED = frozenset({RunStatus.SUCCEEDED, RunStatus.FAILED, RunStatus.CANCELLED})
+
+
+async def hide_run(session: AsyncSession, actor: Actor, run_id: uuid.UUID) -> None:
+    """Clear one finished run from Agent Activity. Running or waiting runs can't be cleared:
+    they still need watching (or an approval)."""
+    run = await _get_run(session, actor, run_id)
+    if RunStatus(run.status) not in FINISHED:
+        raise ValidationFailed("Only finished activity can be cleared. Cancel it first.")
+    run.hidden_at = datetime.now(UTC)
+
+
+async def clear_finished_runs(session: AsyncSession, actor: Actor, case_id: uuid.UUID) -> int:
+    await get_case(session, actor, case_id)
+    result = await session.execute(
+        update(WorkflowRun)
+        .where(
+            WorkflowRun.case_id == case_id,
+            WorkflowRun.owner_user_id == actor.user_id,
+            WorkflowRun.hidden_at.is_(None),
+            WorkflowRun.status.in_([s.value for s in FINISHED]),
+        )
+        .values(hidden_at=datetime.now(UTC))
+        .returning(WorkflowRun.id)
+    )
+    return len(result.all())
 
 
 async def get_run(session: AsyncSession, actor: Actor, run_id: uuid.UUID) -> RunDetail:

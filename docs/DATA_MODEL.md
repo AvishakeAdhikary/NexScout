@@ -120,6 +120,22 @@ opportunity links.
 - Deleting a generated document removes its id from `applications.document_ids` (and bumps the
   application's `version`).
 
+### v2.11 (✅ migration 0016)
+- `workflow_runs.hidden_at`: the user cleared the run from Agent Activity. Listing hides it.
+  The run, its steps, usage and links stay. Only finished runs (succeeded, failed, cancelled)
+  can be hidden.
+- Notifications can be deleted. Their deliveries and channel actions cascade, so a chat reply to
+  a cleared notification is no longer recognised.
+
+### v2.11 Assistant conversations (✅ migration 0017, ADR-0020)
+- `chat_conversations` (owned, RLS forced): `consented_at` records that an online model may see
+  this conversation's data. Earlier messages became each case's first conversation.
+- `chat_messages.conversation_id` (cascade delete) and `run_id` (unique: the assistant run that
+  wrote an AI reply, so saving is idempotent).
+- Skills added from AI suggestions: `profile_facts.meta.method = "ai_v1"`, with `run_id`,
+  `source_id` and `quote`. The evidence row holds the quote, plus the document link when the
+  quote came from a CV.
+
 ## Migration policy
 - Forward-only in production. Each revision is tested by upgrading from the previous head with
   representative data (`tests/integration/test_migrations.py`).

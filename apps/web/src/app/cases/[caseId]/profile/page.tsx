@@ -24,6 +24,7 @@ import { DraftSummary } from "./draft-summary";
 import { FactCard } from "./fact-card";
 import { LinksPanel } from "./links-panel";
 import { PreferencesPanel } from "./preferences-panel";
+import { SkillDiscovery } from "./skill-discovery";
 
 function groupBySection(facts: FactOut[]): [Section, FactOut[]][] {
   const groups = new Map<Section, FactOut[]>();
@@ -251,6 +252,7 @@ export default function ProfilePage() {
       <ErrorAlert error={facts.error} title="Couldn't load your profile" />
 
       <DraftSummary caseId={caseId} />
+      <SkillDiscovery caseId={caseId} />
 
       {gaps.data && gaps.data.length > 0 && (
         <section aria-labelledby="gaps-heading" className="rounded-lg border p-4">

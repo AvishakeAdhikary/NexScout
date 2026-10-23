@@ -5,6 +5,7 @@ import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 import { updatesApi } from "@/lib/api/client";
+import { inDesktopApp } from "@/lib/desktop";
 
 const DISMISS_KEY = "nexscout.update-dismissed";
 
@@ -14,12 +15,6 @@ function dismissedVersion(): string | null {
   } catch {
     return null; // private window or blocked storage: just show it
   }
-}
-
-function inDesktopApp(): boolean {
-  return Boolean(
-    (window as { nexscoutDesktop?: { isDesktop?: boolean } }).nexscoutDesktop?.isDesktop,
-  );
 }
 
 const noSubscription = () => () => {};

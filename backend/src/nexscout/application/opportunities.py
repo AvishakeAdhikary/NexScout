@@ -6,6 +6,9 @@ Live sources will run as durable worker tasks.
 
 from __future__ import annotations
 
+import base64
+import binascii
+import json
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -13,7 +16,7 @@ from datetime import UTC, date, datetime
 from typing import Any
 
 from pydantic import ValidationError
-from sqlalchemy import and_, func, literal_column, or_, select, update
+from sqlalchemy import and_, func, literal, literal_column, or_, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -614,6 +617,146 @@ async def list_opportunities(
         ):
             sources.setdefault(src.opportunity_id, []).append(src)
     return [OpportunityView(m, opp, sources.get(opp.id, [])) for m, opp in rows]
+
+
+PAGE_VIEWS = ("matches", "not_fit", "dismissed")
+MAX_PAGE = 100
+
+
+@dataclass
+class OpportunityPage:
+    items: list[OpportunityView]
+    next_cursor: str | None
+    counts: dict[str, int]  # per view, with the same kind and search filters
+
+
+def _cursor(m: OpportunityMatch, o: Opportunity) -> str:
+    raw = json.dumps([m.eligible, m.score, o.title, str(o.id)], separators=(",", ":"))
+    return base64.urlsafe_b64encode(raw.encode()).decode().rstrip("=")
+
+
+def _read_cursor(cursor: str) -> tuple[bool, int, str, uuid.UUID]:
+    try:
+        raw = base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4))
+        eligible, score, title, oid = json.loads(raw)
+        if not (isinstance(eligible, bool) and isinstance(score, int) and isinstance(title, str)):
+            raise ValueError
+        return eligible, score, title, uuid.UUID(str(oid))
+    except (ValueError, TypeError, binascii.Error, json.JSONDecodeError) as exc:
+        raise ValidationFailed("That page link is no longer valid. Reload the list.") from exc
+
+
+def _like(q: str) -> str:
+    """A user's search text as an ILIKE pattern: % and _ are literal, not wildcards."""
+    escaped = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
+async def page_opportunities(
+    session: AsyncSession,
+    actor: Actor,
+    case_id: uuid.UUID,
+    *,
+    academic: bool | None,
+    view: str,
+    q: str | None = None,
+    limit: int = 50,
+    cursor: str | None = None,
+) -> OpportunityPage:
+    """One page of a case's opportunities, in the board's order (fit first, then score, title).
+    Keyset paging, so a page costs the same at item 10 or 10,000 and new results don't shift it.
+    """
+    if view not in PAGE_VIEWS:
+        raise ValidationFailed("Unknown list.")
+    limit = max(1, min(limit, MAX_PAGE))
+    await get_case(session, actor, case_id)
+    conditions: list[Any] = [
+        OpportunityMatch.case_id == case_id,
+        OpportunityMatch.owner_user_id == actor.user_id,
+    ]
+    if academic is True:
+        conditions.append(Opportunity.kind.in_([k.value for k in ACADEMIC_KINDS]))
+    elif academic is False:
+        conditions.append(Opportunity.kind == OpportunityKind.JOB.value)
+    text = (q or "").strip()[:200]
+    if text:
+        pattern = _like(text)
+        conditions.append(
+            or_(
+                Opportunity.title.ilike(pattern, escape="\\"),
+                Opportunity.organization_name.ilike(pattern, escape="\\"),
+            )
+        )
+    dismissed = OpportunityMatch.status == "dismissed"
+    in_view = {
+        "matches": and_(OpportunityMatch.eligible.is_(True), ~dismissed),
+        "not_fit": and_(OpportunityMatch.eligible.is_(False), ~dismissed),
+        "dismissed": dismissed,
+    }
+    joined = (
+        select()
+        .select_from(OpportunityMatch)
+        .join(Opportunity, Opportunity.id == OpportunityMatch.opportunity_id)
+        .where(*conditions)
+    )
+    row = (
+        await session.execute(
+            joined.add_columns(
+                *(func.count().filter(cond).label(name) for name, cond in in_view.items())
+            )
+        )
+    ).one()
+    counts = {name: int(getattr(row, name) or 0) for name in in_view}
+
+    stmt = (
+        select(OpportunityMatch, Opportunity)
+        .join(Opportunity, Opportunity.id == OpportunityMatch.opportunity_id)
+        .where(*conditions, in_view[view])
+    )
+    if cursor:
+        flag, s, t, oid = _read_cursor(cursor)
+        e = literal(flag)  # a bound boolean: SQLAlchemy won't compare a bool column with <
+        # The order is (eligible desc, score desc, title asc, id asc): rows strictly after.
+        stmt = stmt.where(
+            or_(
+                OpportunityMatch.eligible < e,
+                and_(OpportunityMatch.eligible == e, OpportunityMatch.score < s),
+                and_(
+                    OpportunityMatch.eligible == e,
+                    OpportunityMatch.score == s,
+                    Opportunity.title > t,
+                ),
+                and_(
+                    OpportunityMatch.eligible == e,
+                    OpportunityMatch.score == s,
+                    Opportunity.title == t,
+                    Opportunity.id > oid,
+                ),
+            )
+        )
+    stmt = stmt.order_by(
+        OpportunityMatch.eligible.desc(),
+        OpportunityMatch.score.desc(),
+        Opportunity.title,
+        Opportunity.id,
+    ).limit(limit + 1)
+    rows = (await session.execute(stmt)).all()
+    more = len(rows) > limit
+    rows = rows[:limit]
+    sources: dict[uuid.UUID, list[OpportunitySource]] = {}
+    ids = [o.id for _, o in rows]
+    if ids:
+        for src in await session.scalars(
+            select(OpportunitySource)
+            .where(OpportunitySource.opportunity_id.in_(ids))
+            .order_by(OpportunitySource.retrieved_at)
+        ):
+            sources.setdefault(src.opportunity_id, []).append(src)
+    return OpportunityPage(
+        [OpportunityView(m, o, sources.get(o.id, [])) for m, o in rows],
+        _cursor(*rows[-1]) if more and rows else None,
+        counts,
+    )
 
 
 async def get_opportunity(

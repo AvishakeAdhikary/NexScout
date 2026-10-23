@@ -9,7 +9,7 @@ from collections.abc import AsyncIterator
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Header, Request, status
+from fastapi import APIRouter, Header, Query, Request, Response, status
 from fastapi.responses import StreamingResponse
 from pydantic import Field
 from sqlalchemy import select
@@ -122,8 +122,31 @@ async def start_run(
 
 
 @router.get("/cases/{case_id}/runs", response_model=list[RunOut])
-async def list_runs(case_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> list[RunOut]:
-    return [RunOut.model_validate(r) for r in await runs.list_runs(db, actor, case_id)]
+async def list_runs(
+    case_id: uuid.UUID,
+    actor: CurrentActor,
+    db: DbSession,
+    before: datetime | None = None,
+    limit: int = Query(default=50, ge=1, le=200),
+) -> list[RunOut]:
+    found = await runs.list_runs(db, actor, case_id, limit=limit, before=before)
+    return [RunOut.model_validate(r) for r in found]
+
+
+class HiddenOut(ApiModel):
+    hidden: int
+
+
+@router.post("/cases/{case_id}/runs/clear-finished", response_model=HiddenOut)
+async def clear_finished(case_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> HiddenOut:
+    """Clear finished activity from the list. The runs' records are kept."""
+    return HiddenOut(hidden=await runs.clear_finished_runs(db, actor, case_id))
+
+
+@router.post("/runs/{run_id}/hide", status_code=status.HTTP_204_NO_CONTENT)
+async def hide_run(run_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> Response:
+    await runs.hide_run(db, actor, run_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/runs/{run_id}", response_model=RunDetailOut)

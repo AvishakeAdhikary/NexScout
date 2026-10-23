@@ -91,6 +91,7 @@ test("job discovery: demo label, merged duplicates, explained estimates, strict 
   await expect(matches.getByRole("heading", { name: "Senior Data Scientist" })).toHaveCount(0);
   await page.getByText(/Not a fit right now/).click();
   await expect(page.getByText(/Hidden in strict mode/).first()).toBeVisible();
+  await page.getByRole("tab", { name: /^Matches/ }).click(); // lists are tabs (M20)
 
   // Shortlist one.
   await card.getByRole("button", { name: "Shortlist" }).click();

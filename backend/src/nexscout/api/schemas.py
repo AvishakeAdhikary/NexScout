@@ -126,6 +126,11 @@ class CaseImportOut(ApiModel):
     warnings: list[str]
 
 
+class SkillsAddIn(ApiModel):
+    run_id: uuid.UUID = Field(description="The `skill_discovery` run whose suggestions these are.")
+    names: list[str] = Field(min_length=1, max_length=500)
+
+
 class FactBulkIn(ApiModel):
     action: str = Field(pattern="^(accept|reject|delete|private|shareable)$")
     ids: list[uuid.UUID] = Field(min_length=1, max_length=500)
@@ -485,6 +490,17 @@ class OpportunityOut(ApiModel):
     match_status: str
     match_version: int
     matched_at: datetime
+    has_description: bool = Field(
+        default=True,
+        description="False only in list pages, which leave the description out (fetch the "
+        "opportunity to read it).",
+    )
+
+
+class OpportunityPageOut(ApiModel):
+    items: list[OpportunityOut]
+    next_cursor: str | None
+    counts: dict[str, int] = Field(description="matches, not_fit, dismissed (same filters)")
 
 
 class MatchStatusIn(ApiModel):

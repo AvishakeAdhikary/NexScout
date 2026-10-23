@@ -2,15 +2,19 @@ import { describe, expect, it } from "vitest";
 
 import {
   appUrl,
+  clampPercent,
   DEFAULT_EASY_PORT,
   dockerCandidates,
   easyEnv,
   isAppNavigation,
   isSafeExternal,
+  isTrustedSender,
   parseConfig,
+  parsePrefs,
   foreignEasyStack,
   safeHttpUrl,
   staleImages,
+  titleBarColors,
   updaterCacheDir,
 } from "./policy";
 
@@ -133,5 +137,34 @@ describe("update cleanup", () => {
     expect(foreignEasyStack([ours.toLowerCase().replace(/\\/g, "/")], ours, there)).toBeNull();
     expect(foreignEasyStack([zip], ours, there)).toBe(zip);
     expect(foreignEasyStack(["C:\\gone\\docker-compose.yml"], ours, there)).toBeNull(); // moved
+  });
+});
+
+describe("window, tray and bridge", () => {
+  it("hides to the tray by default and reads only known preferences", () => {
+    expect(parsePrefs(null)).toEqual({ closeToTray: true, trayHintShown: false });
+    expect(parsePrefs({ closeToTray: false, trayHintShown: true, extra: 1 })).toEqual({
+      closeToTray: false,
+      trayHintShown: true,
+    });
+    expect(parsePrefs({ closeToTray: "no" })).toEqual({ closeToTray: true, trayHintShown: false });
+  });
+
+  it("answers the bridge only for the app's own page", () => {
+    const app = "http://127.0.0.1:18700";
+    expect(isTrustedSender("http://127.0.0.1:18700/cases/1", app)).toBe(true);
+    expect(isTrustedSender("http://127.0.0.1:18701/", app)).toBe(false);
+    expect(isTrustedSender("https://evil.example/", app)).toBe(false);
+    expect(isTrustedSender("file:///C:/app/assets/setup.html", app)).toBe(false);
+    expect(isTrustedSender(undefined, app)).toBe(false);
+    expect(isTrustedSender("http://127.0.0.1:18700/", null)).toBe(false);
+  });
+
+  it("matches the title bar to the theme and keeps percentages sane", () => {
+    expect(titleBarColors("light").color).toBe("#fbfcfe");
+    expect(titleBarColors("anything").color).toBe("#090b16");
+    expect(clampPercent(150)).toBe(100);
+    expect(clampPercent(Number.NaN)).toBe(0);
+    expect(clampPercent(42.4)).toBe(42);
   });
 });

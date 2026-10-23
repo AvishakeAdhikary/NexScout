@@ -254,3 +254,22 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Desktop app (frameless window, ADR-0019): the top bar is the title bar. It moves the window;
+   its controls stay clickable; it leaves room for the window controls drawn over it (Windows and
+   Linux: on the right, from the Window Controls Overlay; macOS: traffic lights on the left). */
+.desktop-titlebar {
+  -webkit-app-region: drag;
+  app-region: drag;
+  padding-right: max(
+    0px,
+    calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw))
+  );
+}
+.desktop-titlebar.desktop-mac {
+  padding-left: 76px;
+}
+.desktop-titlebar :is(a, button, input, select, textarea, summary, [role="button"], [role="menu"]) {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}

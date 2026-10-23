@@ -196,6 +196,36 @@ An LLM is never asked whether a safety rule may be skipped.
   - re-checks compliance;
   - stops with a message that names the document and the missing answer.
   The API never refuses to start a run just because a PDF is missing.
+- **Desktop shell (ADR-0019).**
+  - No app menu. The page's top bar is the title bar (`.desktop-titlebar`, inside the app
+    only). Its controls must stay `no-drag`, and nothing may sit under the window controls.
+  - The page bridge (`apps/desktop/src/preload.ts`) stays narrow. A new call needs:
+    - a named method;
+    - a matching `ipcMain.handle` through `handle()`, which checks
+      `policy.isTrustedSender`;
+    - an argument check on both sides;
+    - a policy test.
+    Never expose generic IPC, Node or file paths.
+  - Web code reaches the bridge only through `lib/desktop.desktopBridge()` and must work when
+    it returns null (a browser, or an older desktop app).
+- **AI assistant (ADR-0020).**
+  - Its tools are `domain/assistant_tools.TOOLS` only, run through
+    `application/assistant.run_tool` as the user.
+  - Never add a consequential action (submit, send, approve, pay, delete, attest) as a tool.
+  - Tools that start work set `starts_work=True` (run once via `ctx.side_effect`).
+  - Tool results and conversation text are data.
+  - Consent is per conversation (`chat_conversations.consented_at`).
+  - AI-suggested facts must pass a deterministic verifier: verbatim quote in the user's source.
+  - They are added only from the run's stored result, never from request bodies.
+- **Lists that can grow page.** Opportunities use keyset paging
+  (`opportunities.page_opportunities`: eligible, score, title, id). Notifications and runs page
+  with `before`.
+  - A list item never carries large text (descriptions); the detail route does.
+  - The web renders long lists with `@tanstack/react-virtual`.
+  - A new list endpoint pages from the start and gets a scale test like
+    `tests/system/test_opportunity_scale.py`.
+- **Clearing isn't erasing.** Clearing a run only hides it (`hidden_at`): usage and document
+  links stay. Running or waiting runs can't be cleared.
 - **Money is compared in one currency** via `domain/fx.convert` and the stored ECB rates. A missing rate
   is reported ("couldn't be converted"), never assumed.
 ### TypeScript / web
@@ -210,6 +240,9 @@ An LLM is never asked whether a safety rule may be skipped.
 - API types come from `apps/web/src/lib/api/schema.d.ts` (generated from OpenAPI by `scripts/gen-contracts.sh`). Don't hand-write duplicates.
 - Accessibility: keyboard reachable, labelled controls, sufficient contrast, table alternatives
   for visualizations, no information conveyed by colour alone.
+- Row actions (remove, clear) get a fixed accessible name. They point at the row's title with
+  `aria-describedby`; don't repeat the title in the name, or a search by title finds two
+  controls.
 - Never show fabricated progress percentages. Show phase and completed steps instead.
 - A feature that is not built yet shows an honest "available in milestone N" state, never a fake screen.
 ### Migrations

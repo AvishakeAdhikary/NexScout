@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
+import { FileDropZone } from "@/components/file-drop-zone";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -332,16 +333,13 @@ function ImportPortals({ onDone }: { onDone: () => void }) {
   });
   return (
     <div className="flex flex-col gap-2 rounded-lg border p-3">
-      <Label htmlFor="portals">Import a career-ops portals.yml</Label>
-      <input
-        id="portals"
-        type="file"
-        accept=".yml,.yaml,text/yaml"
-        className="text-sm"
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (file) imp.mutate(await file.text());
-        }}
+      <FileDropZone
+        label="Import a career-ops portals.yml"
+        hint="Drop the file here, or click to choose it."
+        accept=".yml,.yaml"
+        maxBytes={2 * 1024 * 1024}
+        disabled={imp.isPending}
+        onFiles={async ([file]) => imp.mutate(await file.text())}
       />
       {report && (
         <div role="status" className="text-sm">

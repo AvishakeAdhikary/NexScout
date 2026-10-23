@@ -42,12 +42,21 @@ in their own safe box. NexScout's data stays on your computer.
 > together with your data.
 
 To **stop** NexScout:
-- Windows app: menu **NexScout → Stop NexScout**.
+- Windows app: right-click the NexScout icon in the **tray** (by the clock) and choose **Stop
+  background work and quit**. Or use Account → About & updates.
 - Zip version: **Stop NexScout.cmd** on Windows, or `./start-nexscout.sh stop` on Mac and
   Linux.
 
 Closing the window doesn't stop NexScout. It keeps working in the background, so the autopilot
 and reminders keep running. Your data is kept between runs.
+- **Windows app:** closing the window hides NexScout in the tray. Click the tray icon to bring
+  it back.
+  - Don't want that? Untick **Keep running in the tray when I close the window** (tray menu, or
+    Account → About & updates).
+  - Opening NexScout again while it runs just brings up the open window.
+- **Getting around:** **Home** in the top bar, or **All cases** in a case's side panel, takes you
+  back to your cases. The line at the top of each page (Cases › case › section) takes you one
+  step back. Switch between cases with the case name at the top of the side panel.
 
 ## 2. First steps
 
@@ -75,9 +84,16 @@ and reminders keep running. Your data is kept between runs.
    statements. Use your own key (OpenAI, Anthropic, Gemini, or any OpenAI-compatible service
    such as NVIDIA NIM), or a free model on your computer (Ollama, LM Studio). NexScout asks
    before your data goes to an online AI. Resumes and CVs are built **without** AI.
-   Made a typo? **Edit** fixes the name, model, address or key in place. If a model "ran out of
-   room for its answer", tick **Skip the model's thinking** (NVIDIA NIM) or raise **Longest
-   answer**.
+   - Made a typo? **Edit** fixes the name, model, address or key in place.
+   - If a model "ran out of room for its answer", tick **Skip the model's thinking** (NVIDIA
+     NIM) or raise **Longest answer**.
+   - With a model, **My Profile → Find my skills with AI** suggests skills your texts mention,
+     each with a quote. Untick any you don't want, then **Add**.
+   - With a model, the **Assistant** understands your own words. It looks things up and can
+     start searches or drafts, but never submits, sends or approves anything.
+     - An online model asks before it sees your data, once per conversation.
+     - **New conversation** asks again. **Clear** deletes the conversation.
+     - Without a model, the Assistant is a simple menu.
 
 The case dashboard shows a **Getting started** checklist until you're done.
 
@@ -108,6 +124,11 @@ The case dashboard shows a **Getting started** checklist until you're done.
     Bank's daily rates.
 - **PhD Opportunities / Job Opportunities.** Press **Find opportunities**. Each position shows
   how well it fits you and what's missing. Duplicates from different sites are merged.
+  - **Matches**, **Not a fit right now** (each says why) and **Not interested** are tabs with
+    counts.
+  - The search box finds titles and employers. Long lists load as you scroll.
+- **Tidy up.** In the bell menu: remove a notification, **Clear read** or **Clear all**. In
+  Agent Activity: **Clear finished** (the records are kept; they just leave the list).
 - **Research and prepare.** NexScout reads the posting and its linked pages: requirements,
   deadlines, supervisors. Every finding quotes its source.
 - **Documents.** Statement of purpose, research proposal, CV, resume, cover letter, inquiry
@@ -197,8 +218,9 @@ approvals show you everything first.
 ## 8. Keeping NexScout up to date
 
 - **Windows app (2.3.0 or newer):** updates itself. When a new version is downloaded, you're
-  asked to restart. Choose *Later* and it updates the next time you close NexScout. Menu →
-  NexScout → *Check for updates…* checks right away.
+  asked to restart. Choose *Later* and it updates the next time you close NexScout.
+  - To check right away: **Account → About & updates → Check for updates** shows the progress
+    and a **Restart to update** button. The tray menu also has **Check for updates**.
 - **Easy install (2.3.0 or newer):** NexScout shows a notice when there's a new version.
   Double-click **Update NexScout** in your NexScout folder. It downloads the new version,
   checks it isn't damaged, keeps your data and your `.env` file, starts the new version and

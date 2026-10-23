@@ -474,11 +474,77 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Chat History */
+        /**
+         * Chat History
+         * @description A conversation's messages (the current conversation unless one is named).
+         */
         get: operations["chat_history_api_v1_cases__case_id__chat_get"];
         put?: never;
-        /** Chat */
+        /**
+         * Chat
+         * @description The assistant without AI (rule-based, answered right away).
+         */
         post: operations["chat_api_v1_cases__case_id__chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/chat/ai": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chat Ai
+         * @description Ask the AI assistant. The reply is written in the background; follow the run.
+         */
+        post: operations["chat_ai_api_v1_cases__case_id__chat_ai_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/chat/conversation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current Conversation
+         * @description The case's newest conversation (started on first use).
+         */
+        get: operations["current_conversation_api_v1_cases__case_id__chat_conversation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/chat/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * New Conversation
+         * @description Start over. An online AI model asks for consent again in the new conversation.
+         */
+        post: operations["new_conversation_api_v1_cases__case_id__chat_conversations_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -619,6 +685,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/facts/bulk-create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Discovered Skills
+         * @description Add the skills the user chose from an AI suggestion run (taken from the run's own
+         *     verified result, with their quotes as evidence).
+         */
+        post: operations["add_discovered_skills_api_v1_cases__case_id__facts_bulk_create_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/facts/merge": {
         parameters: {
             query?: never;
@@ -752,6 +839,27 @@ export interface paths {
         };
         /** List Opportunities */
         get: operations["list_opportunities_api_v1_cases__case_id__opportunities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}/opportunities/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Page Opportunities
+         * @description One page of matches, "not a fit right now" or "not interested", with the count of each.
+         *     Pass `next_cursor` back as `cursor` for the next page.
+         */
+        get: operations["page_opportunities_api_v1_cases__case_id__opportunities_page_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -958,6 +1066,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/runs/clear-finished": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Clear Finished
+         * @description Clear finished activity from the list. The runs' records are kept.
+         */
+        post: operations["clear_finished_api_v1_cases__case_id__runs_clear_finished_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/snapshots": {
         parameters: {
             query?: never;
@@ -1110,6 +1238,23 @@ export interface paths {
         /** Test */
         post: operations["test_api_v1_channels__channel_id__test_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Clear Conversation */
+        delete: operations["clear_conversation_api_v1_chat_conversations__conversation_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1491,6 +1636,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Clear Notifications */
+        post: operations["clear_notifications_api_v1_notifications_clear_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/read-all": {
         parameters: {
             query?: never;
@@ -1503,6 +1665,23 @@ export interface paths {
         /** Read All */
         post: operations["read_all_api_v1_notifications_read_all_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{notification_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Notification */
+        delete: operations["delete_notification_api_v1_notifications__notification_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1661,6 +1840,23 @@ export interface paths {
         put?: never;
         /** Control */
         post: operations["control_api_v1_runs__run_id__control_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/runs/{run_id}/hide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Hide Run */
+        post: operations["hide_run_api_v1_runs__run_id__hide_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1976,6 +2172,27 @@ export interface components {
             status?: string | null;
             /** Version */
             version: number;
+        };
+        /** AiChatIn */
+        AiChatIn: {
+            /**
+             * Conversation Id
+             * Format: uuid
+             */
+            conversation_id: string;
+            /** Message */
+            message: string;
+            /** Provider Id */
+            provider_id?: string | null;
+        };
+        /** AiChatOut */
+        AiChatOut: {
+            message: components["schemas"]["ChatMessageOut"];
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
         };
         /** AnswerIn */
         AnswerIn: {
@@ -2485,6 +2702,8 @@ export interface components {
         };
         /** ChatIn */
         ChatIn: {
+            /** Conversation Id */
+            conversation_id?: string | null;
             /** Message */
             message: string;
         };
@@ -2496,6 +2715,8 @@ export interface components {
             }[];
             /** Content */
             content: string;
+            /** Conversation Id */
+            conversation_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -2510,6 +2731,19 @@ export interface components {
             intent: string | null;
             /** Role */
             role: string;
+        };
+        /** ClearIn */
+        ClearIn: {
+            /**
+             * Read Only
+             * @default true
+             */
+            read_only: boolean;
+        };
+        /** ClearedOut */
+        ClearedOut: {
+            /** Cleared */
+            cleared: number;
         };
         /**
          * ContactDetails
@@ -2570,6 +2804,26 @@ export interface components {
             action: string;
             /** Node */
             node?: string | null;
+        };
+        /** ConversationOut */
+        ConversationOut: {
+            /**
+             * Case Id
+             * Format: uuid
+             */
+            case_id: string;
+            /** Consented */
+            consented: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
         };
         /** CountryGroupOut */
         CountryGroupOut: {
@@ -3060,6 +3314,11 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** HiddenOut */
+        HiddenOut: {
+            /** Hidden */
+            hidden: number;
+        };
         /** ItemOut */
         ItemOut: {
             /** Application Id */
@@ -3246,6 +3505,12 @@ export interface components {
             /** Gaps */
             gaps: components["schemas"]["MatchGapOut"][];
             /**
+             * Has Description
+             * @description False only in list pages, which leave the description out (fetch the opportunity to read it).
+             * @default true
+             */
+            has_description: boolean;
+            /**
              * Id
              * Format: uuid
              */
@@ -3280,6 +3545,20 @@ export interface components {
             status: string;
             /** Title */
             title: string;
+        };
+        /** OpportunityPageOut */
+        OpportunityPageOut: {
+            /**
+             * Counts
+             * @description matches, not_fit, dismissed (same filters)
+             */
+            counts: {
+                [key: string]: number;
+            };
+            /** Items */
+            items: components["schemas"]["OpportunityOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
         };
         /** OpportunitySourceOut */
         OpportunitySourceOut: {
@@ -3873,6 +4152,17 @@ export interface components {
              */
             expires_at: string;
             user: components["schemas"]["UserOut"];
+        };
+        /** SkillsAddIn */
+        SkillsAddIn: {
+            /** Names */
+            names: string[];
+            /**
+             * Run Id
+             * Format: uuid
+             * @description The `skill_discovery` run whose suggestions these are.
+             */
+            run_id: string;
         };
         /** SnapshotCreate */
         SnapshotCreate: {
@@ -5409,7 +5699,9 @@ export interface operations {
     };
     chat_history_api_v1_cases__case_id__chat_get: {
         parameters: {
-            query?: never;
+            query?: {
+                conversation_id?: string | null;
+            };
             header?: never;
             path: {
                 case_id: string;
@@ -5460,6 +5752,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatMessageOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_ai_api_v1_cases__case_id__chat_ai_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiChatIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiChatOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    current_conversation_api_v1_cases__case_id__chat_conversation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    new_conversation_api_v1_cases__case_id__chat_conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationOut"];
                 };
             };
             /** @description Validation Error */
@@ -5811,6 +6200,41 @@ export interface operations {
             };
         };
     };
+    add_discovered_skills_api_v1_cases__case_id__facts_bulk_create_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillsAddIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FactOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     merge_facts_api_v1_cases__case_id__facts_merge_post: {
         parameters: {
             query?: never;
@@ -6123,6 +6547,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpportunityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    page_opportunities_api_v1_cases__case_id__opportunities_page_get: {
+        parameters: {
+            query?: {
+                view?: string;
+                academic?: boolean | null;
+                q?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityPageOut"];
                 };
             };
             /** @description Validation Error */
@@ -6603,7 +7064,10 @@ export interface operations {
     };
     list_runs_api_v1_cases__case_id__runs_get: {
         parameters: {
-            query?: never;
+            query?: {
+                before?: string | null;
+                limit?: number;
+            };
             header?: never;
             path: {
                 case_id: string;
@@ -6654,6 +7118,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_finished_api_v1_cases__case_id__runs_clear_finished_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiddenOut"];
                 };
             };
             /** @description Validation Error */
@@ -7065,6 +7560,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TestOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_conversation_api_v1_chat_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -7801,7 +8325,10 @@ export interface operations {
     };
     list_notifications_api_v1_notifications_get: {
         parameters: {
-            query?: never;
+            query?: {
+                before?: string | null;
+                limit?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -7815,6 +8342,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotificationsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_notifications_api_v1_notifications_clear_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClearIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClearedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -7834,6 +8403,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    delete_notification_api_v1_notifications__notification_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
             };
         };
     };
@@ -8198,6 +8796,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["RunOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    hide_run_api_v1_runs__run_id__hide_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

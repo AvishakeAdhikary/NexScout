@@ -902,6 +902,11 @@ def _plausible_skill(name: str) -> bool:
     return any(c.isalnum() for c in n)
 
 
+def is_plausible_skill(name: str) -> bool:
+    """A short skill name, not a sentence or a fragment (also checks AI-proposed skills)."""
+    return _plausible_skill(name)
+
+
 def _skills(full: str, block: Block) -> list[ExtractedFact]:
     out: list[ExtractedFact] = []
     seen: set[str] = set()

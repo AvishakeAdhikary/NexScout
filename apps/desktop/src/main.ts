@@ -6,13 +6,31 @@
 //   browser (http/https/mailto only). Pop-ups and device permissions are refused.
 // - Local mode keeps the encryption master key in the OS keychain via safeStorage and passes it
 //   to the backend through the environment (never on the command line, never in a file in clear).
+// - Window, tray and bridge (ADR-0019): no app menu; the page's top bar is the title bar, with the
+//   window controls drawn over it. Closing hides to the tray unless the person turned that off.
+//   One instance only. The page reaches the main process only through preload.ts's named calls,
+//   each answered only for the NexScout page (isTrustedSender).
 
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { app, BrowserWindow, dialog, ipcMain, Menu, safeStorage, session, shell } from "electron";
+import {
+  app,
+  BrowserWindow,
+  desktopCapturer,
+  dialog,
+  ipcMain,
+  Menu,
+  nativeImage,
+  Notification,
+  safeStorage,
+  session,
+  shell,
+  Tray,
+  type IpcMainInvokeEvent,
+} from "electron";
 
 import {
   appUrl,
@@ -23,17 +41,51 @@ import {
   isSafeExternal,
   parseConfig,
   foreignEasyStack,
+  isTrustedSender,
+  parsePrefs,
   staleImages,
+  TITLE_BAR_HEIGHT,
+  titleBarColors,
   type DesktopConfig,
+  type DesktopPrefs,
 } from "./policy";
-import { checkForUpdatesNow, startUpdates } from "./updates";
+import {
+  checkForUpdatesNow,
+  checkFromPage,
+  currentUpdateStatus,
+  installDownloadedUpdate,
+  onUpdateStatus,
+  startUpdates,
+  updatesSupported,
+} from "./updates";
 
 const SMOKE = process.argv.includes("--smoke");
 const children: ChildProcess[] = [];
 let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let quitting = false;
+/** The NexScout page the app window shows (null on the setup page): the bridge's only caller. */
+let currentAppUrl: string | null = null;
+const gotLock = SMOKE || app.requestSingleInstanceLock();
 
 const configPath = () => join(app.getPath("userData"), "config.json");
 const keyPath = () => join(app.getPath("userData"), "master.key.enc");
+const prefsPath = () => join(app.getPath("userData"), "desktop-prefs.json");
+
+function loadPrefs(): DesktopPrefs {
+  try {
+    return parsePrefs(JSON.parse(readFileSync(prefsPath(), "utf-8")));
+  } catch {
+    return parsePrefs(null);
+  }
+}
+
+function savePrefs(update: Partial<DesktopPrefs>): DesktopPrefs {
+  const prefs = { ...loadPrefs(), ...update };
+  mkdirSync(app.getPath("userData"), { recursive: true });
+  writeFileSync(prefsPath(), JSON.stringify(prefs, null, 2), { encoding: "utf-8", mode: 0o600 });
+  return prefs;
+}
 
 function loadConfig(): DesktopConfig | null {
   try {
@@ -70,7 +122,13 @@ function secureWindow(preload: string): BrowserWindow {
     backgroundColor: "#121224",
     title: "NexScout",
     icon: join(__dirname, "..", "assets", "icon.png"),
-    show: !SMOKE,
+    show: !SMOKE || Boolean(process.env.NEXSCOUT_SMOKE_SCREENSHOT),
+    // Frameless: the page's top bar is the title bar. Windows/Linux draw the window controls
+    // over it (in the theme's colours); macOS keeps its traffic lights inset.
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
+    ...(process.platform === "darwin"
+      ? {}
+      : { titleBarOverlay: { ...titleBarColors("dark"), height: TITLE_BAR_HEIGHT } }),
     webPreferences: {
       preload,
       contextIsolation: true,
@@ -92,6 +150,96 @@ function guard(win: BrowserWindow, allowedUrl: string | null): void {
     event.preventDefault();
     if (isSafeExternal(url)) void shell.openExternal(url);
   });
+}
+
+/** The close button hides the window to the tray (unless turned off); Quit really quits. */
+function hideOnClose(win: BrowserWindow): void {
+  win.on("close", (event) => {
+    if (quitting || !tray || !loadPrefs().closeToTray) return;
+    event.preventDefault();
+    win.hide();
+    if (!loadPrefs().trayHintShown && Notification.isSupported()) {
+      new Notification({
+        title: "NexScout is still running",
+        body: "It keeps searching and reminding you in the background. Open it again from the tray icon, and quit it there too.",
+      }).show();
+      savePrefs({ trayHintShown: true });
+    }
+  });
+  // Developer shortcuts, since there is no menu: reload, and developer tools when unpackaged.
+  win.webContents.on("before-input-event", (event, input) => {
+    if (input.type !== "keyDown") return;
+    const mod = input.control || input.meta;
+    if (mod && !input.shift && input.key.toLowerCase() === "r") {
+      win.webContents.reload();
+      event.preventDefault();
+    } else if (
+      !app.isPackaged &&
+      (input.key === "F12" || (mod && input.shift && input.key.toLowerCase() === "i"))
+    ) {
+      win.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+}
+
+function showWindow(): void {
+  const win = mainWindow;
+  if (!win || win.isDestroyed()) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
+function quitApp(): void {
+  quitting = true;
+  app.quit();
+}
+
+function trayIcon(): Electron.NativeImage {
+  const image = nativeImage.createFromPath(join(__dirname, "..", "assets", "icon.png"));
+  return image.isEmpty() ? image : image.resize({ width: 16, height: 16, quality: "best" });
+}
+
+/** The tray: always there while NexScout runs, so a hidden window can come back. */
+function buildTray(): void {
+  if (!tray) {
+    tray = new Tray(trayIcon());
+    tray.setToolTip("NexScout");
+    tray.on("click", showWindow);
+    tray.on("double-click", showWindow);
+  }
+  const config = loadConfig();
+  const prefs = loadPrefs();
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: "Open NexScout", click: showWindow },
+      { label: "Check for updates", click: () => checkForUpdatesNow() },
+      { type: "separator" },
+      {
+        label: "Keep running in the tray when I close the window",
+        type: "checkbox",
+        checked: prefs.closeToTray,
+        click: (item) => {
+          savePrefs({ closeToTray: item.checked });
+          buildTray();
+        },
+      },
+      ...(config?.mode === "easy"
+        ? [
+            {
+              label: "Stop background work and quit",
+              click: async () => {
+                await stopEasy();
+                quitApp();
+              },
+            },
+          ]
+        : []),
+      { type: "separator" },
+      { label: "Quit NexScout", click: quitApp },
+    ]),
+  );
 }
 
 function killTree(child: ChildProcess): void {
@@ -354,6 +502,7 @@ async function waitFor(url: string, timeoutMs: number): Promise<boolean> {
 function openSetup(): void {
   const win = secureWindow(join(__dirname, "preload-setup.js"));
   guard(win, null);
+  currentAppUrl = null;
   void win.loadFile(join(__dirname, "..", "assets", "setup.html"));
   mainWindow = win;
   smokeReport(win);
@@ -363,7 +512,9 @@ async function openApp(config: DesktopConfig): Promise<void> {
   const url = appUrl(config);
   const win = secureWindow(join(__dirname, "preload.js"));
   guard(win, url);
+  hideOnClose(win);
   mainWindow = win;
+  currentAppUrl = url;
   if (config.mode === "local") {
     const workerLogStart = logSize("worker");
     startLocal(config);
@@ -404,17 +555,35 @@ function smokeReport(win: BrowserWindow): void {
     // Evaluated inside the page: proves Node isn't reachable from web content.
     const page = (await win.webContents.executeJavaScript(
       `({ require: typeof require, process: typeof process, module: typeof module,
-          desktop: typeof window.nexscoutDesktop, setup: typeof window.nexscoutSetup })`,
-    )) as Record<string, string>;
+          desktop: typeof window.nexscoutDesktop, setup: typeof window.nexscoutSetup,
+          bridge: window.nexscoutDesktop ? Object.keys(window.nexscoutDesktop).sort() : [] })`,
+    )) as Record<string, unknown>;
+    // NEXSCOUT_SMOKE_SCREENSHOT=<file.png>: the shown window, to check the title bar by eye.
+    const shot = process.env.NEXSCOUT_SMOKE_SCREENSHOT;
+    if (shot) {
+      await new Promise((r) => setTimeout(r, 2500)); // let the page paint
+      // The whole window as the screen shows it, so the window controls are in the picture.
+      const { width, height } = win.getBounds();
+      const sources = await desktopCapturer.getSources({
+        types: ["window"],
+        thumbnailSize: { width, height },
+      });
+      const own = sources.find((s) => s.id === win.getMediaSourceId());
+      writeFileSync(shot, (own?.thumbnail ?? (await win.webContents.capturePage())).toPNG());
+    }
     process.stdout.write(
       `SMOKE ${JSON.stringify({
         title: win.webContents.getTitle(),
         url: win.webContents.getURL(),
         page,
         safeStorage: safeStorage.isEncryptionAvailable(),
+        tray: tray !== null,
+        menu: Menu.getApplicationMenu() === null ? "none" : "present",
+        frameless: process.platform === "darwin" ? "hiddenInset" : "titleBarOverlay",
+        screenshot: shot ?? null,
       })}\n`,
     );
-    app.quit();
+    quitApp();
   });
 }
 
@@ -431,7 +600,7 @@ ipcMain.handle("setup:save", async (_event, raw: unknown) => {
   }
   try {
     saveConfig(config);
-    setMenu();
+    buildTray();
     const old = mainWindow;
     await openApp(config);
     old?.close();
@@ -446,45 +615,81 @@ app.on("web-contents-created", (_event, contents) => {
   contents.on("will-attach-webview", (event) => event.preventDefault());
 });
 
-function setMenu(): void {
-  const config = loadConfig();
-  const template: Electron.MenuItemConstructorOptions[] = [
-    {
-      label: "NexScout",
-      submenu: [
-        ...(config?.mode === "easy"
-          ? [
-              {
-                label: "Stop NexScout (background work too)",
-                click: async () => {
-                  await stopEasy();
-                  app.quit();
-                },
-              },
-              { type: "separator" as const },
-            ]
-          : []),
-        { label: "Check for updates…", click: () => checkForUpdatesNow() },
-        { type: "separator" as const },
-        { role: "reload" as const },
-        { role: "toggleDevTools" as const, visible: !app.isPackaged },
-        { role: "quit" as const, label: "Close window (keeps working in the background)" },
-      ],
-    },
-    { role: "editMenu" as const },
-  ];
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+// --- The page's bridge (preload.ts). Every handler first checks the caller. ---------------
+
+function handle(channel: string, fn: (event: IpcMainInvokeEvent, arg: unknown) => unknown): void {
+  ipcMain.handle(channel, (event, arg: unknown) => {
+    if (!isTrustedSender(event.senderFrame?.url, currentAppUrl)) throw new Error("Not allowed.");
+    return fn(event, arg);
+  });
+}
+
+handle("desktop:info", () => ({
+  version: app.getVersion(),
+  platform: process.platform,
+  mode: loadConfig()?.mode ?? null,
+  closeToTray: loadPrefs().closeToTray,
+  updatesSupported: updatesSupported(),
+  update: currentUpdateStatus(),
+}));
+handle("desktop:check-updates", () => checkFromPage());
+handle("desktop:install-update", () => installDownloadedUpdate());
+handle("desktop:set-close-to-tray", (_event, on) => {
+  const prefs = savePrefs({ closeToTray: on === true });
+  buildTray();
+  return prefs.closeToTray;
+});
+handle("desktop:stop-background", async () => {
+  if (loadConfig()?.mode !== "easy") return false;
+  await stopEasy();
+  quitApp();
+  return true;
+});
+handle("desktop:open-logs", async () => {
+  const dir = join(app.getPath("userData"), "logs");
+  mkdirSync(dir, { recursive: true });
+  return (await shell.openPath(dir)) === "";
+});
+handle("desktop:set-theme", (event, theme) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win && process.platform !== "darwin") {
+    win.setTitleBarOverlay({ ...titleBarColors(theme), height: TITLE_BAR_HEIGHT });
+  }
+  return true;
+});
+onUpdateStatus((status) => {
+  const win = mainWindow;
+  if (win && !win.isDestroyed() && currentAppUrl) {
+    win.webContents.send("desktop:update-status", status);
+  }
+});
+
+if (!gotLock) {
+  app.quit(); // another NexScout is open: it shows itself (second-instance below)
+} else {
+  app.on("second-instance", showWindow);
 }
 
 void app.whenReady().then(async () => {
-  setMenu();
+  if (!gotLock) return;
+  Menu.setApplicationMenu(null);
+  buildTray();
   session.defaultSession.setPermissionRequestHandler((_wc, _perm, callback) => callback(false));
   const smokeUrl = process.env.NEXSCOUT_DESKTOP_SMOKE_URL;
+  const smokeCookie = process.env.NEXSCOUT_SMOKE_COOKIE; // "name=value": a test account's session
+  if (SMOKE && smokeUrl && smokeCookie?.includes("=")) {
+    const [name, ...value] = smokeCookie.split("=");
+    await session.defaultSession.cookies.set({ url: smokeUrl, name, value: value.join("=") });
+  }
   const config = smokeUrl ? parseConfig({ mode: "remote", remoteUrl: smokeUrl }) : loadConfig();
   if (config) await openApp(config);
   else openSetup();
   startUpdates(() => mainWindow);
 });
 
+// With "keep running in the tray" the window is hidden, not closed, so this is a real close.
 app.on("window-all-closed", () => app.quit());
-app.on("before-quit", () => children.forEach(killTree));
+app.on("before-quit", () => {
+  quitting = true;
+  children.forEach(killTree);
+});

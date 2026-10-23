@@ -40,9 +40,18 @@
       p {
         color: #b3b3cc;
       }
+      /* The window is frameless: this strip moves it, and the window controls sit on its right. */
+      .titlebar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 56px;
+        -webkit-app-region: drag;
+        app-region: drag;
+      }
     </style>
   </head>
   <body>
+    <div class="titlebar" aria-hidden="true"></div>
     <div>
       <img src="icon.png" width="72" height="72" alt="" />
       <h1>Starting NexScout…</h1>

@@ -1,6 +1,8 @@
 // In-app updates for the installed Windows app (electron-updater, GitHub Releases).
 //
-// - Checks at start and every 6 hours, plus "Check for updates…" in the menu.
+// - Checks at start and every 6 hours, plus "Check for updates" in the tray and in
+//   Account → About & updates. A check the page asked for reports its progress to the page
+//   (`onUpdateStatus`) instead of opening dialogs.
 // - Downloads in the background and asks before restarting. If the person says "Later", the
 //   update installs when NexScout closes.
 // - After a version change, the downloaded installers are deleted (the updater cache).
@@ -21,14 +23,33 @@ import { join } from "node:path";
 import { app, dialog, shell, type BrowserWindow, type MessageBoxOptions } from "electron";
 import { autoUpdater } from "electron-updater";
 
-import { updaterCacheDir } from "./policy";
+import { clampPercent, updaterCacheDir, type UpdateStatus } from "./policy";
 
 const SIX_HOURS = 6 * 60 * 60 * 1000;
 const RELEASES = "https://github.com/AvishakeAdhikary/NexScout/releases/latest";
 
 let getWindow: () => BrowserWindow | null = () => null;
 let manualCheck = false;
+let pageCheck = false; // the page asked: report status, no dialogs
 let wired = false;
+let readyVersion: string | null = null;
+let lastStatus: UpdateStatus = { state: "unsupported" };
+const listeners = new Set<(s: UpdateStatus) => void>();
+
+function emit(status: UpdateStatus): void {
+  lastStatus = status;
+  for (const listener of listeners) listener(status);
+}
+
+/** Status changes for the page (Account → About & updates). Returns an unsubscribe. */
+export function onUpdateStatus(listener: (s: UpdateStatus) => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function currentUpdateStatus(): UpdateStatus {
+  return updatesSupported() ? lastStatus : { state: "unsupported" };
+}
 
 function log(level: string, message: unknown): void {
   try {
@@ -88,7 +109,13 @@ function wire(): void {
     error: (m) => log("error", m),
     debug: () => undefined,
   };
+  autoUpdater.on("checking-for-update", () => emit({ state: "checking" }));
+  autoUpdater.on("download-progress", (p) =>
+    emit({ state: "downloading", percent: clampPercent(p.percent) }),
+  );
   autoUpdater.on("update-available", (info) => {
+    emit({ state: "downloading", version: info.version, percent: 0 });
+    if (pageCheck) return;
     if (!manualCheck) return;
     manualCheck = false;
     void ask({
@@ -99,6 +126,11 @@ function wire(): void {
     });
   });
   autoUpdater.on("update-not-available", () => {
+    emit({ state: "none", version: app.getVersion() });
+    if (pageCheck) {
+      pageCheck = false;
+      return;
+    }
     if (!manualCheck) return;
     manualCheck = false;
     void ask({
@@ -109,6 +141,14 @@ function wire(): void {
   });
   autoUpdater.on("error", (err) => {
     log("error", err?.message ?? err);
+    emit({
+      state: "error",
+      message: "NexScout couldn't reach GitHub to check for updates. Check that you're online.",
+    });
+    if (pageCheck) {
+      pageCheck = false;
+      return;
+    }
     if (!manualCheck) return; // background checks fail quietly (offline, GitHub busy)
     manualCheck = false;
     void ask({
@@ -124,6 +164,12 @@ function wire(): void {
     });
   });
   autoUpdater.on("update-downloaded", (info) => {
+    readyVersion = info.version;
+    emit({ state: "ready", version: info.version });
+    if (pageCheck) {
+      pageCheck = false; // the page shows "Restart to update"
+      return;
+    }
     void ask({
       type: "info",
       title: "Update ready",
@@ -157,7 +203,25 @@ export function startUpdates(windowGetter: () => BrowserWindow | null): void {
   setInterval(check, SIX_HOURS).unref();
 }
 
-/** "Check for updates…" in the menu. */
+/** The page's "Check for updates" button: progress goes to `onUpdateStatus`, no dialogs. */
+export function checkFromPage(): UpdateStatus {
+  if (!updatesSupported()) return { state: "unsupported" };
+  wire();
+  if (readyVersion) return { state: "ready", version: readyVersion };
+  pageCheck = true;
+  emit({ state: "checking" });
+  check();
+  return lastStatus;
+}
+
+/** Restart into a downloaded update ("Restart to update"). False when none is ready. */
+export function installDownloadedUpdate(): boolean {
+  if (!updatesSupported() || !readyVersion) return false;
+  setImmediate(() => autoUpdater.quitAndInstall());
+  return true;
+}
+
+/** "Check for updates" in the tray: answers with dialogs. */
 export function checkForUpdatesNow(): void {
   if (!updatesSupported()) {
     void ask({

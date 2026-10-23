@@ -4,6 +4,40 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.11.0
+- **M19: one window, one bar** (Windows app). The window has no separate title bar or menu:
+  NexScout's own top bar is the title bar, with the minimise, maximise and close buttons on it,
+  in your theme's colours.
+- **Tray icon.** Closing the window hides NexScout in the tray, so it keeps working.
+  - The tray menu has Open, Check for updates, the "keep running in the tray" setting, Stop
+    background work and quit, and Quit.
+  - Opening NexScout twice just brings up the open window.
+- **Account → About & updates.** The version, Check for updates with live progress, Restart to
+  update, the tray setting, and the log folder. In a browser it shows the server's version.
+- **Getting around.** A Home link in the top bar, "All cases" and a case switcher in the side
+  panel (it keeps the section you're in), and breadcrumbs on every case page.
+- Drag-and-drop to import a career-ops `portals.yml`.
+- **M20: long lists stay fast.**
+  - Opportunities load page by page: Matches, Not a fit right now and Not interested are tabs
+    with counts, and there's a search box for titles and employers. Only the cards on screen
+    are drawn, and a description loads when you open a card.
+  - Measured on a case with 5,000 opportunities: the whole list took 0.95 s and 22 MB, while a
+    page takes about 40 ms and 23 KB, page 21 included.
+- **M21: an AI assistant that can do things** (when an AI model is set up).
+  - Ask in your own words. It looks up your matches, deadlines, applications and profile gaps,
+    and can start a search, research or a draft.
+  - It never submits, sends, approves, pays or deletes. If asked, it says where you do that.
+  - An online model asks once per conversation before it sees your data. **New conversation**
+    asks again, and **Clear** deletes the conversation.
+  - Without a model (or with "Use AI" off), the menu assistant answers as before.
+- **Find my skills with AI** (My Profile). The model suggests skills your confirmed entries and
+  CV mention, each with a quote from your own text. Suggestions without a real quote are
+  dropped. Pick them in one dialog (all ticked, untick any) and **Add**.
+- **Clear things away.**
+  - Notifications: remove one, **Clear read**, **Clear all**, and **Show older**.
+  - Agent Activity: **Clear finished**, or clear one finished run. The runs' records (costs,
+    links from documents) are kept; they are only no longer listed.
+
 ## v2.10.0
 - **Contact details** (Profile → Contact details): name, email, phone, city, country, and an
   optional address.

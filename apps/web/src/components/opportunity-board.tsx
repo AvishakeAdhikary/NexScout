@@ -1,14 +1,22 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ErrorAlert } from "@/components/error-alert";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { opportunitiesApi, type OpportunityOut, type SyncSummaryOut } from "@/lib/api/client";
+import { Input } from "@/components/ui/input";
+import {
+  opportunitiesApi,
+  researchApi,
+  type OpportunityOut,
+  type OpportunityView,
+  type SyncSummaryOut,
+} from "@/lib/api/client";
 import { useCase } from "@/lib/hooks";
 import { useCaseEvents, useRun } from "@/lib/live";
 
@@ -37,6 +45,17 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
   const report = useMutation({
     mutationFn: (note: string) => opportunitiesApi.report(caseId, opp.id, note),
   });
+  // Lists leave the description out (it can be 50 KB); it is fetched when the card is opened.
+  const full = useQuery({
+    queryKey: ["opportunity", caseId, opp.id],
+    queryFn: () => researchApi.opportunity(caseId, opp.id),
+    enabled: open && opp.has_description && typeof d.description !== "string",
+  });
+  const description =
+    typeof d.description === "string"
+      ? d.description
+      : ((full.data?.data as Record<string, unknown> | undefined)?.description as
+          string | undefined);
 
   return (
     <article aria-labelledby={`opp-${opp.id}`} className="lift rounded-xl border bg-card p-4">
@@ -109,11 +128,14 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
             </li>
           ))}
         </ul>
-        {typeof d.description === "string" && d.description && (
+        {description && (
           <>
             <h4 className="mt-2 font-medium">Description</h4>
-            <p className="whitespace-pre-line">{d.description}</p>
+            <p className="whitespace-pre-line">{description}</p>
           </>
+        )}
+        {open && full.isPending && opp.has_description && !description && (
+          <p className="mt-2 text-muted-foreground">Loading the description…</p>
         )}
       </details>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -184,13 +206,94 @@ function SyncResult({ results }: { results: SyncSummaryOut[] }) {
   );
 }
 
+const VIEWS: { key: OpportunityView; label: string; empty: string }[] = [
+  {
+    key: "matches",
+    label: "Matches",
+    empty:
+      "Nothing here yet. Use “Find opportunities”. Confirm your profile entries first: only confirmed entries are used for matching.",
+  },
+  {
+    key: "not_fit",
+    label: "Not a fit right now",
+    empty: "Nothing is blocked by a requirement.",
+  },
+  { key: "dismissed", label: "Not interested", empty: "You haven't set any aside." },
+];
+
+function useDebounced<T>(value: T, ms: number): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setSettled(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return settled;
+}
+
+/** Only the cards near the screen are in the page, so thousands of results stay light. */
+function VirtualCards({
+  items,
+  caseId,
+  onNearEnd,
+}: {
+  items: OpportunityOut[];
+  caseId: string;
+  onNearEnd: () => void;
+}) {
+  const [top, setTop] = useState(0);
+  const measureTop = useCallback((el: HTMLDivElement | null) => {
+    if (el) setTop(el.getBoundingClientRect().top + window.scrollY);
+  }, []);
+  const virtualizer = useWindowVirtualizer({
+    count: items.length,
+    estimateSize: () => 240,
+    overscan: 6,
+    scrollMargin: top,
+    getItemKey: (i) => items[i]?.id ?? i,
+  });
+  const rows = virtualizer.getVirtualItems();
+  const lastIndex = rows.at(-1)?.index ?? -1;
+  useEffect(() => {
+    if (lastIndex >= items.length - 8) onNearEnd();
+  }, [lastIndex, items.length, onNearEnd]);
+  return (
+    <div ref={measureTop} style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+      {rows.map((row) => (
+        <div
+          key={row.key}
+          data-index={row.index}
+          ref={virtualizer.measureElement}
+          className="absolute left-0 top-0 w-full pb-3"
+          style={{ transform: `translateY(${row.start - virtualizer.options.scrollMargin}px)` }}
+        >
+          <OpportunityCard opp={items[row.index]} caseId={caseId} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function OpportunityBoard({ caseId, academic }: { caseId: string; academic: boolean }) {
   const queryClient = useQueryClient();
   const kase = useCase(caseId);
-  const list = useQuery({
-    queryKey: ["opportunities", caseId, academic],
-    queryFn: () => opportunitiesApi.list(caseId, academic),
+  const [view, setView] = useState<OpportunityView>("matches");
+  const [search, setSearch] = useState("");
+  const q = useDebounced(search.trim(), 300);
+  const list = useInfiniteQuery({
+    queryKey: ["opportunities", caseId, academic, "page", view, q],
+    queryFn: ({ pageParam }) =>
+      opportunitiesApi.page(caseId, { academic, view, q, cursor: pageParam }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.next_cursor,
+    placeholderData: (previous) => previous, // keep the counts while another list loads
   });
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = list;
+  const loadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const items = useMemo(() => list.data?.pages.flatMap((p) => p.items) ?? [], [list.data]);
+  const counts = list.data?.pages[0]?.counts;
+  const current = VIEWS.find((v) => v.key === view)!;
   const sources = useQuery({ queryKey: ["sources"], queryFn: opportunitiesApi.sources });
   useCaseEvents(caseId);
   const sync = useMutation({ mutationFn: () => opportunitiesApi.sync(caseId) });
@@ -214,10 +317,6 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
 
   const path = kase.data?.career_path;
   const pathOff = path && ((academic && path === "employment") || (!academic && path === "phd"));
-  const items = list.data ?? [];
-  const active = items.filter((o) => o.eligible && o.match_status !== "dismissed");
-  const notFit = items.filter((o) => !o.eligible && o.match_status !== "dismissed");
-  const dismissed = items.filter((o) => o.match_status === "dismissed");
   const enabledSources = (sources.data ?? []).filter(
     (s) => s.enabled && s.kinds.some((k) => (academic ? k !== "job" : k === "job")),
   );
@@ -296,50 +395,57 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
       )}
       <ErrorAlert error={sync.error ?? rescore.error ?? list.error} />
 
-      <section aria-labelledby="matches-heading" className="flex flex-col gap-3">
-        <h2 id="matches-heading" className="text-xl font-semibold">
-          Matches ({active.length})
+      <section aria-labelledby={`tab-${view}`} className="flex flex-col gap-3">
+        <h2 id="results-heading" className="sr-only">
+          Results
         </h2>
-        {list.isPending && <p>Loading…</p>}
-        {list.data && active.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Nothing here yet. Use “Find opportunities”. Confirm your profile entries first: only
-            confirmed entries are used for matching.
-          </p>
-        )}
-        {active.map((o) => (
-          <OpportunityCard key={o.id} opp={o} caseId={caseId} />
-        ))}
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div role="tablist" aria-label="Lists" className="flex flex-wrap gap-1">
+            {VIEWS.map((v) => (
+              <button
+                key={v.key}
+                type="button"
+                role="tab"
+                id={`tab-${v.key}`}
+                aria-selected={view === v.key}
+                aria-controls="results-panel"
+                onClick={() => setView(v.key)}
+                className={
+                  view === v.key
+                    ? "rounded-md bg-primary/10 px-3 py-1.5 text-sm font-medium"
+                    : "rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted"
+                }
+              >
+                {v.label} ({counts ? counts[v.key] : "…"})
+              </button>
+            ))}
+          </div>
+          <Input
+            type="search"
+            aria-label="Search titles and employers"
+            placeholder="Search titles and employers"
+            className="w-64"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div id="results-panel" role="tabpanel" aria-labelledby={`tab-${view}`}>
+          {view === "not_fit" && (
+            <p className="mb-2 text-sm text-muted-foreground">
+              Closed, or blocked by a requirement (for example, experience in strict mode). Each one
+              says why.
+            </p>
+          )}
+          {list.isPending && <p>Loading…</p>}
+          {list.data && items.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              {q ? `Nothing matches “${q}”.` : current.empty}
+            </p>
+          )}
+          <VirtualCards key={`${view}:${q}`} items={items} caseId={caseId} onNearEnd={loadMore} />
+          {isFetchingNextPage && <p className="text-sm text-muted-foreground">Loading more…</p>}
+        </div>
       </section>
-
-      {notFit.length > 0 && (
-        <details>
-          <summary className="cursor-pointer font-medium">
-            Not a fit right now ({notFit.length})
-          </summary>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Closed, or blocked by a requirement (for example, experience in strict mode). Each one
-            says why.
-          </p>
-          <div className="mt-2 flex flex-col gap-3">
-            {notFit.map((o) => (
-              <OpportunityCard key={o.id} opp={o} caseId={caseId} />
-            ))}
-          </div>
-        </details>
-      )}
-      {dismissed.length > 0 && (
-        <details>
-          <summary className="cursor-pointer font-medium">
-            Not interested ({dismissed.length})
-          </summary>
-          <div className="mt-2 flex flex-col gap-3">
-            {dismissed.map((o) => (
-              <OpportunityCard key={o.id} opp={o} caseId={caseId} />
-            ))}
-          </div>
-        </details>
-      )}
 
       <p className="text-sm text-muted-foreground">
         Searching {enabledSources.length} source{enabledSources.length === 1 ? "" : "s"}.{" "}

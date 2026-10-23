@@ -26,12 +26,14 @@ If a linked doc does not exist yet, the roadmap says which milestone creates it.
 
 ## Layout (target. Check the roadmap for what exists)
 ```
-backend/src/nexscout/  Python 3.13 (uv): api/ application/ domain/ infrastructure/ (+ agent_runtime/
-                       agents/ tools/ integrations/ workers/ as milestones land)
+backend/src/nexscout/  Python 3.13 (uv): api/ application/ domain/ infrastructure/ agent_runtime/ agents/
+                       integrations/ (AI assistant: agents/assistant.py + domain/assistant_tools.py
+                       allow-list, ADR-0020)
 backend/alembic/       migrations · backend/tests/ unit/ integration/ security/ (pytest)
 apps/web/              Next.js 16 (App Router, Cache Components, TS strict, Tailwind 4, shadcn/ui)
 apps/web/src/lib/api/  typed API client + contracts generated from OpenAPI (scripts/gen-contracts.sh)
-apps/desktop/          Electron shell (remote, local and Easy mode = own Docker stack)
+apps/desktop/          Electron shell (remote, local, Easy mode = own Docker stack); frameless window, tray,
+                       narrow origin-checked page bridge (preload.ts ↔ main.ts, ADR-0019)
 easy/                  double-click start scripts + compose on released images (non-technical users)
 apps/web/e2e/          Playwright Test journeys (real stack, mock providers)
 docker/ scripts/ docs/

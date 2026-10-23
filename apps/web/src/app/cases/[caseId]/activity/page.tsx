@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -12,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { runsApi, type RunAction, type RunOut, type StepOut } from "@/lib/api/client";
 import { useCaseEvents, useRun } from "@/lib/live";
+
+const FINISHED = new Set(["succeeded", "failed", "cancelled"]);
 
 // Plain-language run states (spec §16: no internal jargon in the UI).
 const STATUS_LABEL: Record<string, string> = {
@@ -330,7 +333,36 @@ export default function ActivityPage() {
     (workflows.data ?? []).map((w) => [w.kind, w.optional_steps]),
   );
   const [selected, setSelected] = useState<string | null>(null);
-  const current = selected ?? runs.data?.[0]?.id ?? null;
+  // Older runs, loaded on request below the newest 50.
+  const [older, setOlder] = useState<RunOut[]>([]);
+  const queryClient = useQueryClient();
+  const list = [
+    ...(runs.data ?? []),
+    ...older.filter((o) => !runs.data?.some((r) => r.id === o.id)),
+  ];
+  const current = selected ?? list[0]?.id ?? null;
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["runs", caseId] });
+  const hide = useMutation({
+    mutationFn: runsApi.hide,
+    onSuccess: (_r, id) => {
+      setOlder((o) => o.filter((r) => r.id !== id));
+      if (selected === id) setSelected(null);
+      void refresh();
+    },
+  });
+  const clearFinished = useMutation({
+    mutationFn: () => runsApi.clearFinished(caseId),
+    onSuccess: () => {
+      setOlder((o) => o.filter((r) => !FINISHED.has(r.status)));
+      setSelected(null);
+      void refresh();
+    },
+  });
+  const loadOlder = useMutation({
+    mutationFn: () => runsApi.list(caseId, list.at(-1)?.created_at),
+    onSuccess: (page) => setOlder((o) => [...o, ...page]),
+  });
+  const canLoadOlder = list.length >= 50 && loadOlder.data?.length !== 0;
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
@@ -359,32 +391,76 @@ export default function ActivityPage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <section aria-labelledby="runs-heading" className="flex flex-col gap-2">
-          <h2 id="runs-heading" className="text-lg font-semibold">
-            Runs
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="runs-heading" className="text-lg font-semibold">
+              Runs
+            </h2>
+            {list.some((r) => FINISHED.has(r.status)) && (
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={clearFinished.isPending}
+                onClick={() => clearFinished.mutate()}
+              >
+                Clear finished
+              </Button>
+            )}
+          </div>
+          {clearFinished.data && (
+            <p role="status" className="text-xs text-muted-foreground">
+              Cleared {clearFinished.data.hidden} finished run(s) from this list. Their records are
+              kept.
+            </p>
+          )}
+          <ErrorAlert error={clearFinished.error ?? hide.error} />
           {runs.isPending && <p>Loading…</p>}
           <ErrorAlert error={runs.error} />
-          {runs.data && runs.data.length === 0 && (
+          {runs.data && list.length === 0 && (
             <p className="text-sm text-muted-foreground">Nothing has run for this case yet.</p>
           )}
           <ul className="flex flex-col gap-1">
-            {(runs.data ?? []).map((r) => (
-              <li key={r.id}>
+            {list.map((r) => (
+              <li key={r.id} className="flex items-start gap-1">
                 <button
                   type="button"
                   aria-current={r.id === current ? "true" : undefined}
                   onClick={() => setSelected(r.id)}
-                  className={`flex w-full flex-wrap items-center gap-2 rounded-md border p-2 text-left text-sm ${
+                  className={`flex min-w-0 flex-1 flex-wrap items-center gap-2 rounded-md border p-2 text-left text-sm ${
                     r.id === current ? "border-primary bg-muted" : ""
                   }`}
                 >
-                  <span className="font-medium">{r.title}</span>
+                  <span id={`run-title-${r.id}`} className="font-medium">
+                    {r.title}
+                  </span>
                   <StatusBadge status={r.status} />
                   <span className="w-full text-xs text-muted-foreground">{when(r.created_at)}</span>
                 </button>
+                {FINISHED.has(r.status) && (
+                  <button
+                    type="button"
+                    aria-label="Clear from the list"
+                    aria-describedby={`run-title-${r.id}`}
+                    className="mt-1 rounded p-1 text-muted-foreground hover:bg-muted"
+                    disabled={hide.isPending}
+                    onClick={() => hide.mutate(r.id)}
+                  >
+                    <X className="size-3.5" aria-hidden />
+                  </button>
+                )}
               </li>
             ))}
           </ul>
+          {canLoadOlder && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="self-start"
+              disabled={loadOlder.isPending}
+              onClick={() => loadOlder.mutate()}
+            >
+              {loadOlder.isPending ? "Loading…" : "Show older"}
+            </Button>
+          )}
         </section>
         <div className="flex flex-col gap-6">
           {current && <RunDetail runId={current} caseId={caseId} optionalSteps={optionalSteps} />}

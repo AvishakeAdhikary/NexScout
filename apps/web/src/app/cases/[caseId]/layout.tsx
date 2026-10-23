@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 
+import { Breadcrumbs } from "@/components/breadcrumbs";
+
 import { CaseNav } from "./case-nav";
 
 // Route params and session-backed data are runtime values, so they stream in behind
@@ -13,6 +15,9 @@ export default function CaseLayout({ children }: LayoutProps<"/cases/[caseId]">)
         </Suspense>
       </aside>
       <main id="main" className="min-w-0 flex-1 p-6 lg:p-8">
+        <Suspense fallback={null}>
+          <Breadcrumbs />
+        </Suspense>
         <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>{children}</Suspense>
       </main>
     </div>

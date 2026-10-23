@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  ArrowLeft,
   Bot,
   Briefcase,
   FileText,
@@ -16,9 +17,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
-import { useCase } from "@/lib/hooks";
+import { useCase, useCases } from "@/lib/hooks";
 import { SECTIONS } from "@/lib/sections";
 import { cn } from "@/lib/utils";
 
@@ -40,14 +41,47 @@ const ICONS: Record<string, LucideIcon> = {
 export function CaseNav() {
   const { caseId } = useParams<{ caseId: string }>();
   const pathname = usePathname();
+  const router = useRouter();
   const kase = useCase(caseId);
+  const cases = useCases();
   const base = `/cases/${caseId}`;
+  const others = (cases.data ?? []).filter((c) => c.id !== caseId);
 
   return (
     <nav aria-label="Case sections" className="flex flex-col gap-1">
-      <p className="mb-2 truncate px-2 font-heading text-sm font-semibold" title={kase.data?.name}>
-        {kase.data?.name ?? " "}
-      </p>
+      <Link
+        href="/cases"
+        className="mb-1 flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+      >
+        <ArrowLeft className="size-3.5" aria-hidden />
+        All cases
+      </Link>
+      {others.length > 0 ? (
+        <select
+          aria-label="Switch case"
+          className="mb-2 w-full truncate rounded-md border bg-background px-2 py-1 font-heading text-sm font-semibold"
+          value={caseId}
+          onChange={(e) => {
+            // Same section in the other case, so switching keeps your place.
+            const rest = pathname.slice(base.length).split("/")[1] ?? "";
+            router.push(`/cases/${e.target.value}${rest ? `/${rest}` : ""}`);
+          }}
+        >
+          <option value={caseId}>{kase.data?.name ?? "This case"}</option>
+          {others.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <p
+          className="mb-2 truncate px-2 font-heading text-sm font-semibold"
+          title={kase.data?.name}
+        >
+          {kase.data?.name ?? " "}
+        </p>
+      )}
       <ul className="flex flex-row flex-wrap gap-0.5 md:flex-col">
         {SECTIONS.map((s) => {
           const href = s.slug ? `${base}/${s.slug}` : base;

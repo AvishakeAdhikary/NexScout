@@ -91,9 +91,18 @@
       small {
         color: #9a9ab8;
       }
+      /* The window is frameless: this strip moves it, and the window controls sit on its right. */
+      .titlebar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 56px;
+        -webkit-app-region: drag;
+        app-region: drag;
+      }
     </style>
   </head>
   <body>
+    <div class="titlebar" aria-hidden="true"></div>
     <main>
       <img src="icon.png" width="56" height="56" alt="" />
       <h1>Welcome to NexScout</h1>

@@ -66,6 +66,18 @@ never write to the shared catalog (enforced when such adapters are added; see KN
 - Exports never contain secrets, AI providers, tokens, applications or runs.
 - `case.exported` and `case.imported` are audited.
 
+## 3d. AI assistant and skill suggestions (ADR-0020)
+- The model only proposes tool calls. `domain/assistant_tools.parse_call` runs allow-listed tools
+  with validated arguments. Submit, send, approve, pay, delete, attest and sign-in are refused
+  by name (unit-tested), and every tool acts as the user through existing use cases.
+- Tools that start work go through the side-effect ledger (at most once).
+- Tool results, profile entries and earlier messages are passed to the model as data.
+- Online models ask once per conversation, with the normal approval card. Declining sends
+  nothing. Private entries are never sent.
+- AI skill suggestions reach the profile only when their quote is found in the user's own text
+  and the user chooses them. The add request carries names only.
+- `chat/conversation(s)`, `chat/ai` and `facts/bulk-create` are in the IDOR sweep.
+
 ## 3c. Contact details
 - Contact details are personal data. They are never part of a prompt: documents get them after
   the model has answered, by plain code (`domain/contact.fill_placeholders`).
@@ -137,6 +149,16 @@ prompts. Final submit needs an approval unless a narrow, explicit standing polic
   treated as instructions (§3).
 - **Ownership.** Custom sources are owned and protected by RLS. The IDOR sweep covers
   `/sources/{key}`, `/sources/{key}/test` and the import route.
+
+## 5e. Desktop page bridge (ADR-0019)
+- The app window's page can call only the bridge's named methods: info, check/install update,
+  the tray setting, stop background work, open the log folder, and the title-bar theme.
+- Main answers a call only when the sending frame's origin is the NexScout page's origin
+  (`policy.isTrustedSender`, unit-tested). Arguments are coerced in the preload and checked
+  again in main.
+- No Node, no generic IPC, no file paths from the page. `openLogs` opens a fixed folder.
+- Smoke-only test hooks (`NEXSCOUT_SMOKE_COOKIE`, `NEXSCOUT_SMOKE_SCREENSHOT`) work only with
+  `--smoke`.
 
 ## 5d. Updates (ADR-0017)
 - Updates come only from this repository's GitHub releases over https. The desktop app checks

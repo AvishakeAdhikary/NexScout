@@ -194,3 +194,67 @@ export function foreignEasyStack(
   }
   return null;
 }
+
+// --- Window, tray and the page's narrow bridge (ADR-0019) ------------------------------------
+
+/** Desktop-only preferences, kept apart from the connection config. */
+export interface DesktopPrefs {
+  /** The window's close button hides NexScout to the tray (the default) instead of quitting. */
+  closeToTray: boolean;
+  /** The one-time "still running in the tray" notice was shown. */
+  trayHintShown: boolean;
+}
+
+export const DEFAULT_PREFS: DesktopPrefs = { closeToTray: true, trayHintShown: false };
+
+export function parsePrefs(raw: unknown): DesktopPrefs {
+  if (typeof raw !== "object" || raw === null) return { ...DEFAULT_PREFS };
+  const p = raw as Record<string, unknown>;
+  return {
+    closeToTray: typeof p.closeToTray === "boolean" ? p.closeToTray : DEFAULT_PREFS.closeToTray,
+    trayHintShown: p.trayHintShown === true,
+  };
+}
+
+/**
+ * Bridge calls are answered only for the NexScout page itself: the sending frame's origin must
+ * be the app's origin (not an embedded frame from elsewhere, not the setup page).
+ */
+export function isTrustedSender(frameUrl: string | undefined, appUrl: string | null): boolean {
+  if (!frameUrl || !appUrl) return false;
+  try {
+    const from = new URL(frameUrl);
+    return (
+      (from.protocol === "http:" || from.protocol === "https:") &&
+      from.origin === new URL(appUrl).origin
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** The custom title bar is the page's 56 px top bar; the window controls sit on top of it. */
+export const TITLE_BAR_HEIGHT = 56;
+
+export type Theme = "light" | "dark";
+
+export function titleBarColors(theme: unknown): { color: string; symbolColor: string } {
+  // apps/web/src/app/globals.css --background / --foreground, as sRGB.
+  return theme === "light"
+    ? { color: "#fbfcfe", symbolColor: "#131521" }
+    : { color: "#090b16", symbolColor: "#eef0f7" };
+}
+
+/** What the page is told about an update (no dialogs when the page asked). */
+export type UpdateStatus =
+  | { state: "unsupported" }
+  | { state: "checking" }
+  | { state: "none"; version: string }
+  | { state: "downloading"; version?: string; percent: number }
+  | { state: "ready"; version: string }
+  | { state: "error"; message: string };
+
+export function clampPercent(value: unknown): number {
+  const n = typeof value === "number" && Number.isFinite(value) ? value : 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}

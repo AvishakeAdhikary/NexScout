@@ -174,7 +174,11 @@ async def case_dashboard(
     runs = list(
         await s.scalars(
             select(WorkflowRun)
-            .where(WorkflowRun.owner_user_id == actor.user_id, WorkflowRun.case_id == case_id)
+            .where(
+                WorkflowRun.owner_user_id == actor.user_id,
+                WorkflowRun.case_id == case_id,
+                WorkflowRun.hidden_at.is_(None),
+            )
             .order_by(WorkflowRun.created_at.desc())
             .limit(5)
         )
@@ -278,20 +282,15 @@ async def diagnostics(s: AsyncSession, actor: Actor) -> dict[str, Any]:
 # --- Assistant --------------------------------------------------------------------------------
 
 
-async def chat_history(s: AsyncSession, actor: Actor, case_id: uuid.UUID) -> list[ChatMessage]:
-    await get_case(s, actor, case_id)
-    rows = await s.scalars(
-        select(ChatMessage)
-        .where(ChatMessage.owner_user_id == actor.user_id, ChatMessage.case_id == case_id)
-        .order_by(ChatMessage.seq.desc())
-        .limit(100)
-    )
-    return list(reversed(list(rows)))
-
-
 async def chat(
-    s: AsyncSession, settings: Settings, actor: Actor, case_id: uuid.UUID, message: str
+    s: AsyncSession,
+    settings: Settings,
+    actor: Actor,
+    case_id: uuid.UUID,
+    message: str,
+    conversation_id: uuid.UUID | None = None,
 ) -> list[ChatMessage]:
+    """The assistant without AI: a fixed menu matched by rules (no model involved)."""
     await get_case(s, actor, case_id)
     text = message.strip()[:2000]
     intent = classify(text)
@@ -304,6 +303,7 @@ async def chat(
     user = ChatMessage(
         owner_user_id=actor.user_id,
         case_id=case_id,
+        conversation_id=conversation_id,
         role="user",
         content=text,
         intent=intent.name,
@@ -312,6 +312,7 @@ async def chat(
     bot = ChatMessage(
         owner_user_id=actor.user_id,
         case_id=case_id,
+        conversation_id=conversation_id,
         role="assistant",
         content=reply,
         intent=intent.name,

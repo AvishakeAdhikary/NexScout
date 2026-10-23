@@ -68,6 +68,7 @@ OWNED_TABLES: tuple[str, ...] = (
     "case_answers",
     "custom_sources",
     "case_contacts",
+    "chat_conversations",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
@@ -650,6 +651,9 @@ class WorkflowRun(IdMixin, Base):
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Cleared from Agent Activity by the user. The run and its records (usage, links from
+    # drafted documents) stay; it is only no longer listed.
+    hidden_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     __table_args__ = (
@@ -1181,6 +1185,25 @@ class Notification(IdMixin, Base):
     )
 
 
+class ChatConversation(IdMixin, Base):
+    """One assistant conversation. Sharing with an online AI model is agreed per conversation
+    (`consented_at`); a new conversation asks again (ADR-0020)."""
+
+    __tablename__ = "chat_conversations"
+
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        case_fk(),
+        Index("ix_chat_conversations_case_created", "case_id", "created_at"),
+    )
+
+
 class ChatMessage(IdMixin, Base):
     """The case assistant's conversation (user messages and replies)."""
 
@@ -1189,6 +1212,11 @@ class ChatMessage(IdMixin, Base):
     seq: Mapped[int] = mapped_column(BigInteger, Identity(always=True), nullable=False)
     owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
     case_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    conversation_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("chat_conversations.id", ondelete="CASCADE")
+    )
+    # The assistant run that wrote this reply (AI replies only): saving it is idempotent.
+    run_id: Mapped[uuid.UUID | None] = mapped_column(unique=True)
     role: Mapped[str] = mapped_column(String(10), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     intent: Mapped[str | None] = mapped_column(String(40))
@@ -1201,6 +1229,7 @@ class ChatMessage(IdMixin, Base):
         case_fk(),
         CheckConstraint("role IN ('user','assistant')", name="role_valid"),
         Index("ix_chat_messages_case_seq", "case_id", "seq"),
+        Index("ix_chat_messages_conversation_seq", "conversation_id", "seq"),
     )
 
 
