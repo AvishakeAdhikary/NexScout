@@ -4,6 +4,27 @@ Releases are created automatically from `main` after CI passes (`.github/workflo
 Each one bumps the **minor** version and lists its commits in the GitHub release notes. This
 file summarizes the larger milestones.
 
+## v2.10.0
+- **Contact details** (Profile → Contact details): name, email, phone, city, country, and an
+  optional address.
+  - Found in your CV and suggested. Nothing is saved until you press Save.
+  - Used in resumes, CVs and letter sign-offs, and to fill application forms: first and last
+    name, phone, city, country, location, postal code and profile links.
+  - Never sent to an AI model: NexScout adds them after the writing.
+- **Applying works without the PDF dance.** "Fill in the form" first fills in what you already
+  told NexScout, makes any missing PDF and checks it. Only then does it open the page.
+  - The app used to refuse with "Create the PDF files for the chosen documents first", even
+    though the application page had no way to make them.
+  - If a document still needs something only you can write, the run says which document and
+    what is missing.
+- **Documents where you need them.** On the application page, the position page and the
+  Documents page, every document has **Fill in my details**, **Make PDF**, **Download PDF** and
+  **Delete**. The application page shows the position's own documents first.
+- **Fixed: deleting a document that had a PDF failed** (an internal format code was taken for a
+  file name). Deleting a document now also takes it off applications.
+- Developers: Prettier for the web and desktop apps (`npm run format`; `npm run lint` checks
+  it), with `eslint-config-prettier`. Both apps were reformatted once.
+
 ## v2.9.0
 - **M18: your profile is portable and read properly.**
   - **Export profile and Import a profile.** One case is moved as a `.nexscout` file: every

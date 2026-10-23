@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { FormatPicker } from "@/components/document-format";
 import { ErrorAlert } from "@/components/error-alert";
+import { GeneratedDocumentRow } from "@/components/generated-document-row";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,8 +45,12 @@ function SourceRow({ s }: { s: ResearchSourceOut }) {
         {s.origin !== "listing" && (
           <>
             {" · "}
-            <a className="underline" href={s.final_url ?? s.url} target="_blank"
-              rel="noopener noreferrer nofollow">
+            <a
+              className="underline"
+              href={s.final_url ?? s.url}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+            >
               open
             </a>
           </>
@@ -81,21 +86,28 @@ function FindingGroup({
         <p className="text-xs">Research interests: {v.research_interests.join(", ")}</p>
       )}
       {v.profile_url && (
-        <a className="text-xs underline" href={v.profile_url} target="_blank"
-          rel="noopener noreferrer nofollow">
+        <a
+          className="text-xs underline"
+          href={v.profile_url}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+        >
           Profile page
         </a>
       )}
       {conflict?.note && <p className="text-xs text-destructive">{conflict.note}</p>}
       <details className="mt-1">
-        <summary className="cursor-pointer text-xs">Show source{rows.length > 1 ? "s" : ""}</summary>
+        <summary className="cursor-pointer text-xs">
+          Show source{rows.length > 1 ? "s" : ""}
+        </summary>
         {rows.map((r) => {
           const src = sources.get(r.source_id);
           return (
             <div key={r.id} className="mt-1">
               <blockquote className="border-l-2 pl-2 text-xs italic">{r.quote}</blockquote>
               <p className="text-xs text-muted-foreground">
-                From: {src?.title ?? src?.url ?? "unknown"} ({ORIGIN[src?.origin ?? ""] ?? "source"})
+                From: {src?.title ?? src?.url ?? "unknown"} ({ORIGIN[src?.origin ?? ""] ?? "source"}
+                )
               </p>
             </div>
           );
@@ -118,30 +130,54 @@ function DraftStatus({ runId, caseId }: { runId: string; caseId: string }) {
   const run = useRun(runId);
   const status = run.data?.run.status;
   const result = run.data?.run.result as
-    | { status?: string; document_id?: string; placeholders?: number; removed?: number; message?: string }
+    | {
+        status?: string;
+        document_id?: string;
+        placeholders?: number;
+        removed?: number;
+        message?: string;
+      }
     | null
     | undefined;
   if (status === "waiting_approval")
     return (
       <p role="status" className="text-sm">
         Waiting for your permission to send entries to the model.{" "}
-        <Link className="underline" href={`/cases/${caseId}/activity`}>Review the request</Link>
+        <Link className="underline" href={`/cases/${caseId}/activity`}>
+          Review the request
+        </Link>
       </p>
     );
   if (status === "failed")
-    return <p role="alert" className="text-sm text-destructive">Couldn&apos;t draft: {run.data?.run.error}</p>;
+    return (
+      <p role="alert" className="text-sm text-destructive">
+        Couldn&apos;t draft: {run.data?.run.error}
+      </p>
+    );
   if (status === "succeeded" && result?.document_id)
     return (
       <p role="status" className="text-sm">
         Draft ready: {result.placeholders ?? 0} placeholder(s) to fill
         {result.removed ? `, ${result.removed} unsupported sentence(s) removed` : ""}.{" "}
-        <Link className="underline" href={`/cases/${caseId}/documents/generated/${result.document_id}`}>
+        <Link
+          className="underline"
+          href={`/cases/${caseId}/documents/generated/${result.document_id}`}
+        >
           Open it
         </Link>
       </p>
     );
-  if (status === "succeeded") return <p role="status" className="text-sm">{result?.message ?? "Finished."}</p>;
-  return <p role="status" className="text-sm">Drafting…</p>;
+  if (status === "succeeded")
+    return (
+      <p role="status" className="text-sm">
+        {result?.message ?? "Finished."}
+      </p>
+    );
+  return (
+    <p role="status" className="text-sm">
+      Drafting…
+    </p>
+  );
 }
 
 const PHD_TYPES = ["sop", "research_proposal", "academic_cv", "inquiry_email"];
@@ -166,7 +202,9 @@ function Referrals({
   const { suggestions, not_permitted } = refs.data;
   return (
     <section aria-labelledby="ref-heading" className="flex flex-col gap-2">
-      <h3 id="ref-heading" className="font-medium">People who could refer you</h3>
+      <h3 id="ref-heading" className="font-medium">
+        People who could refer you
+      </h3>
       {suggestions.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No one you allowed for referrals works at this organization.
@@ -197,7 +235,10 @@ function Referrals({
         <p className="text-xs text-muted-foreground">
           {not_permitted} other relationship(s) at this organization aren&apos;t allowed for
           referrals. You can change that in{" "}
-          <Link className="underline" href={`/cases/${caseId}/relationships`}>Relationships</Link>.
+          <Link className="underline" href={`/cases/${caseId}/relationships`}>
+            Relationships
+          </Link>
+          .
         </p>
       )}
     </section>
@@ -206,8 +247,14 @@ function Referrals({
 
 function StartApplication({ caseId, opportunityId }: { caseId: string; opportunityId: string }) {
   const router = useRouter();
-  const apps = useQuery({ queryKey: ["applications", caseId], queryFn: () => applicationsApi.list(caseId) });
-  const docs = useQuery({ queryKey: ["generated", caseId], queryFn: () => generatedApi.list(caseId) });
+  const apps = useQuery({
+    queryKey: ["applications", caseId],
+    queryFn: () => applicationsApi.list(caseId),
+  });
+  const docs = useQuery({
+    queryKey: ["generated", caseId],
+    queryFn: () => generatedApi.list(caseId),
+  });
   const [chosen, setChosen] = useState<string[] | null>(null);
   const create = useMutation({
     mutationFn: (ids: string[]) => applicationsApi.create(caseId, opportunityId, ids),
@@ -220,17 +267,21 @@ function StartApplication({ caseId, opportunityId }: { caseId: string; opportuni
   const selected = chosen ?? usable.map((d) => d.id);
   return (
     <section aria-labelledby="apply-heading" className="flex flex-col gap-2 rounded-lg border p-4">
-      <h2 id="apply-heading" className="text-xl font-semibold">Apply</h2>
+      <h2 id="apply-heading" className="text-xl font-semibold">
+        Apply
+      </h2>
       {existing ? (
         <p className="text-sm">
           Application: {statusLabel(existing.status)}.{" "}
-          <Link className="underline" href={`/cases/${caseId}/applications/${existing.id}`}>Open it</Link>
+          <Link className="underline" href={`/cases/${caseId}/applications/${existing.id}`}>
+            Open it
+          </Link>
         </p>
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            Choose the documents to send. NexScout fills in the form and asks you before
-            submitting anything.
+            Choose the documents to send. NexScout fills in the form and asks you before submitting
+            anything.
           </p>
           {usable.length === 0 && (
             <p className="text-sm">Prepare a resume or CV first (above, or under Documents).</p>
@@ -241,13 +292,19 @@ function StartApplication({ caseId, opportunityId }: { caseId: string; opportuni
                 type="checkbox"
                 checked={selected.includes(d.id)}
                 onChange={(e) =>
-                  setChosen(e.target.checked ? [...selected, d.id] : selected.filter((x) => x !== d.id))
+                  setChosen(
+                    e.target.checked ? [...selected, d.id] : selected.filter((x) => x !== d.id),
+                  )
                 }
               />
               {d.title}
             </label>
           ))}
-          <Button className="self-start" onClick={() => create.mutate(selected)} disabled={create.isPending}>
+          <Button
+            className="self-start"
+            onClick={() => create.mutate(selected)}
+            disabled={create.isPending}
+          >
             Start an application
           </Button>
           <ErrorAlert error={create.error ?? apps.error} />
@@ -336,21 +393,31 @@ export function OpportunityPrepare({ academic }: { academic: boolean }) {
       )}
 
       <section aria-labelledby="research-heading" className="flex flex-col gap-3">
-        <h2 id="research-heading" className="text-xl font-semibold">Requirements and people</h2>
+        <h2 id="research-heading" className="text-xl font-semibold">
+          Requirements and people
+        </h2>
         <p className="text-sm text-muted-foreground">
           NexScout reads the listing and the pages it links to, and notes what they say, quoting
           each source. It doesn&apos;t guess: if a page doesn&apos;t say something, it isn&apos;t
           listed. Always confirm on the official page before you apply.
         </p>
         <Button className="self-start" onClick={() => start.mutate()} disabled={researching}>
-          {researching ? "Researching…" : findings.length ? "Research again" : "Research this position"}
+          {researching
+            ? "Researching…"
+            : findings.length
+              ? "Research again"
+              : "Research this position"}
         </Button>
         <div aria-live="polite">
           {runStatus === "failed" && (
-            <p role="alert" className="text-sm text-destructive">Research failed: {run.data?.run.error}</p>
+            <p role="alert" className="text-sm text-destructive">
+              Research failed: {run.data?.run.error}
+            </p>
           )}
           {runStatus === "succeeded" && (
-            <p role="status" className="text-sm">Research finished.</p>
+            <p role="status" className="text-sm">
+              Research finished.
+            </p>
           )}
         </div>
         <ErrorAlert error={start.error ?? research.error} />
@@ -385,26 +452,46 @@ export function OpportunityPrepare({ academic }: { academic: boolean }) {
         )}
       </section>
 
-      <section aria-labelledby="prepare-heading" className="flex flex-col gap-3 rounded-lg border p-4">
-        <h2 id="prepare-heading" className="text-xl font-semibold">Prepare documents</h2>
+      <section
+        aria-labelledby="prepare-heading"
+        className="flex flex-col gap-3 rounded-lg border p-4"
+      >
+        <h2 id="prepare-heading" className="text-xl font-semibold">
+          Prepare documents
+        </h2>
         <p className="text-sm text-muted-foreground">
           Drafts use only your confirmed, non-private profile entries and this position&apos;s
-          research. Every claim is checked; anything missing becomes a highlighted placeholder
-          for you to fill. Nothing is sent to anyone.
+          research. Every claim is checked; anything missing becomes a highlighted placeholder for
+          you to fill. Nothing is sent to anyone.
         </p>
-        <FormatPicker caseId={caseId} opportunityId={opportunityId} value={format} onChange={setFormat} />
+        <FormatPicker
+          caseId={caseId}
+          opportunityId={opportunityId}
+          value={format}
+          onChange={setFormat}
+        />
         {!academic && (
-          <Referrals caseId={caseId} opportunityId={opportunityId} value={referral}
-            onChange={setReferral} />
+          <Referrals
+            caseId={caseId}
+            opportunityId={opportunityId}
+            value={referral}
+            onChange={setReferral}
+          />
         )}
         {academic && supervisors.length > 0 && (
           <div className="flex flex-col gap-1">
             <Label htmlFor="sup">Inquiry email to</Label>
-            <select id="sup" className="h-8 max-w-sm rounded-lg border bg-background px-2 text-sm"
-              value={supervisor} onChange={(e) => setSupervisor(e.target.value)}>
+            <select
+              id="sup"
+              className="h-8 max-w-sm rounded-lg border bg-background px-2 text-sm"
+              value={supervisor}
+              onChange={(e) => setSupervisor(e.target.value)}
+            >
               <option value="">Choose a person</option>
               {supervisors.map((s) => (
-                <option key={s.id} value={s.id}>{s.summary}</option>
+                <option key={s.id} value={s.id}>
+                  {s.summary}
+                </option>
               ))}
             </select>
           </div>
@@ -431,17 +518,9 @@ export function OpportunityPrepare({ academic }: { academic: boolean }) {
         {docs.data && docs.data.length > 0 && (
           <>
             <h3 className="font-medium">Documents for this position</h3>
-            <ul className="flex flex-col gap-1 text-sm">
+            <ul className="flex flex-col gap-2">
               {docs.data.map((d) => (
-                <li key={d.id}>
-                  <Link className="underline" href={`/cases/${caseId}/documents/generated/${d.id}`}>
-                    {d.title}
-                  </Link>{" "}
-                  <span className="text-muted-foreground">
-                    v{d.current_version} · {d.latest.placeholders.length} placeholder(s)
-                  </span>
-                  {d.latest.is_mock && <> <Badge variant="destructive">Mock text</Badge></>}
-                </li>
+                <GeneratedDocumentRow key={d.id} doc={d} caseId={caseId} />
               ))}
             </ul>
           </>

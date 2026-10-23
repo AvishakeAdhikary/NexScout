@@ -127,22 +127,40 @@ export const SECTION_LABELS: Record<Section, string> = {
 };
 
 export const SECTION_ORDER: Section[] = [
-  "summary", "education", "employment", "research", "publication", "project", "skill",
-  "certification", "award", "patent", "volunteer", "leadership", "membership", "reference",
+  "summary",
+  "education",
+  "employment",
+  "research",
+  "publication",
+  "project",
+  "skill",
+  "certification",
+  "award",
+  "patent",
+  "volunteer",
+  "leadership",
+  "membership",
+  "reference",
   "other",
 ];
 
 export const DATE_HELP = "YYYY, YYYY-MM, or YYYY-MM-DD";
 
 /** Turn form values into the API payload: drop blanks, split lists. */
-export function toPayload(section: Section, values: Record<string, string>): Record<string, unknown> {
+export function toPayload(
+  section: Section,
+  values: Record<string, string>,
+): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const field of SECTION_FIELDS[section]) {
     const raw = (values[field.key] ?? "").trim();
     if (!raw) continue;
     out[field.key] =
       field.type === "list"
-        ? raw.split(",").map((s) => s.trim()).filter(Boolean)
+        ? raw
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
         : field.type === "end-date" && raw.toLowerCase() === "present"
           ? "present"
           : raw;

@@ -110,6 +110,16 @@ opportunity links.
 - Bundle format `nexscout-profile/1` (`application/profile_bundle.py`); see ADR-0018 for the
   contents and what's excluded.
 
+### v2.10 Contact details (✅ migration 0015)
+- `case_contacts` (owned, RLS forced, one row per case, `version` for optimistic locking).
+  - `data` is validated by `domain/contact.ContactDetails`: full name, given/family name, email,
+    phone, address, postal code, city, region, country. All are optional.
+  - Exported with the account, and in profile bundles as the optional `contact` key (same format
+    number; older bundles import without it).
+  - Audit records which fields were set, never their values.
+- Deleting a generated document removes its id from `applications.document_ids` (and bumps the
+  application's `version`).
+
 ## Migration policy
 - Forward-only in production. Each revision is tested by upgrading from the previous head with
   representative data (`tests/integration/test_migrations.py`).

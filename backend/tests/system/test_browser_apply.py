@@ -208,6 +208,90 @@ async def test_fill_approve_submit_exactly_once(
     assert len(_submissions("REQ-100")) == 1
 
 
+async def test_contact_details_and_documents_are_made_ready_before_filling(
+    client: httpx.AsyncClient, worker: Any
+) -> None:
+    """Saved contact details fill the resume and the form. An edited resume without a PDF gets
+    one automatically; a placeholder nobody answered stops the run until it is answered."""
+    sent_before = len(_submissions("REQ-100"))  # the demo site's log is shared by this module
+    await register(client)
+    case_id = str((await create_case(client, "Jobs"))["id"])
+    await client.patch(f"/api/v1/cases/{case_id}", json={"version": 1, "career_path": "both"})
+    r = await client.put(
+        f"/api/v1/cases/{case_id}/contact",
+        json={
+            "version": 0,
+            "data": {
+                "full_name": "Ada Example",
+                "email": "ada@example.org",
+                "phone": "+49 30 000000",
+                "city": "Berlin",
+                "country": "Germany",
+            },
+        },
+    )
+    assert r.status_code == 200, r.text
+    await client.post(
+        f"/api/v1/cases/{case_id}/facts", json={"section": "skill", "data": {"name": "Python"}}
+    )
+    await client.post(f"/api/v1/cases/{case_id}/opportunities/sync", json={})
+    r = await client.post(
+        f"/api/v1/cases/{case_id}/generated-documents", json={"doc_type": "resume"}
+    )
+    await worker.run_until_idle()
+    resume = (await client.get(f"/api/v1/runs/{r.json()['run_id']}")).json()["run"]["result"][
+        "document_id"
+    ]
+    doc = (await client.get(f"/api/v1/generated-documents/{resume}")).json()
+    v1 = doc["current"]
+    assert v1["placeholders"] == []  # the contact line came from the saved details
+    assert "ada@example.org" in v1["markdown"]
+    assert "+49 30 000000" in v1["markdown"]
+    # The user adds a line that needs an answer: version 2, which has no PDF yet.
+    await client.post(
+        f"/api/v1/generated-documents/{resume}/versions",
+        json={
+            "markdown": v1["markdown"] + "\n\nAvailable from [[PLACEHOLDER: earliest start date]].",
+            "base_version": 1,
+        },
+    )
+    opps = (await client.get(f"/api/v1/cases/{case_id}/opportunities?academic=false")).json()
+    opp = next(o["id"] for o in opps for s in o["sources"] if s["source_url"].endswith("a-1001"))
+    await client.post(
+        f"/api/v1/cases/{case_id}/answers",
+        json={
+            "question": "Why are you interested in this role? *",
+            "answer": "I enjoy building ML platforms.",
+        },
+    )
+    a = await _application(client, case_id, opp, resume)
+
+    # 1) Not ready: the run says which document needs what, and opens nothing.
+    d = await _browser(client, worker, a["id"])
+    assert d["run"]["result"]["status"] == "needs_user_action"
+    app = await _app(client, a["id"])
+    assert "documents aren't ready" in app["blocker"]
+    assert "earliest start date" in app["blocker"]
+
+    # 2) Answered once in the answer bank: filled in, the PDF made, the form filled.
+    await client.post(
+        f"/api/v1/cases/{case_id}/answers",
+        json={"question": "earliest start date", "answer": "1 March 2027"},
+    )
+    d = await _browser(client, worker, a["id"])
+    assert d["run"]["status"] == "waiting_approval", d["run"]
+    fields = "\n".join(d["approvals"][0]["details"]["fields"])
+    assert "Full name *: Ada Example" in fields
+    assert "Email address *: ada@example.org" in fields
+    assert "Phone: +49 30 000000" in fields
+    assert "CV / résumé (PDF) *: Resume" in fields
+    doc = (await client.get(f"/api/v1/generated-documents/{resume}")).json()
+    assert doc["current_version"] == 3
+    assert "1 March 2027" in doc["current"]["markdown"]
+    assert doc["current"]["has_files"]
+    assert len(_submissions("REQ-100")) == sent_before  # filled, not submitted
+
+
 async def test_reject_sends_nothing(client: httpx.AsyncClient, worker: Any) -> None:
     case_id, opps, resume = await _setup(client, worker)
     a = await _application(client, case_id, opps["a-2001"], resume)

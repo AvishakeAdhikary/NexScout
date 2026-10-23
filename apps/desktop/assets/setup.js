@@ -8,7 +8,9 @@ function fail(message) {
 }
 
 if (!bridge) {
-  fail("NexScout couldn't start its setup helper. Please reinstall the app, or report this problem.");
+  fail(
+    "NexScout couldn't start its setup helper. Please reinstall the app, or report this problem.",
+  );
 }
 
 document.getElementById("choose").addEventListener("click", async () => {
@@ -42,7 +44,9 @@ form.addEventListener("submit", async (event) => {
     const res = await bridge.save(config);
     if (!res || !res.ok) fail((res && res.error) || "Something went wrong. Please try again.");
   } catch {
-    fail("NexScout couldn't start. Check that Docker Desktop is running (Easy mode), then try again.");
+    fail(
+      "NexScout couldn't start. Check that Docker Desktop is running (Easy mode), then try again.",
+    );
   } finally {
     button.disabled = false;
   }

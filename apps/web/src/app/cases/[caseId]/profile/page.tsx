@@ -19,6 +19,7 @@ import {
 } from "@/lib/api/client";
 import { LINK_TARGETS, SECTION_LABELS, SECTION_ORDER } from "@/lib/profile-schema";
 
+import { ContactPanel } from "./contact-panel";
 import { DraftSummary } from "./draft-summary";
 import { FactCard } from "./fact-card";
 import { LinksPanel } from "./links-panel";
@@ -120,7 +121,16 @@ export default function ProfilePage() {
   const groupToggle = (items: FactOut[]) => {
     const all = items.every((i) => selected.has(i.id));
     return (
-      <Button size="sm" variant="ghost" onClick={() => selectGroup(items.map((i) => i.id), !all)}>
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() =>
+          selectGroup(
+            items.map((i) => i.id),
+            !all,
+          )
+        }
+      >
         {all ? "Unselect all" : "Select all"}
       </Button>
     );
@@ -143,10 +153,18 @@ export default function ProfilePage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-2xl font-semibold">My Profile</h1>
           <div className="flex flex-wrap gap-2 text-sm">
-            <a className={buttonVariants({ variant: "outline", size: "sm" })} href={casesApi.exportUrl(caseId)} download>
+            <a
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+              href={casesApi.exportUrl(caseId)}
+              download
+            >
               Export profile
             </a>
-            <a className={buttonVariants({ variant: "ghost", size: "sm" })} href={casesApi.exportUrl(caseId, false)} download>
+            <a
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+              href={casesApi.exportUrl(caseId, false)}
+              download
+            >
               Export without documents
             </a>
           </div>
@@ -156,11 +174,24 @@ export default function ProfilePage() {
           ever used for recommendations or documents.
         </p>
         <nav aria-label="Profile sections" className="mt-3 flex flex-wrap gap-3 text-sm">
-          <a className="underline" href="#review">Review ({pending.length})</a>
-          <a className="underline" href="#confirmed">Confirmed ({accepted.length})</a>
-          <a className="underline" href="#add">Add an entry</a>
-          <a className="underline" href="#links">Profile links</a>
-          <a className="underline" href="#preferences">Preferences</a>
+          <a className="underline" href="#review">
+            Review ({pending.length})
+          </a>
+          <a className="underline" href="#confirmed">
+            Confirmed ({accepted.length})
+          </a>
+          <a className="underline" href="#add">
+            Add an entry
+          </a>
+          <a className="underline" href="#contact">
+            Contact details
+          </a>
+          <a className="underline" href="#links">
+            Profile links
+          </a>
+          <a className="underline" href="#preferences">
+            Preferences
+          </a>
         </nav>
       </header>
 
@@ -174,13 +205,28 @@ export default function ProfilePage() {
           <Button size="sm" disabled={bulk.isPending} onClick={() => bulk.mutate("accept")}>
             Accept
           </Button>
-          <Button size="sm" variant="outline" disabled={bulk.isPending} onClick={() => bulk.mutate("reject")}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulk.isPending}
+            onClick={() => bulk.mutate("reject")}
+          >
             Reject
           </Button>
-          <Button size="sm" variant="outline" disabled={bulk.isPending} onClick={() => bulk.mutate("private")}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulk.isPending}
+            onClick={() => bulk.mutate("private")}
+          >
             Make private
           </Button>
-          <Button size="sm" variant="outline" disabled={bulk.isPending} onClick={() => bulk.mutate("shareable")}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={bulk.isPending}
+            onClick={() => bulk.mutate("shareable")}
+          >
             Make shareable
           </Button>
           <Button
@@ -188,7 +234,8 @@ export default function ProfilePage() {
             variant="destructive"
             disabled={bulk.isPending}
             onClick={() => {
-              if (window.confirm(`Delete ${selected.size} entries? This can't be undone.`)) bulk.mutate("delete");
+              if (window.confirm(`Delete ${selected.size} entries? This can't be undone.`))
+                bulk.mutate("delete");
             }}
           >
             Delete
@@ -232,7 +279,10 @@ export default function ProfilePage() {
           </p>
         )}
         {leftovers.length > 0 && (
-          <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
+          <div
+            role="status"
+            className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm"
+          >
             <span className="flex-1">
               {leftovers.length} suggestions below came from a file you have since deleted, so they
               can no longer be checked against it.
@@ -253,8 +303,8 @@ export default function ProfilePage() {
         )}
         {pending.length > 0 && (
           <p className="text-sm text-muted-foreground">
-            These were found in your documents by a simple rule-based reader (not AI). Check
-            each one against the source before accepting. Nothing here is used until you accept it.
+            These were found in your documents by a simple rule-based reader (not AI). Check each
+            one against the source before accepting. Nothing here is used until you accept it.
           </p>
         )}
         {groupBySection(pending).map(([section, items]) => (
@@ -299,7 +349,9 @@ export default function ProfilePage() {
         ))}
         {rejected.length > 0 && (
           <details>
-            <summary className="cursor-pointer text-sm">Rejected entries ({rejected.length})</summary>
+            <summary className="cursor-pointer text-sm">
+              Rejected entries ({rejected.length})
+            </summary>
             <div className="mt-2 flex flex-col gap-2">
               <div className="self-end">{groupToggle(rejected)}</div>
               {rejected.map(card)}
@@ -346,6 +398,7 @@ export default function ProfilePage() {
         )}
       </section>
 
+      <ContactPanel caseId={caseId} />
       <LinksPanel caseId={caseId} />
       <PreferencesPanel caseId={caseId} />
     </div>

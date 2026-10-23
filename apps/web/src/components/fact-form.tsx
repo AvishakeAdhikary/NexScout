@@ -41,15 +41,11 @@ export function FactForm({
   selfId?: string;
 }) {
   const uid = useId();
-  const [values, setValues] = useState<Record<string, string>>(() =>
-    toFormValues(initial ?? {}),
-  );
+  const [values, setValues] = useState<Record<string, string>>(() => toFormValues(initial ?? {}));
   const [related, setRelated] = useState<string[]>(() =>
     Array.isArray(initial?.related_fact_ids) ? (initial.related_fact_ids as string[]) : [],
   );
-  const options = LINKABLE_SOURCES.has(section)
-    ? linkOptions.filter((o) => o.id !== selfId)
-    : [];
+  const options = LINKABLE_SOURCES.has(section) ? linkOptions.filter((o) => o.id !== selfId) : [];
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -78,7 +74,11 @@ export function FactForm({
         return (
           <div
             key={field.key}
-            className={field.type === "textarea" ? "flex flex-col gap-1 sm:col-span-2" : "flex flex-col gap-1"}
+            className={
+              field.type === "textarea"
+                ? "flex flex-col gap-1 sm:col-span-2"
+                : "flex flex-col gap-1"
+            }
           >
             <Label htmlFor={id}>
               {field.label}
@@ -90,7 +90,9 @@ export function FactForm({
               <Input
                 type={field.type === "url" ? "url" : "text"}
                 maxLength={field.type === "url" ? 2048 : 500}
-                placeholder={field.type === "end-date" ? "YYYY-MM or present" : isDate ? "YYYY-MM" : undefined}
+                placeholder={
+                  field.type === "end-date" ? "YYYY-MM or present" : isDate ? "YYYY-MM" : undefined
+                }
                 {...common}
               />
             )}
@@ -121,7 +123,9 @@ export function FactForm({
                       checked={checked}
                       disabled={!checked && related.length >= 5}
                       onChange={(e) =>
-                        setRelated((r) => (e.target.checked ? [...r, o.id] : r.filter((x) => x !== o.id)))
+                        setRelated((r) =>
+                          e.target.checked ? [...r, o.id] : r.filter((x) => x !== o.id),
+                        )
                       }
                     />
                     {o.label}

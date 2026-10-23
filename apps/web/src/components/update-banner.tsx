@@ -17,7 +17,9 @@ function dismissedVersion(): string | null {
 }
 
 function inDesktopApp(): boolean {
-  return Boolean((window as { nexscoutDesktop?: { isDesktop?: boolean } }).nexscoutDesktop?.isDesktop);
+  return Boolean(
+    (window as { nexscoutDesktop?: { isDesktop?: boolean } }).nexscoutDesktop?.isDesktop,
+  );
 }
 
 const noSubscription = () => () => {};
@@ -40,10 +42,13 @@ export function UpdateBanner() {
   if (desktop || !v?.update_available || !v.latest || dismissed === v.latest) return null;
 
   return (
-    <div role="status" className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b bg-muted/60 px-4 py-2 text-sm">
+    <div
+      role="status"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b bg-muted/60 px-4 py-2 text-sm"
+    >
       <span>
-        <strong>NexScout {v.latest}</strong> is available (you have {v.current}).
-        {" "}Easy install: double-click <em>Update NexScout</em> in your NexScout folder.
+        <strong>NexScout {v.latest}</strong> is available (you have {v.current}). Easy install:
+        double-click <em>Update NexScout</em> in your NexScout folder.
       </span>
       {v.url && (
         <a className="underline" href={v.url} target="_blank" rel="noreferrer noopener">

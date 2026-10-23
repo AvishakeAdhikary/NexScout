@@ -67,6 +67,10 @@ and reminders keep running. Your data is kept between runs.
      suggestions you haven't reviewed. What you accepted, rejected or edited stays as it is.
    - Deleted a file but kept its suggestions? The Profile page tells you, and **Remove them**
      clears those suggestions in one go.
+   - **Contact details** (Profile → Contact details): your name, email, phone, city and country.
+     NexScout finds them in your CV and shows them; press **Use these**, check them, then
+     **Save**. They go on your resumes, CVs and letters and into application forms. They are
+     never sent to an AI model: NexScout adds them itself afterwards.
 5. Optional: **choose an AI model** (Settings → AI models). You need one for letters and
    statements. Use your own key (OpenAI, Anthropic, Gemini, or any OpenAI-compatible service
    such as NVIDIA NIM), or a free model on your computer (Ollama, LM Studio). NexScout asks
@@ -108,14 +112,22 @@ The case dashboard shows a **Getting started** checklist until you're done.
   deadlines, supervisors. Every finding quotes its source.
 - **Documents.** Statement of purpose, research proposal, CV, resume, cover letter, inquiry
   email. Everything NexScout writes comes from your confirmed profile.
-  - Anything it doesn't know is shown as **[[PLACEHOLDER: …]]**. Fill those in yourself.
+  - Anything it doesn't know is shown as **[[PLACEHOLDER: …]]**. **Fill in my details** puts
+    in your contact details and the answers you already gave. Write anything left yourself.
+  - Every document in a list has **Make PDF**, **Download PDF** and **Delete** right there.
   - The format follows the country of the position (for example a German *Lebenslauf* on A4),
     or uses an international format when the country isn't known.
 
 ## 4. Apply
 
-On a position, start an **application** and choose your documents. NexScout opens the
-application page in a browser, fills it in, and shows you every field and a screenshot.
+On a position, start an **application** and tick the documents to upload. The position's own
+documents come first, each with **Fill in my details**, **Make PDF** and **Delete**.
+
+Press **Fill in the form**. First NexScout gets your documents ready: it fills in what you
+already told it and makes any missing PDF. If a document still needs something only you can
+write, it tells you which document and what is missing. Then it opens the application page in
+a browser, fills it in with your contact details and answers, and shows you every field and a
+screenshot.
 **Nothing is sent until you approve.** After you approve, it submits once and records the
 site's confirmation.
 

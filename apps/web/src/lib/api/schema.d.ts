@@ -485,6 +485,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cases/{case_id}/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Contact */
+        get: operations["get_contact_api_v1_cases__case_id__contact_get"];
+        /** Put Contact */
+        put: operations["put_contact_api_v1_cases__case_id__contact_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cases/{case_id}/dashboard": {
         parameters: {
             query?: never;
@@ -1273,6 +1291,27 @@ export interface paths {
         post?: never;
         /** Delete Generated */
         delete: operations["delete_generated_api_v1_generated_documents__document_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/generated-documents/{document_id}/fill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Fill Generated
+         * @description Fill in what the user already gave NexScout (contact details, saved answers) as a new
+         *     version. Placeholders nobody answered stay.
+         */
+        post: operations["fill_generated_api_v1_generated_documents__document_id__fill_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2472,6 +2511,59 @@ export interface components {
             /** Role */
             role: string;
         };
+        /**
+         * ContactDetails
+         * @description What forms and documents may use. Every field is optional; empty means "not given".
+         */
+        ContactDetails: {
+            /** Address */
+            address?: string | null;
+            /** City */
+            city?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Family Name */
+            family_name?: string | null;
+            /** Full Name */
+            full_name?: string | null;
+            /** Given Name */
+            given_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** Region */
+            region?: string | null;
+        };
+        /** ContactOut */
+        ContactOut: {
+            data: components["schemas"]["ContactDetails"];
+            /**
+             * Suggested
+             * @description Details found in the newest CV that differ from the saved ones. Only suggestions: nothing is saved until the user saves them.
+             */
+            suggested?: {
+                [key: string]: string;
+            };
+            /** Suggested From */
+            suggested_from?: string | null;
+            /** Version */
+            version: number;
+        };
+        /** ContactPut */
+        ContactPut: {
+            /** Data */
+            data: {
+                [key: string]: unknown;
+            };
+            /**
+             * Version
+             * @description 0 when no contact details have been saved yet.
+             */
+            version: number;
+        };
         /** ControlIn */
         ControlIn: {
             /** Action */
@@ -2810,6 +2902,15 @@ export interface components {
             points: number;
             /** Weight */
             weight: number;
+        };
+        /** FillOut */
+        FillOut: {
+            /** Current Version */
+            current_version: number;
+            /** Filled */
+            filled: number;
+            /** Placeholders Left */
+            placeholders_left: number;
         };
         /** FindingOut */
         FindingOut: {
@@ -5372,6 +5473,72 @@ export interface operations {
             };
         };
     };
+    get_contact_api_v1_cases__case_id__contact_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_contact_api_v1_cases__case_id__contact_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactPut"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     dashboard_api_v1_cases__case_id__dashboard_get: {
         parameters: {
             query?: never;
@@ -7301,6 +7468,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    fill_generated_api_v1_generated_documents__document_id__fill_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FillOut"];
+                };
             };
             /** @description Validation Error */
             422: {

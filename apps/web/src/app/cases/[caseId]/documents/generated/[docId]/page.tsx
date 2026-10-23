@@ -23,14 +23,21 @@ type Report = {
   assembled?: boolean;
   edited_from?: number;
 };
-type FileInfo = { size?: number; checks?: { ok?: boolean; pages?: number; headings_missing?: string[] } };
+type FileInfo = {
+  size?: number;
+  checks?: { ok?: boolean; pages?: number; headings_missing?: string[] };
+};
 
 function OriginBadges({ v }: { v: VersionOut }) {
   return (
     <span className="flex flex-wrap gap-1">
       {v.is_mock && <Badge variant="destructive">Mock text, not written by AI</Badge>}
-      {v.origin === "assembled" && <Badge variant="outline">Assembled from your entries (no AI)</Badge>}
-      {v.origin === "generated" && !v.is_mock && <Badge variant="outline">Drafted by {v.model ?? "AI"}</Badge>}
+      {v.origin === "assembled" && (
+        <Badge variant="outline">Assembled from your entries (no AI)</Badge>
+      )}
+      {v.origin === "generated" && !v.is_mock && (
+        <Badge variant="outline">Drafted by {v.model ?? "AI"}</Badge>
+      )}
       {v.origin === "user_edit" && <Badge variant="outline">Edited by you</Badge>}
     </span>
   );
@@ -51,7 +58,10 @@ function ReportPanel({ report }: { report: Report }) {
     <div className="flex flex-col gap-2 text-sm">
       <p>
         {report.claims?.length ?? 0} statement(s) about you are backed by your confirmed entries
-        {report.position?.length ? `; ${report.position.length} about the position by its research` : ""}.
+        {report.position?.length
+          ? `; ${report.position.length} about the position by its research`
+          : ""}
+        .
       </p>
       {removed.length > 0 && (
         <details open>
@@ -69,7 +79,9 @@ function ReportPanel({ report }: { report: Report }) {
       )}
       {toCheck.length > 0 && (
         <details>
-          <summary className="cursor-pointer font-medium">Written for you, check these ({toCheck.length})</summary>
+          <summary className="cursor-pointer font-medium">
+            Written for you, check these ({toCheck.length})
+          </summary>
           <ul className="mt-1 list-disc pl-5">
             {toCheck.map((r, i) => (
               <li key={i}>“{r.text}”</li>
@@ -90,14 +102,20 @@ function Files({ doc, v }: { doc: GeneratedDocumentDetailOut; v: VersionOut }) {
   const run = useRun(render.data?.run_id);
   const status = run.data?.run.status;
   useEffect(() => {
-    if (status === "succeeded") queryClient.invalidateQueries({ queryKey: ["generated-doc", doc.id] });
+    if (status === "succeeded")
+      queryClient.invalidateQueries({ queryKey: ["generated-doc", doc.id] });
   }, [status, doc.id, queryClient]);
   const files = v.files as {
     pdf?: FileInfo;
     docx?: FileInfo;
-    compliance?: { status?: string; checks?: { rule: string; ok: boolean; severity: string; source: string; detail: string }[] };
+    compliance?: {
+      status?: string;
+      checks?: { rule: string; ok: boolean; severity: string; source: string; detail: string }[];
+    };
   };
-  const busy = render.isPending || (!!render.data && !["succeeded", "failed", "cancelled"].includes(status ?? ""));
+  const busy =
+    render.isPending ||
+    (!!render.data && !["succeeded", "failed", "cancelled"].includes(status ?? ""));
   if (v.has_files && files.pdf && files.docx) {
     return (
       <div className="flex flex-col gap-1 text-sm">
@@ -120,10 +138,19 @@ function Files({ doc, v }: { doc: GeneratedDocumentDetailOut; v: VersionOut }) {
   }
   return (
     <div className="flex flex-col gap-1">
-      <Button className="self-start" variant="outline" onClick={() => render.mutate()} disabled={busy}>
+      <Button
+        className="self-start"
+        variant="outline"
+        onClick={() => render.mutate()}
+        disabled={busy}
+      >
         {busy ? "Creating files…" : "Create PDF and Word files"}
       </Button>
-      {status === "failed" && <p role="alert" className="text-sm text-destructive">{run.data?.run.error}</p>}
+      {status === "failed" && (
+        <p role="alert" className="text-sm text-destructive">
+          {run.data?.run.error}
+        </p>
+      )}
       <ErrorAlert error={render.error} />
     </div>
   );
@@ -152,10 +179,41 @@ function Editor({ doc, onSaved }: { doc: GeneratedDocumentDetailOut; onSaved: ()
           Save as new version
         </Button>
         {dirty && <span className="text-sm text-muted-foreground">Unsaved changes</span>}
-        <span className="text-sm" aria-live="polite">{left} placeholder(s) left</span>
+        <span className="text-sm" aria-live="polite">
+          {left} placeholder(s) left
+        </span>
       </div>
       <ErrorAlert error={save.error} />
     </div>
+  );
+}
+
+/** Fill in the contact details and saved answers the user already gave, as a new version. */
+function FillDetails({ docId }: { docId: string }) {
+  const queryClient = useQueryClient();
+  const fill = useMutation({
+    mutationFn: () => generatedApi.fill(docId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["generated-doc", docId] }),
+  });
+  return (
+    <span className="mt-2 flex flex-col gap-1">
+      <Button
+        size="sm"
+        variant="outline"
+        className="self-start"
+        disabled={fill.isPending}
+        onClick={() => fill.mutate()}
+      >
+        Fill in my details
+      </Button>
+      {fill.data && fill.data.filled === 0 && (
+        <span role="status" className="text-xs">
+          Nothing NexScout knows fits these yet. Add your contact details on the Profile page, or
+          write them in below.
+        </span>
+      )}
+      <ErrorAlert error={fill.error} />
+    </span>
   );
 }
 
@@ -164,7 +222,10 @@ export default function GeneratedDocumentPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   useCaseEvents(caseId);
-  const doc = useQuery({ queryKey: ["generated-doc", docId], queryFn: () => generatedApi.get(docId) });
+  const doc = useQuery({
+    queryKey: ["generated-doc", docId],
+    queryFn: () => generatedApi.get(docId),
+  });
   const [viewing, setViewing] = useState<number | null>(null);
   const older = useQuery({
     queryKey: ["generated-version", docId, viewing],
@@ -185,7 +246,9 @@ export default function GeneratedDocumentPage() {
 
   return (
     <div className="flex max-w-4xl flex-col gap-5">
-      <Link className="text-sm underline" href={`/cases/${caseId}/documents`}>← Documents</Link>
+      <Link className="text-sm underline" href={`/cases/${caseId}/documents`}>
+        ← Documents
+      </Link>
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">{d.title}</h1>
         <p className="text-sm text-muted-foreground">
@@ -193,8 +256,10 @@ export default function GeneratedDocumentPage() {
           {d.opportunity_id && (
             <>
               {" · "}
-              <Link className="underline"
-                href={`/cases/${caseId}/${["resume", "cover_letter", "referral_request"].includes(d.doc_type) ? "jobs" : "phd"}/${d.opportunity_id}`}>
+              <Link
+                className="underline"
+                href={`/cases/${caseId}/${["resume", "cover_letter", "referral_request"].includes(d.doc_type) ? "jobs" : "phd"}/${d.opportunity_id}`}
+              >
                 position
               </Link>
             </>
@@ -203,7 +268,8 @@ export default function GeneratedDocumentPage() {
         <OriginBadges v={v} />
         {fmt && (
           <p className="text-sm text-muted-foreground">
-            Format: <span className="font-medium text-foreground">{fmt.label}</span> · {fmt.paper} paper
+            Format: <span className="font-medium text-foreground">{fmt.label}</span> · {fmt.paper}{" "}
+            paper
             {fmt.reason ? ` · ${fmt.reason}` : ""}
           </p>
         )}
@@ -214,22 +280,29 @@ export default function GeneratedDocumentPage() {
           <AlertTitle>Not ready to send</AlertTitle>
           <AlertDescription>
             {v.placeholders.length} placeholder(s) need your input: {v.placeholders.join("; ")}.
+            <FillDetails docId={d.id} />
           </AlertDescription>
         </Alert>
       )}
 
       <section aria-labelledby="check-heading" className="rounded-lg border p-4">
-        <h2 id="check-heading" className="mb-2 font-semibold">Fact check</h2>
+        <h2 id="check-heading" className="mb-2 font-semibold">
+          Fact check
+        </h2>
         <ReportPanel report={v.report as Report} />
       </section>
 
       <section aria-labelledby="files-heading" className="rounded-lg border p-4">
-        <h2 id="files-heading" className="mb-2 font-semibold">Files (version {v.number})</h2>
+        <h2 id="files-heading" className="mb-2 font-semibold">
+          Files (version {v.number})
+        </h2>
         <Files doc={d} v={v} />
       </section>
 
       <section aria-labelledby="edit-heading" className="flex flex-col gap-2">
-        <h2 id="edit-heading" className="font-semibold">Edit</h2>
+        <h2 id="edit-heading" className="font-semibold">
+          Edit
+        </h2>
         <Editor
           key={d.current_version}
           doc={d}
@@ -238,13 +311,16 @@ export default function GeneratedDocumentPage() {
       </section>
 
       <section aria-labelledby="versions-heading" className="flex flex-col gap-2">
-        <h2 id="versions-heading" className="font-semibold">Versions</h2>
+        <h2 id="versions-heading" className="font-semibold">
+          Versions
+        </h2>
         <ul className="flex flex-col gap-1 text-sm">
           {[...d.versions].reverse().map((ver) => (
             <li key={ver.number} className="flex flex-wrap items-center gap-2">
               <span>
                 Version {ver.number} · {new Date(ver.created_at).toLocaleString()} ·{" "}
-                {ver.origin === "user_edit" ? "your edit" : ver.origin} · {ver.placeholders.length} placeholder(s)
+                {ver.origin === "user_edit" ? "your edit" : ver.origin} · {ver.placeholders.length}{" "}
+                placeholder(s)
               </span>
               {ver.number !== d.current_version && (
                 <button type="button" className="underline" onClick={() => setViewing(ver.number)}>
@@ -258,7 +334,9 @@ export default function GeneratedDocumentPage() {
           <div className="rounded-lg border p-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="font-medium">Version {shown.number} (read only)</span>
-              <button type="button" className="underline text-sm" onClick={() => setViewing(null)}>Close</button>
+              <button type="button" className="underline text-sm" onClick={() => setViewing(null)}>
+                Close
+              </button>
             </div>
             <pre className="whitespace-pre-wrap text-sm">{shown.markdown}</pre>
           </div>
@@ -269,7 +347,8 @@ export default function GeneratedDocumentPage() {
         <Button
           variant="outline"
           onClick={() => {
-            if (window.confirm("Delete this document and all its versions and files?")) remove.mutate();
+            if (window.confirm("Delete this document and all its versions and files?"))
+              remove.mutate();
           }}
         >
           Delete document

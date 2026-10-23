@@ -29,9 +29,14 @@ test("fill a demo application form, approve, and get a confirmed submission", as
 
   await page.goto(`${caseBase}/profile`);
   await page.getByRole("combobox", { name: "Section" }).selectOption("skill");
-  await page.locator("#add").getByRole("textbox", { name: /^Skill/ }).fill("Python");
+  await page
+    .locator("#add")
+    .getByRole("textbox", { name: /^Skill/ })
+    .fill("Python");
   await page.getByRole("button", { name: "Add to profile" }).click();
-  await expect(page.locator("#confirmed").getByRole("article", { name: "Python", exact: true })).toBeVisible();
+  await expect(
+    page.locator("#confirmed").getByRole("article", { name: "Python", exact: true }),
+  ).toBeVisible();
 
   // Find a demo job and prepare a resume.
   await page.goto(`${caseBase}/jobs`);
@@ -48,7 +53,9 @@ test("fill a demo application form, approve, and get a confirmed submission", as
   // The resume has a contact placeholder: fill it, then create the files.
   const editor = page.getByRole("textbox", { name: "Text (Markdown)" });
   const md = await editor.inputValue();
-  await editor.fill(md.replace(/\[\[PLACEHOLDER: contact details[^\]]*\]\]/, "ada@example.com · Amsterdam"));
+  await editor.fill(
+    md.replace(/\[\[PLACEHOLDER: contact details[^\]]*\]\]/, "ada@example.com · Amsterdam"),
+  );
   await page.getByRole("button", { name: "Save as new version" }).click();
   await expect(page.getByText("Edited by you")).toBeVisible();
   await page.getByRole("button", { name: "Create PDF and Word files" }).click();
@@ -65,7 +72,8 @@ test("fill a demo application form, approve, and get a confirmed submission", as
   await page.getByRole("button", { name: "Fill in the form" }).click();
   await expect(page.getByText("NexScout needs you")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/Why are you interested in this role\?/).first()).toBeVisible();
-  await page.getByRole("textbox", { name: /Your answer: why are you interested in this role/i })
+  await page
+    .getByRole("textbox", { name: /Your answer: why are you interested in this role/i })
     .fill("I enjoy building reliable data pipelines.");
   await page.getByRole("button", { name: "Save", exact: true }).click();
 
@@ -78,7 +86,9 @@ test("fill a demo application form, approve, and get a confirmed submission", as
   await expect(page.getByText("Waiting for your approval", { exact: true }).first()).toBeVisible();
   await approval.getByRole("button", { name: "Approve" }).click();
 
-  await expect(page.getByText(/The site confirmed it \(reference FX-\d+\)/)).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/The site confirmed it \(reference FX-\d+\)/)).toBeVisible({
+    timeout: 60_000,
+  });
   await expect(page.getByRole("button", { name: "Fill in the form" })).toHaveCount(0);
   await page.getByText("Screenshot").first().click();
   await expect(page.getByRole("img", { name: /Page screenshot/ }).first()).toBeVisible();

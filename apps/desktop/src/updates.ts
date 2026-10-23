@@ -7,7 +7,14 @@
 // - The update source is the public GitHub release of this repository (electron-builder.yml
 //   `publish`), fetched over https. The installers aren't code-signed yet (KNOWN_LIMITATIONS).
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -27,7 +34,10 @@ function log(level: string, message: unknown): void {
   try {
     const dir = join(app.getPath("userData"), "logs");
     mkdirSync(dir, { recursive: true });
-    appendFileSync(join(dir, "updates.log"), `${new Date().toISOString()} ${level} ${String(message)}\n`);
+    appendFileSync(
+      join(dir, "updates.log"),
+      `${new Date().toISOString()} ${level} ${String(message)}\n`,
+    );
   } catch {
     // logging must never break the app
   }
@@ -35,7 +45,9 @@ function log(level: string, message: unknown): void {
 
 async function ask(options: MessageBoxOptions): Promise<number> {
   const win = getWindow();
-  const res = win ? await dialog.showMessageBox(win, options) : await dialog.showMessageBox(options);
+  const res = win
+    ? await dialog.showMessageBox(win, options)
+    : await dialog.showMessageBox(options);
   return res.response;
 }
 
@@ -89,7 +101,11 @@ function wire(): void {
   autoUpdater.on("update-not-available", () => {
     if (!manualCheck) return;
     manualCheck = false;
-    void ask({ type: "info", title: "No update", message: `You have the latest NexScout (${app.getVersion()}).` });
+    void ask({
+      type: "info",
+      title: "No update",
+      message: `You have the latest NexScout (${app.getVersion()}).`,
+    });
   });
   autoUpdater.on("error", (err) => {
     log("error", err?.message ?? err);
@@ -99,7 +115,8 @@ function wire(): void {
       type: "warning",
       title: "Couldn't check for updates",
       message: "NexScout couldn't reach GitHub to check for updates.",
-      detail: "Check that you're online, then try again. You can also download the newest version yourself.",
+      detail:
+        "Check that you're online, then try again. You can also download the newest version yourself.",
       buttons: ["OK", "Open the download page"],
       defaultId: 0,
     }).then((r) => {
@@ -147,7 +164,8 @@ export function checkForUpdatesNow(): void {
       type: "info",
       title: "Updates",
       message: "This copy of NexScout doesn't update itself.",
-      detail: "The installed Windows app updates automatically. Otherwise download the newest version from GitHub.",
+      detail:
+        "The installed Windows app updates automatically. Otherwise download the newest version from GitHub.",
       buttons: ["OK", "Open the download page"],
       defaultId: 0,
     }).then((r) => {

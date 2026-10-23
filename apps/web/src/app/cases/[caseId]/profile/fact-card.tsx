@@ -64,14 +64,12 @@ export function FactCard({
     is_mock?: boolean;
   };
   const description = (fact.data as Record<string, unknown>).description;
-  const partOf = ((fact.data as Record<string, unknown>).related_fact_ids as string[] | undefined) ?? [];
+  const partOf =
+    ((fact.data as Record<string, unknown>).related_fact_ids as string[] | undefined) ?? [];
   const pending = fact.review_state === "pending";
 
   return (
-    <article
-      className="rounded-lg border p-3"
-      aria-labelledby={`fact-${fact.id}`}
-    >
+    <article className="rounded-lg border p-3" aria-labelledby={`fact-${fact.id}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex items-start gap-2">
           {onSelect && (
@@ -157,7 +155,9 @@ export function FactCard({
                       : "From a link"}
               </figcaption>
               {ev.excerpt && (
-                <blockquote className="mt-1 whitespace-pre-line border-l-2 pl-2">{ev.excerpt}</blockquote>
+                <blockquote className="mt-1 whitespace-pre-line border-l-2 pl-2">
+                  {ev.excerpt}
+                </blockquote>
               )}
             </figure>
           ))}

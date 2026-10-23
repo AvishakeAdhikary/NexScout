@@ -10,7 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { channelsApi, type ChannelCreatedOut, type ChannelOut } from "@/lib/api/client";
 
-type Field = { key: string; label: string; secret?: boolean; placeholder?: string; optional?: boolean };
+type Field = {
+  key: string;
+  label: string;
+  secret?: boolean;
+  placeholder?: string;
+  optional?: boolean;
+};
 type Kind = {
   label: string;
   intro: string;
@@ -65,7 +71,14 @@ const KINDS: Record<string, Kind> = {
     label: "Slack",
     intro: "Messages in a Slack channel through an incoming webhook (links open NexScout).",
     steps: ["In Slack, create an app → Incoming Webhooks → add to a channel → copy the URL."],
-    fields: [{ key: "webhook_url", label: "Webhook URL", secret: true, placeholder: "https://hooks.slack.com/…" }],
+    fields: [
+      {
+        key: "webhook_url",
+        label: "Webhook URL",
+        secret: true,
+        placeholder: "https://hooks.slack.com/…",
+      },
+    ],
   },
   email: {
     label: "Email",
@@ -87,7 +100,14 @@ const KINDS: Record<string, Kind> = {
     fields: [{ key: "url", label: "Address", secret: true, placeholder: "https://…" }],
   },
 };
-const SECRET_KEYS = new Set(["bot_token", "access_token", "app_secret", "webhook_url", "password", "url"]);
+const SECRET_KEYS = new Set([
+  "bot_token",
+  "access_token",
+  "app_secret",
+  "webhook_url",
+  "password",
+  "url",
+]);
 const EVENTS: [string, string][] = [
   ["approval", "Approvals"],
   ["question", "Questions"],
@@ -97,7 +117,10 @@ const EVENTS: [string, string][] = [
   ["autopilot", "Autopilot"],
   ["digest", "Daily digest"],
 ];
-const STATUS: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+const STATUS: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "outline" | "destructive" }
+> = {
   active: { label: "Connected", variant: "default" },
   pending_pairing: { label: "Waiting for pairing", variant: "secondary" },
   paused: { label: "Paused", variant: "outline" },
@@ -144,28 +167,40 @@ export function NotificationChannels() {
   }
 
   return (
-    <section aria-labelledby="channels-heading" className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-      <h2 id="channels-heading" className="text-lg font-semibold">Notifications on your phone</h2>
+    <section
+      aria-labelledby="channels-heading"
+      className="flex flex-col gap-3 rounded-xl border bg-card p-4"
+    >
+      <h2 id="channels-heading" className="text-lg font-semibold">
+        Notifications on your phone
+      </h2>
       <p className="text-sm text-muted-foreground">
         NexScout can reach you where you already are, so work keeps moving while you&apos;re away:
         approve or reject a submission with one tap, and answer questions by replying. You use your
-        own bot or account through each provider&apos;s official API, and only the account you pair can
-        act. Nothing is sent to anyone else.
+        own bot or account through each provider&apos;s official API, and only the account you pair
+        can act. Nothing is sent to anyone else.
       </p>
 
       {created && (
-        <div role="status" className="animate-page flex flex-col gap-2 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
+        <div
+          role="status"
+          className="animate-page flex flex-col gap-2 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm"
+        >
           <span className="font-medium">{created.channel.name} saved.</span>
           {created.instructions && <span>{created.instructions}</span>}
           {created.pairing_code && created.channel.kind !== "discord" && (
             <code className="w-fit rounded bg-muted px-2 py-1 font-mono text-base">
-              {created.channel.kind === "telegram" ? `/start ${created.pairing_code}` : `PAIR ${created.pairing_code}`}
+              {created.channel.kind === "telegram"
+                ? `/start ${created.pairing_code}`
+                : `PAIR ${created.pairing_code}`}
             </code>
           )}
           {created.signing_secret && (
             <span>
               Signing secret (shown once):{" "}
-              <code className="break-all rounded bg-muted px-1 font-mono text-xs">{created.signing_secret}</code>
+              <code className="break-all rounded bg-muted px-1 font-mono text-xs">
+                {created.signing_secret}
+              </code>
             </span>
           )}
         </div>
@@ -182,18 +217,29 @@ export function NotificationChannels() {
               className="h-8 rounded-lg border bg-background px-2 text-sm"
             >
               {Object.entries(KINDS).map(([k, v]) => (
-                <option key={k} value={k}>{v.label}</option>
+                <option key={k} value={k}>
+                  {v.label}
+                </option>
               ))}
             </select>
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="channel-name">Name</Label>
-            <Input id="channel-name" name="name" defaultValue={spec.label} maxLength={100} className="w-56" required />
+            <Input
+              id="channel-name"
+              name="name"
+              defaultValue={spec.label}
+              maxLength={100}
+              className="w-56"
+              required
+            />
           </div>
         </div>
         <p className="text-sm">{spec.intro}</p>
         <ol className="list-decimal pl-5 text-sm text-muted-foreground">
-          {spec.steps.map((s) => <li key={s}>{s}</li>)}
+          {spec.steps.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
         </ol>
         <div className="grid gap-2 sm:grid-cols-2">
           {spec.fields.map((field) => (
@@ -252,12 +298,22 @@ function ChannelRow({ channel, onChange }: { channel: ChannelOut; onChange: () =
   const [log, setLog] = useState(false);
   const status = STATUS[channel.status] ?? { label: channel.status, variant: "outline" as const };
   const test = useMutation({ mutationFn: () => channelsApi.test(channel.id) });
-  const pair = useMutation({ mutationFn: () => channelsApi.pair(channel.id, code), onSuccess: onChange });
-  const toggle = useMutation({
-    mutationFn: () => channelsApi.update(channel.id, { version: channel.version, paused: channel.status !== "paused" }),
+  const pair = useMutation({
+    mutationFn: () => channelsApi.pair(channel.id, code),
     onSuccess: onChange,
   });
-  const remove = useMutation({ mutationFn: () => channelsApi.remove(channel.id), onSuccess: onChange });
+  const toggle = useMutation({
+    mutationFn: () =>
+      channelsApi.update(channel.id, {
+        version: channel.version,
+        paused: channel.status !== "paused",
+      }),
+    onSuccess: onChange,
+  });
+  const remove = useMutation({
+    mutationFn: () => channelsApi.remove(channel.id),
+    onSuccess: onChange,
+  });
   const deliveries = useQuery({
     queryKey: ["channel-deliveries", channel.id],
     queryFn: () => channelsApi.deliveries(channel.id),
@@ -268,31 +324,52 @@ function ChannelRow({ channel, onChange }: { channel: ChannelOut; onChange: () =
     <li className="flex flex-col gap-2 rounded-lg border p-3 text-sm" aria-label={channel.name}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium">{channel.name}</span>
-        <span className="text-xs text-muted-foreground">{KINDS[channel.kind]?.label ?? channel.kind}</span>
+        <span className="text-xs text-muted-foreground">
+          {KINDS[channel.kind]?.label ?? channel.kind}
+        </span>
         <Badge variant={status.variant}>{status.label}</Badge>
         {channel.quiet_start && channel.quiet_end && (
-          <span className="text-xs text-muted-foreground">quiet {channel.quiet_start}–{channel.quiet_end}</span>
+          <span className="text-xs text-muted-foreground">
+            quiet {channel.quiet_start}–{channel.quiet_end}
+          </span>
         )}
         <span className="ml-auto flex gap-2">
           {channel.status !== "pending_pairing" && (
-            <Button size="sm" variant="outline" onClick={() => test.mutate()} disabled={test.isPending}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => test.mutate()}
+              disabled={test.isPending}
+            >
               Send test
             </Button>
           )}
           {channel.status !== "pending_pairing" && (
-            <Button size="sm" variant="outline" onClick={() => toggle.mutate()} disabled={toggle.isPending}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => toggle.mutate()}
+              disabled={toggle.isPending}
+            >
               {channel.status === "paused" || channel.status === "error" ? "Resume" : "Pause"}
             </Button>
           )}
           <Button size="sm" variant="ghost" onClick={() => setLog((v) => !v)}>
             {log ? "Hide log" : "Log"}
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => remove.mutate()} disabled={remove.isPending}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => remove.mutate()}
+            disabled={remove.isPending}
+          >
             Remove
           </Button>
         </span>
       </div>
-      {channel.last_error && <p className="text-xs text-destructive">Last error: {channel.last_error}</p>}
+      {channel.last_error && (
+        <p className="text-xs text-destructive">Last error: {channel.last_error}</p>
+      )}
       {test.data && (
         <p role="status" className="text-xs">
           {test.data.ok ? "Test message sent." : `Test failed: ${test.data.error}`}
@@ -308,9 +385,16 @@ function ChannelRow({ channel, onChange }: { channel: ChannelOut; onChange: () =
         >
           <div className="flex flex-col gap-1">
             <Label htmlFor={`pair-${channel.id}`}>Code from the Discord message</Label>
-            <Input id={`pair-${channel.id}`} value={code} onChange={(e) => setCode(e.target.value)} className="w-40 font-mono" />
+            <Input
+              id={`pair-${channel.id}`}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-40 font-mono"
+            />
           </div>
-          <Button type="submit" size="sm" disabled={!code || pair.isPending}>Pair</Button>
+          <Button type="submit" size="sm" disabled={!code || pair.isPending}>
+            Pair
+          </Button>
         </form>
       )}
       {channel.webhook && (
@@ -323,12 +407,20 @@ function ChannelRow({ channel, onChange }: { channel: ChannelOut; onChange: () =
       )}
       {log && (
         <ul className="flex flex-col gap-1 text-xs">
-          {(deliveries.data ?? []).length === 0 && <li className="text-muted-foreground">Nothing sent yet.</li>}
+          {(deliveries.data ?? []).length === 0 && (
+            <li className="text-muted-foreground">Nothing sent yet.</li>
+          )}
           {(deliveries.data ?? []).map((d) => (
             <li key={d.id} className="flex flex-wrap gap-2">
-              <span className="text-muted-foreground">{new Date(d.created_at).toLocaleString()}</span>
+              <span className="text-muted-foreground">
+                {new Date(d.created_at).toLocaleString()}
+              </span>
               <span>{d.title}</span>
-              <Badge variant={d.status === "sent" ? "default" : d.status === "dead" ? "destructive" : "outline"}>
+              <Badge
+                variant={
+                  d.status === "sent" ? "default" : d.status === "dead" ? "destructive" : "outline"
+                }
+              >
                 {d.status}
               </Badge>
               {d.last_error && <span className="text-destructive">{d.last_error}</span>}

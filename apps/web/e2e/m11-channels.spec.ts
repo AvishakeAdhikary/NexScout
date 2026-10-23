@@ -47,7 +47,10 @@ test("connect a webhook channel, test it, pause it, and approve from a notificat
   // An approval request; its notification links to /approve/<id>.
   const start = await page.request.post(`/api/v1/cases/${caseId}/runs`, {
     data: { kind: "system_check", params: { require_approval: true } },
-    headers: { "X-CSRF-Token": (await page.context().cookies()).find((c) => c.name === "nexscout_csrf")!.value },
+    headers: {
+      "X-CSRF-Token": (await page.context().cookies()).find((c) => c.name === "nexscout_csrf")!
+        .value,
+    },
   });
   expect(start.status()).toBe(201);
   let approvalId = "";

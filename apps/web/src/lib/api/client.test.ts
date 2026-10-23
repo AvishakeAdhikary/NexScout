@@ -29,7 +29,12 @@ describe("api client", () => {
   it("turns problem+json into ApiError with the server's detail", async () => {
     fetchMock.mockResolvedValue(
       new Response(
-        JSON.stringify({ status: 404, code: "not_found", detail: "Case not found.", request_id: "r1" }),
+        JSON.stringify({
+          status: 404,
+          code: "not_found",
+          detail: "Case not found.",
+          request_id: "r1",
+        }),
         { status: 404 },
       ),
     );

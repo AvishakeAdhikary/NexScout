@@ -1,57 +1,156 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self'">
-  <title>Set up NexScout</title>
-  <style>
-    :root { color-scheme: dark; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 15px/1.5 system-ui, sans-serif;
-      color: #ececf6; background: radial-gradient(50rem 30rem at 15% -10%, #3b2d7a55, transparent 60%), #121224; }
-    main { width: min(560px, 92vw); padding: 28px; border: 1px solid #ffffff1a; border-radius: 18px; background: #1a1a33cc; }
-    h1 { margin: 12px 0 4px; font-size: 24px; letter-spacing: -0.02em; }
-    p { color: #b3b3cc; margin: 4px 0 16px; }
-    fieldset { border: 1px solid #ffffff1a; border-radius: 12px; margin: 0 0 12px; padding: 12px 14px; }
-    legend { padding: 0 6px; font-weight: 600; }
-    label { display: block; margin: 8px 0 4px; }
-    input[type=text], input[type=url] { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px;
-      border: 1px solid #ffffff26; background: #10101f; color: inherit; font: inherit; }
-    button { padding: 8px 14px; border-radius: 8px; border: 0; font: inherit; cursor: pointer; }
-    .primary { background: #a99bff; color: #15122b; font-weight: 600; }
-    .ghost { background: #ffffff14; color: inherit; }
-    .row { display: flex; gap: 8px; align-items: center; }
-    .error { color: #ff9a9a; min-height: 1.5em; }
-    small { color: #9a9ab8; }
-  </style>
-</head>
-<body>
-<main>
-  <img src="icon.png" width="56" height="56" alt="">
-  <h1>Welcome to NexScout</h1>
-  <p>Choose where your NexScout lives. You can change this later by deleting the app's settings.</p>
-  <form id="setup">
-    <fieldset>
-      <legend><label><input type="radio" name="mode" value="easy" checked> Easy: run NexScout on this computer (recommended)</label></legend>
-      <small>Needs <b>Docker Desktop</b> (free for personal use) installed and started once. NexScout downloads
-        and starts itself, keeps working in the background (autopilot, reminders), and keeps your encryption key in
-        the operating system's secure storage.</small>
-    </fieldset>
-    <fieldset>
-      <legend><label><input type="radio" name="mode" value="remote"> Connect to a NexScout server</label></legend>
-      <label for="url">Address</label>
-      <input id="url" type="url" placeholder="https://nexscout.example.org or http://127.0.0.1:3000">
-      <small>HTTPS is required unless the server runs on this computer.</small>
-    </fieldset>
-    <fieldset>
-      <legend><label><input type="radio" name="mode" value="local"> Developer: run from a source checkout</label></legend>
-      <label for="dir">NexScout folder (a checkout with backend/ and apps/web/)</label>
-      <div class="row"><input id="dir" type="text" readonly><button type="button" class="ghost" id="choose">Choose…</button></div>
-      <small>Needs Postgres, uv and Node set up as in docs/DEVELOPMENT.md. Your encryption key is kept in the operating system's secure storage.</small>
-    </fieldset>
-    <p class="error" id="error" role="alert"></p>
-    <button type="submit" class="primary">Continue</button>
-  </form>
-</main>
-<script src="setup.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self'"
+    />
+    <title>Set up NexScout</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+        color: #ececf6;
+        background: radial-gradient(50rem 30rem at 15% -10%, #3b2d7a55, transparent 60%), #121224;
+      }
+      main {
+        width: min(560px, 92vw);
+        padding: 28px;
+        border: 1px solid #ffffff1a;
+        border-radius: 18px;
+        background: #1a1a33cc;
+      }
+      h1 {
+        margin: 12px 0 4px;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        color: #b3b3cc;
+        margin: 4px 0 16px;
+      }
+      fieldset {
+        border: 1px solid #ffffff1a;
+        border-radius: 12px;
+        margin: 0 0 12px;
+        padding: 12px 14px;
+      }
+      legend {
+        padding: 0 6px;
+        font-weight: 600;
+      }
+      label {
+        display: block;
+        margin: 8px 0 4px;
+      }
+      input[type="text"],
+      input[type="url"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #ffffff26;
+        background: #10101f;
+        color: inherit;
+        font: inherit;
+      }
+      button {
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+      .primary {
+        background: #a99bff;
+        color: #15122b;
+        font-weight: 600;
+      }
+      .ghost {
+        background: #ffffff14;
+        color: inherit;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .error {
+        color: #ff9a9a;
+        min-height: 1.5em;
+      }
+      small {
+        color: #9a9ab8;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="icon.png" width="56" height="56" alt="" />
+      <h1>Welcome to NexScout</h1>
+      <p>
+        Choose where your NexScout lives. You can change this later by deleting the app's settings.
+      </p>
+      <form id="setup">
+        <fieldset>
+          <legend>
+            <label
+              ><input type="radio" name="mode" value="easy" checked /> Easy: run NexScout on this
+              computer (recommended)</label
+            >
+          </legend>
+          <small
+            >Needs <b>Docker Desktop</b> (free for personal use) installed and started once.
+            NexScout downloads and starts itself, keeps working in the background (autopilot,
+            reminders), and keeps your encryption key in the operating system's secure
+            storage.</small
+          >
+        </fieldset>
+        <fieldset>
+          <legend>
+            <label
+              ><input type="radio" name="mode" value="remote" /> Connect to a NexScout server</label
+            >
+          </legend>
+          <label for="url">Address</label>
+          <input
+            id="url"
+            type="url"
+            placeholder="https://nexscout.example.org or http://127.0.0.1:3000"
+          />
+          <small>HTTPS is required unless the server runs on this computer.</small>
+        </fieldset>
+        <fieldset>
+          <legend>
+            <label
+              ><input type="radio" name="mode" value="local" /> Developer: run from a source
+              checkout</label
+            >
+          </legend>
+          <label for="dir">NexScout folder (a checkout with backend/ and apps/web/)</label>
+          <div class="row">
+            <input id="dir" type="text" readonly /><button type="button" class="ghost" id="choose">
+              Choose…
+            </button>
+          </div>
+          <small
+            >Needs Postgres, uv and Node set up as in docs/DEVELOPMENT.md. Your encryption key is
+            kept in the operating system's secure storage.</small
+          >
+        </fieldset>
+        <p class="error" id="error" role="alert"></p>
+        <button type="submit" class="primary">Continue</button>
+      </form>
+    </main>
+    <script src="setup.js"></script>
+  </body>
 </html>

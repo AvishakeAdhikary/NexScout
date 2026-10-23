@@ -17,16 +17,45 @@ export function useCaseEvents(caseId: string): { connected: boolean } {
     if (typeof EventSource === "undefined") return;
     const source = new EventSource(runsApi.eventsUrl(caseId));
     const refresh = () => {
-      for (const key of ["runs", "run", "approvals", "documents", "facts", "gaps", "opportunities", "mindmap",
-        "research", "generated", "generated-doc", "applications", "application"]) {
+      for (const key of [
+        "runs",
+        "run",
+        "approvals",
+        "documents",
+        "facts",
+        "gaps",
+        "opportunities",
+        "mindmap",
+        "research",
+        "generated",
+        "generated-doc",
+        "applications",
+        "application",
+      ]) {
         queryClient.invalidateQueries({ queryKey: [key] });
       }
     };
     const types = [
-      "run_created", "run_running", "run_waiting", "run_paused", "run_pausing", "run_succeeded",
-      "run_failed", "run_cancelled", "run_cancelling", "run_resumed", "run_recovering",
-      "run_requeued", "run_retry_scheduled", "step_started", "step_succeeded", "step_failed",
-      "step_progress", "step_skipped", "approval_required", "approval_decided",
+      "run_created",
+      "run_running",
+      "run_waiting",
+      "run_paused",
+      "run_pausing",
+      "run_succeeded",
+      "run_failed",
+      "run_cancelled",
+      "run_cancelling",
+      "run_resumed",
+      "run_recovering",
+      "run_requeued",
+      "run_retry_scheduled",
+      "step_started",
+      "step_succeeded",
+      "step_failed",
+      "step_progress",
+      "step_skipped",
+      "approval_required",
+      "approval_decided",
     ];
     source.onopen = () => setConnected(true);
     source.onerror = () => setConnected(false);
@@ -43,7 +72,8 @@ export function useRun(runId: string | null | undefined) {
     queryFn: () => runsApi.get(runId!),
     enabled: !!runId,
     refetchInterval: (q) =>
-      q.state.data && TERMINAL_RUN_STATES.has(q.state.data.run.status) &&
+      q.state.data &&
+      TERMINAL_RUN_STATES.has(q.state.data.run.status) &&
       q.state.data.run.status !== "waiting_approval"
         ? false
         : 2000,

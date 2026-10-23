@@ -20,7 +20,10 @@ const STEPS: [string, string][] = [
   ["fill", "Fill in application forms"],
   ["submit", "Submit (with my approval, unless allowed below)"],
 ];
-const STAGE: Record<string, { label: string; tone: "default" | "secondary" | "outline" | "destructive" }> = {
+const STAGE: Record<
+  string,
+  { label: string; tone: "default" | "secondary" | "outline" | "destructive" }
+> = {
   queued: { label: "Queued", tone: "outline" },
   researching: { label: "Researching", tone: "secondary" },
   drafting: { label: "Writing documents", tone: "secondary" },
@@ -58,7 +61,10 @@ export default function AutopilotPage() {
     refetchInterval: 10_000,
   });
   const notes = useQuery({ queryKey: ["notifications"], queryFn: trackingApi.notifications });
-  const answers = useQuery({ queryKey: ["answers", caseId], queryFn: () => autopilotApi.answers(caseId) });
+  const answers = useQuery({
+    queryKey: ["answers", caseId],
+    queryFn: () => autopilotApi.answers(caseId),
+  });
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ["autopilot", caseId] });
     void queryClient.invalidateQueries({ queryKey: ["answers", caseId] });
@@ -86,7 +92,11 @@ export default function AutopilotPage() {
           </Badge>
         )}
         <span className="ml-auto flex gap-2">
-          <Button variant="outline" onClick={() => run.mutate()} disabled={!data?.policy.enabled || run.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => run.mutate()}
+            disabled={!data?.policy.enabled || run.isPending}
+          >
             Run now
           </Button>
           <Button variant="destructive" onClick={() => stop.mutate()} disabled={stop.isPending}>
@@ -95,13 +105,15 @@ export default function AutopilotPage() {
         </span>
       </header>
       <p className="text-sm text-muted-foreground">
-        NexScout works on its own within the rules below, and asks you whenever it doesn&apos;t
-        know something. It never guesses an answer, never invents a fact, never solves a CAPTCHA
-        or signs in for you, and never automates sites that forbid it. Send <b>STOP</b> from a
-        paired chat to stop everything from your phone.
+        NexScout works on its own within the rules below, and asks you whenever it doesn&apos;t know
+        something. It never guesses an answer, never invents a fact, never solves a CAPTCHA or signs
+        in for you, and never automates sites that forbid it. Send <b>STOP</b> from a paired chat to
+        stop everything from your phone.
       </p>
       {data?.policy.stopped_reason && !data.policy.enabled && (
-        <p role="status" className="text-sm">Stopped: {data.policy.stopped_reason}</p>
+        <p role="status" className="text-sm">
+          Stopped: {data.policy.stopped_reason}
+        </p>
       )}
       {stop.data && (
         <p role="status" className="text-sm">
@@ -111,27 +123,49 @@ export default function AutopilotPage() {
       <ErrorAlert error={view.error ?? run.error ?? stop.error} />
 
       <Questions questions={questions} onDone={refresh} />
-      {data && <PolicyForm key={data.policy.version} data={data} onSave={(b) => save.mutate(b)} pending={save.isPending} />}
+      {data && (
+        <PolicyForm
+          key={data.policy.version}
+          data={data}
+          onSave={(b) => save.mutate(b)}
+          pending={save.isPending}
+        />
+      )}
       <ErrorAlert error={save.error} title="Settings not saved" />
-      {save.isSuccess && <p role="status" className="text-sm">Settings saved.</p>}
+      {save.isSuccess && (
+        <p role="status" className="text-sm">
+          Settings saved.
+        </p>
+      )}
 
       <section aria-labelledby="work-heading" className="flex flex-col gap-2">
-        <h2 id="work-heading" className="text-lg font-semibold">What the autopilot is working on</h2>
+        <h2 id="work-heading" className="text-lg font-semibold">
+          What the autopilot is working on
+        </h2>
         {(data?.items ?? []).length === 0 && (
-          <p className="text-sm text-muted-foreground">Nothing yet. Turn it on and press Run now.</p>
+          <p className="text-sm text-muted-foreground">
+            Nothing yet. Turn it on and press Run now.
+          </p>
         )}
         <ul className="flex flex-col gap-2">
           {(data?.items ?? []).map((i) => {
             const st = STAGE[i.stage] ?? { label: i.stage, tone: "outline" as const };
             return (
-              <li key={i.id} aria-label={i.title} className="flex flex-col gap-1 rounded-lg border p-3 text-sm">
+              <li
+                key={i.id}
+                aria-label={i.title}
+                className="flex flex-col gap-1 rounded-lg border p-3 text-sm"
+              >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{i.title}</span>
                   <span className="text-muted-foreground">{i.organization}</span>
                   <span className="font-mono text-xs text-muted-foreground">fit {i.fit}</span>
                   <Badge variant={st.tone}>{st.label}</Badge>
                   {i.application_id && (
-                    <Link className="ml-auto text-xs underline" href={`/cases/${caseId}/applications/${i.application_id}`}>
+                    <Link
+                      className="ml-auto text-xs underline"
+                      href={`/cases/${caseId}/applications/${i.application_id}`}
+                    >
                       Open application
                     </Link>
                   )}
@@ -147,11 +181,13 @@ export default function AutopilotPage() {
 
       {data && (
         <details className="text-sm">
-          <summary className="cursor-pointer">Sites NexScout never automates ({data.manual_only_sites.length})</summary>
+          <summary className="cursor-pointer">
+            Sites NexScout never automates ({data.manual_only_sites.length})
+          </summary>
           <p className="mt-1 text-muted-foreground">
-            Their terms prohibit bots or automated applications, so NexScout prepares your
-            documents and tells you to apply there yourself: {data.manual_only_sites.join(", ")}.
-            Pages whose robots.txt disallows automated tools are treated the same way.
+            Their terms prohibit bots or automated applications, so NexScout prepares your documents
+            and tells you to apply there yourself: {data.manual_only_sites.join(", ")}. Pages whose
+            robots.txt disallows automated tools are treated the same way.
           </p>
         </details>
       )}
@@ -172,8 +208,13 @@ function Questions({
   });
   if (questions.length === 0) return null;
   return (
-    <section aria-labelledby="questions-heading" className="flex flex-col gap-2 rounded-xl border border-amber-500/60 p-4">
-      <h2 id="questions-heading" className="text-lg font-semibold">Questions waiting for you</h2>
+    <section
+      aria-labelledby="questions-heading"
+      className="flex flex-col gap-2 rounded-xl border border-amber-500/60 p-4"
+    >
+      <h2 id="questions-heading" className="text-lg font-semibold">
+        Questions waiting for you
+      </h2>
       <p className="text-xs text-muted-foreground">
         Your answer is saved for this case and reused, so you&apos;re only asked once.
       </p>
@@ -191,7 +232,9 @@ function Questions({
           {q.body && <p className="text-xs text-muted-foreground">{q.body}</p>}
           <div className="flex gap-2">
             <Input id={`q-${q.id}`} name="answer" maxLength={5000} required />
-            <Button type="submit" size="sm" disabled={reply.isPending}>Answer</Button>
+            <Button type="submit" size="sm" disabled={reply.isPending}>
+              Answer
+            </Button>
           </div>
         </form>
       ))}
@@ -243,12 +286,24 @@ function PolicyForm({
   const num = (name: string, label: string, value: number, min: number, max: number) => (
     <div className="flex flex-col gap-1">
       <Label htmlFor={`ap-${name}`}>{label}</Label>
-      <Input id={`ap-${name}`} name={name} type="number" min={min} max={max} defaultValue={value} className="w-28" />
+      <Input
+        id={`ap-${name}`}
+        name={name}
+        type="number"
+        min={min}
+        max={max}
+        defaultValue={value}
+        className="w-28"
+      />
     </div>
   );
 
   return (
-    <form onSubmit={submit} aria-label="Autopilot settings" className="flex flex-col gap-4 rounded-xl border bg-card p-4">
+    <form
+      onSubmit={submit}
+      aria-label="Autopilot settings"
+      className="flex flex-col gap-4 rounded-xl border bg-card p-4"
+    >
       <h2 className="text-lg font-semibold">Settings</h2>
       <label className="flex items-center gap-2 text-sm font-medium">
         <input type="checkbox" name="enabled" defaultChecked={p.enabled} /> Autopilot on
@@ -270,8 +325,17 @@ function PolicyForm({
       </div>
       <fieldset className="flex flex-wrap gap-4 text-sm">
         <legend className="mb-1 font-medium">Kinds (none = both)</legend>
-        <label className="flex items-center gap-2"><input type="checkbox" name="kind-job" defaultChecked={p.kinds.includes("job")} /> Jobs</label>
-        <label className="flex items-center gap-2"><input type="checkbox" name="kind-academic" defaultChecked={p.kinds.includes("academic")} /> PhD and academic</label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" name="kind-job" defaultChecked={p.kinds.includes("job")} /> Jobs
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="kind-academic"
+            defaultChecked={p.kinds.includes("academic")}
+          />{" "}
+          PhD and academic
+        </label>
       </fieldset>
       <div className="grid gap-3 sm:grid-cols-2">
         <CountryPicker label="Countries (empty = any)" value={countries} onChange={setCountries} />
@@ -285,19 +349,32 @@ function PolicyForm({
         <legend className="mb-1 font-medium">Documents to prepare (none = the usual ones)</legend>
         {DOC_TYPES.map(([k, label]) => (
           <label key={k} className="flex items-center gap-2">
-            <input type="checkbox" name={`doc-${k}`} defaultChecked={p.doc_types.includes(k)} /> {label}
+            <input type="checkbox" name={`doc-${k}`} defaultChecked={p.doc_types.includes(k)} />{" "}
+            {label}
           </label>
         ))}
       </fieldset>
       <div className="flex flex-col gap-2 rounded-lg border border-amber-500/50 p-3 text-sm">
         <label className="flex items-start gap-2 font-medium">
-          <input type="checkbox" name="auto_submit" defaultChecked={p.auto_submit} onChange={(e) => setAuto(e.target.checked)} />
+          <input
+            type="checkbox"
+            name="auto_submit"
+            defaultChecked={p.auto_submit}
+            onChange={(e) => setAuto(e.target.checked)}
+          />
           <span>Submit without asking me each time</span>
         </label>
         <p className="text-xs text-muted-foreground">{data.auto_submit_consent}</p>
-        {p.consented_at && <p className="text-xs">You agreed on {new Date(p.consented_at).toLocaleString()}.</p>}
+        {p.consented_at && (
+          <p className="text-xs">You agreed on {new Date(p.consented_at).toLocaleString()}.</p>
+        )}
         <label className="flex items-start gap-2">
-          <input type="checkbox" name="declarations" defaultChecked={p.declarations} disabled={!auto} />
+          <input
+            type="checkbox"
+            name="declarations"
+            defaultChecked={p.declarations}
+            disabled={!auto}
+          />
           <span>Also tick declarations for me</span>
         </label>
         <p className="text-xs text-muted-foreground">{data.declarations_consent}</p>
@@ -325,7 +402,9 @@ function SavedAnswers({
   const remove = useMutation({ mutationFn: autopilotApi.deleteAnswer, onSuccess: onChange });
   return (
     <section aria-labelledby="answers-heading" className="flex flex-col gap-2">
-      <h2 id="answers-heading" className="text-lg font-semibold">Your saved answers</h2>
+      <h2 id="answers-heading" className="text-lg font-semibold">
+        Your saved answers
+      </h2>
       <p className="text-xs text-muted-foreground">
         Reused whenever a form or document asks the same thing. Only you write these.
       </p>
@@ -357,7 +436,9 @@ function SavedAnswers({
           <Label htmlFor="ans-a">Your answer</Label>
           <Input id="ans-a" name="a" required maxLength={5000} className="w-72" />
         </div>
-        <Button type="submit" size="sm" variant="outline" disabled={add.isPending}>Save answer</Button>
+        <Button type="submit" size="sm" variant="outline" disabled={add.isPending}>
+          Save answer
+        </Button>
       </form>
       <ErrorAlert error={add.error ?? remove.error} />
     </section>

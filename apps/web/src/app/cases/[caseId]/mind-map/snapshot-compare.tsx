@@ -57,13 +57,16 @@ export function SnapshotCompare({ caseId }: { caseId: string }) {
                   className="h-8 rounded-lg border bg-background px-2 text-sm"
                   value={which === "from" ? from : to}
                   onChange={(e) =>
-                    (which === "from" ? setFrom : setTo)(e.target.value ? Number(e.target.value) : "")
+                    (which === "from" ? setFrom : setTo)(
+                      e.target.value ? Number(e.target.value) : "",
+                    )
                   }
                 >
                   <option value="">Choose…</option>
                   {options.map((s) => (
                     <option key={s.id} value={s.number}>
-                      #{s.number} · {new Date(s.created_at).toLocaleString()} · {s.fact_count} entries
+                      #{s.number} · {new Date(s.created_at).toLocaleString()} · {s.fact_count}{" "}
+                      entries
                     </option>
                   ))}
                 </select>
@@ -77,9 +80,13 @@ export function SnapshotCompare({ caseId }: { caseId: string }) {
           <summary className="cursor-pointer text-sm">Saved snapshots ({options.length})</summary>
           <ul className="mt-2 flex flex-col gap-1 text-sm">
             {options.map((snap) => (
-              <li key={snap.id} className="flex items-center justify-between gap-2 rounded-md border px-2 py-1">
+              <li
+                key={snap.id}
+                className="flex items-center justify-between gap-2 rounded-md border px-2 py-1"
+              >
                 <span>
-                  #{snap.number} · {new Date(snap.created_at).toLocaleString()} · {snap.fact_count} entries
+                  #{snap.number} · {new Date(snap.created_at).toLocaleString()} · {snap.fact_count}{" "}
+                  entries
                   {snap.reason ? ` · ${snap.reason}` : ""}
                 </span>
                 <Button
@@ -88,7 +95,9 @@ export function SnapshotCompare({ caseId }: { caseId: string }) {
                   aria-label={`Delete snapshot ${snap.number}`}
                   disabled={remove.isPending}
                   onClick={() => {
-                    if (window.confirm(`Delete snapshot #${snap.number}? Your profile isn't changed.`))
+                    if (
+                      window.confirm(`Delete snapshot #${snap.number}? Your profile isn't changed.`)
+                    )
                       remove.mutate(snap.number);
                   }}
                 >

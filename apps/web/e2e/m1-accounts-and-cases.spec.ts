@@ -17,9 +17,9 @@ async function register(page: Page, email: string, name: string) {
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/cases$/);
   // The password must not linger in the (hidden, still-mounted) register form.
-  const lingering = await page.locator('input[type="password"]').evaluateAll((els) =>
-    els.map((e) => (e as HTMLInputElement).value).filter(Boolean),
-  );
+  const lingering = await page
+    .locator('input[type="password"]')
+    .evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value).filter(Boolean));
   expect(lingering).toEqual([]);
 }
 
@@ -30,7 +30,9 @@ test("register, create a case, choose a path, and persist across sign-in", async
   await expect(page.getByText("You don't have any cases yet")).toBeVisible();
 
   await page.getByRole("textbox", { name: "Name", exact: true }).fill("PhD in machine learning");
-  await page.getByRole("textbox", { name: "Description (optional)" }).fill("Funded programs in Europe");
+  await page
+    .getByRole("textbox", { name: "Description (optional)" })
+    .fill("Funded programs in Europe");
   await page.getByRole("button", { name: "Create case" }).click();
 
   await expect(page).toHaveURL(/\/cases\/[0-9a-f-]{36}$/);
@@ -42,7 +44,10 @@ test("register, create a case, choose a path, and persist across sign-in", async
   await expect(page.getByText("Saving…")).toBeHidden();
 
   // Every section is reachable from the navigation.
-  await page.getByRole("link", { name: /Applications/ }).first().click();
+  await page
+    .getByRole("link", { name: /Applications/ })
+    .first()
+    .click();
   await expect(page.getByRole("heading", { level: 1, name: "Applications" })).toBeVisible();
   await expect(page.getByText(/No applications yet/)).toBeVisible();
 

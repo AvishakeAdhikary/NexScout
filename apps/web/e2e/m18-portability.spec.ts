@@ -12,7 +12,9 @@ const PERSONAS = path.resolve(__dirname, "../../../backend/tests/fixtures/person
 async function registerWithCase(page: Page): Promise<string> {
   await page.goto("/register");
   await page.getByRole("textbox", { name: "Your name" }).fill("Rohan Example");
-  await page.getByRole("textbox", { name: "Email" }).fill(`m18-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`);
+  await page
+    .getByRole("textbox", { name: "Email" })
+    .fill(`m18-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`);
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/cases$/);
@@ -38,7 +40,9 @@ test("read well, link, bulk-review, snapshot, arrange, export and import", async
   // Review: clean names, the project linked to its job, the recommender as a private reference.
   await page.goto(`${base}/profile`);
   const desk = page.getByRole("article", { name: "VisionDesk", exact: true });
-  await expect(desk.getByText("Part of: Machine Learning Engineer at Lumen Robotics")).toBeVisible();
+  await expect(
+    desk.getByText("Part of: Machine Learning Engineer at Lumen Robotics"),
+  ).toBeVisible();
   const ref = page.getByRole("article", { name: "Dr. Vikram Sample" });
   await expect(ref.getByText("Private", { exact: true })).toBeVisible();
   await expect(page.getByText("**")).toHaveCount(0);
@@ -81,11 +85,14 @@ test("read well, link, bulk-review, snapshot, arrange, export and import", async
   const done = page.getByRole("status").filter({ hasText: "Imported as" });
   await expect(done).toBeVisible({ timeout: 30_000 });
   await done.getByRole("link", { name: "Europe search (imported)" }).click();
-  await page.getByRole("link", { name: /My Profile/ }).first().click();
+  await page
+    .getByRole("link", { name: /My Profile/ })
+    .first()
+    .click();
   await expect(
-    page.getByRole("article", { name: "VisionDesk", exact: true }).getByText(
-      "Part of: Machine Learning Engineer at Lumen Robotics",
-    ),
+    page
+      .getByRole("article", { name: "VisionDesk", exact: true })
+      .getByText("Part of: Machine Learning Engineer at Lumen Robotics"),
   ).toBeVisible();
   await expect(page.getByText("Nothing to review.")).toBeVisible();
 });
@@ -105,7 +112,9 @@ test("suggestions left behind by a deleted file can be removed in one click", as
   expect(asked).toBe(2);
 
   await page.goto(`${base}/profile`);
-  const notice = page.getByRole("status").filter({ hasText: "came from a file you have since deleted" });
+  const notice = page
+    .getByRole("status")
+    .filter({ hasText: "came from a file you have since deleted" });
   await expect(notice).toBeVisible();
   page.removeAllListeners("dialog");
   page.once("dialog", (d) => d.accept());

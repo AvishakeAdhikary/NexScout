@@ -38,9 +38,7 @@ export class ApiError extends Error {
 
 function readCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
-  const match = document.cookie
-    .split("; ")
-    .find((part) => part.startsWith(`${name}=`));
+  const match = document.cookie.split("; ").find((part) => part.startsWith(`${name}=`));
   return match ? decodeURIComponent(match.slice(name.length + 1)) : undefined;
 }
 
@@ -137,8 +135,7 @@ export const casesApi = {
   create: (body: CaseCreate) => api<CaseOut>("/cases", { method: "POST", body }),
   update: (id: string, body: CaseUpdate) =>
     api<CaseOut>(`/cases/${encodeURIComponent(id)}`, { method: "PATCH", body }),
-  remove: (id: string) =>
-    api<void>(`/cases/${encodeURIComponent(id)}`, { method: "DELETE" }),
+  remove: (id: string) => api<void>(`/cases/${encodeURIComponent(id)}`, { method: "DELETE" }),
   /** The whole profile as a .nexscout file (a download link, not a fetch). */
   exportUrl: (id: string, documents = true) =>
     `/api/v1/cases/${encodeURIComponent(id)}/export?documents=${documents}`,
@@ -163,6 +160,8 @@ export type UploadOut = S["UploadOut"];
 export type DocumentTextOut = S["DocumentTextOut"];
 export type Preferences = S["Preferences"];
 export type PreferencesOut = S["PreferencesOut"];
+export type ContactOut = S["ContactOut"];
+export type ContactDetails = S["ContactDetails"];
 export type SocialProfileOut = S["SocialProfileOut"];
 export type AffiliationOut = S["AffiliationOut"];
 export type AffiliationFields = S["AffiliationFields"];
@@ -234,6 +233,9 @@ export const documentsApi = {
 };
 
 export const relationshipsApi = {
+  contact: (caseId: string) => api<ContactOut>(`${c(caseId)}/contact`),
+  saveContact: (caseId: string, version: number, data: Partial<ContactDetails>) =>
+    api<ContactOut>(`${c(caseId)}/contact`, { method: "PUT", body: { version, data } }),
   preferences: (caseId: string) => api<PreferencesOut>(`${c(caseId)}/preferences`),
   savePreferences: (caseId: string, version: number, data: Preferences) =>
     api<PreferencesOut>(`${c(caseId)}/preferences`, { method: "PUT", body: { version, data } }),
@@ -283,8 +285,7 @@ export const mindmapApi = {
     caseId: string,
     key: string,
     body: { x?: number | null; y?: number | null; hidden?: boolean; label?: string | null },
-  ) =>
-    api<void>(`${c(caseId)}/mindmap/nodes/${e(key)}`, { method: "PUT", body }),
+  ) => api<void>(`${c(caseId)}/mindmap/nodes/${e(key)}`, { method: "PUT", body }),
   resetNode: (caseId: string, key: string) =>
     api<void>(`${c(caseId)}/mindmap/nodes/${e(key)}`, { method: "DELETE" }),
   resetAll: (caseId: string) => api<void>(`${c(caseId)}/mindmap/overrides`, { method: "DELETE" }),
@@ -354,7 +355,10 @@ export const runsApi = {
   list: (caseId: string) => api<RunOut[]>(`${c(caseId)}/runs`),
   get: (runId: string) => api<RunDetailOut>(`/runs/${e(runId)}`),
   control: (runId: string, action: RunAction, node?: string) =>
-    api<RunOut>(`/runs/${e(runId)}/control`, { method: "POST", body: { action, node: node ?? null } }),
+    api<RunOut>(`/runs/${e(runId)}/control`, {
+      method: "POST",
+      body: { action, node: node ?? null },
+    }),
   approvals: (caseId: string) => api<ApprovalOut[]>(`${c(caseId)}/approvals`),
   decide: (approvalId: string, approve: boolean, note?: string) =>
     api<ApprovalOut>(`/approvals/${e(approvalId)}/decision`, {
@@ -463,6 +467,8 @@ export const generatedApi = {
   fileUrl: (id: string, n: number, fmt: "pdf" | "docx") =>
     `/api/v1/generated-documents/${e(id)}/versions/${n}/files/${fmt}`,
   remove: (id: string) => api<void>(`/generated-documents/${e(id)}`, { method: "DELETE" }),
+  /** Fill in the contact details and saved answers the user already gave (a new version). */
+  fill: (id: string) => api<S["FillOut"]>(`/generated-documents/${e(id)}/fill`, { method: "POST" }),
 };
 
 // ------------------------------------------------------------------ M7: applications
@@ -475,7 +481,11 @@ export const applicationsApi = {
   create: (caseId: string, opportunityId: string, documentIds: string[], applyUrl?: string) =>
     api<ApplicationOut>(`${c(caseId)}/applications`, {
       method: "POST",
-      body: { opportunity_id: opportunityId, document_ids: documentIds, apply_url: applyUrl ?? null },
+      body: {
+        opportunity_id: opportunityId,
+        document_ids: documentIds,
+        apply_url: applyUrl ?? null,
+      },
     }),
   get: (id: string) => api<ApplicationDetailOut>(`/applications/${e(id)}`),
   update: (id: string, body: Record<string, unknown> & { version: number }) =>
@@ -518,8 +528,19 @@ export interface DiagnosticsOut {
   worker_last_seen: string | null;
   worker_busy: number;
   my_tasks: { queued: number; running: number };
-  recent_failures: { id: string; title: string; error: string | null; case_id: string; created_at: string }[];
-  providers: { name: string; kind: string; last_check: boolean | null; checked_at: string | null }[];
+  recent_failures: {
+    id: string;
+    title: string;
+    error: string | null;
+    case_id: string;
+    created_at: string;
+  }[];
+  providers: {
+    name: string;
+    kind: string;
+    last_check: boolean | null;
+    checked_at: string | null;
+  }[];
 }
 
 export type AutopilotOut = S["AutopilotOut"];
@@ -560,13 +581,18 @@ export const trackingApi = {
   chat: (caseId: string, message: string) =>
     api<ChatMessageOut[]>(`${c(caseId)}/chat`, { method: "POST", body: { message } }),
   listApplications: (caseId: string, params: { status?: string; q?: string; sort?: string }) => {
-    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v) as [string, string][],
+    );
     return api<ApplicationOut[]>(`${c(caseId)}/applications${qs.size ? `?${qs}` : ""}`);
   },
   bulkStatus: (caseId: string, ids: string[], status: string) =>
-    api<{ id: string; ok: boolean; error: string | null }[]>(`${c(caseId)}/applications/bulk-status`, {
-      method: "POST",
-      body: { ids, status },
-    }),
+    api<{ id: string; ok: boolean; error: string | null }[]>(
+      `${c(caseId)}/applications/bulk-status`,
+      {
+        method: "POST",
+        body: { ids, status },
+      },
+    ),
   exportUrl: (caseId: string) => `/api/v1${c(caseId)}/applications/export.csv`,
 };

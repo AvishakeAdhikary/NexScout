@@ -184,10 +184,29 @@ An LLM is never asked whether a safety rule may be skipped.
 - **Profile bundles stay backward-compatible.** `nexscout-profile/1` files must keep importing.
   A new format needs an explicit upgrade step in `profile_bundle._open`. Import always creates
   a new case, remaps every id and validates every value like manual entry.
+- **Contact details** (`domain/contact.py`, table `case_contacts`) are the user's own and are never
+  part of a prompt. Documents get them after drafting, by plain code (`contact.fill_placeholders`).
+  Forms get them through `browser_apply._applicant`. A CV header only *suggests* them, and nothing
+  is saved until the user saves it. Documents fill contact placeholders only from saved details;
+  forms may fall back to the account name and email.
+- **Documents are made ready by the run, not by the user clicking around.** Before a form is
+  filled, `browser_apply._prepare_documents`:
+  - fills the placeholders the user has answered;
+  - creates any missing PDF;
+  - re-checks compliance;
+  - stops with a message that names the document and the missing answer.
+  The API never refuses to start a run just because a PDF is missing.
 - **Money is compared in one currency** via `domain/fx.convert` and the stored ECB rates. A missing rate
   is reported ("couldn't be converted"), never assumed.
 ### TypeScript / web
 - TS `strict: true`, ESLint + Prettier. Server components by default.
+  - Prettier is configured once at the repo root (`.prettierrc.json`, width 100) for `apps/web` and
+    `apps/desktop`.
+  - `npm run lint` runs ESLint and `prettier --check` (desktop: Prettier only); `npm run format`
+    rewrites.
+  - `eslint-config-prettier` is last in `eslint.config.mjs`, so ESLint never argues about formatting.
+  - Generated contracts (`openapi.json`, `schema.d.ts`) are not formatted.
+  - Run `npm run format` before committing web or desktop changes; CI fails on unformatted files.
 - API types come from `apps/web/src/lib/api/schema.d.ts` (generated from OpenAPI by `scripts/gen-contracts.sh`). Don't hand-write duplicates.
 - Accessibility: keyboard reachable, labelled controls, sufficient contrast, table alternatives
   for visualizations, no information conveyed by colour alone.

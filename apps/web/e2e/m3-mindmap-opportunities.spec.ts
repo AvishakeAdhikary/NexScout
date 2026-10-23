@@ -35,11 +35,15 @@ async function setup(page: Page): Promise<string> {
   return base;
 }
 
-test("mind map shows confirmed entries with evidence, list view, and saved renames", async ({ page }) => {
+test("mind map shows confirmed entries with evidence, list view, and saved renames", async ({
+  page,
+}) => {
   const base = await setup(page);
   await page.goto(`${base}/mind-map`);
   await expect(page.getByRole("heading", { name: "Mind Map", level: 1 })).toBeVisible();
-  await expect(page.getByText("Machine Learning Engineer at Examplecorp GmbH").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Machine Learning Engineer at Examplecorp GmbH").first()).toBeVisible(
+    { timeout: 15_000 },
+  );
 
   // Accessible list alternative.
   await page.getByRole("button", { name: "Show as list" }).click();
@@ -63,14 +67,18 @@ test("mind map shows confirmed entries with evidence, list view, and saved renam
   await expect(page.getByText(/unchanged\./)).toBeVisible();
 });
 
-test("job discovery: demo label, merged duplicates, explained estimates, strict mode", async ({ page }) => {
+test("job discovery: demo label, merged duplicates, explained estimates, strict mode", async ({
+  page,
+}) => {
   const base = await setup(page);
   await page.goto(`${base}/jobs`);
   await expect(page.getByText("They are not real postings.")).toBeVisible();
   await page.getByRole("button", { name: "Find opportunities" }).click();
   // The catalog is shared, so merges may already have happened in an earlier sync; what this
   // user sees is "new for you" and listings that show every board they were seen on.
-  await expect(page.getByText(/demo_jobs_board_a: checked 7; 7 new for you/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/demo_jobs_board_a: checked 7; 7 new for you/)).toBeVisible({
+    timeout: 30_000,
+  });
 
   const matches = page.getByRole("region", { name: /Matches/ });
   const card = matches.getByRole("article").filter({ hasText: "Examplecorp GmbH" }).first();
@@ -90,5 +98,7 @@ test("job discovery: demo label, merged duplicates, explained estimates, strict 
 
   // Running the search again creates no duplicates.
   await page.getByRole("button", { name: "Find opportunities" }).click();
-  await expect(page.getByText(/demo_jobs_board_a: checked 7; 0 new for you/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/demo_jobs_board_a: checked 7; 0 new for you/)).toBeVisible({
+    timeout: 30_000,
+  });
 });

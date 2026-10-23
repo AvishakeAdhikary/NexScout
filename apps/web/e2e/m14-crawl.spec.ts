@@ -6,7 +6,8 @@ import { expect, test, type Page } from "./fixtures";
 const PASSWORD = "correct horse battery staple";
 
 async function api(page: Page, method: "GET" | "POST", path: string, data?: unknown) {
-  const csrf = (await page.context().cookies()).find((c) => c.name === "nexscout_csrf")?.value ?? "";
+  const csrf =
+    (await page.context().cookies()).find((c) => c.name === "nexscout_csrf")?.value ?? "";
   const res = await page.request.fetch(`/api/v1${path}`, {
     method,
     data,
@@ -77,13 +78,19 @@ test("every page renders without errors, with data and for unknown ids", async (
   ];
   for (const route of routes) {
     await page.goto(route);
-    await expect(page.getByRole("heading", { level: 1 }).first(), route).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("heading", { level: 1 }).first(), route).toBeVisible({
+      timeout: 20_000,
+    });
     await page.waitForLoadState("networkidle");
   }
 
   // Unknown ids: a readable message, never a crash or a blank page.
   const missing = "00000000-0000-7000-8000-000000000000";
-  for (const route of [`/cases/${missing}`, `${base}/applications/${missing}`, `/approve/${missing}`]) {
+  for (const route of [
+    `/cases/${missing}`,
+    `${base}/applications/${missing}`,
+    `/approve/${missing}`,
+  ]) {
     await page.goto(route);
     await expect(page.getByRole("alert").first(), route).toBeVisible({ timeout: 20_000 });
   }

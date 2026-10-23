@@ -46,7 +46,8 @@ uv run pytest                                 # DB tests skip (with reason) if P
 uv run nexscout serve --reload                # API :8000 (uses Selector loop on Windows)
 uv run nexscout worker                        # background worker: uploads, searches, AI runs, autopilot,
                                               # notification delivery (needed!)
-cd apps/web && npm run dev | lint | typecheck | test | build     # web :3000
+cd apps/web && npm run dev | lint | typecheck | test | build     # web :3000 (lint = ESLint + Prettier check)
+cd apps/web && npm run format                 # Prettier rewrite (also in apps/desktop); run before committing
 bash scripts/gen-contracts.sh                 # after changing API schemas
 uv run --project backend python scripts/build_catalog.py <career-ops checkout>  # (repo root) sources catalog
 uv run --project backend python scripts/record_source_fixtures.py [provider]  # re-record real responses

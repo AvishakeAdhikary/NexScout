@@ -10,8 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { relationshipsApi, type Preferences, type PreferencesOut } from "@/lib/api/client";
 
-type ListKey = "cities" | "research_areas" | "job_titles" | "preferred_employers" |
-  "preferred_institutions" | "search_keywords" | "exclude_keywords" | "languages";
+type ListKey =
+  | "cities"
+  | "research_areas"
+  | "job_titles"
+  | "preferred_employers"
+  | "preferred_institutions"
+  | "search_keywords"
+  | "exclude_keywords"
+  | "languages";
 
 const LIST_FIELDS: { key: ListKey; label: string }[] = [
   { key: "search_keywords", label: "Search words (e.g. machine learning, computer vision)" },
@@ -24,7 +31,11 @@ const LIST_FIELDS: { key: ListKey; label: string }[] = [
   { key: "languages", label: "Languages you can work in (codes: en, de, fi)" },
 ];
 
-const split = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
+const split = (s: string) =>
+  s
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 export function PreferencesPanel({ caseId }: { caseId: string }) {
   const [savedVersion, setSavedVersion] = useState<number | null>(null);
@@ -98,8 +109,8 @@ function PreferencesForm({
         Preferences
       </h2>
       <p className="text-sm text-muted-foreground">
-        All optional. Separate multiple values with commas. Positions are matched against these,
-        and every gap is explained.
+        All optional. Separate multiple values with commas. Positions are matched against these, and
+        every gap is explained.
       </p>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
         <CountryPicker
@@ -195,7 +206,9 @@ function PreferencesForm({
               type="number"
               min={0}
               value={draft.max_upfront_cost ?? ""}
-              onChange={(e) => set("max_upfront_cost", e.target.value === "" ? null : Number(e.target.value))}
+              onChange={(e) =>
+                set("max_upfront_cost", e.target.value === "" ? null : Number(e.target.value))
+              }
             />
             <Input
               aria-label="Budget currency"
@@ -212,8 +225,8 @@ function PreferencesForm({
             Private eligibility details (optional)
           </summary>
           <p className="mt-2 text-sm text-muted-foreground">
-            Kept private. Never used to rank or score you. With your permission, only used to
-            check explicit requirements such as “must already be authorized to work in X”.
+            Kept private. Never used to rank or score you. With your permission, only used to check
+            explicit requirements such as “must already be authorized to work in X”.
           </p>
           <div className="mt-2 flex flex-col gap-2">
             <CountryPicker

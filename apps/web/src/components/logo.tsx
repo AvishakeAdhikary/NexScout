@@ -6,7 +6,15 @@ import { cn } from "@/lib/utils";
  * NexScout mark: a telescope on a tripod under a twinkling star, on a night-sky gradient tile.
  * Pure SVG, so it scales to any size; the star's twinkle respects reduced-motion settings.
  */
-export function LogoMark({ size = 32, className, title }: { size?: number; className?: string; title?: string }) {
+export function LogoMark({
+  size = 32,
+  className,
+  title,
+}: {
+  size?: number;
+  className?: string;
+  title?: string;
+}) {
   const id = `ns${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg
@@ -63,7 +71,10 @@ export function Logo({ size = 30, className }: { size?: number; className?: stri
     <span className={cn("inline-flex items-center gap-2", className)}>
       <LogoMark size={size} />
       <span className="font-heading text-lg font-semibold tracking-tight">
-        Nex<span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent dark:from-indigo-300 dark:via-violet-300 dark:to-cyan-300">Scout</span>
+        Nex
+        <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent dark:from-indigo-300 dark:via-violet-300 dark:to-cyan-300">
+          Scout
+        </span>
       </span>
     </span>
   );

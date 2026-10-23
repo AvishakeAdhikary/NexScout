@@ -53,7 +53,10 @@ export default function MindMapPage() {
       }),
     onSuccess: invalidate,
   });
-  const resetAll = useMutation({ mutationFn: () => mindmapApi.resetAll(caseId), onSuccess: invalidate });
+  const resetAll = useMutation({
+    mutationFn: () => mindmapApi.resetAll(caseId),
+    onSuccess: invalidate,
+  });
   // The remembered direction is browser-only; the server render uses the default.
   const stored = useSyncExternalStore(noSubscription, storedDirection, () => "RIGHT" as const);
   const [chosen, setDirection] = useState<"RIGHT" | "DOWN" | null>(null);
@@ -135,7 +138,11 @@ export default function MindMapPage() {
           <Input id="mm-search" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={showHidden}
+            onChange={(e) => setShowHidden(e.target.checked)}
+          />
           Show hidden items
         </label>
         <div className="flex flex-col gap-1">
@@ -164,7 +171,8 @@ export default function MindMapPage() {
         <Button
           variant="ghost"
           onClick={() => {
-            if (window.confirm("Reset all positions, renames, and hidden items?")) resetAll.mutate();
+            if (window.confirm("Reset all positions, renames, and hidden items?"))
+              resetAll.mutate();
           }}
         >
           Reset layout
@@ -232,11 +240,19 @@ function MapList({
   onSelect,
 }: {
   nodes: MindNodeOut[];
-  edges: { source: string; target: string; kind: string; derived: boolean; basis?: string | null }[];
+  edges: {
+    source: string;
+    target: string;
+    kind: string;
+    derived: boolean;
+    basis?: string | null;
+  }[];
   onSelect: (key: string) => void;
 }) {
   const byKey = new Map(nodes.map((n) => [n.key, n]));
-  const sections = SECTION_ORDER.filter((s) => nodes.some((n) => n.kind === "fact" && n.section === s));
+  const sections = SECTION_ORDER.filter((s) =>
+    nodes.some((n) => n.kind === "fact" && n.section === s),
+  );
   return (
     <div className="flex flex-col gap-4">
       {sections.map((s) => (
@@ -248,10 +264,16 @@ function MapList({
             {nodes
               .filter((n) => n.kind === "fact" && n.section === s)
               .map((n) => {
-                const links = edges.filter((e) => e.derived && (e.source === n.key || e.target === n.key));
+                const links = edges.filter(
+                  (e) => e.derived && (e.source === n.key || e.target === n.key),
+                );
                 return (
                   <li key={n.key} className="rounded border p-2 text-sm">
-                    <button type="button" className="font-medium underline" onClick={() => onSelect(n.key)}>
+                    <button
+                      type="button"
+                      className="font-medium underline"
+                      onClick={() => onSelect(n.key)}
+                    >
                       {displayLabel(n)}
                     </button>{" "}
                     <span className="text-muted-foreground">
@@ -302,7 +324,10 @@ function NodePanel({
     enabled: !!node.fact_id,
   });
   return (
-    <aside aria-labelledby="node-panel-title" className="w-full shrink-0 rounded-lg border p-3 lg:w-80">
+    <aside
+      aria-labelledby="node-panel-title"
+      className="w-full shrink-0 rounded-lg border p-3 lg:w-80"
+    >
       <div className="flex items-start justify-between gap-2">
         <h2 id="node-panel-title" className="font-semibold">
           {displayLabel(node)}
@@ -331,12 +356,21 @@ function NodePanel({
       )}
       <div className="mt-3 flex flex-col gap-2">
         <Label htmlFor="node-label">Display name on the map</Label>
-        <Input id="node-label" value={label} maxLength={300} onChange={(e) => setLabel(e.target.value)} />
+        <Input
+          id="node-label"
+          value={label}
+          maxLength={300}
+          onChange={(e) => setLabel(e.target.value)}
+        />
         <p className="text-xs text-muted-foreground">
           Only changes how the map shows it. Your profile entry is not changed.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" disabled={pending} onClick={() => onSave({ label_override: label || null })}>
+          <Button
+            size="sm"
+            disabled={pending}
+            onClick={() => onSave({ label_override: label || null })}
+          >
             Save name
           </Button>
           <Button size="sm" variant="outline" onClick={() => onSave({ hidden: !node.hidden })}>

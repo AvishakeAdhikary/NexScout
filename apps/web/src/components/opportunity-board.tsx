@@ -8,11 +8,7 @@ import { ErrorAlert } from "@/components/error-alert";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  opportunitiesApi,
-  type OpportunityOut,
-  type SyncSummaryOut,
-} from "@/lib/api/client";
+import { opportunitiesApi, type OpportunityOut, type SyncSummaryOut } from "@/lib/api/client";
 import { useCase } from "@/lib/hooks";
 import { useCaseEvents, useRun } from "@/lib/live";
 
@@ -34,7 +30,8 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
   const [open, setOpen] = useState(false);
   const d = opp.data as Record<string, unknown>;
   const setStatus = useMutation({
-    mutationFn: (status: string) => opportunitiesApi.setStatus(caseId, opp.id, status, opp.match_version),
+    mutationFn: (status: string) =>
+      opportunitiesApi.setStatus(caseId, opp.id, status, opp.match_version),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] }),
   });
   const report = useMutation({
@@ -95,11 +92,19 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
         <ul className="list-disc pl-5">
           {opp.sources.map((s) => (
             <li key={s.source_url}>
-              <a href={s.source_url} target="_blank" rel="noopener noreferrer nofollow" className="underline">
+              <a
+                href={s.source_url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="underline"
+              >
                 {s.source_key}
               </a>
               {s.dedup_reasons.length > 0 && (
-                <span className="text-xs text-muted-foreground"> (merged: {s.dedup_reasons[0]})</span>
+                <span className="text-xs text-muted-foreground">
+                  {" "}
+                  (merged: {s.dedup_reasons[0]})
+                </span>
               )}
             </li>
           ))}
@@ -119,12 +124,21 @@ function OpportunityCard({ opp, caseId }: { opp: OpportunityOut; caseId: string 
           Research and prepare
         </Link>
         {opp.match_status !== "shortlisted" && (
-          <Button size="sm" onClick={() => setStatus.mutate("shortlisted")} disabled={setStatus.isPending}>
+          <Button
+            size="sm"
+            onClick={() => setStatus.mutate("shortlisted")}
+            disabled={setStatus.isPending}
+          >
             Shortlist
           </Button>
         )}
         {opp.match_status !== "dismissed" ? (
-          <Button size="sm" variant="outline" onClick={() => setStatus.mutate("dismissed")} disabled={setStatus.isPending}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setStatus.mutate("dismissed")}
+            disabled={setStatus.isPending}
+          >
             Not interested
           </Button>
         ) : (
@@ -184,17 +198,22 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
   const syncStatus = syncRun.data?.run.status;
   const syncResult = syncRun.data?.run.result as { sources?: SyncSummaryOut[] } | null | undefined;
   useEffect(() => {
-    if (syncStatus === "succeeded") queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] });
+    if (syncStatus === "succeeded")
+      queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] });
   }, [syncStatus, caseId, queryClient]);
-  const searching = sync.isPending || (!!sync.data && syncStatus !== "succeeded" && syncStatus !== "failed" && syncStatus !== "cancelled");
+  const searching =
+    sync.isPending ||
+    (!!sync.data &&
+      syncStatus !== "succeeded" &&
+      syncStatus !== "failed" &&
+      syncStatus !== "cancelled");
   const rescore = useMutation({
     mutationFn: () => opportunitiesApi.rescore(caseId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["opportunities", caseId] }),
   });
 
   const path = kase.data?.career_path;
-  const pathOff =
-    path && ((academic && path === "employment") || (!academic && path === "phd"));
+  const pathOff = path && ((academic && path === "employment") || (!academic && path === "phd"));
   const items = list.data ?? [];
   const active = items.filter((o) => o.eligible && o.match_status !== "dismissed");
   const notFit = items.filter((o) => !o.eligible && o.match_status !== "dismissed");
@@ -210,8 +229,12 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
         <Alert>
           <AlertTitle>Turned off for this case</AlertTitle>
           <AlertDescription>
-            This case is set to look for {path === "phd" ? "PhD and research positions" : "jobs"} only.
-            Change it on the <Link className="underline" href={`/cases/${caseId}`}>case dashboard</Link>.
+            This case is set to look for {path === "phd" ? "PhD and research positions" : "jobs"}{" "}
+            only. Change it on the{" "}
+            <Link className="underline" href={`/cases/${caseId}`}>
+              case dashboard
+            </Link>
+            .
           </AlertDescription>
         </Alert>
       )}
@@ -248,13 +271,22 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
       {searching && sync.data && (
         <p role="status" className="text-sm">
           Searching your sources in the background. You can leave this page; progress is in{" "}
-          <Link className="underline" href={`/cases/${caseId}/activity`}>Agent activity</Link>.
+          <Link className="underline" href={`/cases/${caseId}/activity`}>
+            Agent activity
+          </Link>
+          .
         </p>
       )}
-      {syncStatus === "succeeded" && syncResult?.sources && <SyncResult results={syncResult.sources} />}
+      {syncStatus === "succeeded" && syncResult?.sources && (
+        <SyncResult results={syncResult.sources} />
+      )}
       {(syncStatus === "failed" || syncStatus === "cancelled") && (
         <p role="alert" className="text-sm text-destructive">
-          The search {syncStatus === "failed" ? `failed: ${syncRun.data?.run.error ?? "unknown error"}` : "was cancelled"}.
+          The search{" "}
+          {syncStatus === "failed"
+            ? `failed: ${syncRun.data?.run.error ?? "unknown error"}`
+            : "was cancelled"}
+          .
         </p>
       )}
       {rescore.data && (
@@ -298,7 +330,9 @@ export function OpportunityBoard({ caseId, academic }: { caseId: string; academi
       )}
       {dismissed.length > 0 && (
         <details>
-          <summary className="cursor-pointer font-medium">Not interested ({dismissed.length})</summary>
+          <summary className="cursor-pointer font-medium">
+            Not interested ({dismissed.length})
+          </summary>
           <div className="mt-2 flex flex-col gap-3">
             {dismissed.map((o) => (
               <OpportunityCard key={o.id} opp={o} caseId={caseId} />

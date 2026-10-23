@@ -43,7 +43,11 @@ function MindNode({ data }: NodeProps<Node<MindNodeData>>) {
       </div>
       <div className="mt-0.5 flex flex-wrap gap-1 text-[10px] text-muted-foreground">
         <span>{style.text}</span>
-        {n.kind === "fact" && <span>· {n.evidence_count} source{n.evidence_count === 1 ? "" : "s"}</span>}
+        {n.kind === "fact" && (
+          <span>
+            · {n.evidence_count} source{n.evidence_count === 1 ? "" : "s"}
+          </span>
+        )}
         {n.is_private && <span>· private</span>}
         {(n.start || n.end) && <span>· {[n.start, n.end].filter(Boolean).join("–")}</span>}
       </div>
@@ -99,7 +103,8 @@ export function MindGraph({
       .then((res) => {
         if (cancelled) return;
         const pos: Record<string, { x: number; y: number }> = {};
-        for (const child of res.children ?? []) pos[child.id] = { x: child.x ?? 0, y: child.y ?? 0 };
+        for (const child of res.children ?? [])
+          pos[child.id] = { x: child.x ?? 0, y: child.y ?? 0 };
         setLayout(pos);
       })
       .catch(() => setLayout({}));
@@ -113,10 +118,9 @@ export function MindGraph({
   const rfNodes: Node<MindNodeData>[] = nodes.map((n) => ({
     id: n.key,
     type: "mind",
-    position:
-      n.x != null && n.y != null ? { x: n.x, y: n.y } : (layout[n.key] ?? { x: 0, y: 0 }),
+    position: n.x != null && n.y != null ? { x: n.x, y: n.y } : (layout[n.key] ?? { x: 0, y: 0 }),
     data: { node: n, selected: n.key === selectedKey },
-    ariaLabel: `${displayLabel(n)} (${n.kind === "section" ? "section" : n.status ?? n.kind})`,
+    ariaLabel: `${displayLabel(n)} (${n.kind === "section" ? "section" : (n.status ?? n.kind)})`,
   }));
   const keys = new Set(nodes.map((n) => n.key));
   const rfEdges: Edge[] = edges
@@ -135,7 +139,10 @@ export function MindGraph({
   const { resolvedTheme } = useTheme();
 
   return (
-    <div className="h-[600px] w-full overflow-hidden rounded-xl border bg-card" aria-label="Mind map graph">
+    <div
+      className="h-[600px] w-full overflow-hidden rounded-xl border bg-card"
+      aria-label="Mind map graph"
+    >
       <ReactFlow
         colorMode={resolvedTheme === "light" ? "light" : "dark"}
         nodes={rfNodes}

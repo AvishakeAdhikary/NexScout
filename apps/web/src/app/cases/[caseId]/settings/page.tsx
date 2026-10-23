@@ -10,7 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { providersApi, type ProviderIn, type ProviderOut, type ProviderPatch } from "@/lib/api/client";
+import {
+  providersApi,
+  type ProviderIn,
+  type ProviderOut,
+  type ProviderPatch,
+} from "@/lib/api/client";
 
 interface Preset {
   label: string;
@@ -126,8 +131,11 @@ function EditProvider({ p, onDone }: { p: ProviderOut; onDone: () => void }) {
 
   const id = (k: string) => `edit-${p.id}-${k}`;
   return (
-    <form onSubmit={submit} className="grid gap-3 rounded-md border bg-muted/30 p-3 sm:grid-cols-2"
-      aria-label={`Edit ${p.name}`}>
+    <form
+      onSubmit={submit}
+      className="grid gap-3 rounded-md border bg-muted/30 p-3 sm:grid-cols-2"
+      aria-label={`Edit ${p.name}`}
+    >
       <div className="flex flex-col gap-1">
         <Label htmlFor={id("name")}>Name</Label>
         <Input id={id("name")} name="name" defaultValue={p.name} required maxLength={100} />
@@ -139,7 +147,13 @@ function EditProvider({ p, onDone }: { p: ProviderOut; onDone: () => void }) {
       {p.kind === "openai_compatible" && (
         <div className="flex flex-col gap-1 sm:col-span-2">
           <Label htmlFor={id("base_url")}>Server address</Label>
-          <Input id={id("base_url")} name="base_url" defaultValue={p.base_url ?? ""} required maxLength={500} />
+          <Input
+            id={id("base_url")}
+            name="base_url"
+            defaultValue={p.base_url ?? ""}
+            required
+            maxLength={500}
+          />
           <p className="text-xs text-muted-foreground">
             If you change the address, enter the API key again. A saved key is never sent to a
             different server.
@@ -149,8 +163,14 @@ function EditProvider({ p, onDone }: { p: ProviderOut; onDone: () => void }) {
       {p.kind !== "mock" && (
         <div className="flex flex-col gap-1 sm:col-span-2">
           <Label htmlFor={id("api_key")}>New API key</Label>
-          <Input id={id("api_key")} name="api_key" type="password" autoComplete="off" maxLength={500}
-            placeholder={p.has_api_key ? "Leave blank to keep the saved key" : "Optional"} />
+          <Input
+            id={id("api_key")}
+            name="api_key"
+            type="password"
+            autoComplete="off"
+            maxLength={500}
+            placeholder={p.has_api_key ? "Leave blank to keep the saved key" : "Optional"}
+          />
           {p.has_api_key && (
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="clear_api_key" /> Remove the saved key
@@ -160,32 +180,59 @@ function EditProvider({ p, onDone }: { p: ProviderOut; onDone: () => void }) {
       )}
       <div className="flex flex-col gap-1">
         <Label htmlFor={id("context_window")}>Context window (tokens)</Label>
-        <Input id={id("context_window")} name="context_window" type="number" min={1024}
-          defaultValue={p.context_window} />
+        <Input
+          id={id("context_window")}
+          name="context_window"
+          type="number"
+          min={1024}
+          defaultValue={p.context_window}
+        />
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor={id("max_output_tokens")}>Longest answer (tokens)</Label>
-        <Input id={id("max_output_tokens")} name="max_output_tokens" type="number" min={16}
-          defaultValue={p.max_output_tokens} />
+        <Input
+          id={id("max_output_tokens")}
+          name="max_output_tokens"
+          type="number"
+          min={16}
+          defaultValue={p.max_output_tokens}
+        />
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor={id("input_cost")}>Price per million input tokens (optional)</Label>
-        <Input id={id("input_cost")} name="input_cost" type="number" min={0} step="any"
-          defaultValue={p.input_cost_per_mtok ?? ""} />
+        <Input
+          id={id("input_cost")}
+          name="input_cost"
+          type="number"
+          min={0}
+          step="any"
+          defaultValue={p.input_cost_per_mtok ?? ""}
+        />
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor={id("output_cost")}>Price per million output tokens (optional)</Label>
-        <Input id={id("output_cost")} name="output_cost" type="number" min={0} step="any"
-          defaultValue={p.output_cost_per_mtok ?? ""} />
+        <Input
+          id={id("output_cost")}
+          name="output_cost"
+          type="number"
+          min={0}
+          step="any"
+          defaultValue={p.output_cost_per_mtok ?? ""}
+        />
       </div>
       <label className="flex items-center gap-2 text-sm sm:col-span-2">
-        <input type="checkbox" name="supports_json_schema" defaultChecked={p.supports_json_schema} />
+        <input
+          type="checkbox"
+          name="supports_json_schema"
+          defaultChecked={p.supports_json_schema}
+        />
         Supports structured JSON output
       </label>
       {p.kind === "openai_compatible" && (
         <label className="flex items-center gap-2 text-sm sm:col-span-2">
           <input type="checkbox" name="skip_thinking" defaultChecked={p.skip_thinking} />
-          Skip the model&apos;s thinking (for reasoning models on NVIDIA NIM or vLLM: faster, and leaves room for the answer)
+          Skip the model&apos;s thinking (for reasoning models on NVIDIA NIM or vLLM: faster, and
+          leaves room for the answer)
         </label>
       )}
       <div className="flex gap-2 sm:col-span-2">
@@ -207,12 +254,18 @@ function ProviderRow({ p }: { p: ProviderOut }) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["providers"] });
-  const verify = useMutation({ mutationFn: () => providersApi.verify(p.id), onSettled: invalidate });
+  const verify = useMutation({
+    mutationFn: () => providersApi.verify(p.id),
+    onSettled: invalidate,
+  });
   const makeDefault = useMutation({
     mutationFn: () => providersApi.setDefault(p.is_default ? null : p.id),
     onSettled: invalidate,
   });
-  const remove = useMutation({ mutationFn: () => providersApi.remove(p.id), onSettled: invalidate });
+  const remove = useMutation({
+    mutationFn: () => providersApi.remove(p.id),
+    onSettled: invalidate,
+  });
   const v = p.last_verification as { ok?: boolean; error?: string; latency_ms?: number };
 
   return (
@@ -241,7 +294,8 @@ function ProviderRow({ p }: { p: ProviderOut }) {
         <dd>{p.has_api_key ? `Saved (ends in ${p.api_key_hint ?? "…"})` : "None"}</dd>
         <dt className="text-muted-foreground">Context</dt>
         <dd>
-          {p.context_window.toLocaleString()} tokens in, up to {p.max_output_tokens.toLocaleString()} out
+          {p.context_window.toLocaleString()} tokens in, up to{" "}
+          {p.max_output_tokens.toLocaleString()} out
         </dd>
         <dt className="text-muted-foreground">Last check</dt>
         <dd role="status">
@@ -256,11 +310,20 @@ function ProviderRow({ p }: { p: ProviderOut }) {
         <Button size="sm" onClick={() => verify.mutate()} disabled={verify.isPending}>
           {verify.isPending ? "Checking…" : "Check connection"}
         </Button>
-        <Button size="sm" variant="outline" onClick={() => makeDefault.mutate()}
-          disabled={makeDefault.isPending}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => makeDefault.mutate()}
+          disabled={makeDefault.isPending}
+        >
           {p.is_default ? "Stop using as default" : "Use as default"}
         </Button>
-        <Button size="sm" variant="outline" aria-expanded={editing} onClick={() => setEditing((x) => !x)}>
+        <Button
+          size="sm"
+          variant="outline"
+          aria-expanded={editing}
+          onClick={() => setEditing((x) => !x)}
+        >
           Edit
         </Button>
         <Button
@@ -342,28 +405,57 @@ function AddProvider() {
         </select>
         <p className="text-sm text-muted-foreground">{preset.hint}</p>
       </div>
-      <form key={`${presetKey}-${formKey}`} onSubmit={submit} className="grid gap-3 sm:grid-cols-2"
-        autoComplete="off">
+      <form
+        key={`${presetKey}-${formKey}`}
+        onSubmit={submit}
+        className="grid gap-3 sm:grid-cols-2"
+        autoComplete="off"
+      >
         <div className="flex flex-col gap-1">
           <Label htmlFor="prov-name">Name *</Label>
-          <Input id="prov-name" name="name" required maxLength={100}
-            defaultValue={preset.label.split(" (")[0]} />
+          <Input
+            id="prov-name"
+            name="name"
+            required
+            maxLength={100}
+            defaultValue={preset.label.split(" (")[0]}
+          />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="prov-model">Model *</Label>
-          <Input id="prov-model" name="model" required maxLength={200} defaultValue={preset.model} />
+          <Input
+            id="prov-model"
+            name="model"
+            required
+            maxLength={200}
+            defaultValue={preset.model}
+          />
         </div>
         {preset.kind === "openai_compatible" && (
           <div className="flex flex-col gap-1 sm:col-span-2">
             <Label htmlFor="prov-url">Server address *</Label>
-            <Input id="prov-url" name="base_url" required maxLength={500} defaultValue={preset.baseUrl} />
+            <Input
+              id="prov-url"
+              name="base_url"
+              required
+              maxLength={500}
+              defaultValue={preset.baseUrl}
+            />
           </div>
         )}
         {preset.kind !== "mock" && (
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <Label htmlFor="prov-key">API key{preset.needsKey ? " *" : " (if your server needs one)"}</Label>
-            <Input id="prov-key" name="api_key" type="password" required={preset.needsKey}
-              maxLength={500} autoComplete="new-password" />
+            <Label htmlFor="prov-key">
+              API key{preset.needsKey ? " *" : " (if your server needs one)"}
+            </Label>
+            <Input
+              id="prov-key"
+              name="api_key"
+              type="password"
+              required={preset.needsKey}
+              maxLength={500}
+              autoComplete="new-password"
+            />
             <p className="text-xs text-muted-foreground">
               Stored encrypted. It is never shown again, never sent to the browser, and never put
               into prompts or logs.
@@ -372,12 +464,23 @@ function AddProvider() {
         )}
         <div className="flex flex-col gap-1">
           <Label htmlFor="prov-ctx">Context window (tokens)</Label>
-          <Input id="prov-ctx" name="context_window" type="number" min={512}
-            defaultValue={preset.contextWindow} />
+          <Input
+            id="prov-ctx"
+            name="context_window"
+            type="number"
+            min={512}
+            defaultValue={preset.contextWindow}
+          />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="prov-out">Max output (tokens)</Label>
-          <Input id="prov-out" name="max_output_tokens" type="number" min={64} defaultValue={4096} />
+          <Input
+            id="prov-out"
+            name="max_output_tokens"
+            type="number"
+            min={64}
+            defaultValue={4096}
+          />
         </div>
         {preset.kind !== "mock" && (
           <>
@@ -398,7 +501,8 @@ function AddProvider() {
         {preset.kind === "openai_compatible" && (
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="skip_thinking" />
-            Skip the model&apos;s thinking (for reasoning models on NVIDIA NIM or vLLM: faster, and leaves room for the answer)
+            Skip the model&apos;s thinking (for reasoning models on NVIDIA NIM or vLLM: faster, and
+            leaves room for the answer)
           </label>
         )}
         <label className="flex items-center gap-2 text-sm">
@@ -422,18 +526,16 @@ export default function SettingsPage() {
     <div className="flex max-w-4xl flex-col gap-6">
       <header>
         <h1 className="text-2xl font-semibold">Settings</h1>
-        <p className="text-muted-foreground">
-          Sources and AI models apply to all your cases.
-        </p>
+        <p className="text-muted-foreground">Sources and AI models apply to all your cases.</p>
       </header>
       <section aria-labelledby="providers-heading" className="flex flex-col gap-3">
         <h2 id="providers-heading" className="text-xl font-semibold">
           AI models (bring your own)
         </h2>
         <p className="text-sm text-muted-foreground">
-          NexScout works without any AI model; reading documents and matching don&apos;t need
-          one. Drafting text does. A model marked “Sends data off this device” receives the
-          profile entries a workflow needs, and NexScout asks before sending them.
+          NexScout works without any AI model; reading documents and matching don&apos;t need one.
+          Drafting text does. A model marked “Sends data off this device” receives the profile
+          entries a workflow needs, and NexScout asks before sending them.
         </p>
         {providers.isPending && <p>Loading…</p>}
         <ErrorAlert error={providers.error} />

@@ -13,9 +13,7 @@ export default function CaseLayout({ children }: LayoutProps<"/cases/[caseId]">)
         </Suspense>
       </aside>
       <main id="main" className="min-w-0 flex-1 p-6 lg:p-8">
-        <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
-          {children}
-        </Suspense>
+        <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>{children}</Suspense>
       </main>
     </div>
   );

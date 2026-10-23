@@ -50,14 +50,17 @@ export function FormatPicker({
           >
             <option value="">{autoLabel}</option>
             {(formats.data ?? []).map((f) => (
-              <option key={f.key} value={f.key}>{f.label}</option>
+              <option key={f.key} value={f.key}>
+                {f.label}
+              </option>
             ))}
           </select>
         </div>
         {chosen && (
           <span className="flex items-center gap-1.5 text-muted-foreground">
             <Globe2 className="size-4" aria-hidden />
-            {chosen.paper} paper · {value ? "chosen by you" : (auto.data?.reason ?? "location unknown")}
+            {chosen.paper} paper ·{" "}
+            {value ? "chosen by you" : (auto.data?.reason ?? "location unknown")}
           </span>
         )}
       </div>
@@ -82,9 +85,14 @@ export function FormatPicker({
 type Check = { rule: string; ok: boolean; severity: string; source: string; detail: string };
 
 /** The compliance checklist stored with a rendered version. */
-export function ComplianceList({ compliance }: { compliance?: { status?: string; checks?: Check[] } }) {
+export function ComplianceList({
+  compliance,
+}: {
+  compliance?: { status?: string; checks?: Check[] };
+}) {
   if (!compliance?.checks) return null;
-  const icon = (c: Check) => (c.ok ? "✓" : c.severity === "blocking" ? "✗" : c.severity === "warning" ? "!" : "·");
+  const icon = (c: Check) =>
+    c.ok ? "✓" : c.severity === "blocking" ? "✗" : c.severity === "warning" ? "!" : "·";
   return (
     <div className="flex flex-col gap-1 text-sm">
       <p className="font-medium">
@@ -107,7 +115,13 @@ export function ComplianceList({ compliance }: { compliance?: { status?: string;
               <span className="sr-only">{c.ok ? "Passed: " : "Not met: "}</span>
               {c.rule}{" "}
               <span className="text-xs text-muted-foreground">
-                ({c.detail} {(c.source ?? "").startsWith("posting:") ? `From the posting: “${(c.source ?? "").slice(9).trim()}”` : (c.source ?? "").startsWith("convention:") ? `Convention: ${(c.source ?? "").slice(11).trim()}` : ""})
+                ({c.detail}{" "}
+                {(c.source ?? "").startsWith("posting:")
+                  ? `From the posting: “${(c.source ?? "").slice(9).trim()}”`
+                  : (c.source ?? "").startsWith("convention:")
+                    ? `Convention: ${(c.source ?? "").slice(11).trim()}`
+                    : ""}
+                )
               </span>
             </span>
           </li>

@@ -7,6 +7,7 @@ import { useState, type FormEvent } from "react";
 
 import { ApprovalCard } from "@/components/approval-card";
 import { ErrorAlert } from "@/components/error-alert";
+import { GeneratedDocumentRow } from "@/components/generated-document-row";
 import { RemindersPanel } from "@/components/reminders-panel";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +21,18 @@ import {
   generatedApi,
   runsApi,
   type ApplicationDetailOut,
+  type GeneratedDocumentOut,
 } from "@/lib/api/client";
 import { STATUS_ACTION, statusLabel } from "@/lib/application-status";
 import { useCaseEvents, useRun } from "@/lib/live";
 
-const FILLABLE = new Set(["preparing", "needs_user_action", "failed", "awaiting_review", "approved"]);
+const FILLABLE = new Set([
+  "preparing",
+  "needs_user_action",
+  "failed",
+  "awaiting_review",
+  "approved",
+]);
 
 function lastMissing(app: ApplicationDetailOut): string[] {
   const ev = [...app.events].reverse().find((e) => e.type === "needs_user_action");
@@ -34,7 +42,10 @@ function lastMissing(app: ApplicationDetailOut): string[] {
 
 function Details({ app, caseId }: { app: ApplicationDetailOut; caseId: string }) {
   const queryClient = useQueryClient();
-  const docs = useQuery({ queryKey: ["generated", caseId], queryFn: () => generatedApi.list(caseId) });
+  const docs = useQuery({
+    queryKey: ["generated", caseId],
+    queryFn: () => generatedApi.list(caseId),
+  });
   const questions = Array.from(new Set([...lastMissing(app), ...Object.keys(app.answers)]));
   const save = useMutation({
     mutationFn: (body: Record<string, unknown>) =>
@@ -59,58 +70,145 @@ function Details({ app, caseId }: { app: ApplicationDetailOut; caseId: string })
   }
 
   return (
-    <form key={app.version} onSubmit={submit} className="flex flex-col gap-3 rounded-lg border p-4"
-      aria-labelledby="details-heading">
-      <h2 id="details-heading" className="font-semibold">What NexScout may use</h2>
+    <form
+      key={app.version}
+      onSubmit={submit}
+      className="flex flex-col gap-3 rounded-lg border p-4"
+      aria-labelledby="details-heading"
+    >
+      <h2 id="details-heading" className="font-semibold">
+        What NexScout may use
+      </h2>
       <p className="text-sm text-muted-foreground">
-        Forms are filled only from your account name and email, the answers below, and the
-        documents you choose. Anything else is left for you.
+        Forms are filled only from your{" "}
+        <Link className="underline" href={`/cases/${caseId}/profile#contact`}>
+          contact details
+        </Link>{" "}
+        and profile links, the answers below, and the documents you choose. Anything else is left
+        for you.
       </p>
       {questions.map((q, i) => (
         <div key={q} className="flex flex-col gap-1">
           <Label htmlFor={`answer-${i}`}>Your answer: {q}</Label>
-          <Textarea id={`answer-${i}`} name={`answer-${i}`} defaultValue={app.answers[q] ?? ""} rows={3} />
+          <Textarea
+            id={`answer-${i}`}
+            name={`answer-${i}`}
+            defaultValue={app.answers[q] ?? ""}
+            rows={3}
+          />
         </div>
       ))}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="phone">Phone (optional)</Label>
-        <Input id="phone" name="phone" defaultValue={app.phone ?? ""} maxLength={40} className="max-w-xs" />
+        <Label htmlFor="phone">
+          Phone for this application (optional; otherwise your contact details)
+        </Label>
+        <Input
+          id="phone"
+          name="phone"
+          defaultValue={app.phone ?? ""}
+          maxLength={40}
+          className="max-w-xs"
+        />
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor="apply_url">Application page address</Label>
-        <Input id="apply_url" name="apply_url" defaultValue={app.apply_url ?? ""} maxLength={2048} />
+        <Input
+          id="apply_url"
+          name="apply_url"
+          defaultValue={app.apply_url ?? ""}
+          maxLength={2048}
+        />
       </div>
-      <fieldset className="flex flex-col gap-1">
+      <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium">Documents to upload</legend>
-        {(docs.data ?? []).map((d) => (
-          <label key={d.id} className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="document_ids" value={d.id}
-              defaultChecked={app.document_ids.includes(d.id)} />
-            {d.title}
-            <span className="text-xs text-muted-foreground">
-              v{d.current_version}
-              {d.latest.placeholders.length > 0 ? ` · ${d.latest.placeholders.length} placeholder(s) left` : ""}
-              {!d.latest.has_files ? " · no PDF yet" : ""}
-            </span>
-          </label>
-        ))}
+        <p className="text-xs text-muted-foreground">
+          Tick the ones to upload, then Save. Before filling in the form NexScout fills in your
+          contact details and saved answers, and makes any missing PDF itself.
+        </p>
+        <DocumentChoices caseId={caseId} app={app} docs={docs.data ?? []} />
       </fieldset>
-      <Button type="submit" className="self-start" disabled={save.isPending}>Save</Button>
+      <Button type="submit" className="self-start" disabled={save.isPending}>
+        Save
+      </Button>
       <ErrorAlert error={save.error} />
     </form>
+  );
+}
+
+/** This position's documents first; the case's other documents folded away below. */
+function DocumentChoices({
+  caseId,
+  app,
+  docs,
+}: {
+  caseId: string;
+  app: ApplicationDetailOut;
+  docs: GeneratedDocumentOut[];
+}) {
+  const row = (d: GeneratedDocumentOut) => (
+    <GeneratedDocumentRow
+      key={d.id}
+      doc={d}
+      caseId={caseId}
+      select={
+        <input
+          type="checkbox"
+          name="document_ids"
+          value={d.id}
+          aria-label={`Upload ${d.title}`}
+          defaultChecked={app.document_ids.includes(d.id)}
+        />
+      }
+    />
+  );
+  const mine = docs.filter(
+    (d) => d.opportunity_id === app.opportunity_id || app.document_ids.includes(d.id),
+  );
+  const others = docs.filter((d) => !mine.includes(d));
+  return (
+    <>
+      {mine.length === 0 && (
+        <p className="text-sm">
+          No documents for this position yet. Create them on the{" "}
+          {app.opportunity_id ? (
+            <Link className="underline" href={`/cases/${caseId}/jobs/${app.opportunity_id}`}>
+              position&apos;s page
+            </Link>
+          ) : (
+            "position's page"
+          )}
+          .
+        </p>
+      )}
+      <ul className="flex flex-col gap-2">{mine.map(row)}</ul>
+      {others.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-sm">
+            Other documents in this case ({others.length})
+          </summary>
+          <ul className="mt-2 flex flex-col gap-2">{others.map(row)}</ul>
+        </details>
+      )}
+    </>
   );
 }
 
 function Timeline({ app }: { app: ApplicationDetailOut }) {
   return (
     <section aria-labelledby="timeline-heading" className="flex flex-col gap-2">
-      <h2 id="timeline-heading" className="font-semibold">Timeline</h2>
+      <h2 id="timeline-heading" className="font-semibold">
+        Timeline
+      </h2>
       <ol className="flex flex-col gap-2 text-sm">
         {[...app.events].reverse().map((e) => (
           <li key={e.id} className="rounded-md border p-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()}</span>
-              <Badge variant="outline">{e.actor === "agent" ? "NexScout" : e.actor === "user" ? "You" : "System"}</Badge>
+              <span className="text-xs text-muted-foreground">
+                {new Date(e.created_at).toLocaleString()}
+              </span>
+              <Badge variant="outline">
+                {e.actor === "agent" ? "NexScout" : e.actor === "user" ? "You" : "System"}
+              </Badge>
               {e.to_status && <span>→ {statusLabel(e.to_status)}</span>}
             </div>
             {e.message && <p>{e.message}</p>}
@@ -118,8 +216,11 @@ function Timeline({ app }: { app: ApplicationDetailOut }) {
               <details>
                 <summary className="cursor-pointer text-xs">Screenshot</summary>
                 {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image */}
-                <img src={applicationsApi.screenshotUrl(app.id, e.id)} alt={`Page screenshot: ${e.message ?? e.type}`}
-                  className="mt-1 max-h-[32rem] rounded border" />
+                <img
+                  src={applicationsApi.screenshotUrl(app.id, e.id)}
+                  alt={`Page screenshot: ${e.message ?? e.type}`}
+                  className="mt-1 max-h-[32rem] rounded border"
+                />
               </details>
             )}
           </li>
@@ -138,7 +239,10 @@ export default function ApplicationPage() {
     queryFn: () => applicationsApi.get(appId),
     refetchInterval: 5000,
   });
-  const approvals = useQuery({ queryKey: ["approvals", caseId], queryFn: () => runsApi.approvals(caseId) });
+  const approvals = useQuery({
+    queryKey: ["approvals", caseId],
+    queryFn: () => runsApi.approvals(caseId),
+  });
   const fill = useMutation({ mutationFn: () => applicationsApi.fill(appId) });
   const run = useRun(fill.data?.run_id);
   const [reference, setReference] = useState("");
@@ -147,7 +251,8 @@ export default function ApplicationPage() {
     queryClient.invalidateQueries({ queryKey: ["applications", caseId] });
   };
   const setStatus = useMutation({
-    mutationFn: (s: string) => applicationsApi.setStatus(appId, query.data!.version, s, undefined, reference),
+    mutationFn: (s: string) =>
+      applicationsApi.setStatus(appId, query.data!.version, s, undefined, reference),
     onSuccess: refresh,
   });
   const resolve = useMutation({
@@ -162,15 +267,23 @@ export default function ApplicationPage() {
     (a) => (a.details as { application_id?: string }).application_id === app.id,
   );
   const runStatus = run.data?.run.status;
-  const filling = fill.isPending || (!!fill.data && (runStatus === "pending" || runStatus === "running"));
+  const filling =
+    fill.isPending || (!!fill.data && (runStatus === "pending" || runStatus === "running"));
 
   return (
     <div className="flex max-w-4xl flex-col gap-5">
-      <Link className="text-sm underline" href={`/cases/${caseId}/applications`}>← Applications</Link>
+      <Link className="text-sm underline" href={`/cases/${caseId}/applications`}>
+        ← Applications
+      </Link>
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">{app.title}</h1>
-        <p className="text-muted-foreground">{app.organization}{app.deadline ? ` · deadline ${app.deadline}` : ""}</p>
-        <div><Badge>{statusLabel(app.status)}</Badge></div>
+        <p className="text-muted-foreground">
+          {app.organization}
+          {app.deadline ? ` · deadline ${app.deadline}` : ""}
+        </p>
+        <div>
+          <Badge>{statusLabel(app.status)}</Badge>
+        </div>
       </header>
 
       {app.blocker && app.status === "needs_user_action" && (
@@ -181,7 +294,12 @@ export default function ApplicationPage() {
             {app.apply_url && (
               <>
                 {" "}
-                <a className="underline" href={app.apply_url} target="_blank" rel="noopener noreferrer nofollow">
+                <a
+                  className="underline"
+                  href={app.apply_url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                >
                   Open the application page
                 </a>
               </>
@@ -209,10 +327,19 @@ export default function ApplicationPage() {
             <div className="mt-2 flex flex-wrap items-end gap-2">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="ref">Reference (optional)</Label>
-                <Input id="ref" value={reference} onChange={(e) => setReference(e.target.value)} className="w-48" />
+                <Input
+                  id="ref"
+                  value={reference}
+                  onChange={(e) => setReference(e.target.value)}
+                  className="w-48"
+                />
               </div>
-              <Button size="sm" onClick={() => resolve.mutate(true)}>Yes, it was submitted</Button>
-              <Button size="sm" variant="outline" onClick={() => resolve.mutate(false)}>No, it wasn&apos;t</Button>
+              <Button size="sm" onClick={() => resolve.mutate(true)}>
+                Yes, it was submitted
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => resolve.mutate(false)}>
+                No, it wasn&apos;t
+              </Button>
             </div>
             <ErrorAlert error={resolve.error} />
           </AlertDescription>
@@ -224,13 +351,23 @@ export default function ApplicationPage() {
       ))}
 
       {FILLABLE.has(app.status) && (
-        <section aria-labelledby="fill-heading" className="flex flex-col gap-2 rounded-lg border p-4">
-          <h2 id="fill-heading" className="font-semibold">Fill in the application form</h2>
+        <section
+          aria-labelledby="fill-heading"
+          className="flex flex-col gap-2 rounded-lg border p-4"
+        >
+          <h2 id="fill-heading" className="font-semibold">
+            Fill in the application form
+          </h2>
           <p className="text-sm text-muted-foreground">
-            NexScout opens the application page, fills it in and shows you everything before
+            NexScout gets your documents ready (fills in what you already told it and makes any
+            missing PDF), opens the application page, fills it in and shows you everything before
             anything is sent. It stops if the site needs a login or a CAPTCHA.
           </p>
-          <Button className="self-start" onClick={() => fill.mutate()} disabled={filling || !app.apply_url}>
+          <Button
+            className="self-start"
+            onClick={() => fill.mutate()}
+            disabled={filling || !app.apply_url}
+          >
             {filling ? "Filling in…" : "Fill in the form"}
           </Button>
           <ErrorAlert error={fill.error} />
@@ -241,17 +378,29 @@ export default function ApplicationPage() {
 
       {app.allowed_statuses.length > 0 && (
         <section aria-labelledby="status-heading" className="flex flex-col gap-2">
-          <h2 id="status-heading" className="font-semibold">Update the status yourself</h2>
+          <h2 id="status-heading" className="font-semibold">
+            Update the status yourself
+          </h2>
           {app.allowed_statuses.includes("submitted") && (
             <div className="flex flex-col gap-1">
               <Label htmlFor="manual-ref">Reference, if you submitted yourself (optional)</Label>
-              <Input id="manual-ref" value={reference} onChange={(e) => setReference(e.target.value)} className="w-64" />
+              <Input
+                id="manual-ref"
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                className="w-64"
+              />
             </div>
           )}
           <div className="flex flex-wrap gap-2">
             {app.allowed_statuses.map((s) => (
-              <Button key={s} size="sm" variant="outline" disabled={setStatus.isPending}
-                onClick={() => setStatus.mutate(s)}>
+              <Button
+                key={s}
+                size="sm"
+                variant="outline"
+                disabled={setStatus.isPending}
+                onClick={() => setStatus.mutate(s)}
+              >
                 {STATUS_ACTION[s] ?? statusLabel(s)}
               </Button>
             ))}
@@ -277,7 +426,13 @@ function AssistButton({ appId }: { appId: string }) {
   });
   return (
     <span className="mt-2 flex flex-col gap-1">
-      <Button size="sm" variant="outline" className="self-start" onClick={() => assist.mutate()} disabled={assist.isPending}>
+      <Button
+        size="sm"
+        variant="outline"
+        className="self-start"
+        onClick={() => assist.mutate()}
+        disabled={assist.isPending}
+      >
         Open a browser window for me
       </Button>
       {assist.isSuccess && (

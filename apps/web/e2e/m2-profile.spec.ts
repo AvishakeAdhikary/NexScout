@@ -63,19 +63,29 @@ test("upload a CV, review against the source, accept, and find it again", async 
     page.locator("#confirmed").getByRole("article", { name: /MSc, Computer Science/ }),
   ).toBeVisible();
   await expect(
-    page.locator("#confirmed").getByRole("article", { name: /MSc, Computer Science/ }).getByText("Edited by you"),
+    page
+      .locator("#confirmed")
+      .getByRole("article", { name: /MSc, Computer Science/ })
+      .getByText("Edited by you"),
   ).toBeVisible();
 
   // Reject a skill.
   const docker = page.locator("#review").getByRole("article", { name: "Docker", exact: true });
   await docker.getByRole("button", { name: "Reject" }).click();
-  await expect(page.locator("#review").getByRole("article", { name: "Docker", exact: true })).toHaveCount(0);
+  await expect(
+    page.locator("#review").getByRole("article", { name: "Docker", exact: true }),
+  ).toHaveCount(0);
 
   // Add an entry by hand.
   await page.getByRole("combobox", { name: "Section" }).selectOption("skill");
-  await page.locator("#add").getByRole("textbox", { name: /^Skill/ }).fill("Rust");
+  await page
+    .locator("#add")
+    .getByRole("textbox", { name: /^Skill/ })
+    .fill("Rust");
   await page.getByRole("button", { name: "Add to profile" }).click();
-  await expect(page.locator("#confirmed").getByRole("article", { name: "Rust", exact: true })).toBeVisible();
+  await expect(
+    page.locator("#confirmed").getByRole("article", { name: "Rust", exact: true }),
+  ).toBeVisible();
 
   // Links and preferences.
   await page.getByRole("textbox", { name: "Add a link" }).fill("github.com/ada-example");
@@ -95,7 +105,9 @@ test("upload a CV, review against the source, accept, and find it again", async 
   await page.getByRole("button", { name: "Add relationship" }).click();
   const row = page.getByRole("row", { name: /University of Sampleford/ });
   await expect(row).toBeVisible();
-  await expect(row.getByRole("checkbox", { name: "May suggest a referral request" })).not.toBeChecked();
+  await expect(
+    row.getByRole("checkbox", { name: "May suggest a referral request" }),
+  ).not.toBeChecked();
 
   // A fresh session (new browser context) sees the same confirmed profile.
   const ctx = await browser.newContext();
@@ -107,7 +119,9 @@ test("upload a CV, review against the source, accept, and find it again", async 
   await expect(again).toHaveURL(/\/cases$/);
   await again.goto(`${caseBase}/profile`);
   const confirmed = again.locator("#confirmed");
-  await expect(confirmed.getByRole("article", { name: "Machine Learning Engineer at Examplecorp GmbH" })).toBeVisible();
+  await expect(
+    confirmed.getByRole("article", { name: "Machine Learning Engineer at Examplecorp GmbH" }),
+  ).toBeVisible();
   await expect(confirmed.getByRole("article", { name: "Rust", exact: true })).toBeVisible();
   const chosen = again.getByRole("list", { name: "Countries to look in: chosen" });
   await expect(chosen.getByRole("listitem")).toHaveText(["Germany", "Netherlands"]);

@@ -32,13 +32,18 @@ export function FileDropZone({
   const [problem, setProblem] = useState<string | null>(null);
 
   function accepted(files: File[]): File[] {
-    const allowed = accept?.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean) ?? [];
+    const allowed =
+      accept
+        ?.split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean) ?? [];
     const ok: File[] = [];
     const refused: string[] = [];
     for (const f of files) {
       const ext = f.name.includes(".") ? `.${f.name.split(".").pop()!.toLowerCase()}` : "";
       if (allowed.length && !allowed.includes(ext)) refused.push(`${f.name}: not a supported type`);
-      else if (maxBytes && f.size > maxBytes) refused.push(`${f.name}: larger than ${Math.round(maxBytes / 1048576)} MB`);
+      else if (maxBytes && f.size > maxBytes)
+        refused.push(`${f.name}: larger than ${Math.round(maxBytes / 1048576)} MB`);
       else ok.push(f);
     }
     setProblem(refused.length ? refused.join("; ") : null);
@@ -89,7 +94,9 @@ export function FileDropZone({
       >
         <Upload className="size-5 text-muted-foreground" aria-hidden />
         <span className="font-medium">{label}</span>
-        <span className="text-xs text-muted-foreground">Drop {multiple ? "files" : "a file"} here, or click to choose</span>
+        <span className="text-xs text-muted-foreground">
+          Drop {multiple ? "files" : "a file"} here, or click to choose
+        </span>
       </div>
       {hint && (
         <p id={hintId} className="text-xs text-muted-foreground">

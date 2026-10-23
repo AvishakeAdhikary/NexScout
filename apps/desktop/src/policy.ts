@@ -90,17 +90,30 @@ export function appUrl(config: DesktopConfig): string {
 }
 
 /** Where Docker usually lives when it isn't on PATH (Docker Desktop installs). */
-export function dockerCandidates(platform: string, env: Record<string, string | undefined>): string[] {
+export function dockerCandidates(
+  platform: string,
+  env: Record<string, string | undefined>,
+): string[] {
   if (platform === "win32") {
     const win = (...parts: string[]) => parts.join(String.fromCharCode(92)); // "\"
     return [
-      win(env.ProgramFiles ?? "C:\u005cProgram Files", "Docker", "Docker", "resources", "bin", "docker.exe"),
+      win(
+        env.ProgramFiles ?? "C:\u005cProgram Files",
+        "Docker",
+        "Docker",
+        "resources",
+        "bin",
+        "docker.exe",
+      ),
       win(env.LOCALAPPDATA ?? "", "Programs", "DockerDesktop", "resources", "bin", "docker.exe"),
     ];
   }
   if (platform === "darwin") {
-    return ["/usr/local/bin/docker", "/opt/homebrew/bin/docker",
-      "/Applications/Docker.app/Contents/Resources/bin/docker"];
+    return [
+      "/usr/local/bin/docker",
+      "/opt/homebrew/bin/docker",
+      "/Applications/Docker.app/Contents/Resources/bin/docker",
+    ];
   }
   return ["/usr/bin/docker", "/usr/local/bin/docker"];
 }
@@ -120,7 +133,8 @@ export function easyEnv(opts: {
     NEXSCOUT_PORT: String(opts.port),
     NEXSCOUT_PUBLIC_WEB_URL: `http://127.0.0.1:${opts.port}`,
     // Released apps use the matching images; a development build uses the newest release.
-    NEXSCOUT_VERSION: /^\d+\.\d+\.\d+$/.test(opts.version) && opts.version !== "0.1.0" ? opts.version : "latest",
+    NEXSCOUT_VERSION:
+      /^\d+\.\d+\.\d+$/.test(opts.version) && opts.version !== "0.1.0" ? opts.version : "latest",
   };
 }
 
@@ -152,7 +166,8 @@ export function updaterCacheDir(
   home: string,
 ): string | null {
   const name = "nexscout-desktop-updater"; // package.json "name" + "-updater"
-  if (platform === "win32") return win32.join(env.LOCALAPPDATA ?? win32.join(home, "AppData", "Local"), name);
+  if (platform === "win32")
+    return win32.join(env.LOCALAPPDATA ?? win32.join(home, "AppData", "Local"), name);
   if (platform === "darwin") return posix.join(home, "Library", "Caches", name);
   return posix.join(env.XDG_CACHE_HOME ?? posix.join(home, ".cache"), name);
 }

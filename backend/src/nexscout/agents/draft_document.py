@@ -32,6 +32,7 @@ from nexscout.agent_runtime.context_builder import (
 )
 from nexscout.agent_runtime.registry import WorkflowSpec, register, tracked
 from nexscout.agents.phd_research import listing_text
+from nexscout.application.contact import applicant_details, fill_in_details
 from nexscout.application.providers import record_usage, resolve_provider
 from nexscout.domain.compliance import check_document
 from nexscout.domain.drafting import (
@@ -41,6 +42,7 @@ from nexscout.domain.drafting import (
     VerifiedDraft,
     assemble_academic_cv,
     assemble_resume,
+    find_placeholders,
     placeholder,
     verify_draft,
 )
@@ -56,7 +58,6 @@ from nexscout.infrastructure.db.models import (
     OpportunityMatch,
     ProfileFact,
     ResearchFinding,
-    User,
 )
 from nexscout.infrastructure.llm.base import (
     CompletionRequest,
@@ -170,7 +171,7 @@ async def gather(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
     sup_id = _uuid(ctx.params.get("supervisor_finding_id"))
     aff_id = _uuid(ctx.params.get("affiliation_id"))
     async with ctx.tenant() as s:
-        name = await s.scalar(select(User.display_name).where(User.id == ctx.owner_user_id))
+        name = (await applicant_details(s, ctx.owner_user_id, ctx.case_id)).name
         facts = list(
             await s.scalars(
                 select(ProfileFact)
@@ -453,6 +454,9 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             select(GeneratedDocument).where(GeneratedDocument.created_by_run_id == ctx.run_id)
         )
         if doc is None:  # idempotent: the node may re-run after a crash
+            # The user's contact details and saved answers go in here, by plain code, after the
+            # model is done: they are never part of the prompt.
+            markdown = await fill_in_details(s, ctx.owner_user_id, ctx.case_id, v["markdown"])
             doc = GeneratedDocument(
                 owner_user_id=ctx.owner_user_id,
                 case_id=ctx.case_id,
@@ -469,7 +473,7 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                     owner_user_id=ctx.owner_user_id,
                     document_id=doc.id,
                     number=1,
-                    markdown=v["markdown"],
+                    markdown=markdown,
                     origin=v["origin"],
                     report={
                         **v["report"],
@@ -477,7 +481,7 @@ async def save(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                         "supervisor": state.get("supervisor"),
                         "contact": state.get("contact"),
                     },
-                    placeholders=v["placeholders"],
+                    placeholders=find_placeholders(markdown),
                     artifacts={},
                     model=model.get("name"),
                     is_mock=bool(model.get("is_mock")),

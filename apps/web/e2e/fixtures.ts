@@ -12,12 +12,15 @@ export const test = base.extend<{ errorGuard: void }>({
       page.on("console", (msg) => {
         if (msg.type() !== "error") return;
         const text = msg.text();
-        if (/Failed to load resource: the server responded with a status of 4\d\d/.test(text)) return;
+        if (/Failed to load resource: the server responded with a status of 4\d\d/.test(text))
+          return;
         problems.push(`console error: ${text}`);
       });
       page.on("response", (res) => {
         if (res.url().includes("/api/") && res.status() >= 500) {
-          problems.push(`API ${res.status()}: ${res.request().method()} ${new URL(res.url()).pathname}`);
+          problems.push(
+            `API ${res.status()}: ${res.request().method()} ${new URL(res.url()).pathname}`,
+          );
         }
       });
       await use();

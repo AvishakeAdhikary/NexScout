@@ -8,10 +8,16 @@ import { autopilotApi, channelsApi, factsApi, providersApi } from "@/lib/api/cli
 
 /** First steps for someone new, computed from their real data (nothing is faked or assumed). */
 export function GettingStarted({ caseId }: { caseId: string }) {
-  const facts = useQuery({ queryKey: ["facts", caseId, "all"], queryFn: () => factsApi.list(caseId) });
+  const facts = useQuery({
+    queryKey: ["facts", caseId, "all"],
+    queryFn: () => factsApi.list(caseId),
+  });
   const providers = useQuery({ queryKey: ["providers"], queryFn: providersApi.list });
   const channels = useQuery({ queryKey: ["channels"], queryFn: channelsApi.list });
-  const pilot = useQuery({ queryKey: ["autopilot", caseId], queryFn: () => autopilotApi.get(caseId) });
+  const pilot = useQuery({
+    queryKey: ["autopilot", caseId],
+    queryFn: () => autopilotApi.get(caseId),
+  });
   if (facts.isPending || providers.isPending || channels.isPending || pilot.isPending) return null;
 
   const base = `/cases/${caseId}`;
@@ -58,15 +64,23 @@ export function GettingStarted({ caseId }: { caseId: string }) {
   const next = steps.find((s) => !s.done);
 
   return (
-    <section aria-labelledby="start-heading" className="flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4">
-      <h2 id="start-heading" className="text-lg font-semibold">Getting started</h2>
+    <section
+      aria-labelledby="start-heading"
+      className="flex flex-col gap-3 rounded-xl border border-primary/40 bg-primary/5 p-4"
+    >
+      <h2 id="start-heading" className="text-lg font-semibold">
+        Getting started
+      </h2>
       <ol className="flex flex-col gap-2">
         {steps.map((s) => (
           <li key={s.title} className="flex items-start gap-2 text-sm">
             {s.done ? (
               <CheckCircle2 aria-label="Done" className="mt-0.5 size-4 shrink-0 text-primary" />
             ) : (
-              <Circle aria-label="Not done yet" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <Circle
+                aria-label="Not done yet"
+                className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+              />
             )}
             <span>
               <Link href={s.href} className={s === next ? "font-medium underline" : "underline"}>

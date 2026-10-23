@@ -2016,6 +2016,193 @@
         "title": "ChatMessageOut",
         "type": "object"
       },
+      "ContactDetails": {
+        "additionalProperties": false,
+        "description": "What forms and documents may use. Every field is optional; empty means \"not given\".",
+        "properties": {
+          "address": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "family_name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Family Name"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "given_name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postal Code"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region"
+          }
+        },
+        "title": "ContactDetails",
+        "type": "object"
+      },
+      "ContactOut": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ContactDetails"
+          },
+          "suggested": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Details found in the newest CV that differ from the saved ones. Only suggestions: nothing is saved until the user saves them.",
+            "title": "Suggested",
+            "type": "object"
+          },
+          "suggested_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested From"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "version"
+        ],
+        "title": "ContactOut",
+        "type": "object"
+      },
+      "ContactPut": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "version": {
+            "description": "0 when no contact details have been saved yet.",
+            "minimum": 0.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "data"
+        ],
+        "title": "ContactPut",
+        "type": "object"
+      },
       "ControlIn": {
         "additionalProperties": false,
         "properties": {
@@ -3019,6 +3206,30 @@
           "fact_ids"
         ],
         "title": "FactorOut",
+        "type": "object"
+      },
+      "FillOut": {
+        "additionalProperties": false,
+        "properties": {
+          "current_version": {
+            "title": "Current Version",
+            "type": "integer"
+          },
+          "filled": {
+            "title": "Filled",
+            "type": "integer"
+          },
+          "placeholders_left": {
+            "title": "Placeholders Left",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "filled",
+          "placeholders_left",
+          "current_version"
+        ],
+        "title": "FillOut",
         "type": "object"
       },
       "FindingOut": {
@@ -8855,6 +9066,100 @@
         ]
       }
     },
+    "/api/v1/cases/{case_id}/contact": {
+      "get": {
+        "operationId": "get_contact_api_v1_cases__case_id__contact_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Contact",
+        "tags": [
+          "preferences & relationships"
+        ]
+      },
+      "put": {
+        "operationId": "put_contact_api_v1_cases__case_id__contact_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Case Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactPut"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Contact",
+        "tags": [
+          "preferences & relationships"
+        ]
+      }
+    },
     "/api/v1/cases/{case_id}/dashboard": {
       "get": {
         "operationId": "dashboard_api_v1_cases__case_id__dashboard_get",
@@ -11800,6 +12105,50 @@
           }
         },
         "summary": "Get Generated",
+        "tags": [
+          "research"
+        ]
+      }
+    },
+    "/api/v1/generated-documents/{document_id}/fill": {
+      "post": {
+        "description": "Fill in what the user already gave NexScout (contact details, saved answers) as a new\nversion. Placeholders nobody answered stay.",
+        "operationId": "fill_generated_api_v1_generated_documents__document_id__fill_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Document Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FillOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Fill Generated",
         "tags": [
           "research"
         ]

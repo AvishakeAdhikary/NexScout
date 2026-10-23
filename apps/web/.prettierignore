@@ -1,0 +1,12 @@
+.next/
+node_modules/
+out/
+build/
+coverage/
+playwright-report/
+test-results/
+next-env.d.ts
+# Generated from the API (scripts/gen-contracts.sh)
+src/lib/api/openapi.json
+src/lib/api/schema.d.ts
+package-lock.json

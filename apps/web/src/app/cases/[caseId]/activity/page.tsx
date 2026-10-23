@@ -10,12 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  runsApi,
-  type RunAction,
-  type RunOut,
-  type StepOut,
-} from "@/lib/api/client";
+import { runsApi, type RunAction, type RunOut, type StepOut } from "@/lib/api/client";
 import { useCaseEvents, useRun } from "@/lib/live";
 
 // Plain-language run states (spec §16: no internal jargon in the UI).
@@ -49,7 +44,6 @@ function when(iso: string | null | undefined): string {
   return iso ? new Date(iso).toLocaleString() : "—";
 }
 
-
 function RunControls({ run, caseId }: { run: RunOut; caseId: string }) {
   const queryClient = useQueryClient();
   const control = useMutation({
@@ -61,7 +55,8 @@ function RunControls({ run, caseId }: { run: RunOut; caseId: string }) {
   });
   const s = run.status;
   const actions: [RunAction, string][] = [];
-  if (s === "pending" || s === "running" || s === "waiting_approval") actions.push(["pause", "Pause"]);
+  if (s === "pending" || s === "running" || s === "waiting_approval")
+    actions.push(["pause", "Pause"]);
   if (s === "paused") actions.push(["resume", "Resume"]);
   if (s === "failed") actions.push(["retry", "Retry"]);
   if (["pending", "running", "pausing", "paused", "waiting_approval"].includes(s))
@@ -121,13 +116,21 @@ function StepRow({
         <span className="text-xs text-muted-foreground">{when(step.started_at)}</span>
         {editable && (
           <span className="ml-auto flex gap-2">
-            <Button size="sm" variant="outline" disabled={control.isPending}
-              onClick={() => control.mutate("rerun")}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={control.isPending}
+              onClick={() => control.mutate("rerun")}
+            >
               Run this step again
             </Button>
             {optional && (
-              <Button size="sm" variant="outline" disabled={control.isPending}
-                onClick={() => control.mutate("skip")}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={control.isPending}
+                onClick={() => control.mutate("skip")}
+              >
                 Skip this step
               </Button>
             )}
@@ -198,7 +201,13 @@ function RunDetail({
       ) : (
         <ol className="flex flex-col gap-2">
           {steps.map((s) => (
-            <StepRow key={s.id} step={s} run={run} optional={optional.has(s.node)} caseId={caseId} />
+            <StepRow
+              key={s.id}
+              step={s}
+              run={run}
+              optional={optional.has(s.node)}
+              caseId={caseId}
+            />
           ))}
         </ol>
       )}
@@ -278,8 +287,15 @@ function StartRun({ caseId, onStarted }: { caseId: string; onStarted: (id: strin
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex flex-col gap-1">
               <Label htmlFor="wf-wait">Wait step (seconds, 0–120)</Label>
-              <Input id="wf-wait" name="wait_s" type="number" min={0} max={120} defaultValue={5}
-                className="w-28" />
+              <Input
+                id="wf-wait"
+                name="wait_s"
+                type="number"
+                min={0}
+                max={120}
+                defaultValue={5}
+                className="w-28"
+              />
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="require_approval" defaultChecked />
@@ -364,9 +380,7 @@ export default function ActivityPage() {
                 >
                   <span className="font-medium">{r.title}</span>
                   <StatusBadge status={r.status} />
-                  <span className="w-full text-xs text-muted-foreground">
-                    {when(r.created_at)}
-                  </span>
+                  <span className="w-full text-xs text-muted-foreground">{when(r.created_at)}</span>
                 </button>
               </li>
             ))}

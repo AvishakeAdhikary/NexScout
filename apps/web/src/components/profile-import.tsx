@@ -17,14 +17,17 @@ export function ProfileImport() {
   const r = importIt.data;
 
   return (
-    <section aria-labelledby="import-heading" className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+    <section
+      aria-labelledby="import-heading"
+      className="flex flex-col gap-3 rounded-xl border bg-card p-4"
+    >
       <h2 id="import-heading" className="text-lg font-semibold">
         Import a profile
       </h2>
       <p className="text-sm text-muted-foreground">
-        A <code>.nexscout</code> file exported from NexScout (on this computer or another one) becomes
-        a new case with every entry, the mind map, snapshots, relationships and documents. Your
-        existing cases aren&apos;t changed.
+        A <code>.nexscout</code> file exported from NexScout (on this computer or another one)
+        becomes a new case with every entry, the mind map, snapshots, relationships and documents.
+        Your existing cases aren&apos;t changed.
       </p>
       <FileDropZone
         label={importIt.isPending ? "Importing…" : "Choose a .nexscout file"}

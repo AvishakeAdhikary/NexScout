@@ -44,57 +44,89 @@ export default function ApplicationsPage() {
       <header>
         <h1 className="text-2xl font-semibold">Applications</h1>
         <p className="text-muted-foreground">
-          Every application you started, where it stands, and what it needs from you. NexScout
-          never submits anything without your approval.
+          Every application you started, where it stands, and what it needs from you. NexScout never
+          submits anything without your approval.
         </p>
       </header>
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
           <Label htmlFor="f-status">Status</Label>
-          <select id="f-status" className="h-8 rounded-lg border bg-background px-2 text-sm"
-            value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select
+            id="f-status"
+            className="h-8 rounded-lg border bg-background px-2 text-sm"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
             <option value="">All</option>
             {Object.entries(APPLICATION_STATUS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+              <option key={k} value={k}>
+                {v}
+              </option>
             ))}
           </select>
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="f-q">Search</Label>
-          <Input id="f-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Title or organization" className="w-56" />
+          <Input
+            id="f-q"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Title or organization"
+            className="w-56"
+          />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="f-sort">Sort by</Label>
-          <select id="f-sort" className="h-8 rounded-lg border bg-background px-2 text-sm"
-            value={sort} onChange={(e) => setSort(e.target.value)}>
+          <select
+            id="f-sort"
+            className="h-8 rounded-lg border bg-background px-2 text-sm"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
             <option value="updated">Last change</option>
             <option value="deadline">Deadline</option>
           </select>
         </div>
-        <a className="ml-auto text-sm underline" href={trackingApi.exportUrl(caseId)}>Export CSV</a>
+        <a className="ml-auto text-sm underline" href={trackingApi.exportUrl(caseId)}>
+          Export CSV
+        </a>
       </div>
 
       {list.isPending && <p>Loading…</p>}
       <ErrorAlert error={list.error} />
       {list.data && rows.length === 0 && (
         <p className="text-sm">
-          {status || q ? "No applications match." : "No applications yet. Start one from a position's “Research and prepare” page."}
+          {status || q
+            ? "No applications match."
+            : "No applications yet. Start one from a position's “Research and prepare” page."}
         </p>
       )}
       {rows.length > 0 && (
         <>
           <div className="flex flex-wrap items-end gap-2" aria-live="polite">
             <span className="text-sm">{selected.length} selected</span>
-            <Label htmlFor="bulk-to" className="sr-only">Change selected to</Label>
-            <select id="bulk-to" className="h-8 rounded-lg border bg-background px-2 text-sm"
-              value={bulkTo} onChange={(e) => setBulkTo(e.target.value)}>
+            <Label htmlFor="bulk-to" className="sr-only">
+              Change selected to
+            </Label>
+            <select
+              id="bulk-to"
+              className="h-8 rounded-lg border bg-background px-2 text-sm"
+              value={bulkTo}
+              onChange={(e) => setBulkTo(e.target.value)}
+            >
               {BULK.map((s) => (
-                <option key={s} value={s}>{STATUS_ACTION[s] ?? statusLabel(s)}</option>
+                <option key={s} value={s}>
+                  {STATUS_ACTION[s] ?? statusLabel(s)}
+                </option>
               ))}
             </select>
-            <Button size="sm" variant="outline" disabled={selected.length === 0 || bulk.isPending}
-              onClick={() => bulk.mutate()}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={selected.length === 0 || bulk.isPending}
+              onClick={() => bulk.mutate()}
+            >
               Apply to selected
             </Button>
           </div>
@@ -111,28 +143,58 @@ export default function ApplicationsPage() {
               <thead>
                 <tr className="border-b text-left">
                   <th scope="col" className="py-2 pr-2">
-                    <input type="checkbox" aria-label="Select all" checked={allChecked}
-                      onChange={(e) => setSelected(e.target.checked ? rows.map((a) => a.id) : [])} />
+                    <input
+                      type="checkbox"
+                      aria-label="Select all"
+                      checked={allChecked}
+                      onChange={(e) => setSelected(e.target.checked ? rows.map((a) => a.id) : [])}
+                    />
                   </th>
-                  <th scope="col" className="py-2 pr-3">Position</th>
-                  <th scope="col" className="py-2 pr-3">Status</th>
-                  <th scope="col" className="py-2 pr-3">Deadline</th>
-                  <th scope="col" className="py-2">Last change</th>
+                  <th scope="col" className="py-2 pr-3">
+                    Position
+                  </th>
+                  <th scope="col" className="py-2 pr-3">
+                    Status
+                  </th>
+                  <th scope="col" className="py-2 pr-3">
+                    Deadline
+                  </th>
+                  <th scope="col" className="py-2">
+                    Last change
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((a) => (
                   <tr key={a.id} className="border-b align-top">
                     <td className="py-2 pr-2">
-                      <input type="checkbox" aria-label={`Select ${a.title}`} checked={selected.includes(a.id)}
-                        onChange={(e) => setSelected(e.target.checked ? [...selected, a.id] : selected.filter((x) => x !== a.id))} />
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${a.title}`}
+                        checked={selected.includes(a.id)}
+                        onChange={(e) =>
+                          setSelected(
+                            e.target.checked
+                              ? [...selected, a.id]
+                              : selected.filter((x) => x !== a.id),
+                          )
+                        }
+                      />
                     </td>
                     <td className="py-2 pr-3">
-                      <Link className="underline" href={`/cases/${caseId}/applications/${a.id}`}>{a.title}</Link>
+                      <Link className="underline" href={`/cases/${caseId}/applications/${a.id}`}>
+                        {a.title}
+                      </Link>
                       <div className="text-xs text-muted-foreground">{a.organization}</div>
                     </td>
                     <td className="py-2 pr-3">
-                      <Badge variant={a.status === "needs_user_action" || a.status === "submission_uncertain" ? "destructive" : "outline"}>
+                      <Badge
+                        variant={
+                          a.status === "needs_user_action" || a.status === "submission_uncertain"
+                            ? "destructive"
+                            : "outline"
+                        }
+                      >
                         {statusLabel(a.status)}
                       </Badge>
                     </td>

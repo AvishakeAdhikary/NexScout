@@ -535,12 +535,10 @@ async def start_browser(
                 GeneratedDocumentVersion.number == GeneratedDocument.current_version,
             )
         )
-        if version is None or not (version.artifacts or {}).get("pdf"):
-            raise ValidationFailed("Create the PDF files for the chosen documents first.")
-        if version.placeholders:
-            raise ValidationFailed(
-                "A chosen document still has placeholders. Fill them in before applying."
-            )
+        if version is None:
+            continue
+        # A missing PDF or a placeholder the user has already answered is handled by the run
+        # itself (browser_apply._prepare_documents), which reports anything still missing.
         compliance = (version.artifacts or {}).get("compliance") or {}
         if compliance.get("status") == "blocking":
             failed = [

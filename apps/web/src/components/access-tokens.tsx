@@ -31,32 +31,49 @@ export function AccessTokens() {
     },
   });
   const revoke = useMutation({
-    mutationFn: (id: string) => api<void>(`/me/tokens/${encodeURIComponent(id)}`, { method: "DELETE" }),
+    mutationFn: (id: string) =>
+      api<void>(`/me/tokens/${encodeURIComponent(id)}`, { method: "DELETE" }),
     onSuccess: invalidate,
   });
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const f = new FormData(event.currentTarget);
-    create.mutate({ name: String(f.get("name") ?? ""), expires_in_days: Number(f.get("days") ?? 90) });
+    create.mutate({
+      name: String(f.get("name") ?? ""),
+      expires_in_days: Number(f.get("days") ?? 90),
+    });
   }
 
   return (
-    <section aria-labelledby="tokens-heading" className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-      <h2 id="tokens-heading" className="text-lg font-semibold">Access tokens (MCP)</h2>
+    <section
+      aria-labelledby="tokens-heading"
+      className="flex flex-col gap-3 rounded-xl border bg-card p-4"
+    >
+      <h2 id="tokens-heading" className="text-lg font-semibold">
+        Access tokens (MCP)
+      </h2>
       <p className="text-sm text-muted-foreground">
-        Let a local AI assistant read your NexScout data through the Model Context Protocol:
-        run <code className="rounded bg-muted px-1">nexscout mcp</code> with{" "}
-        <code className="rounded bg-muted px-1">NEXSCOUT_MCP_TOKEN</code> set. Tokens are
-        read-only. They can&apos;t submit, send or change anything, and never see private
-        entries.
+        Let a local AI assistant read your NexScout data through the Model Context Protocol: run{" "}
+        <code className="rounded bg-muted px-1">nexscout mcp</code> with{" "}
+        <code className="rounded bg-muted px-1">NEXSCOUT_MCP_TOKEN</code> set. Tokens are read-only.
+        They can&apos;t submit, send or change anything, and never see private entries.
       </p>
       {created && (
-        <div role="status" className="animate-page flex flex-col gap-1 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
-          <span className="font-medium">Copy your new token now. It won&apos;t be shown again.</span>
+        <div
+          role="status"
+          className="animate-page flex flex-col gap-1 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm"
+        >
+          <span className="font-medium">
+            Copy your new token now. It won&apos;t be shown again.
+          </span>
           <code className="break-all rounded bg-muted p-2 font-mono text-xs">{created.token}</code>
-          <Button size="sm" variant="outline" className="self-start"
-            onClick={() => void navigator.clipboard?.writeText(created.token)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="self-start"
+            onClick={() => void navigator.clipboard?.writeText(created.token)}
+          >
             Copy
           </Button>
         </div>
@@ -64,18 +81,32 @@ export function AccessTokens() {
       <form key={formKey} onSubmit={submit} className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
           <Label htmlFor="token-name">Name</Label>
-          <Input id="token-name" name="name" required maxLength={100} placeholder="e.g. Claude Desktop" className="w-56" />
+          <Input
+            id="token-name"
+            name="name"
+            required
+            maxLength={100}
+            placeholder="e.g. Claude Desktop"
+            className="w-56"
+          />
         </div>
         <div className="flex flex-col gap-1">
           <Label htmlFor="token-days">Expires after</Label>
-          <select id="token-days" name="days" defaultValue="90" className="h-8 rounded-lg border bg-background px-2 text-sm">
+          <select
+            id="token-days"
+            name="days"
+            defaultValue="90"
+            className="h-8 rounded-lg border bg-background px-2 text-sm"
+          >
             <option value="7">7 days</option>
             <option value="30">30 days</option>
             <option value="90">90 days</option>
             <option value="365">1 year</option>
           </select>
         </div>
-        <Button type="submit" size="sm" disabled={create.isPending}>Create token</Button>
+        <Button type="submit" size="sm" disabled={create.isPending}>
+          Create token
+        </Button>
       </form>
       <ErrorAlert error={create.error ?? revoke.error ?? tokens.error} />
       <ul className="flex flex-col gap-1 text-sm">
@@ -88,10 +119,16 @@ export function AccessTokens() {
             ) : (
               <>
                 <span className="text-xs text-muted-foreground">
-                  {t.last_used_at ? `used ${new Date(t.last_used_at).toLocaleDateString()}` : "never used"}
+                  {t.last_used_at
+                    ? `used ${new Date(t.last_used_at).toLocaleDateString()}`
+                    : "never used"}
                   {t.expires_at ? ` · expires ${new Date(t.expires_at).toLocaleDateString()}` : ""}
                 </span>
-                <button type="button" className="text-xs underline" onClick={() => revoke.mutate(t.id)}>
+                <button
+                  type="button"
+                  className="text-xs underline"
+                  onClick={() => revoke.mutate(t.id)}
+                >
                   Revoke
                 </button>
               </>

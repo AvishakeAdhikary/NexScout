@@ -76,7 +76,7 @@ class Guard:
 
 @dataclass
 class FillOutcome:
-    status: str  # filled | blocked | missing | error
+    status: str  # filled | blocked | missing | error | documents (not ready)
     url: str
     title: str = ""
     blocker: str | None = None

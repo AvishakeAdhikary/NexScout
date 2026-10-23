@@ -108,7 +108,12 @@ function logFile(name: string): string {
 }
 
 /** Wait until a server's log shows a line (e.g. the worker's "worker_started"). */
-async function waitForLog(name: string, marker: string, since: number, timeoutMs: number): Promise<boolean> {
+async function waitForLog(
+  name: string,
+  marker: string,
+  since: number,
+  timeoutMs: number,
+): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
@@ -149,7 +154,12 @@ function startLocal(config: DesktopConfig): void {
     // Each server logs to userData/logs/<name>.log so problems can be diagnosed later.
     const out = createWriteStream(logFile(name), { flags: "a" });
     out.write(`\n--- ${new Date().toISOString()} starting ${name}\n`);
-    const child = spawn(cmd, args, { cwd, env, windowsHide: true, shell: process.platform === "win32" });
+    const child = spawn(cmd, args, {
+      cwd,
+      env,
+      windowsHide: true,
+      shell: process.platform === "win32",
+    });
     child.stdout?.pipe(out, { end: false });
     child.stderr?.pipe(out, { end: false });
     child.on("exit", (code) => out.write(`--- ${name} exited with ${code}\n`));
@@ -158,8 +168,12 @@ function startLocal(config: DesktopConfig): void {
   const backend = join(dir, "backend");
   run("api", "uv", ["run", "nexscout", "serve", "--port", String(config.apiPort)], backend);
   run("worker", "uv", ["run", "nexscout", "worker"], backend);
-  run("web", "npx", ["next", "start", "-p", String(config.webPort), "-H", "127.0.0.1"],
-    join(dir, "apps", "web"));
+  run(
+    "web",
+    "npx",
+    ["next", "start", "-p", String(config.webPort), "-H", "127.0.0.1"],
+    join(dir, "apps", "web"),
+  );
 }
 
 // --- Easy mode: NexScout's own Docker stack -------------------------------------------------
@@ -190,7 +204,12 @@ async function ensureDocker(): Promise<string | null> {
   // Try to start Docker Desktop, then wait for it.
   if (process.platform === "win32") {
     const exe = [
-      join(process.env.ProgramFiles ?? "C:/Program Files", "Docker", "Docker", "Docker Desktop.exe"),
+      join(
+        process.env.ProgramFiles ?? "C:/Program Files",
+        "Docker",
+        "Docker",
+        "Docker Desktop.exe",
+      ),
       join(process.env.LOCALAPPDATA ?? "", "Programs", "DockerDesktop", "Docker Desktop.exe"),
     ].find((p) => existsSync(p));
     if (exe) spawn(exe, [], { detached: true, stdio: "ignore" }).unref();
@@ -208,10 +227,17 @@ async function ensureDocker(): Promise<string | null> {
 /** The bundled compose file (packaged: resources/easy; development: the repo's easy/). */
 function easyCompose(): string {
   const packaged = join(process.resourcesPath, "easy", "docker-compose.yml");
-  return existsSync(packaged) ? packaged : join(__dirname, "..", "..", "..", "easy", "docker-compose.yml");
+  return existsSync(packaged)
+    ? packaged
+    : join(__dirname, "..", "..", "..", "easy", "docker-compose.yml");
 }
 
-function compose(docker: string, args: string[], env: Record<string, string>, log: string): Promise<number> {
+function compose(
+  docker: string,
+  args: string[],
+  env: Record<string, string>,
+  log: string,
+): Promise<number> {
   return new Promise((resolve) => {
     const out = createWriteStream(logFile(log), { flags: "a" });
     out.write(`\n--- ${new Date().toISOString()} docker compose ${args.join(" ")}\n`);
@@ -249,8 +275,14 @@ async function startEasy(config: DesktopConfig): Promise<string | null> {
   mkdirSync(join(app.getPath("userData"), "logs"), { recursive: true });
   const listed = spawnSync(
     docker,
-    ["ps", "-a", "--filter", "label=com.docker.compose.project=nexscout-easy",
-      "--format", '{{.Label "com.docker.compose.project.config_files"}}'],
+    [
+      "ps",
+      "-a",
+      "--filter",
+      "label=com.docker.compose.project=nexscout-easy",
+      "--format",
+      '{{.Label "com.docker.compose.project.config_files"}}',
+    ],
     { windowsHide: true, encoding: "utf-8", timeout: 30_000 },
   );
   const other = foreignEasyStack(
@@ -276,7 +308,13 @@ function removeOldImages(docker: string, keepTag: string): void {
   if (!app.isPackaged) return;
   const listed = spawnSync(
     docker,
-    ["images", "--filter", "reference=ghcr.io/*/nexscout-*", "--format", "{{.Repository}}:{{.Tag}}"],
+    [
+      "images",
+      "--filter",
+      "reference=ghcr.io/*/nexscout-*",
+      "--format",
+      "{{.Repository}}:{{.Tag}}",
+    ],
     { windowsHide: true, encoding: "utf-8", timeout: 30_000 },
   );
   if (listed.status !== 0) return;
@@ -287,7 +325,8 @@ function removeOldImages(docker: string, keepTag: string): void {
     const r = spawnSync(docker, ["rmi", ref], { windowsHide: true, timeout: 60_000 });
     out.write(`--- removed old image ${ref}: ${r.status === 0 ? "ok" : "kept (in use)"}\n`);
   }
-  if (old.length) spawnSync(docker, ["image", "prune", "-f"], { windowsHide: true, timeout: 120_000 });
+  if (old.length)
+    spawnSync(docker, ["image", "prune", "-f"], { windowsHide: true, timeout: 120_000 });
   out.end();
 }
 

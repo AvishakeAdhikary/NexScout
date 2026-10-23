@@ -52,7 +52,9 @@ export function CaseNav() {
         {SECTIONS.map((s) => {
           const href = s.slug ? `${base}/${s.slug}` : base;
           // Sub-pages (a position, a document, an application) keep their section highlighted.
-          const active = s.slug ? pathname === href || pathname.startsWith(`${href}/`) : pathname === href;
+          const active = s.slug
+            ? pathname === href || pathname.startsWith(`${href}/`)
+            : pathname === href;
           const Icon = ICONS[s.slug] ?? LayoutDashboard;
           return (
             <li key={s.slug || "dashboard"}>
@@ -80,7 +82,10 @@ export function CaseNav() {
                 />
                 <span>{s.label}</span>
                 {s.milestone !== undefined && (
-                  <span className="ml-auto text-[10px] text-muted-foreground" aria-label="not available yet">
+                  <span
+                    className="ml-auto text-[10px] text-muted-foreground"
+                    aria-label="not available yet"
+                  >
                     soon
                   </span>
                 )}

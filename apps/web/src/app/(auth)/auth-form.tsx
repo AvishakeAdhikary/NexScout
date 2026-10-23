@@ -63,7 +63,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           {isRegister && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="display_name">Your name</Label>
-              <Input id="display_name" name="display_name" required maxLength={120} autoComplete="name" />
+              <Input
+                id="display_name"
+                name="display_name"
+                required
+                maxLength={120}
+                autoComplete="name"
+              />
             </div>
           )}
           <div className="flex flex-col gap-1.5">
@@ -95,11 +101,17 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <p className="text-sm text-muted-foreground">
             {isRegister ? (
               <>
-                Already have an account? <Link className="underline" href="/login">Sign in</Link>
+                Already have an account?{" "}
+                <Link className="underline" href="/login">
+                  Sign in
+                </Link>
               </>
             ) : (
               <>
-                New here? <Link className="underline" href="/register">Create an account</Link>
+                New here?{" "}
+                <Link className="underline" href="/register">
+                  Create an account
+                </Link>
               </>
             )}
           </p>

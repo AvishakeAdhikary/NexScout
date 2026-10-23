@@ -29,6 +29,7 @@ from nexscout.domain.errors import (
 from nexscout.domain.formats import PROFILES
 from nexscout.infrastructure.db.models import (
     Affiliation,
+    Application,
     GeneratedDocument,
     GeneratedDocumentVersion,
     ResearchFinding,
@@ -283,12 +284,23 @@ async def delete_document(
     session: AsyncSession, actor: Actor, store: ObjectStore, document_id: uuid.UUID
 ) -> None:
     view = await get_document(session, actor, document_id)
+    # Only the stored files (pdf, docx). Other artifact entries also have a "key", such as the
+    # regional format's ("eu"), which is not a storage key.
     keys = {
         a["key"]
         for v in view.versions
-        for a in (v.artifacts or {}).values()
-        if isinstance(a, dict) and a.get("key")
+        for kind, a in (v.artifacts or {}).items()
+        if kind in ("pdf", "docx") and isinstance(a, dict) and a.get("key")
     }
+    # Applications that were going to upload it no longer list it.
+    for app in await session.scalars(
+        select(Application).where(
+            Application.owner_user_id == actor.user_id,
+            Application.document_ids.contains([str(document_id)]),
+        )
+    ):
+        app.document_ids = [d for d in app.document_ids if d != str(document_id)]
+        app.version += 1
     await session.delete(view.document)
     record_audit(
         session,

@@ -4,7 +4,8 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 
 ## Checkpoint (update at the end of every session)
 - **Date:** 2026-10-23
-- **Current milestone:** M18 ✅ (v2.9.0): portable profiles and CV reader v2. Next: M19 desktop shell, M20 scalable
+- **Current milestone:** v2.10.0 ✅ contact details + documents made ready for applying (user feedback on v2.9.0).
+  M18 ✅ (v2.9.0): portable profiles and CV reader v2. Next: M19 desktop shell, M20 scalable
   lists, M21 agentic assistant (plan below, "Plan M18–M21"). Before that: M14–M17 ✅ (v2.2.0 → v2.7.0, 2026-10-19). Remaining steps belong to the user (see
   Next exact steps). M16: provider editing, self-update, update notice (v2.3.0 is the first version that can update
   itself). M14 + M15 released as v2.2.0. M0–M13 ✅.
@@ -434,6 +435,33 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
   - **Leftovers:** 42 old suggestions came from a CV the user deleted while keeping its suggestions. They are
     not removed automatically. Profile now shows "N suggestions came from a file you have since deleted" with
     **Remove them**.
+- **Feedback on v2.9.0 (2026-10-23):**
+  - Email, phone and location weren't reused in documents.
+  - Generated files couldn't be deleted per application.
+  - No PDFs could be made from the application, so applying was impossible: the API refused with
+    "Create the PDF files…" and the application page had no button.
+  - Asked for Prettier.
+- **v2.10.0 (✅):**
+  - `case_contacts` (migration 0015), `domain/contact.py` and `application/contact.py`.
+    - CV header suggestions, confirmed by the user.
+    - `fill_placeholders` after drafting (never in prompts).
+    - The form planner fills first/last name, phone, city, region, country, location, postal code
+      and profile links. Citizenship, referee and employer fields are excluded.
+  - `POST /generated-documents/{id}/fill`.
+  - `browser_apply._prepare_documents`:
+    - fills known placeholders;
+    - renders missing PDFs;
+    - checks compliance;
+    - stops with the document's name and what's missing.
+    The API's PDF and placeholder precondition was removed.
+  - `GeneratedDocumentRow` (Fill in my details, Make PDF, Download, Delete) on the application,
+    position and Documents pages.
+  - **Fixed:** deleting a rendered document crashed. The format artifact's `key` was taken as a
+    storage key. Deletion also detaches the document from applications.
+  - Autopilot uses the shared filler.
+  - Contact details are in bundles (optional key) and the account export.
+  - Prettier at the repo root, `eslint-config-prettier`, `npm run format` and `lint`, and a CI
+    desktop lint. Both apps were reformatted once.
 - **Still open:** real application portals (forms differ per employer); code signing; macOS/Linux installers;
   live notification channels.
 - **Next exact steps (the user's):**
@@ -449,7 +477,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
        entries only).
      - Verify that accepted entries, the mind map and snapshots are unchanged (compare counts before and after).
      - Stop the `nexscout-live-relay` container afterwards.
-     - Then M19 → M21 per the plan above.
+     - Then M19 → M21 per the plan above. The user asked again (2026-10-23) what's left: M19
+       desktop shell + navigation, M20 scalable lists + housekeeping, M21 agentic assistant + AI
+       skills.
   1. Port `successfactors`, `gem`, `wttj` providers (career-ops entries reported unsupported).
   2. University portals without feeds (DTU, TU Delft, ETH, EPFL, TUM, Helsinki): only with a public API or feed.
   3. Desktop app ↔ Easy zip: consider separate Compose project names with a data migration (now guarded).
@@ -534,6 +564,9 @@ Status legend: ⬜ not started · 🟨 in progress · ✅ done (tests executed a
 | 2026-10-23 | M18: `npx playwright test` (dev) | **18/18 passed**, incl. m18 export/import journey and leftover-suggestion removal |
 | 2026-10-23 | M18: `E2E_PROD=1 npx playwright test` | **18/18 passed** (production build + API) |
 | 2026-10-23 | M18 CI run 39842154910 | 5/6 jobs green; `security` failed on new advisories (pypdf 6.20.1: 4 CVEs, certifi 2026.7.22). Upgraded to pypdf 6.21.2 (floor `>=6.21.1`) and certifi 2026.10.19; `pip-audit` clean; 329 unit/document tests passed |
+| 2026-10-23 | v2.10: `ruff`, `mypy`, `pytest` | all passed: **480 passed** (incl. new system test: contact details fill resume + form, edited resume gets its PDF, unanswered placeholder stops the run, answer bank resumes it; IDOR sweep with contact + fill routes) |
+| 2026-10-23 | v2.10: web `lint` (ESLint + Prettier), `typecheck`, `test`; desktop `lint`, `test` | passed (12/12, 8/8) |
+| 2026-10-23 | v2.10: `npx playwright test` and `E2E_PROD=1 npx playwright test` | **19/19 passed** in both (new `m18-contact-documents`: CV suggestion → saved contact → resume with contact line → edited version without PDF → Fill in the form makes the PDF → approval shows name and phone → rejected; delete from the position page) |
 | 2026-10-23 | M18: real-data copy, `reread-documents` | CV: 43 suggestions, letters: 1 reference each; 0 of 45 new suggestions fail the quality check; links to accepted job/degree |
 
 ## Milestones

@@ -53,10 +53,18 @@ export function LinksPanel({ caseId }: { caseId: string }) {
       {links.data && links.data.length > 0 && (
         <ul className="flex flex-col gap-1">
           {links.data.map((l) => (
-            <li key={l.id} className="flex items-center justify-between gap-2 rounded border px-3 py-2 text-sm">
+            <li
+              key={l.id}
+              className="flex items-center justify-between gap-2 rounded border px-3 py-2 text-sm"
+            >
               <span>
                 <span className="font-medium">{KIND_LABELS[l.kind] ?? l.kind}</span>{" "}
-                <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="underline">
+                <a
+                  href={l.url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="underline"
+                >
                   {l.url}
                 </a>
               </span>

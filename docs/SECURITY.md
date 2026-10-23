@@ -66,6 +66,16 @@ never write to the shared catalog (enforced when such adapters are added; see KN
 - Exports never contain secrets, AI providers, tokens, applications or runs.
 - `case.exported` and `case.imported` are audited.
 
+## 3c. Contact details
+- Contact details are personal data. They are never part of a prompt: documents get them after
+  the model has answered, by plain code (`domain/contact.fill_placeholders`).
+- A CV header only suggests them. Nothing is saved until the user saves.
+- `GET`/`PUT /cases/{id}/contact` and `POST /generated-documents/{id}/fill` are in the IDOR
+  sweep.
+- Form filling uses them only for fields about the user's own name, contact and residence. A
+  field about citizenship, nationality, birth, a visa, a referee, an employer or an institution is
+  never filled from them.
+
 ## 4. Data protection
 - TLS in production (terminated at the proxy). Postgres connections use TLS when remote.
 - At rest: disk encryption at the infrastructure level, plus application-level AES-GCM for secrets and

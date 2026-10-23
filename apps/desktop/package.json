@@ -10,12 +10,15 @@
     "start": "npm run build && electron .",
     "smoke": "npm run build && electron . --smoke",
     "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "lint": "prettier --check .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
     "electron": "44.8.0",
     "electron-builder": "26.15.3",
+    "prettier": "^3.9.10",
     "typescript": "^5",
     "vitest": "^5.0.5"
   },

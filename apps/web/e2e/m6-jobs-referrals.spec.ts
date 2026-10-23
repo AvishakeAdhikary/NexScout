@@ -37,9 +37,14 @@ test("job research, permission-gated referrals, referral request and resume", as
 
   await page.goto(`${caseBase}/profile`);
   await page.getByRole("combobox", { name: "Section" }).selectOption("skill");
-  await page.locator("#add").getByRole("textbox", { name: /^Skill/ }).fill("Python");
+  await page
+    .locator("#add")
+    .getByRole("textbox", { name: /^Skill/ })
+    .fill("Python");
   await page.getByRole("button", { name: "Add to profile" }).click();
-  await expect(page.locator("#confirmed").getByRole("article", { name: "Python", exact: true })).toBeVisible();
+  await expect(
+    page.locator("#confirmed").getByRole("article", { name: "Python", exact: true }),
+  ).toBeVisible();
 
   await page.goto(`${caseBase}/relationships`);
   await addRelationship(page, "Sam Example", "ACME", true);
@@ -60,12 +65,16 @@ test("job research, permission-gated referrals, referral request and resume", as
 
   await page.getByRole("button", { name: "Research this position" }).click();
   await expect(page.getByText("Research finished.")).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByRole("listitem", { name: "Application deadline: 30 November 2026", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("listitem", { name: "Application deadline: 30 November 2026", exact: true }),
+  ).toBeVisible();
 
   const refs = page.getByRole("region", { name: "People who could refer you" });
   await expect(refs.getByText("Sam Example", { exact: true })).toBeVisible();
   await expect(refs.getByText("Lee Hidden")).toHaveCount(0);
-  await expect(refs.getByText(/1 other relationship\(s\) at this organization aren.t allowed/)).toBeVisible();
+  await expect(
+    refs.getByText(/1 other relationship\(s\) at this organization aren.t allowed/),
+  ).toBeVisible();
 
   const referralButton = page.getByRole("button", { name: "Draft referral request" });
   await expect(referralButton).toBeDisabled();
@@ -76,6 +85,8 @@ test("job research, permission-gated referrals, referral request and resume", as
   await expect(page.getByText(/Draft ready/)).toHaveCount(2, { timeout: 60_000 });
 
   await page.getByRole("link", { name: /Referral request:/ }).click();
-  await expect(page.getByRole("textbox", { name: "Text (Markdown)" })).toContainText("Hi Sam Example,");
+  await expect(page.getByRole("textbox", { name: "Text (Markdown)" })).toContainText(
+    "Hi Sam Example,",
+  );
   await expect(page.getByText("Mock text, not written by AI")).toBeVisible();
 });

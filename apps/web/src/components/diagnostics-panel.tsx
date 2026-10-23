@@ -9,13 +9,19 @@ import { trackingApi } from "@/lib/api/client";
 
 /** What a user can check about the system serving them: no hostnames, no other users' data. */
 export function DiagnosticsPanel() {
-  const d = useQuery({ queryKey: ["diagnostics"], queryFn: trackingApi.diagnostics, refetchInterval: 15_000 });
+  const d = useQuery({
+    queryKey: ["diagnostics"],
+    queryFn: trackingApi.diagnostics,
+    refetchInterval: 15_000,
+  });
   if (d.error) return <ErrorAlert error={d.error} />;
   if (!d.data) return <p>Loading…</p>;
   const x = d.data;
   return (
     <section aria-labelledby="diag-heading" className="flex flex-col gap-2 rounded-lg border p-4">
-      <h2 id="diag-heading" className="text-xl font-semibold">Diagnostics</h2>
+      <h2 id="diag-heading" className="text-xl font-semibold">
+        Diagnostics
+      </h2>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
         <dt className="text-muted-foreground">Background worker</dt>
         <dd>
@@ -31,9 +37,13 @@ export function DiagnosticsPanel() {
           )}
         </dd>
         <dt className="text-muted-foreground">Your work in progress</dt>
-        <dd>{x.my_tasks.running} running, {x.my_tasks.queued} queued</dd>
+        <dd>
+          {x.my_tasks.running} running, {x.my_tasks.queued} queued
+        </dd>
         <dt className="text-muted-foreground">Version</dt>
-        <dd>NexScout {x.app_version} · {x.database}</dd>
+        <dd>
+          NexScout {x.app_version} · {x.database}
+        </dd>
       </dl>
       {x.providers.length > 0 && (
         <>
@@ -43,7 +53,12 @@ export function DiagnosticsPanel() {
               <li key={p.name}>
                 {p.name}:{" "}
                 {p.last_check === null ? "not checked" : p.last_check ? "working" : "failed"}
-                {p.checked_at && <span className="text-muted-foreground"> ({new Date(p.checked_at).toLocaleString()})</span>}
+                {p.checked_at && (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    ({new Date(p.checked_at).toLocaleString()})
+                  </span>
+                )}
               </li>
             ))}
           </ul>
@@ -56,7 +71,9 @@ export function DiagnosticsPanel() {
         <ul className="flex flex-col gap-1 text-sm">
           {x.recent_failures.map((f) => (
             <li key={f.id}>
-              <Link className="underline" href={`/cases/${f.case_id}/activity`}>{f.title}</Link>{" "}
+              <Link className="underline" href={`/cases/${f.case_id}/activity`}>
+                {f.title}
+              </Link>{" "}
               <span className="text-muted-foreground">{f.error}</span>
             </li>
           ))}

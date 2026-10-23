@@ -10,22 +10,35 @@ import { Label } from "@/components/ui/label";
 import { trackingApi } from "@/lib/api/client";
 
 /** Reminders for one application (deadline reminders are added automatically). */
-export function RemindersPanel({ caseId, applicationId }: { caseId: string; applicationId: string }) {
+export function RemindersPanel({
+  caseId,
+  applicationId,
+}: {
+  caseId: string;
+  applicationId: string;
+}) {
   const queryClient = useQueryClient();
-  const reminders = useQuery({ queryKey: ["reminders", caseId], queryFn: () => trackingApi.reminders(caseId) });
+  const reminders = useQuery({
+    queryKey: ["reminders", caseId],
+    queryFn: () => trackingApi.reminders(caseId),
+  });
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["reminders", caseId] });
     queryClient.invalidateQueries({ queryKey: ["dashboard", caseId] });
   };
   const [formKey, setFormKey] = useState(0);
   const add = useMutation({
-    mutationFn: (v: { title: string; due: string }) => trackingApi.addReminder(caseId, v.title, v.due, applicationId),
+    mutationFn: (v: { title: string; due: string }) =>
+      trackingApi.addReminder(caseId, v.title, v.due, applicationId),
     onSuccess: () => {
       setFormKey((k) => k + 1);
       invalidate();
     },
   });
-  const done = useMutation({ mutationFn: (id: string) => trackingApi.setDone(id, true), onSuccess: invalidate });
+  const done = useMutation({
+    mutationFn: (id: string) => trackingApi.setDone(id, true),
+    onSuccess: invalidate,
+  });
   const mine = (reminders.data ?? []).filter((r) => r.application_id === applicationId);
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -36,7 +49,9 @@ export function RemindersPanel({ caseId, applicationId }: { caseId: string; appl
 
   return (
     <section aria-labelledby="rem-heading" className="flex flex-col gap-2">
-      <h2 id="rem-heading" className="font-semibold">Reminders</h2>
+      <h2 id="rem-heading" className="font-semibold">
+        Reminders
+      </h2>
       {mine.length === 0 ? (
         <p className="text-sm text-muted-foreground">No open reminders.</p>
       ) : (
@@ -60,7 +75,9 @@ export function RemindersPanel({ caseId, applicationId }: { caseId: string; appl
           <Label htmlFor="rem-due">On</Label>
           <Input id="rem-due" name="due" type="date" required className="w-40" />
         </div>
-        <Button type="submit" size="sm" variant="outline" disabled={add.isPending}>Add reminder</Button>
+        <Button type="submit" size="sm" variant="outline" disabled={add.isPending}>
+          Add reminder
+        </Button>
       </form>
       <ErrorAlert error={add.error ?? done.error ?? reminders.error} />
     </section>

@@ -29,6 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexscout import __version__
 from nexscout.application import answers as answers_app
+from nexscout.application import contact as contact_app
 from nexscout.application import mindmap as mindmap_app
 from nexscout.application import relationships as rel_app
 from nexscout.application.actor import Actor
@@ -41,6 +42,7 @@ from nexscout.infrastructure.db.models import (
     Affiliation,
     CandidateCase,
     CaseAnswer,
+    CaseContact,
     CasePreferences,
     Document,
     FactEvidence,
@@ -119,6 +121,7 @@ async def export_case(
     )
     docs = list(await session.scalars(owned(Document).order_by(Document.created_at)))
     prefs = await session.get(CasePreferences, case_id)
+    contact = await session.get(CaseContact, case_id)
     payload: dict[str, Any] = {
         "format": FORMAT,
         "app_version": __version__,
@@ -129,6 +132,8 @@ async def export_case(
             "career_path": case.career_path,
         },
         "preferences": prefs.data if prefs and prefs.owner_user_id == actor.user_id else None,
+        # Added in v2.10 (same format number: older files simply don't have it).
+        "contact": contact.data if contact and contact.owner_user_id == actor.user_id else None,
         "facts": [
             {
                 "id": str(f.id),
@@ -325,6 +330,7 @@ async def import_case(
         "exported_at",
         "case",
         "preferences",
+        "contact",
         "facts",
         "evidence",
         "documents",
@@ -349,6 +355,14 @@ async def import_case(
             report.counts["preferences"] = 1
         except ValidationFailed as exc:
             report.warnings.append(f"Preferences skipped: {exc}")
+    if isinstance(payload.get("contact"), dict):
+        try:
+            await contact_app.put_contact(
+                session, actor, case.id, data=payload["contact"], expected_version=0
+            )
+            report.counts["contact"] = 1
+        except ValidationFailed as exc:
+            report.warnings.append(f"Contact details skipped: {exc}")
 
     # Documents: the original file is checked like an upload before it is stored.
     doc_map: dict[str, uuid.UUID] = {}

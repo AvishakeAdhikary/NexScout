@@ -31,9 +31,14 @@ test("research a position, draft a grounded SOP, edit it, and create files", asy
   // One confirmed entry to draft from.
   await page.goto(`${caseBase}/profile`);
   await page.getByRole("combobox", { name: "Section" }).selectOption("skill");
-  await page.locator("#add").getByRole("textbox", { name: /^Skill/ }).fill("Python");
+  await page
+    .locator("#add")
+    .getByRole("textbox", { name: /^Skill/ })
+    .fill("Python");
   await page.getByRole("button", { name: "Add to profile" }).click();
-  await expect(page.locator("#confirmed").getByRole("article", { name: "Python", exact: true })).toBeVisible();
+  await expect(
+    page.locator("#confirmed").getByRole("article", { name: "Python", exact: true }),
+  ).toBeVisible();
 
   // Find (demo) positions, open one.
   await page.goto(`${caseBase}/phd`);
@@ -48,7 +53,10 @@ test("research a position, draft a grounded SOP, edit it, and create files", asy
   // Research: findings quote their sources; disagreeing deadlines are flagged.
   await page.getByRole("button", { name: "Research this position" }).click();
   await expect(page.getByText("Research finished.")).toBeVisible({ timeout: 30_000 });
-  const deadline = page.getByRole("listitem", { name: "Application deadline: 1 December 2026", exact: true });
+  const deadline = page.getByRole("listitem", {
+    name: "Application deadline: 1 December 2026",
+    exact: true,
+  });
   await expect(deadline.getByText("Sources disagree", { exact: true })).toBeVisible();
   await expect(deadline.getByText("in 3 sources")).toBeVisible();
   await expect(
@@ -75,7 +83,9 @@ test("research a position, draft a grounded SOP, edit it, and create files", asy
   await expect(page.getByText("Not ready to send")).toBeVisible();
   // The mock's unsupported claim was removed and explained, not kept.
   await expect(page.getByText(/12 peer-reviewed papers/)).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Text (Markdown)" })).not.toContainText("12 peer-reviewed");
+  await expect(page.getByRole("textbox", { name: "Text (Markdown)" })).not.toContainText(
+    "12 peer-reviewed",
+  );
   await expect(page.getByRole("link", { name: "Download PDF" })).toBeVisible();
 
   // Edit: fill one placeholder, save version 2, then create its files.
@@ -102,6 +112,8 @@ test("research a position, draft a grounded SOP, edit it, and create files", asy
   // It is listed under Documents → Application materials.
   await page.goto(`${caseBase}/documents`);
   await expect(
-    page.getByRole("region", { name: "Application materials" }).getByRole("link", { name: /Statement of purpose/ }),
+    page
+      .getByRole("region", { name: "Application materials" })
+      .getByRole("link", { name: /Statement of purpose/ }),
   ).toBeVisible();
 });

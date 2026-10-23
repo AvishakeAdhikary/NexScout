@@ -43,25 +43,35 @@ test("assistant, reminders, notifications, dashboard and tracker", async ({ page
 
   // Start an application (no documents yet) and add a reminder for today.
   await card.getByRole("link", { name: "Research and prepare" }).click();
-  await page.getByRole("region", { name: "Apply" }).getByRole("button", { name: "Start an application" }).click();
+  await page
+    .getByRole("region", { name: "Apply" })
+    .getByRole("button", { name: "Start an application" })
+    .click();
   await expect(page.getByRole("heading", { level: 1, name: "Junior Data Engineer" })).toBeVisible();
   const today = new Date();
   const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   await page.getByRole("textbox", { name: "Remind me to" }).fill("Ask Sam about the team");
   await page.getByLabel("On", { exact: true }).fill(iso);
   await page.getByRole("button", { name: "Add reminder" }).click();
-  await expect(page.getByRole("region", { name: "Reminders" }).getByText("Ask Sam about the team")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Reminders" }).getByText("Ask Sam about the team"),
+  ).toBeVisible();
 
   // The worker's sweep turns the due reminder into a notification.
   const bell = page.getByRole("button", { name: /^Notifications/ });
   await expect(bell).toHaveText(/Notifications \(\d+\)/, { timeout: 45_000 });
   await bell.click();
-  await page.getByRole("region", { name: "Notifications" }).getByRole("button", { name: /Ask Sam about the team/ }).click();
+  await page
+    .getByRole("region", { name: "Notifications" })
+    .getByRole("button", { name: /Ask Sam about the team/ })
+    .click();
   await expect(page.getByRole("heading", { level: 1, name: "Junior Data Engineer" })).toBeVisible();
 
   // Dashboard shows it under "Coming up".
   await page.goto(caseBase);
-  await expect(page.getByRole("region", { name: "Coming up (30 days)" }).getByText("Ask Sam about the team")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Coming up (30 days)" }).getByText("Ask Sam about the team"),
+  ).toBeVisible();
 
   // Tracker: filter, bulk change, export.
   await page.goto(`${caseBase}/applications`);

@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from nexscout.domain.cases import MAX_CASE_DESCRIPTION, MAX_CASE_NAME, CareerPath, CaseStatus
+from nexscout.domain.contact import ContactDetails
 from nexscout.domain.preferences import Preferences
 from nexscout.domain.profile import FactStatus, ReviewState, Section
 
@@ -208,6 +209,28 @@ class DocumentTextOut(ApiModel):
 class PreferencesOut(ApiModel):
     data: Preferences
     version: int
+
+
+class ContactOut(ApiModel):
+    data: ContactDetails
+    version: int
+    suggested: dict[str, str] = Field(
+        default_factory=dict,
+        description="Details found in the newest CV that differ from the saved ones. Only "
+        "suggestions: nothing is saved until the user saves them.",
+    )
+    suggested_from: str | None = None
+
+
+class ContactPut(ApiModel):
+    version: int = Field(ge=0, description="0 when no contact details have been saved yet.")
+    data: dict[str, Any]
+
+
+class FillOut(ApiModel):
+    filled: int
+    placeholders_left: int
+    current_version: int
 
 
 class PreferencesPut(ApiModel):

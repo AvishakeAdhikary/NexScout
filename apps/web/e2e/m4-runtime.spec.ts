@@ -93,13 +93,21 @@ test("add a mock AI model, check it, and draft a labelled, cited summary", async
   // Profile: one confirmed entry, then a draft that cites it and waits for review.
   await page.goto(`${caseBase}/profile`);
   await page.getByRole("combobox", { name: "Section" }).selectOption("skill");
-  await page.locator("#add").getByRole("textbox", { name: /^Skill/ }).fill("Python");
+  await page
+    .locator("#add")
+    .getByRole("textbox", { name: /^Skill/ })
+    .fill("Python");
   await page.getByRole("button", { name: "Add to profile" }).click();
-  await expect(page.locator("#confirmed").getByRole("article", { name: "Python", exact: true })).toBeVisible();
+  await expect(
+    page.locator("#confirmed").getByRole("article", { name: "Python", exact: true }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Draft a summary with AI" }).click();
   await expect(page.getByText("Draft ready.")).toBeVisible({ timeout: 30_000 });
-  const draft = page.locator("#review").getByRole("article").filter({ hasText: "Skills include Python." });
+  const draft = page
+    .locator("#review")
+    .getByRole("article")
+    .filter({ hasText: "Skills include Python." });
   await expect(draft).toBeVisible();
   await expect(draft.getByText("Mock text, not written by AI")).toBeVisible();
 });

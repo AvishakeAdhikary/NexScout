@@ -70,7 +70,10 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy
 uv run pytest                     # DB tests skip with a stated reason if Postgres is down;
 NEXSCOUT_REQUIRE_DB=1 uv run pytest   # ...or fail instead (what CI does)
 cd apps/web
-npm run typecheck && npm run lint && npm test && npm run build
+npm run format                    # Prettier rewrite (config: repo-root .prettierrc.json)
+npm run typecheck && npm run lint && npm test && npm run build   # lint = ESLint + prettier --check
+cd apps/desktop
+npm run format && npm run lint && npm test
 ```
 
 ## API contracts

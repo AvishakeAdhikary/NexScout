@@ -16,7 +16,10 @@ const SUGGESTIONS = ["What needs me?", "Upcoming deadlines", "Find jobs", "Creat
 export default function AssistantPage() {
   const { caseId } = useParams<{ caseId: string }>();
   const queryClient = useQueryClient();
-  const history = useQuery({ queryKey: ["chat", caseId], queryFn: () => trackingApi.chatHistory(caseId) });
+  const history = useQuery({
+    queryKey: ["chat", caseId],
+    queryFn: () => trackingApi.chatHistory(caseId),
+  });
   const [text, setText] = useState("");
   const end = useRef<HTMLDivElement>(null);
   const send = useMutation({
@@ -50,14 +53,23 @@ export default function AssistantPage() {
       <ErrorAlert error={history.error} />
       <ol className="flex flex-col gap-3" aria-label="Conversation" aria-live="polite">
         {(history.data ?? []).map((m) => (
-          <li key={m.id} className={m.role === "user" ? "self-end rounded-lg bg-muted px-3 py-2" : "rounded-lg border px-3 py-2"}>
+          <li
+            key={m.id}
+            className={
+              m.role === "user"
+                ? "self-end rounded-lg bg-muted px-3 py-2"
+                : "rounded-lg border px-3 py-2"
+            }
+          >
             <span className="sr-only">{m.role === "user" ? "You:" : "Assistant:"}</span>
             <p className="whitespace-pre-line text-sm">{m.content}</p>
             {m.actions.length > 0 && (
               <ul className="mt-1 flex flex-wrap gap-2 text-sm">
                 {m.actions.map((a) => (
                   <li key={`${m.id}-${String(a.href)}-${String(a.label)}`}>
-                    <Link className="underline" href={String(a.href)}>{String(a.label)}</Link>
+                    <Link className="underline" href={String(a.href)}>
+                      {String(a.label)}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -69,12 +81,25 @@ export default function AssistantPage() {
       <form onSubmit={submit} className="flex flex-col gap-2">
         <Label htmlFor="chat-input">Message</Label>
         <div className="flex gap-2">
-          <Input id="chat-input" value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} />
-          <Button type="submit" disabled={send.isPending || !text.trim()}>Send</Button>
+          <Input
+            id="chat-input"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={2000}
+          />
+          <Button type="submit" disabled={send.isPending || !text.trim()}>
+            Send
+          </Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {SUGGESTIONS.map((s) => (
-            <Button key={s} type="button" size="sm" variant="outline" onClick={() => send.mutate(s)}>
+            <Button
+              key={s}
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => send.mutate(s)}
+            >
               {s}
             </Button>
           ))}

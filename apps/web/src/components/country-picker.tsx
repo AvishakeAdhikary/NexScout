@@ -41,7 +41,11 @@ export function CountryPicker({
       return -1;
     };
     const candidates = [
-      ...(geo.data?.countries ?? []).map((c) => ({ code: c.code, name: c.name, score: rank(c.name, c.code) * 2 })),
+      ...(geo.data?.countries ?? []).map((c) => ({
+        code: c.code,
+        name: c.name,
+        score: rank(c.name, c.code) * 2,
+      })),
       ...(geo.data?.groups ?? []).map((g) => ({
         code: g.key,
         name: `${g.name} (${g.codes.length})`,
@@ -67,7 +71,10 @@ export function CountryPicker({
       {help && <p className="text-xs text-muted-foreground">{help}</p>}
       <ul className="flex flex-wrap gap-1" aria-label={`${label}: chosen`}>
         {value.map((code) => (
-          <li key={code} className="flex items-center gap-1 rounded-full border bg-muted px-2 py-0.5 text-xs">
+          <li
+            key={code}
+            className="flex items-center gap-1 rounded-full border bg-muted px-2 py-0.5 text-xs"
+          >
             {names.get(code) ?? code}
             <button
               type="button"
@@ -94,10 +101,17 @@ export function CountryPicker({
         autoComplete="off"
       />
       {matches.length > 0 && (
-        <ul className="flex flex-col rounded-md border text-sm" aria-label={`${label}: suggestions`}>
+        <ul
+          className="flex flex-col rounded-md border text-sm"
+          aria-label={`${label}: suggestions`}
+        >
           {matches.map((m) => (
             <li key={m.code}>
-              <button type="button" className="w-full px-2 py-1 text-left hover:bg-muted" onClick={() => add(m.code)}>
+              <button
+                type="button"
+                className="w-full px-2 py-1 text-left hover:bg-muted"
+                onClick={() => add(m.code)}
+              >
                 {m.name}
               </button>
             </li>
@@ -108,7 +122,12 @@ export function CountryPicker({
         {quick
           .filter((k) => !value.includes(k) && names.has(k))
           .map((k) => (
-            <button key={k} type="button" className="rounded-full border px-2 py-0.5 hover:bg-muted" onClick={() => add(k)}>
+            <button
+              key={k}
+              type="button"
+              className="rounded-full border px-2 py-0.5 hover:bg-muted"
+              onClick={() => add(k)}
+            >
               + {names.get(k)}
             </button>
           ))}

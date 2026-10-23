@@ -16,7 +16,6 @@ in the loop for everything NexScout can't decide from what it already knows.
 
 from __future__ import annotations
 
-import re
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
@@ -36,11 +35,12 @@ from nexscout.application.applications import (
 )
 from nexscout.application.audit import record_audit
 from nexscout.application.cases import get_case
+from nexscout.application.contact import fill_in_details
 from nexscout.application.generated_documents import save_edit, start_draft, start_render
 from nexscout.application.notifications import notify
 from nexscout.application.research import start_research
 from nexscout.config import Settings
-from nexscout.domain.drafting import PLACEHOLDER
+from nexscout.domain.drafting import find_placeholders
 from nexscout.domain.errors import DomainError, ValidationFailed
 from nexscout.domain.forms import normalize_question
 from nexscout.domain.geo import normalize_list
@@ -651,8 +651,8 @@ async def _documents_ready(
     row: AutopilotPolicy,
     policy: Policy,
 ) -> None:
-    """Fill placeholders from the answer bank (or ask), render, check, then apply."""
-    bank = await answers_for(s, item.owner_user_id, item.case_id)
+    """Fill placeholders from the contact details and answer bank (or ask), render, check,
+    then apply."""
     waiting: list[str] = []
     renders: list[str] = []
     doc_ids: list[str] = []
@@ -664,16 +664,9 @@ async def _documents_ready(
         doc, version = found
         doc_ids.append(str(doc.id))
         if version.placeholders:
-            markdown, missing = version.markdown, []
-            for p in version.placeholders:
-                answer = bank.get(normalize_question(p))
-                if answer:
-                    markdown = re.sub(
-                        r"\[\[PLACEHOLDER:\s*" + re.escape(p) + r"\s*\]\]", answer, markdown
-                    )
-                else:
-                    missing.append(p)
-            if not missing and not PLACEHOLDER.search(markdown):
+            markdown = await fill_in_details(s, item.owner_user_id, item.case_id, version.markdown)
+            missing = find_placeholders(markdown)
+            if not missing:
                 await save_edit(
                     s, actor, doc.id, markdown=markdown, base_version=doc.current_version
                 )

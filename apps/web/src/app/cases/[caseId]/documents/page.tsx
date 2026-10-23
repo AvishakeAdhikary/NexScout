@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { FormatPicker } from "@/components/document-format";
 import { ErrorAlert } from "@/components/error-alert";
+import { GeneratedDocumentRow } from "@/components/generated-document-row";
 import { FileDropZone } from "@/components/file-drop-zone";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,13 +44,13 @@ function ReadingStatus({ runId, caseId }: { runId: string; caseId: string }) {
   const run = useRun(runId);
   const status = run.data?.run.status;
   const result = run.data?.run.result as
-    | { parse_status?: string; facts_created?: number; error?: string | null }
-    | null
-    | undefined;
+    { parse_status?: string; facts_created?: number; error?: string | null } | null | undefined;
   if (!status || !result) {
     return (
       <p role="status" className="text-sm">
-        {status === "failed" ? `Reading failed: ${run.data?.run.error ?? ""}` : "Saved. Reading your document…"}
+        {status === "failed"
+          ? `Reading failed: ${run.data?.run.error ?? ""}`
+          : "Saved. Reading your document…"}
       </p>
     );
   }
@@ -63,7 +64,9 @@ function ReadingStatus({ runId, caseId }: { runId: string; caseId: string }) {
   const n = result.facts_created ?? 0;
   return (
     <p role="status" className="text-sm">
-      {n > 0 ? `Found ${n} possible entries. ` : "Saved. No profile entries were imported from this file."}
+      {n > 0
+        ? `Found ${n} possible entries. `
+        : "Saved. No profile entries were imported from this file."}
       {n > 0 && (
         <Link className="underline" href={`/cases/${caseId}/profile#review`}>
           Review them now
@@ -87,7 +90,10 @@ export default function DocumentsPage() {
   const [purpose, setPurpose] = useState("cv");
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   useCaseEvents(caseId);
-  const docs = useQuery({ queryKey: ["documents", caseId], queryFn: () => documentsApi.list(caseId) });
+  const docs = useQuery({
+    queryKey: ["documents", caseId],
+    queryFn: () => documentsApi.list(caseId),
+  });
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["documents", caseId] });
     queryClient.invalidateQueries({ queryKey: ["facts", caseId] });
@@ -198,12 +204,24 @@ export default function DocumentsPage() {
               <caption className="sr-only">Uploaded documents</caption>
               <thead>
                 <tr className="border-b text-left">
-                  <th scope="col" className="py-2 pr-3">File</th>
-                  <th scope="col" className="py-2 pr-3">Type</th>
-                  <th scope="col" className="py-2 pr-3">Status</th>
-                  <th scope="col" className="py-2 pr-3">Size</th>
-                  <th scope="col" className="py-2 pr-3">Uploaded</th>
-                  <th scope="col" className="py-2">Actions</th>
+                  <th scope="col" className="py-2 pr-3">
+                    File
+                  </th>
+                  <th scope="col" className="py-2 pr-3">
+                    Type
+                  </th>
+                  <th scope="col" className="py-2 pr-3">
+                    Status
+                  </th>
+                  <th scope="col" className="py-2 pr-3">
+                    Size
+                  </th>
+                  <th scope="col" className="py-2 pr-3">
+                    Uploaded
+                  </th>
+                  <th scope="col" className="py-2">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -261,7 +279,9 @@ export default function DocumentsPage() {
         {reread.data && (
           <p role="status" className="mt-2 text-sm">
             Read again: {reread.data.created} new entries to review
-            {reread.data.removed ? `, ${reread.data.removed} unreviewed entries replaced` : ""}.{" "}
+            {reread.data.removed
+              ? `, ${reread.data.removed} unreviewed entries replaced`
+              : ""}.{" "}
             <Link className="underline" href={`/cases/${caseId}/profile#review`}>
               Review them
             </Link>
@@ -281,7 +301,8 @@ function ApplicationMaterials({ caseId }: { caseId: string }) {
   });
   const [format, setFormat] = useState("");
   const assemble = useMutation({
-    mutationFn: () => generatedApi.draft(caseId, { doc_type: "academic_cv", format: format || null }),
+    mutationFn: () =>
+      generatedApi.draft(caseId, { doc_type: "academic_cv", format: format || null }),
   });
   const run = useRun(assemble.data?.run_id);
   const result = run.data?.run.result as { document_id?: string } | null | undefined;
@@ -290,20 +311,30 @@ function ApplicationMaterials({ caseId }: { caseId: string }) {
     (!!assemble.data && !["succeeded", "failed", "cancelled"].includes(run.data?.run.status ?? ""));
   return (
     <section aria-labelledby="materials-heading" className="flex flex-col gap-3">
-      <h2 id="materials-heading" className="text-xl font-semibold">Application materials</h2>
+      <h2 id="materials-heading" className="text-xl font-semibold">
+        Application materials
+      </h2>
       <p className="text-sm text-muted-foreground">
-        Documents NexScout prepared for you. Statements of purpose, proposals and emails are
-        drafted from a position&apos;s page (PhD opportunities → Research and prepare).
+        Documents NexScout prepared for you. Statements of purpose, proposals and emails are drafted
+        from a position&apos;s page (PhD opportunities → Research and prepare).
       </p>
       <FormatPicker value={format} onChange={setFormat} />
-      <Button variant="outline" className="self-start" onClick={() => assemble.mutate()} disabled={busy}>
+      <Button
+        variant="outline"
+        className="self-start"
+        onClick={() => assemble.mutate()}
+        disabled={busy}
+      >
         {busy ? "Assembling…" : "Create academic CV from my profile"}
       </Button>
       <div aria-live="polite">
         {result?.document_id && (
           <p role="status" className="text-sm">
             Academic CV ready.{" "}
-            <Link className="underline" href={`/cases/${caseId}/documents/generated/${result.document_id}`}>
+            <Link
+              className="underline"
+              href={`/cases/${caseId}/documents/generated/${result.document_id}`}
+            >
               Open it
             </Link>
           </p>
@@ -313,17 +344,9 @@ function ApplicationMaterials({ caseId }: { caseId: string }) {
       {list.data && list.data.length === 0 && (
         <p className="text-sm">No application materials yet.</p>
       )}
-      <ul className="flex flex-col gap-1 text-sm">
+      <ul className="flex flex-col gap-2">
         {(list.data ?? []).map((d) => (
-          <li key={d.id}>
-            <Link className="underline" href={`/cases/${caseId}/documents/generated/${d.id}`}>
-              {d.title}
-            </Link>{" "}
-            <span className="text-muted-foreground">
-              {d.doc_label} · v{d.current_version} · {d.latest.placeholders.length} placeholder(s)
-            </span>
-            {d.latest.is_mock && <> <Badge variant="destructive">Mock text</Badge></>}
-          </li>
+          <GeneratedDocumentRow key={d.id} doc={d} caseId={caseId} />
         ))}
       </ul>
     </section>

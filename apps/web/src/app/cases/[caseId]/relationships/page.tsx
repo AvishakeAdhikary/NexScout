@@ -73,7 +73,10 @@ export default function RelationshipsPage() {
       invalidate();
     },
   });
-  const remove = useMutation({ mutationFn: relationshipsApi.removeAffiliation, onSuccess: invalidate });
+  const remove = useMutation({
+    mutationFn: relationshipsApi.removeAffiliation,
+    onSuccess: invalidate,
+  });
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -99,8 +102,8 @@ export default function RelationshipsPage() {
       <header>
         <h1 className="text-2xl font-semibold">Relationships</h1>
         <p className="text-muted-foreground">
-          Organizations you are connected to, and people who know your work. A connection is not
-          a recommendation: NexScout only mentions a relationship in an application, or suggests
+          Organizations you are connected to, and people who know your work. A connection is not a
+          recommendation: NexScout only mentions a relationship in an application, or suggests
           asking for a referral, when you allow it below.
         </p>
       </header>
@@ -113,12 +116,24 @@ export default function RelationshipsPage() {
             <caption className="sr-only">Your relationships</caption>
             <thead>
               <tr className="border-b text-left">
-                <th scope="col" className="py-2 pr-3">Person</th>
-                <th scope="col" className="py-2 pr-3">Organization</th>
-                <th scope="col" className="py-2 pr-3">Relationship</th>
-                <th scope="col" className="py-2 pr-3">Dates</th>
-                <th scope="col" className="py-2 pr-3">Permissions</th>
-                <th scope="col" className="py-2">Actions</th>
+                <th scope="col" className="py-2 pr-3">
+                  Person
+                </th>
+                <th scope="col" className="py-2 pr-3">
+                  Organization
+                </th>
+                <th scope="col" className="py-2 pr-3">
+                  Relationship
+                </th>
+                <th scope="col" className="py-2 pr-3">
+                  Dates
+                </th>
+                <th scope="col" className="py-2 pr-3">
+                  Permissions
+                </th>
+                <th scope="col" className="py-2">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -138,10 +153,18 @@ export default function RelationshipsPage() {
                   </td>
                   <td className="py-2 pr-3">
                     <div className="flex flex-col gap-1">
-                      <PermissionToggle row={r} field="may_use_in_applications" caseId={caseId}
-                        label="Mention in applications" />
-                      <PermissionToggle row={r} field="may_use_for_referral" caseId={caseId}
-                        label="May suggest a referral request" />
+                      <PermissionToggle
+                        row={r}
+                        field="may_use_in_applications"
+                        caseId={caseId}
+                        label="Mention in applications"
+                      />
+                      <PermissionToggle
+                        row={r}
+                        field="may_use_for_referral"
+                        caseId={caseId}
+                        label="May suggest a referral request"
+                      />
                     </div>
                   </td>
                   <td className="py-2">
@@ -149,7 +172,8 @@ export default function RelationshipsPage() {
                       type="button"
                       className="underline"
                       onClick={() => {
-                        if (window.confirm(`Delete relationship with ${r.organization}?`)) remove.mutate(r.id);
+                        if (window.confirm(`Delete relationship with ${r.organization}?`))
+                          remove.mutate(r.id);
                       }}
                     >
                       Delete
@@ -181,10 +205,17 @@ export default function RelationshipsPage() {
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="rel-type">Relationship *</Label>
-            <select id="rel-type" name="relationship_type" required
-              className="h-8 rounded-lg border bg-background px-2 text-sm" defaultValue="alumnus">
+            <select
+              id="rel-type"
+              name="relationship_type"
+              required
+              className="h-8 rounded-lg border bg-background px-2 text-sm"
+              defaultValue="alumnus"
+            >
               {TYPES.map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
+                <option key={v} value={v}>
+                  {l}
+                </option>
               ))}
             </select>
           </div>
@@ -202,8 +233,12 @@ export default function RelationshipsPage() {
           </div>
           <div className="flex flex-col gap-1">
             <Label htmlFor="rel-status">Status</Label>
-            <select id="rel-status" name="status" defaultValue="current"
-              className="h-8 rounded-lg border bg-background px-2 text-sm">
+            <select
+              id="rel-status"
+              name="status"
+              defaultValue="current"
+              className="h-8 rounded-lg border bg-background px-2 text-sm"
+            >
               <option value="current">Current</option>
               <option value="former">Former</option>
               <option value="unknown">Unknown</option>

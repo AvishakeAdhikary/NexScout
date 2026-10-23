@@ -102,3 +102,47 @@ def test_guard_blocks_private_networks_but_allows_the_demo_site() -> None:
     assert not g.allows("http://10.0.0.5/admin")
     assert not g.allows("file:///etc/passwd")
     assert g.allows("data:image/png;base64,AAAA")
+
+
+def test_contact_details_fill_name_parts_location_and_links() -> None:
+    fields = [
+        FormField("#first", "First name *", "text", True),
+        FormField("#last", "Last name *", "text", True),
+        FormField("#city", "City", "text", False),
+        FormField("#country", "Country of residence *", "text", True),
+        FormField("#citizen", "Country of citizenship", "text", False),
+        FormField("#where", "Current location", "text", False),
+        FormField("#zip", "Postal code", "text", False),
+        FormField("#li", "LinkedIn profile", "url", False),
+        FormField("#ref_phone", "Referee phone number", "tel", False),
+    ]
+    who = Applicant(
+        **{
+            **ME.__dict__,
+            "given_name": "Ada",
+            "family_name": "Example",
+            "city": "Pune",
+            "country": "India",
+            "location": "Pune, India",
+            "phone": "+91 00000 00000",
+            "links": {"linkedin": "https://www.linkedin.com/in/ada-example"},
+        }
+    )
+    plan = plan_form(fields, who)
+    by = {f.key: (f.action, f.value) for f in plan.fields}
+    assert by["#first"] == ("fill", "Ada")
+    assert by["#last"] == ("fill", "Example")
+    assert by["#city"] == ("fill", "Pune")
+    assert by["#country"] == ("fill", "India")
+    assert by["#where"] == ("fill", "Pune, India")
+    assert by["#li"] == ("fill", "https://www.linkedin.com/in/ada-example")
+    assert by["#zip"] == ("skip", None)  # not given: nothing invented
+    # Citizenship is not where you live, and a referee's phone isn't yours.
+    assert by["#citizen"] == ("skip", None)
+    assert by["#ref_phone"] == ("skip", None)
+    assert plan.missing == []
+
+
+def test_a_required_contact_detail_that_was_never_given_stops_the_plan() -> None:
+    plan = plan_form([FormField("#city", "City *", "text", True)], ME)
+    assert plan.missing == ["City *"]

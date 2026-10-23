@@ -1,8 +1,9 @@
 """Planning how to fill an application form. Pure: discovered fields + what we know → a plan.
 
 Rules (spec §7, AGENTS.md non-negotiables):
-- Only values the user provided or confirmed are used: account name/email, the user's own
-  answers, and documents the user selected. Nothing is invented; a required question without an
+- Only values the user provided or confirmed are used: the case's contact details (falling back
+  to the account name/email), profile links, the user's own answers, and documents the user
+  selected. Nothing is invented; a required question without an
   answer stops the run (`missing`).
 - Declarations/attestations ("I confirm the information is accurate") are never ticked while
   filling. They are ticked only at submit time, after the user approved exactly this plan.
@@ -54,6 +55,16 @@ class Applicant:
     phone: str | None = None
     answers: dict[str, str] = field(default_factory=dict)  # normalized question → answer
     files: dict[str, dict[str, str]] = field(default_factory=dict)  # role → {path, title}
+    # From the case's contact details and profile links (all given by the user).
+    given_name: str | None = None
+    family_name: str | None = None
+    address: str | None = None
+    postal_code: str | None = None
+    city: str | None = None
+    region: str | None = None
+    country: str | None = None
+    location: str | None = None  # "City, Region, Country"
+    links: dict[str, str] = field(default_factory=dict)  # linkedin, github, website, ...
 
 
 @dataclass
@@ -102,6 +113,55 @@ def _is(text: str, *patterns: str) -> bool:
     return any(re.search(p, text) for p in patterns)
 
 
+_CONTACT_FIELDS: tuple[tuple[tuple[str, ...], str, str], ...] = (
+    # (label patterns, Applicant attribute or link kind, where the value comes from).
+    # First match wins, so "first name" is decided before the generic "name" rule runs.
+    ((r"first ?name", r"given ?name", r"forename"), "given_name", "your contact details"),
+    ((r"last ?name", r"surname", r"family ?name"), "family_name", "your contact details"),
+    ((r"phone", r"mobile", r"\btel"), "phone", "your contact details"),
+    ((r"post ?code", r"postal", r"\bzip"), "postal_code", "your contact details"),
+    ((r"\bcity\b", r"\btown\b"), "city", "your contact details"),
+    ((r"\bstate\b", r"province", r"\bregion\b"), "region", "your contact details"),
+    ((r"\bcountry\b",), "country", "your contact details"),
+    ((r"street", r"address"), "address", "your contact details"),
+    ((r"location", r"where .*based", r"current residence"), "location", "your contact details"),
+    ((r"linkedin",), "linkedin", "your profile links"),
+    ((r"github",), "github", "your profile links"),
+    ((r"google scholar",), "google_scholar", "your profile links"),
+    ((r"orcid",), "orcid", "your profile links"),
+    ((r"website", r"portfolio", r"personal (site|page)"), "website", "your profile links"),
+)
+
+
+def _contact_value(text: str, who: Applicant) -> tuple[str | None, str] | None:
+    """The field asks for one of the user's contact details: (its value, or None when the user
+    hasn't given it; the source). None when the field isn't about contact details at all."""
+    # Not about where the user lives or how to reach them: citizenship, a referee, an employer.
+    if _is(
+        text,
+        r"e-?mail",
+        r"company",
+        r"employer",
+        r"referr",
+        r"referee",
+        r"reference",
+        r"school",
+        r"university",
+        r"institution",
+        r"citizen",
+        r"national",
+        r"birth",
+        r"visa",
+        r"emergency",
+    ):
+        return None
+    for patterns, attr, source in _CONTACT_FIELDS:
+        if _is(text, *patterns):
+            value = who.links.get(attr) if source == "your profile links" else getattr(who, attr)
+            return (value.strip() if isinstance(value, str) and value.strip() else None), source
+    return None
+
+
 def plan_form(fields: list[FormField], who: Applicant) -> FormPlan:
     planned: list[PlannedField] = []
     missing: list[str] = []
@@ -136,21 +196,22 @@ def plan_form(fields: list[FormField], who: Applicant) -> FormPlan:
             else:
                 add("skip", None, "no document selected")
             continue
+        known = _contact_value(text, who)
         if q in who.answers and who.answers[q].strip():
             add("fill", who.answers[q].strip(), "your answer")
         elif f.kind == "email" or _is(text, r"e-?mail"):
-            add("fill", who.email, "your account")
-        elif _is(text, r"full name", r"^name\b", r"your name", r"\bname\b") and not _is(
-            text, r"company", r"user ?name", r"referr", r"school", r"employer"
-        ):
-            add("fill", who.full_name, "your account")
-        elif _is(text, r"phone", r"mobile", r"\btel"):
-            if who.phone:
-                add("fill", who.phone, "your answer")
+            add("fill", who.email, "your contact details")
+        elif known is not None:
+            if known[0]:
+                add("fill", known[0], known[1])
             elif f.required:
                 missing.append(f.label)
             else:
                 add("skip", None, "not provided")
+        elif _is(text, r"full name", r"^name\b", r"your name", r"\bname\b") and not _is(
+            text, r"company", r"user ?name", r"referr", r"school", r"employer"
+        ):
+            add("fill", who.full_name, "your contact details")
         elif f.required:
             missing.append(f.label)
         else:

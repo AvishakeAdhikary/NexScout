@@ -54,7 +54,10 @@ export default function AccountPage() {
 
       <AccessTokens />
 
-      <section aria-labelledby="delete-heading" className="flex flex-col gap-2 rounded-lg border border-destructive/40 p-4">
+      <section
+        aria-labelledby="delete-heading"
+        className="flex flex-col gap-2 rounded-lg border border-destructive/40 p-4"
+      >
         <h2 id="delete-heading" className="text-lg font-semibold">
           Delete your account
         </h2>

@@ -11,11 +11,14 @@ from nexscout.api.schemas import (
     AffiliationFields,
     AffiliationOut,
     AffiliationUpdate,
+    ContactOut,
+    ContactPut,
     PreferencesOut,
     PreferencesPut,
     SocialProfileCreate,
     SocialProfileOut,
 )
+from nexscout.application import contact as contact_app
 from nexscout.application import relationships as rel
 
 router = APIRouter(tags=["preferences & relationships"])
@@ -35,6 +38,30 @@ async def put_preferences(
         db, actor, case_id, data=body.data, expected_version=body.version
     )
     return PreferencesOut(data=prefs, version=version)
+
+
+def _contact_out(view: contact_app.ContactView) -> ContactOut:
+    return ContactOut(
+        data=view.data,
+        version=view.version,
+        suggested=view.suggested,
+        suggested_from=view.suggested_from,
+    )
+
+
+@router.get("/cases/{case_id}/contact", response_model=ContactOut)
+async def get_contact(case_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> ContactOut:
+    return _contact_out(await contact_app.get_contact(db, actor, case_id))
+
+
+@router.put("/cases/{case_id}/contact", response_model=ContactOut)
+async def put_contact(
+    case_id: uuid.UUID, body: ContactPut, actor: CurrentActor, db: DbSession
+) -> ContactOut:
+    view = await contact_app.put_contact(
+        db, actor, case_id, data=body.data, expected_version=body.version
+    )
+    return _contact_out(view)
 
 
 @router.get("/cases/{case_id}/social-profiles", response_model=list[SocialProfileOut])

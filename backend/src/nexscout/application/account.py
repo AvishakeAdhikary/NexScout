@@ -20,6 +20,7 @@ from nexscout.infrastructure.db.models import (
     Affiliation,
     AuthSession,
     CandidateCase,
+    CaseContact,
     CasePreferences,
     Document,
     FactEvidence,
@@ -62,6 +63,7 @@ async def export_account(
         "fact_evidence": FactEvidence,
         "profile_snapshots": ProfileSnapshot,
         "preferences": CasePreferences,
+        "contact_details": CaseContact,
         "social_profiles": SocialProfile,
         "affiliations": Affiliation,
     }

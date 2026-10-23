@@ -11,7 +11,8 @@ from fastapi import APIRouter, Response, status
 from pydantic import Field
 
 from nexscout.api.deps import CurrentActor, DbSession, ObjectStoreDep
-from nexscout.api.schemas import ApiModel, RunStartedOut
+from nexscout.api.schemas import ApiModel, FillOut, RunStartedOut
+from nexscout.application import contact as contact_app
 from nexscout.application import generated_documents as gen
 from nexscout.application import research
 from nexscout.application.opportunities import get_opportunity
@@ -368,6 +369,18 @@ async def render_generated(
 ) -> RunStartedOut:
     run = await gen.start_render(db, actor, document_id, body.version)
     return RunStartedOut(run_id=run.id)
+
+
+@router.post("/generated-documents/{document_id}/fill", response_model=FillOut)
+async def fill_generated(document_id: uuid.UUID, actor: CurrentActor, db: DbSession) -> FillOut:
+    """Fill in what the user already gave NexScout (contact details, saved answers) as a new
+    version. Placeholders nobody answered stay."""
+    view, filled = await contact_app.fill_document(db, actor, document_id)
+    return FillOut(
+        filled=filled,
+        placeholders_left=len(view.current.placeholders),
+        current_version=view.document.current_version,
+    )
 
 
 @router.get("/generated-documents/{document_id}/versions/{number}/files/{fmt}")

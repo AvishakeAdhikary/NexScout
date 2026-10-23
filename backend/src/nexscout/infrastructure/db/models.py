@@ -67,6 +67,7 @@ OWNED_TABLES: tuple[str, ...] = (
     "autopilot_items",
     "case_answers",
     "custom_sources",
+    "case_contacts",
 )
 # Tables the worker's system role (BYPASSRLS) needs for queue claiming, leases and recovery.
 SYSTEM_TABLES: tuple[str, ...] = ("worker_heartbeats",)
@@ -318,6 +319,22 @@ class CasePreferences(Base):
     """Search preferences for one case (validated by domain.preferences.Preferences)."""
 
     __tablename__ = "case_preferences"
+
+    case_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (case_fk(),)
+
+
+class CaseContact(Base):
+    """The candidate's contact details for one case (validated by domain.contact)."""
+
+    __tablename__ = "case_contacts"
 
     case_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
     owner_user_id: Mapped[uuid.UUID] = mapped_column(nullable=False)

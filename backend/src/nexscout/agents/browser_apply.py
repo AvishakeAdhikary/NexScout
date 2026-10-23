@@ -27,6 +27,8 @@ from sqlalchemy import func, select
 
 from nexscout.agent_runtime.context import RunContext, UncertainOutcome
 from nexscout.agent_runtime.registry import WorkflowSpec, register, tracked
+from nexscout.agents.draft_document import render_version
+from nexscout.application.actor import Actor
 from nexscout.application.answers import answers_for
 from nexscout.application.applications import (
     BROWSER_START,
@@ -36,17 +38,17 @@ from nexscout.application.applications import (
     fixture_origin,
     move,
 )
+from nexscout.application.contact import applicant_details, fill_document
 from nexscout.application.notifications import notify
 from nexscout.domain.forms import Applicant, normalize_question
 from nexscout.domain.state_machines import ApplicationStatus
-from nexscout.infrastructure.browser import Guard, fill_form, submit_form
+from nexscout.infrastructure.browser import FillOutcome, Guard, fill_form, submit_form
 from nexscout.infrastructure.db.models import (
     Application,
     ApplicationEvent,
     AutopilotPolicy,
     GeneratedDocument,
     GeneratedDocumentVersion,
-    User,
 )
 
 S = ApplicationStatus
@@ -82,9 +84,10 @@ class Inputs:
 
 
 async def _applicant(ctx: RunContext, app: Inputs, workdir: Path) -> Applicant:
-    """Who is applying, from the account, the user's answers and their chosen documents."""
+    """Who is applying: the case's contact details (else the account's name and email), profile
+    links, the user's answers and their chosen documents."""
     async with ctx.tenant() as s:
-        user = await s.get(User, ctx.owner_user_id)
+        who = await applicant_details(s, ctx.owner_user_id, ctx.case_id)
         rows = (
             await s.execute(
                 select(GeneratedDocument, GeneratedDocumentVersion)
@@ -111,14 +114,65 @@ async def _applicant(ctx: RunContext, app: Inputs, workdir: Path) -> Applicant:
         path = workdir / f"{role}.pdf"
         path.write_bytes(ctx.store.get(pdf["key"]))
         files[role] = {"path": str(path), "title": f"{doc.title} (v{version.number}, PDF)"}
-    assert user is not None
+    c = who.contact
     return Applicant(
-        full_name=user.display_name,
-        email=user.email,
-        phone=app.phone,
+        full_name=who.name,
+        email=who.email,
+        phone=app.phone or c.phone,
         answers=dict(app.answers or {}),
         files=files,
+        given_name=c.given_name,
+        family_name=c.family_name,
+        address=c.address,
+        postal_code=c.postal_code,
+        city=c.city,
+        region=c.region,
+        country=c.country,
+        location=c.location,
+        links=who.links,
     )
+
+
+async def _prepare_documents(ctx: RunContext, step: Any, document_ids: list[str]) -> list[str]:
+    """Make the chosen documents ready before the form is opened: fill in what the user
+    already told NexScout (contact details, saved answers) and create the PDF of any version
+    that has none. Returns what still needs the user (placeholders nobody has answered)."""
+    actor = Actor(user_id=ctx.owner_user_id, session_id=ctx.run_id, request_id="browser_apply")
+    problems: list[str] = []
+    to_render: list[tuple[uuid.UUID, int, str]] = []
+    async with ctx.tenant() as s:
+        for raw in document_ids:
+            doc = await s.get(GeneratedDocument, uuid.UUID(raw))
+            if doc is None:
+                continue
+            version = await s.scalar(
+                select(GeneratedDocumentVersion).where(
+                    GeneratedDocumentVersion.document_id == doc.id,
+                    GeneratedDocumentVersion.number == doc.current_version,
+                )
+            )
+            if version is None:
+                continue
+            if version.placeholders:
+                version = (await fill_document(s, actor, doc.id))[0].current
+            if version.placeholders:
+                problems.append(f"“{doc.title}” still needs {'; '.join(version.placeholders)}")
+            elif not (version.artifacts or {}).get("pdf"):
+                to_render.append((doc.id, version.number, doc.title))
+    for doc_id, number, title in to_render:
+        await ctx.note(step, f"Creating the PDF of “{title}”.")
+        artifacts = await render_version(ctx, doc_id, number)
+        compliance = artifacts.get("compliance") or {}
+        if compliance.get("status") == "blocking":  # the same rule as before starting a run
+            failed = [
+                c["rule"]
+                for c in compliance.get("checks", [])
+                if not c["ok"] and c["severity"] == "blocking"
+            ]
+            problems.append(
+                f"“{title}” doesn't meet the posting's requirements: {'; '.join(failed)}"
+            )
+    return problems
 
 
 async def fill(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
@@ -143,13 +197,17 @@ async def fill(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             )
         url = str(app.apply_url)
         snapshot = Inputs.of(app, await answers_for(s, app.owner_user_id, app.case_id))
-    await ctx.note(step, f"Opening {url}")
-    workdir = Path(tempfile.mkdtemp(prefix="nexscout-apply-"))
-    try:
-        who = await _applicant(ctx, snapshot, workdir)
-        out = await fill_form(url, who, _guard(ctx), headless=ctx.settings.browser_headless)
-    finally:
-        shutil.rmtree(workdir, ignore_errors=True)
+    problems = await _prepare_documents(ctx, step, snapshot.document_ids)
+    if problems:
+        out = FillOutcome(status="documents", url=url, error="; ".join(problems))
+    else:
+        await ctx.note(step, f"Opening {url}")
+        workdir = Path(tempfile.mkdtemp(prefix="nexscout-apply-"))
+        try:
+            who = await _applicant(ctx, snapshot, workdir)
+            out = await fill_form(url, who, _guard(ctx), headless=ctx.settings.browser_headless)
+        finally:
+            shutil.rmtree(workdir, ignore_errors=True)
     shot_key = ctx.store.put(ctx.owner_user_id, out.screenshot)[0] if out.screenshot else None
     async with ctx.tenant() as s:
         app = await s.get(Application, _app_id(ctx), with_for_update=True)
@@ -192,6 +250,11 @@ async def fill(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
                 "The form asks for things NexScout has no answer for: "
                 + "; ".join(out.plan.missing)
                 + ". Add your answers, then try again."
+            )
+        elif out.status == "documents":
+            reason = (
+                f"Your documents aren't ready: {out.error}. Fill that in on the document's "
+                "page (or save it as an answer), then try again."
             )
         else:
             reason = f"Couldn't open or fill the form: {out.error}"

@@ -19,7 +19,13 @@ from langgraph.runtime import Runtime
 
 from nexscout.agent_runtime.context import RunContext
 from nexscout.agent_runtime.registry import WorkflowSpec, register, tracked
-from nexscout.agents.browser_apply import Inputs, _app_id, _applicant, _guard
+from nexscout.agents.browser_apply import (
+    Inputs,
+    _app_id,
+    _applicant,
+    _guard,
+    _prepare_documents,
+)
 from nexscout.application.answers import answers_for
 from nexscout.application.applications import event, move
 from nexscout.domain.state_machines import ApplicationStatus
@@ -45,6 +51,10 @@ async def assist(state: State, runtime: Runtime[RunContext]) -> dict[str, Any]:
             return {"result": {"status": "skipped", "message": f"Application is {app.status}."}}
         url = str(app.apply_url)
         snapshot = Inputs.of(app, await answers_for(s, app.owner_user_id, app.case_id))
+    # You are at the keyboard here, so unfinished documents don't stop the window opening; they
+    # just aren't uploaded for you.
+    for problem in await _prepare_documents(ctx, step, snapshot.document_ids):
+        await ctx.note(step, f"Not uploaded: {problem}.")
     await ctx.note(step, "A browser window is open on your computer. Finish and submit there.")
     workdir = Path(tempfile.mkdtemp(prefix="nexscout-assist-"))
     try:

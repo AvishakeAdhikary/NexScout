@@ -6,7 +6,13 @@ export function errorMessage(error: unknown): string {
   return "Something unexpected happened. Please try again.";
 }
 
-export function ErrorAlert({ error, title = "That didn't work" }: { error: unknown; title?: string }) {
+export function ErrorAlert({
+  error,
+  title = "That didn't work",
+}: {
+  error: unknown;
+  title?: string;
+}) {
   if (!error) return null;
   const fieldErrors = error instanceof ApiError ? (error.problem.errors ?? []) : [];
   return (
